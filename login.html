@@ -20,89 +20,95 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .screen.on{display:flex}
 
 /* Brand */
-.brand{text-align:center;margin-bottom:36px}
-.brand-mark{width:68px;height:68px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 20px rgba(153,60,29,0.25)}
-.brand-mark i{color:#fff;font-size:32px}
-.brand-name{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);letter-spacing:-0.5px}
-.brand-tag{font-size:13px;color:var(--muted);margin-top:4px}
+.brand{text-align:center;margin-bottom:40px}
+.brand-mark{width:72px;height:72px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 6px 24px rgba(153,60,29,0.25)}
+.brand-mark i{color:#fff;font-size:34px}
+.brand-name{font-family:'Playfair Display',serif;font-size:30px;color:var(--text);letter-spacing:-0.5px}
+.brand-tag{font-size:13px;color:var(--muted);margin-top:5px}
 
 /* Two main buttons */
 .btn-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px}
-.main-btn{width:100%;padding:18px 20px;border-radius:16px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;display:flex;align-items:center;gap:14px;transition:all .2s;text-align:left}
-.main-btn-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.main-btn-icon i{font-size:22px}
-.main-btn-body{flex:1}
+.main-btn{width:100%;padding:18px 20px;border-radius:18px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:14px;transition:all .2s}
+.main-btn-icon{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.main-btn-icon i{font-size:24px}
+.main-btn-body{flex:1;text-align:left}
 .main-btn-title{font-size:16px;font-weight:500;margin-bottom:2px}
 .main-btn-sub{font-size:12px;opacity:.75}
-.main-btn-arrow{font-size:18px;opacity:.4}
+.main-btn-arrow{font-size:20px;opacity:.35}
+
 .btn-login{background:var(--br);color:#fff}
-.btn-login .main-btn-icon{background:rgba(255,255,255,.2)}
+.btn-login .main-btn-icon{background:rgba(255,255,255,.18)}
 .btn-login .main-btn-icon i{color:#fff}
-.btn-login:hover{background:var(--br-d);transform:translateY(-1px)}
+.btn-login:hover{background:var(--br-d);box-shadow:0 6px 20px rgba(153,60,29,.3)}
+
 .btn-guest{background:var(--white);color:var(--text);border:1px solid var(--border)}
 .btn-guest .main-btn-icon{background:var(--g-l)}
 .btn-guest .main-btn-icon i{color:var(--g)}
-.btn-guest:hover{border-color:var(--g);transform:translateY(-1px)}
+.btn-guest:hover{border-color:#3B6D11;box-shadow:0 4px 14px rgba(59,109,17,.12)}
 
-/* People list screen */
+/* Screen inner wrapper */
 .screen-inner{width:100%;max-width:360px}
-.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:20px;font-family:inherit;padding:0}
-.screen-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px}
-.screen-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:22px;font-family:inherit;padding:0}
+.screen-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:4px}
+.screen-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
 
-.people-list{display:flex;flex-direction:column;gap:10px}
-.person-btn{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;width:100%;font-family:inherit;text-align:left}
-.person-btn:hover{border-color:var(--br-m);transform:translateY(-1px);box-shadow:0 4px 16px rgba(153,60,29,0.08)}
+/* People list */
+.people-section{margin-bottom:18px}
+.people-section-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.people-list{display:flex;flex-direction:column;gap:8px}
+
+.person-btn{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;transition:all .2s;width:100%;font-family:inherit;text-align:left}
+.person-btn:hover{border-color:var(--br-m);box-shadow:0 3px 14px rgba(153,60,29,.08)}
 .person-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0}
 .av-owner{background:#E6F1FB;color:#0C447C}
 .av-staff{background:var(--br-l);color:var(--br-d)}
 .person-info{flex:1}
 .person-name{font-size:15px;font-weight:500;color:var(--text)}
 .person-role{font-size:12px;color:var(--muted);margin-top:2px}
-.person-arrow{color:var(--border);font-size:18px}
+.person-arrow{color:rgba(0,0,0,.2);font-size:18px;transition:color .15s}
+.person-btn:hover .person-arrow{color:var(--br-m)}
 
 /* PIN screen */
-.pin-wrap{width:100%;max-width:320px;text-align:center}
-.pin-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;margin:0 auto 14px}
-.pin-name{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px}
+.pin-wrap{width:100%;max-width:300px;text-align:center}
+.pin-avatar{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;margin:0 auto 14px}
+.pin-name{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:4px}
 .pin-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
-.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:28px}
+.pin-dots{display:flex;justify-content:center;gap:16px;margin-bottom:28px}
 .pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all .15s}
-.pin-dot.filled{background:var(--br);border-color:var(--br)}
-.pin-dot.error{background:var(--r,#A32D2D);border-color:var(--r,#A32D2D)}
-.pin-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:260px;margin:0 auto}
-.pin-key{height:62px;border-radius:12px;border:1px solid var(--border);background:var(--white);font-size:22px;font-weight:400;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center}
-.pin-key:active{background:var(--br-l);border-color:var(--br-m);transform:scale(.96)}
+.pin-dot.filled{background:var(--br);border-color:var(--br);transform:scale(1.1)}
+.pin-dot.error{background:#A32D2D;border-color:#A32D2D}
+.pin-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:240px;margin:0 auto}
+.pin-key{height:64px;border-radius:14px;border:1px solid var(--border);background:var(--white);font-size:22px;font-weight:400;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pin-key:active{background:var(--br-l);border-color:var(--br-m);transform:scale(.94)}
 .pin-key.del{font-size:18px;color:var(--muted)}
 .pin-key.empty{border:none;background:none;cursor:default}
-.pin-err{font-size:13px;color:#A32D2D;margin-top:14px;min-height:20px}
+.pin-err{font-size:13px;color:#A32D2D;margin-top:16px;min-height:20px;text-align:center}
 
-/* Owner email login fallback */
+/* Owner email login */
 .email-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:24px;width:100%;max-width:360px}
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);transition:border-color .15s;appearance:none}
+.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);appearance:none}
 .fc:focus{outline:none;border-color:var(--br)}
-.btn-primary{width:100%;padding:13px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
-.btn-primary:hover{opacity:.9}
+.btn-primary{width:100%;padding:13px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed}
-.err-msg{font-size:13px;color:#A32D2D;margin-top:8px}
+.err-msg{font-size:13px;color:#A32D2D;margin-top:8px;display:none}
 
 /* Guest screen */
 .guest-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:24px;width:100%;max-width:360px}
 .guest-hero{text-align:center;margin-bottom:20px}
-.guest-hero-icon{width:56px;height:56px;background:var(--g-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
-.guest-hero-icon i{font-size:26px;color:var(--g)}
-.guest-hero-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
-.guest-hero-sub{font-size:13px;color:var(--muted)}
-.btn-guest-primary{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.guest-icon{width:58px;height:58px;background:var(--g-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.guest-icon i{font-size:28px;color:var(--g)}
+.guest-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
+.guest-sub{font-size:13px;color:var(--muted)}
+.btn-green{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
 
-.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
+.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px;line-height:1.6}
 </style>
 </head>
 <body>
 
-<!-- SCREEN 1: Landing -->
+<!-- SCREEN 1: Landing — two buttons -->
 <div class="screen on" id="s-landing">
   <div class="brand">
     <div class="brand-mark"><i class="ti ti-tree"></i></div>
@@ -135,17 +141,19 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   <div class="screen-inner">
     <button class="back-btn" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Back</button>
     <div class="screen-title">Who are you?</div>
-    <div class="screen-sub">Select your name to continue</div>
-    <div class="people-list" id="people-list">
+    <div class="screen-sub">Tap your name to continue</div>
+    <div id="people-list">
       <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Loading…</div>
     </div>
   </div>
 </div>
 
-<!-- SCREEN 3: PIN entry -->
+<!-- SCREEN 3: PIN pad -->
 <div class="screen" id="s-pin">
   <div class="pin-wrap">
-    <button class="back-btn" style="justify-content:center;margin-bottom:24px" onclick="show('s-people')"><i class="ti ti-arrow-left"></i> Back</button>
+    <button class="back-btn" style="justify-content:center;margin-bottom:24px" onclick="show('s-people')">
+      <i class="ti ti-arrow-left"></i> Back
+    </button>
     <div class="pin-avatar" id="pin-av"></div>
     <div class="pin-name" id="pin-name"></div>
     <div class="pin-sub" id="pin-sub">Enter your 4-digit PIN</div>
@@ -173,17 +181,25 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 </div>
 
-<!-- SCREEN 4: Owner email login (fallback / first time) -->
+<!-- SCREEN 4: Owner email login -->
 <div class="screen" id="s-owner-login">
   <div class="screen-inner">
     <button class="back-btn" onclick="show('s-people')"><i class="ti ti-arrow-left"></i> Back</button>
     <div class="screen-title">Owner login</div>
-    <div class="screen-sub">Sign in with your email</div>
+    <div class="screen-sub" style="margin-bottom:18px">Sign in with your email & password</div>
     <div class="email-card">
-      <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="owner-email" placeholder="you@banyancircle.com"/></div>
-      <div class="fg"><label class="fl">Password</label><input type="password" class="fc" id="owner-pw" placeholder="••••••••"/></div>
-      <div class="err-msg" id="owner-err" style="display:none"></div>
-      <button class="btn-primary" id="owner-btn" onclick="ownerLogin()"><i class="ti ti-login"></i> Sign in</button>
+      <div class="fg">
+        <label class="fl">Email</label>
+        <input type="email" class="fc" id="owner-email" placeholder="you@banyancircle.com"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input type="password" class="fc" id="owner-pw" placeholder="••••••••"/>
+      </div>
+      <div class="err-msg" id="owner-err"></div>
+      <button class="btn-primary" id="owner-btn" onclick="ownerLogin()" style="margin-top:4px">
+        <i class="ti ti-login"></i> Sign in
+      </button>
     </div>
   </div>
 </div>
@@ -194,37 +210,46 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <button class="back-btn" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Back</button>
     <div class="guest-card">
       <div class="guest-hero">
-        <div class="guest-hero-icon"><i class="ti ti-heart"></i></div>
-        <div class="guest-hero-title">Welcome, guest</div>
-        <div class="guest-hero-sub">We'd love to hear about your stay</div>
+        <div class="guest-icon"><i class="ti ti-heart"></i></div>
+        <div class="guest-title">Welcome, guest</div>
+        <div class="guest-sub">We'd love to hear about your stay</div>
       </div>
-      <div class="fg"><label class="fl">Your name</label><input type="text" class="fc" id="g-name" placeholder="Your full name"/></div>
-      <div class="fg"><label class="fl">Mobile number</label><input type="tel" class="fc" id="g-phone" placeholder="+91 98765 43210"/></div>
-      <div class="fg"><label class="fl">Property you stayed at</label>
+      <div class="fg">
+        <label class="fl">Your name</label>
+        <input type="text" class="fc" id="g-name" placeholder="Your full name"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Mobile number</label>
+        <input type="tel" class="fc" id="g-phone" placeholder="+91 98765 43210"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Property you stayed at</label>
         <select class="fc" id="g-prop">
           <option value="">Select property…</option>
           <option>Villa 21</option>
           <option>19A Link Heritage</option>
         </select>
       </div>
-      <div class="err-msg" id="guest-err" style="display:none"></div>
-      <button class="btn-guest-primary" onclick="guestEnter()"><i class="ti ti-arrow-right"></i> Continue</button>
+      <div class="err-msg" id="guest-err"></div>
+      <button class="btn-green" onclick="guestEnter()">
+        <i class="ti ti-arrow-right"></i> Continue to feedback
+      </button>
     </div>
   </div>
 </div>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const supabase = createClient(
+const sb = createClient(
   'https://wwdnuajhqfajvsexszpy.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Check existing session
-const { data: { user } } = await supabase.auth.getUser();
+// Redirect if already logged in
+const { data: { user } } = await sb.auth.getUser();
 if (user) {
-  const meta = user.user_metadata;
-  window.location.href = meta?.role === 'owner' ? '/owner.html' : '/index.html';
+  const role = user.user_metadata?.role;
+  window.location.href = role === 'owner' ? '/owner.html' : '/index.html';
 }
 
 // ---- Screen routing ----
@@ -233,47 +258,74 @@ window.show = id => {
   document.getElementById(id).classList.add('on');
 };
 
+// ---- Helpers ----
+const ini = n => (n||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+
 // ---- Load people list ----
+// Structure:
+//   Owners section  — from staff table where designation='Owner'
+//   Staff section   — everyone else in staff table
+// Owner logins use Supabase email auth (email+password stored on their user)
+// Staff logins use PIN stored in staff table + local session
+
 let selectedPerson = null;
 let pinEntry = '';
 
 async function loadPeople() {
-  // Load staff from DB + hardcoded owner entries
-  const { data: staff } = await supabase.from('staff').select('*').order('name');
-
-  // Load owner accounts (users with owner role in metadata)
-  // We'll show them from a local list stored in staff table with role='owner'
-  const people = staff || [];
-
+  const { data: staff, error } = await sb.from('staff').select('*').order('name');
   const el = document.getElementById('people-list');
-  if (!people.length) {
-    // No staff added yet — show owner email login only
-    el.innerHTML = `
-      <button class="person-btn" onclick="window.selectPerson({name:'Owner',role:'owner',isOwner:true})">
-        <div class="person-av av-owner">OW</div>
-        <div class="person-info"><div class="person-name">Owner</div><div class="person-role">Full access</div></div>
-        <i class="ti ti-chevron-right person-arrow"></i>
-      </button>`;
-    return;
+
+  // Always show at least the owner tile
+  const owners = (staff||[]).filter(s => s.designation === 'Owner');
+  const members = (staff||[]).filter(s => s.designation !== 'Owner');
+
+  let html = '';
+
+  // Owners section
+  if (owners.length) {
+    html += `<div class="people-section">
+      <div class="people-section-label">Owner</div>
+      <div class="people-list">
+        ${owners.map(p => personCard(p, true)).join('')}
+      </div>
+    </div>`;
+  } else {
+    // Fallback owner tile — email login
+    html += `<div class="people-section">
+      <div class="people-section-label">Owner</div>
+      <div class="people-list">
+        <button class="person-btn" onclick="window.selectPerson({name:'Owner',designation:'Owner',isOwner:true,noPin:true})">
+          <div class="person-av av-owner">OW</div>
+          <div class="person-info">
+            <div class="person-name">Owner</div>
+            <div class="person-role">Full access</div>
+          </div>
+          <i class="ti ti-chevron-right person-arrow"></i>
+        </button>
+      </div>
+    </div>`;
   }
 
-  // Separate owners from staff
-  const owners = people.filter(p => p.designation === 'Owner');
-  const staffOnly = people.filter(p => p.designation !== 'Owner');
+  // Staff section
+  if (members.length) {
+    html += `<div class="people-section">
+      <div class="people-section-label">Staff</div>
+      <div class="people-list">
+        ${members.map(p => personCard(p, false)).join('')}
+      </div>
+    </div>`;
+  }
 
-  el.innerHTML = [
-    ...owners.map(p => personCard(p, true)),
-    ...staffOnly.map(p => personCard(p, false)),
-  ].join('');
+  el.innerHTML = html;
 }
 
 function personCard(p, isOwner) {
-  const ini = p.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-  return `<button class="person-btn" onclick='selectPerson(${JSON.stringify({...p, isOwner})})'>
-    <div class="person-av ${isOwner?'av-owner':'av-staff'}">${ini}</div>
+  const data = JSON.stringify({...p, isOwner}).replace(/'/g, '&apos;');
+  return `<button class="person-btn" onclick='window.selectPerson(${JSON.stringify({...p,isOwner})})'>
+    <div class="person-av ${isOwner?'av-owner':'av-staff'}">${ini(p.name)}</div>
     <div class="person-info">
       <div class="person-name">${p.name}</div>
-      <div class="person-role">${isOwner?'Owner · Full access':p.designation||'Staff'}</div>
+      <div class="person-role">${isOwner ? 'Owner · Full access' : (p.designation||'Staff')}</div>
     </div>
     <i class="ti ti-chevron-right person-arrow"></i>
   </button>`;
@@ -282,66 +334,67 @@ function personCard(p, isOwner) {
 window.selectPerson = person => {
   selectedPerson = person;
   pinEntry = '';
-  updatePinDots();
+  updateDots();
   document.getElementById('pin-err').textContent = '';
 
-  const ini = person.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
   const av = document.getElementById('pin-av');
-  av.textContent = ini;
-  av.className = `pin-avatar ${person.isOwner?'av-owner':'av-staff'}`;
+  av.textContent = ini(person.name);
+  av.className = `pin-avatar ${person.isOwner ? 'av-owner' : 'av-staff'}`;
   document.getElementById('pin-name').textContent = person.name;
-  document.getElementById('pin-sub').textContent = person.isOwner
-    ? (person.pin ? 'Enter your 4-digit PIN' : 'Use your email & password')
-    : 'Enter your 4-digit PIN';
 
-  // Owners without PIN go to email login
+  // Owners with no PIN → email login
   if (person.isOwner && !person.pin) {
     show('s-owner-login');
     return;
   }
+
+  document.getElementById('pin-sub').textContent = 'Enter your 4-digit PIN';
   show('s-pin');
 };
 
-// ---- PIN logic ----
-window.pinKey = digit => {
+// ---- PIN ----
+window.pinKey = d => {
   if (pinEntry.length >= 4) return;
-  pinEntry += digit;
-  updatePinDots();
-  if (pinEntry.length === 4) setTimeout(checkPin, 120);
+  pinEntry += d;
+  updateDots();
+  if (pinEntry.length === 4) setTimeout(checkPin, 150);
 };
+window.pinDel = () => { pinEntry = pinEntry.slice(0,-1); updateDots(); };
 
-window.pinDel = () => {
-  pinEntry = pinEntry.slice(0, -1);
-  updatePinDots();
-};
-
-function updatePinDots() {
+function updateDots() {
   for (let i = 0; i < 4; i++) {
-    const d = document.getElementById('d' + i);
+    const d = document.getElementById('d'+i);
     d.className = 'pin-dot' + (i < pinEntry.length ? ' filled' : '');
   }
 }
 
 async function checkPin() {
-  const errEl = document.getElementById('pin-err');
-  const storedPin = selectedPerson.pin;
-
-  if (pinEntry !== storedPin) {
-    // Flash red
-    for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
-    errEl.textContent = 'Incorrect PIN. Try again.';
-    setTimeout(() => { pinEntry = ''; updatePinDots(); errEl.textContent = ''; }, 1200);
+  const err = document.getElementById('pin-err');
+  if (pinEntry !== selectedPerson.pin) {
+    for (let i=0;i<4;i++) document.getElementById('d'+i).className='pin-dot error';
+    err.textContent = 'Wrong PIN. Try again.';
+    setTimeout(() => { pinEntry=''; updateDots(); err.textContent=''; }, 1200);
     return;
   }
 
-  // PIN correct — sign in via Supabase using stored email
-  const email = selectedPerson.email;
-  const password = 'BC_' + storedPin + '_' + selectedPerson.id; // deterministic password
-  errEl.textContent = '';
+  // PIN correct — store session locally (no Supabase auth needed for staff)
+  // We use localStorage to persist who's logged in
+  localStorage.setItem('bc_user', JSON.stringify({
+    id: selectedPerson.id,
+    name: selectedPerson.name,
+    role: selectedPerson.isOwner ? 'owner' : 'staff',
+    designation: selectedPerson.designation,
+  }));
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { errEl.textContent = 'Login failed. Contact owner.'; pinEntry = ''; updatePinDots(); return; }
+  // If owner with PIN, also do Supabase auth if email exists
+  if (selectedPerson.isOwner && selectedPerson.email) {
+    await sb.auth.signInWithPassword({
+      email: selectedPerson.email,
+      password: selectedPerson.email_password || 'bc_owner_default'
+    }).catch(()=>{});
+  }
 
+  err.textContent = '';
   window.location.href = selectedPerson.isOwner ? '/owner.html' : '/index.html';
 }
 
@@ -350,21 +403,29 @@ window.ownerLogin = async () => {
   const btn = document.getElementById('owner-btn');
   const err = document.getElementById('owner-err');
   err.style.display = 'none';
-  btn.disabled = true; btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Signing in…';
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: document.getElementById('owner-email').value,
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('owner-email').value.trim(),
     password: document.getElementById('owner-pw').value,
   });
 
   if (error) {
-    err.textContent = error.message; err.style.display = 'block';
-    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i> Sign in';
+    err.textContent = error.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-login"></i> Sign in';
     return;
   }
 
-  // Set owner role in metadata
-  await supabase.auth.updateUser({ data: { role: 'owner' } });
+  // Mark as owner
+  await sb.auth.updateUser({ data: { role: 'owner' } });
+  localStorage.setItem('bc_user', JSON.stringify({
+    id: data.user.id,
+    name: 'Owner',
+    role: 'owner',
+  }));
   window.location.href = '/owner.html';
 };
 
@@ -373,9 +434,14 @@ window.guestEnter = () => {
   const name = document.getElementById('g-name').value.trim();
   const prop = document.getElementById('g-prop').value;
   const err = document.getElementById('guest-err');
-  if (!name || !prop) { err.textContent='Please fill your name and select a property.'; err.style.display='block'; return; }
+  if (!name || !prop) {
+    err.textContent = 'Please enter your name and select a property.';
+    err.style.display = 'block'; return;
+  }
   err.style.display = 'none';
-  sessionStorage.setItem('guest', JSON.stringify({ name, phone: document.getElementById('g-phone').value, prop }));
+  sessionStorage.setItem('guest', JSON.stringify({
+    name, phone: document.getElementById('g-phone').value, prop
+  }));
   window.location.href = '/guest.html';
 };
 

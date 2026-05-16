@@ -428,65 +428,67 @@
   </script>
 </body>
 </html>
-
-<!-- Staff management panel (injected) -->
-<div id="staff-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end">
-  <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:500px;margin:0 auto;max-height:90vh;overflow-y:auto">
-    <div style="width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.12);margin:0 auto 20px"></div>
+<!-- Staff management panel -->
+<div id="staff-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto">
+    <div style="width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.1);margin:0 auto 20px"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-family:'Playfair Display',serif;font-size:20px">Manage staff</div>
-      <button onclick="document.getElementById('staff-panel').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5F5E5A">×</button>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;color:#2C2C2A">Manage team</div>
+      <button onclick="closeStaffPanel()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#5F5E5A;line-height:1">×</button>
     </div>
 
-    <!-- Existing staff list -->
+    <!-- Current staff list -->
     <div id="staff-mgmt-list" style="margin-bottom:20px"></div>
 
-    <!-- Add new staff -->
-    <div style="background:#F9F8F6;border-radius:12px;padding:16px;border:1px solid rgba(0,0,0,0.08)">
-      <div style="font-size:13px;font-weight:500;color:#5F5E5A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Add staff member</div>
+    <!-- Add new staff form -->
+    <div style="background:#F9F8F6;border-radius:14px;padding:18px;border:1px solid rgba(0,0,0,0.07)">
+      <div style="font-size:12px;font-weight:500;color:#5F5E5A;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Add team member</div>
+
       <div style="margin-bottom:12px">
         <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Full name</label>
-        <input type="text" id="new-staff-name" placeholder="e.g. Priya Kumar" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:13px;font-family:inherit;background:#fff"/>
+        <input type="text" id="ns-name" placeholder="e.g. Priya Kumar"
+          style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A"/>
       </div>
-      <div style="margin-bottom:12px">
+
+      <div style="margin-bottom:16px">
         <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Role</label>
-        <select id="new-staff-role" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;appearance:none">
+        <select id="ns-role"
+          style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A;appearance:none">
           <option>Homekeeper</option>
           <option>Relationship Manager</option>
           <option>Guest Experience Coordinator</option>
           <option>Owner</option>
         </select>
       </div>
-      <div style="margin-bottom:12px">
-        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Email (for login)</label>
-        <input type="email" id="new-staff-email" placeholder="staff@banyancircle.com" style="width:100%;padding:10px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:13px;font-family:inherit;background:#fff"/>
-      </div>
+
       <div style="margin-bottom:16px">
-        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:8px">4-digit PIN</label>
-        <div style="display:flex;gap:8px" id="new-pin-display">
-          <div id="np0" style="width:44px;height:50px;border:1.5px solid rgba(0,0,0,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:#2C2C2A;background:#fff"></div>
-          <div id="np1" style="width:44px;height:50px;border:1.5px solid rgba(0,0,0,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:#2C2C2A;background:#fff"></div>
-          <div id="np2" style="width:44px;height:50px;border:1.5px solid rgba(0,0,0,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:#2C2C2A;background:#fff"></div>
-          <div id="np3" style="width:44px;height:50px;border:1.5px solid rgba(0,0,0,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:#2C2C2A;background:#fff"></div>
+        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:10px">4-digit PIN for login</label>
+        <div style="display:flex;gap:10px;justify-content:flex-start;margin-bottom:12px">
+          <div id="np0" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+          <div id="np1" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+          <div id="np2" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+          <div id="np3" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:200px;margin-top:10px" id="np-pad">
-          <button onclick="npKey('1')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">1</button>
-          <button onclick="npKey('2')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">2</button>
-          <button onclick="npKey('3')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">3</button>
-          <button onclick="npKey('4')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">4</button>
-          <button onclick="npKey('5')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">5</button>
-          <button onclick="npKey('6')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">6</button>
-          <button onclick="npKey('7')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">7</button>
-          <button onclick="npKey('8')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">8</button>
-          <button onclick="npKey('9')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">9</button>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:210px">
+          <button onclick="npKey('1')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">1</button>
+          <button onclick="npKey('2')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">2</button>
+          <button onclick="npKey('3')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">3</button>
+          <button onclick="npKey('4')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">4</button>
+          <button onclick="npKey('5')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">5</button>
+          <button onclick="npKey('6')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">6</button>
+          <button onclick="npKey('7')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">7</button>
+          <button onclick="npKey('8')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">8</button>
+          <button onclick="npKey('9')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">9</button>
           <div></div>
-          <button onclick="npKey('0')" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">0</button>
-          <button onclick="npDel()" style="height:44px;border-radius:9px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:16px;cursor:pointer;font-family:inherit;color:#5F5E5A">⌫</button>
+          <button onclick="npKey('0')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">0</button>
+          <button onclick="npDel()" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:17px;cursor:pointer;font-family:inherit;color:#5F5E5A">⌫</button>
         </div>
       </div>
-      <div id="staff-add-err" style="font-size:13px;color:#A32D2D;margin-bottom:8px;display:none"></div>
-      <button onclick="addStaff()" style="width:100%;padding:13px;background:#993C1D;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
-        <i class="ti ti-user-plus"></i> Add staff member
+
+      <div id="ns-msg" style="font-size:13px;margin-bottom:10px;display:none"></div>
+      <button onclick="addStaff()"
+        style="width:100%;padding:13px;background:#993C1D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="ti ti-user-plus"></i> Add team member
       </button>
     </div>
   </div>
@@ -494,105 +496,125 @@
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const supabase = createClient(
+const sb = createClient(
   'https://wwdnuajhqfajvsexszpy.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Auth guard
-const { data: { user } } = await supabase.auth.getUser();
-if (!user) { window.location.href = '/login.html'; }
+// Auth guard — owner only
+const { data: { user } } = await sb.auth.getUser();
+const localUser = JSON.parse(localStorage.getItem('bc_user')||'{}');
+if (!user && localUser.role !== 'owner') { window.location.href = '/login.html'; }
 
-// Add "Manage staff" button to owner page
-const manageBtn = document.createElement('button');
-manageBtn.innerHTML = '<i class="ti ti-users"></i> Manage staff';
-manageBtn.style.cssText = 'position:fixed;bottom:24px;right:20px;padding:12px 18px;background:#993C1D;color:#fff;border:none;border-radius:999px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(153,60,29,0.3);z-index:100';
-manageBtn.onclick = () => { loadStaffList(); document.getElementById('staff-panel').style.display='flex'; };
-document.body.appendChild(manageBtn);
+// Get owner name
+const ownerName = localUser.name || user?.user_metadata?.name || 'Owner';
 
-// Add sign out to owner page
+// Add floating "Manage team" button
+const fab = document.createElement('button');
+fab.innerHTML = '<i class="ti ti-users"></i> Manage team';
+fab.style.cssText = 'position:fixed;bottom:28px;right:20px;padding:12px 20px;background:#993C1D;color:#fff;border:none;border-radius:999px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(153,60,29,0.35);z-index:100';
+fab.onclick = () => { loadStaffList(); document.getElementById('staff-panel').style.display='flex'; };
+document.body.appendChild(fab);
+
+// Sign out button
 const soBtn = document.createElement('button');
-soBtn.textContent = 'Sign out';
-soBtn.style.cssText = 'position:fixed;top:16px;right:16px;padding:8px 14px;background:#fff;border:1px solid rgba(0,0,0,0.1);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;color:#5F5E5A';
-soBtn.onclick = async () => { await supabase.auth.signOut(); window.location.href='/login.html'; };
+soBtn.innerHTML = '<i class="ti ti-logout" style="font-size:14px"></i> Sign out';
+soBtn.style.cssText = 'position:fixed;top:16px;right:16px;padding:8px 14px;background:#fff;border:1px solid rgba(0,0,0,0.1);border-radius:999px;font-size:13px;cursor:pointer;font-family:inherit;color:#5F5E5A;display:flex;align-items:center;gap:5px;z-index:100';
+soBtn.onclick = async () => {
+  await sb.auth.signOut();
+  localStorage.removeItem('bc_user');
+  window.location.href = '/login.html';
+};
 document.body.appendChild(soBtn);
 
-// ---- Staff list in panel ----
+window.closeStaffPanel = () => {
+  document.getElementById('staff-panel').style.display = 'none';
+};
+
+// ---- Staff list ----
 async function loadStaffList() {
-  const { data } = await supabase.from('staff').select('*').order('name');
+  const { data } = await sb.from('staff').select('*').order('name');
   const el = document.getElementById('staff-mgmt-list');
-  if (!data?.length) { el.innerHTML='<div style="font-size:13px;color:#5F5E5A;text-align:center;padding:16px 0">No staff added yet</div>'; return; }
-  const ini = n => n?.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
-  el.innerHTML = data.map(s=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.07)">
-      <div style="width:40px;height:40px;border-radius:50%;background:${s.designation==='Owner'?'#E6F1FB':'#FAECE7'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:${s.designation==='Owner'?'#0C447C':'#712B13'};flex-shrink:0">${ini(s.name)}</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:500;color:#2C2C2A">${s.name}</div>
-        <div style="font-size:12px;color:#5F5E5A">${s.designation||'Staff'}</div>
-        ${s.pin?`<div style="font-size:11px;color:#5F5E5A">PIN set · ${s.email||'no email'}</div>`:'<div style="font-size:11px;color:#A32D2D">PIN not set</div>'}
-      </div>
-      <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:18px"><i class="ti ti-trash"></i></button>
-    </div>`).join('');
+  if (!data?.length) {
+    el.innerHTML = '<div style="font-size:13px;color:#5F5E5A;text-align:center;padding:14px 0">No team members added yet</div>';
+    return;
+  }
+  const ini = n => (n||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  const owners = data.filter(s => s.designation === 'Owner');
+  const staff = data.filter(s => s.designation !== 'Owner');
+
+  const renderGroup = (label, items) => items.length ? `
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:500;color:#5F5E5A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">${label}</div>
+      ${items.map(s => `
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
+          <div style="width:40px;height:40px;border-radius:50%;background:${s.designation==='Owner'?'#E6F1FB':'#FAECE7'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:${s.designation==='Owner'?'#0C447C':'#712B13'};flex-shrink:0">${ini(s.name)}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500;color:#2C2C2A">${s.name}</div>
+            <div style="font-size:12px;color:#5F5E5A">${s.designation||'Staff'} · PIN: ${s.pin ? '****' : '⚠ not set'}</div>
+          </div>
+          <button onclick="removeStaff('${s.id}','${s.name}')"
+            style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:17px;padding:4px">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>`).join('')}
+    </div>` : '';
+
+  el.innerHTML = renderGroup('Owner', owners) + renderGroup('Staff', staff);
 }
 
-window.deleteStaff = async id => {
-  if (!confirm('Remove this staff member?')) return;
-  await supabase.from('staff').delete().eq('id', id);
+window.removeStaff = async (id, name) => {
+  if (!confirm(`Remove ${name} from the team?`)) return;
+  await sb.from('staff').delete().eq('id', id);
   loadStaffList();
 };
 
-// ---- New staff PIN entry ----
+// ---- PIN input for new staff ----
 let newPin = '';
 window.npKey = d => {
   if (newPin.length >= 4) return;
   newPin += d;
-  updateNpDisplay();
+  renderNewPin();
 };
-window.npDel = () => { newPin = newPin.slice(0,-1); updateNpDisplay(); };
-function updateNpDisplay() {
+window.npDel = () => { newPin = newPin.slice(0,-1); renderNewPin(); };
+function renderNewPin() {
   for (let i=0;i<4;i++) {
-    document.getElementById('np'+i).textContent = i < newPin.length ? '•' : '';
+    const el = document.getElementById('np'+i);
+    el.textContent = i < newPin.length ? '•' : '';
+    el.style.borderColor = i < newPin.length ? '#993C1D' : 'rgba(0,0,0,0.15)';
+    el.style.background = i < newPin.length ? '#FAECE7' : '#fff';
   }
 }
 
 // ---- Add staff ----
 window.addStaff = async () => {
-  const name = document.getElementById('new-staff-name').value.trim();
-  const role = document.getElementById('new-staff-role').value;
-  const email = document.getElementById('new-staff-email').value.trim();
-  const errEl = document.getElementById('staff-add-err');
-  errEl.style.display='none';
+  const name = document.getElementById('ns-name').value.trim();
+  const role = document.getElementById('ns-role').value;
+  const msg = document.getElementById('ns-msg');
+  msg.style.display = 'none';
 
-  if (!name) { errEl.textContent='Enter a name'; errEl.style.display='block'; return; }
-  if (!email) { errEl.textContent='Enter an email address'; errEl.style.display='block'; return; }
-  if (newPin.length !== 4) { errEl.textContent='Set a 4-digit PIN'; errEl.style.display='block'; return; }
+  if (!name) { msg.textContent='Enter a name'; msg.style.color='#A32D2D'; msg.style.display='block'; return; }
+  if (newPin.length !== 4) { msg.textContent='Enter a 4-digit PIN'; msg.style.color='#A32D2D'; msg.style.display='block'; return; }
 
-  // Insert into staff table
-  const { data: staffRow, error: staffErr } = await supabase.from('staff').insert({
-    name, designation: role, email, pin: newPin
-  }).select().single();
+  const { error } = await sb.from('staff').insert({
+    name, designation: role, pin: newPin
+  });
 
-  if (staffErr) { errEl.textContent='Error: '+staffErr.message; errEl.style.display='block'; return; }
+  if (error) {
+    msg.textContent = 'Error: ' + error.message;
+    msg.style.color = '#A32D2D';
+    msg.style.display = 'block';
+    return;
+  }
 
-  // Create Supabase auth user for them
-  // Note: This uses admin invite — works if your Supabase project allows it
-  // The password is deterministic: BC_{pin}_{staff_id}
-  // Staff can only log in via PIN on the login screen
-  const deterministicPw = `BC_${newPin}_${staffRow.id}`;
-  const { error: authErr } = await supabase.auth.admin?.createUser({
-    email, password: deterministicPw,
-    user_metadata: { role: role==='Owner'?'owner':'staff', name }
-  }).catch(()=>({error:{message:'Auth user creation skipped — add manually in Supabase Auth'}})) || {};
-
-  // Reset form
-  document.getElementById('new-staff-name').value='';
-  document.getElementById('new-staff-email').value='';
-  newPin=''; updateNpDisplay();
-
-  errEl.textContent = authErr
-    ? `Staff added! Also create login in Supabase Auth → Users → Invite (email: ${email}, pw: ${deterministicPw})`
-    : 'Staff member added successfully!';
-  errEl.style.cssText='font-size:13px;color:#3B6D11;margin-bottom:8px;display:block';
+  // Reset
+  document.getElementById('ns-name').value = '';
+  newPin = ''; renderNewPin();
+  msg.textContent = `${name} added successfully ✓`;
+  msg.style.color = '#3B6D11';
+  msg.style.display = 'block';
   loadStaffList();
 };
 </script>
+</body>
+</html>
