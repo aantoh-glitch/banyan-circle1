@@ -501,13 +501,13 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Auth guard — owner only
+// Auth guard — check localStorage first (PIN login), then Supabase session
+const localUser = JSON.parse(localStorage.getItem('bc_user') || 'null');
 const { data: { user } } = await sb.auth.getUser();
-const localUser = JSON.parse(localStorage.getItem('bc_user')||'{}');
-if (!user && localUser.role !== 'owner') { window.location.href = '/login.html'; }
+if (!localUser && !user) { window.location.href = '/login.html'; }
+if (localUser && localUser.role !== 'owner') { window.location.href = '/index.html'; }
 
-// Get owner name
-const ownerName = localUser.name || user?.user_metadata?.name || 'Owner';
+const ownerName = localUser?.name || user?.user_metadata?.name || 'Owner';
 
 // Add floating "Manage team" button
 const fab = document.createElement('button');

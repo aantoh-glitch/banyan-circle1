@@ -245,11 +245,16 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Redirect if already logged in
-const { data: { user } } = await sb.auth.getUser();
-if (user) {
-  const role = user.user_metadata?.role;
-  window.location.href = role === 'owner' ? '/owner.html' : '/index.html';
+// Redirect if already logged in via localStorage (PIN) or Supabase session
+const localUser = JSON.parse(localStorage.getItem('bc_user') || 'null');
+if (localUser) {
+  window.location.href = localUser.role === 'owner' ? '/owner.html' : '/index.html';
+} else {
+  const { data: { user } } = await sb.auth.getUser();
+  if (user) {
+    const role = user.user_metadata?.role;
+    window.location.href = role === 'owner' ? '/owner.html' : '/index.html';
+  }
 }
 
 // ---- Screen routing ----
@@ -426,7 +431,7 @@ window.guestEnter = () => {
     err.style.display = 'block'; return;
   }
   err.style.display = 'none';
-  sessionStorage.setItem('guest', JSON.stringify({
+  localStorage.setItem('bc_guest', JSON.stringify({
     name, phone: document.getElementById('g-phone').value, prop
   }));
   window.location.href = '/guest.html';

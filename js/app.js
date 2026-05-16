@@ -113,7 +113,7 @@ window.nav = (id, btn) => {
 };
 window.toggleForm = id => { const el = document.getElementById(id); el.style.display = el.style.display === 'none' ? 'block' : 'none'; };
 window.chip = (el, gId) => { document.getElementById(gId).querySelectorAll('.chip').forEach(c => c.classList.remove('on')); el.classList.add('on'); };
-window.doSignOut = async () => { if (confirm('Sign out?')) { await supabase.auth.signOut(); window.location.href = '/login.html'; } };
+window.doSignOut = async () => { if (confirm('Sign out?')) { await supabase.auth.signOut(); localStorage.removeItem('bc_user'); window.location.href = '/login.html'; } };
 
 // ---- DASHBOARD ----
 async function loadDashboard() {

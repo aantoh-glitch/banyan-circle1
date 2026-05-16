@@ -277,7 +277,7 @@ const sb = createClient(
 );
 
 // Load guest from session
-const guest = JSON.parse(sessionStorage.getItem('guest') || '{}');
+const guest = JSON.parse(localStorage.getItem('bc_guest') || '{}');
 if (!guest.name) { window.location.href = '/login.html'; }
 
 // Populate header and welcome
@@ -366,6 +366,7 @@ window.submitComplaint = async () => {
   // Trigger real-time notification to staff (Supabase real-time handles this automatically
   // since staff app subscribes to guest_complaints INSERT events)
 
+  localStorage.removeItem('bc_guest');
   show('s-comp-success');
 };
 
@@ -399,6 +400,7 @@ window.submitFeedback = async () => {
   btn.innerHTML = '<i class="ti ti-heart"></i> Submit feedback';
 
   if (error) { console.error(error); }
+  localStorage.removeItem('bc_guest');
   show('s-fb-success');
 };
 </script>
