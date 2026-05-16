@@ -219,10 +219,16 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script type="module">
-    import { supabase, getUser } from './js/supabase.js';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const supabase = createClient(
+      'https://wwdnuajhqfajvsexszpy.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
+    );
 
-    const user = await getUser();
-    if (!user) { window.location.href = '/login.html'; }
+    // Auth guard — localStorage only
+    const localUser = JSON.parse(localStorage.getItem('bc_user') || 'null');
+    if (!localUser) { window.location.href = '/login.html'; throw new Error('no user'); }
+    if (localUser.role !== 'owner') { window.location.href = '/index.html'; throw new Error('not owner'); }
 
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -425,89 +431,9 @@
     loadStaff();
     loadLaundrySpend();
     loadActivity();
-  </script>
-</body>
-</html>
-<!-- Staff management panel -->
-<div id="staff-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center">
-  <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto">
-    <div style="width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.1);margin:0 auto 20px"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-family:'Playfair Display',serif;font-size:20px;color:#2C2C2A">Manage team</div>
-      <button onclick="closeStaffPanel()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#5F5E5A;line-height:1">×</button>
-    </div>
+  
 
-    <!-- Current staff list -->
-    <div id="staff-mgmt-list" style="margin-bottom:20px"></div>
-
-    <!-- Add new staff form -->
-    <div style="background:#F9F8F6;border-radius:14px;padding:18px;border:1px solid rgba(0,0,0,0.07)">
-      <div style="font-size:12px;font-weight:500;color:#5F5E5A;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Add team member</div>
-
-      <div style="margin-bottom:12px">
-        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Full name</label>
-        <input type="text" id="ns-name" placeholder="e.g. Priya Kumar"
-          style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A"/>
-      </div>
-
-      <div style="margin-bottom:16px">
-        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Role</label>
-        <select id="ns-role"
-          style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A;appearance:none">
-          <option>Homekeeper</option>
-          <option>Relationship Manager</option>
-          <option>Guest Experience Coordinator</option>
-          <option>Owner</option>
-        </select>
-      </div>
-
-      <div style="margin-bottom:16px">
-        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:10px">4-digit PIN for login</label>
-        <div style="display:flex;gap:10px;justify-content:flex-start;margin-bottom:12px">
-          <div id="np0" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
-          <div id="np1" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
-          <div id="np2" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
-          <div id="np3" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:210px">
-          <button onclick="npKey('1')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">1</button>
-          <button onclick="npKey('2')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">2</button>
-          <button onclick="npKey('3')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">3</button>
-          <button onclick="npKey('4')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">4</button>
-          <button onclick="npKey('5')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">5</button>
-          <button onclick="npKey('6')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">6</button>
-          <button onclick="npKey('7')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">7</button>
-          <button onclick="npKey('8')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">8</button>
-          <button onclick="npKey('9')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">9</button>
-          <div></div>
-          <button onclick="npKey('0')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">0</button>
-          <button onclick="npDel()" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:17px;cursor:pointer;font-family:inherit;color:#5F5E5A">⌫</button>
-        </div>
-      </div>
-
-      <div id="ns-msg" style="font-size:13px;margin-bottom:10px;display:none"></div>
-      <button onclick="addStaff()"
-        style="width:100%;padding:13px;background:#993C1D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
-        <i class="ti ti-user-plus"></i> Add team member
-      </button>
-    </div>
-  </div>
-</div>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const sb = createClient(
-  'https://wwdnuajhqfajvsexszpy.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
-);
-
-// Auth guard — PIN login only uses localStorage
-const localUser = JSON.parse(localStorage.getItem('bc_user') || 'null');
-if (!localUser) { window.location.href = '/login.html'; throw new Error('Not logged in'); }
-if (localUser.role !== 'owner') { window.location.href = '/index.html'; throw new Error('Not owner'); }
-
-const ownerName = localUser.name || 'Owner';
-
+// ---- STAFF MANAGEMENT ----
 // Add floating "Manage team" button
 const fab = document.createElement('button');
 fab.innerHTML = '<i class="ti ti-users"></i> Manage team';
@@ -627,6 +553,76 @@ window.addStaff = async () => {
   msg.style.display = 'block';
   loadStaffList();
 };
+
 </script>
+</body>
+</html>
+<!-- Staff management panel -->
+<div id="staff-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto">
+    <div style="width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.1);margin:0 auto 20px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'Playfair Display',serif;font-size:20px;color:#2C2C2A">Manage team</div>
+      <button onclick="closeStaffPanel()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#5F5E5A;line-height:1">×</button>
+    </div>
+
+    <!-- Current staff list -->
+    <div id="staff-mgmt-list" style="margin-bottom:20px"></div>
+
+    <!-- Add new staff form -->
+    <div style="background:#F9F8F6;border-radius:14px;padding:18px;border:1px solid rgba(0,0,0,0.07)">
+      <div style="font-size:12px;font-weight:500;color:#5F5E5A;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px">Add team member</div>
+
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Full name</label>
+        <input type="text" id="ns-name" placeholder="e.g. Priya Kumar"
+          style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A"/>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:5px">Role</label>
+        <select id="ns-role"
+          style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A;appearance:none">
+          <option>Homekeeper</option>
+          <option>Relationship Manager</option>
+          <option>Guest Experience Coordinator</option>
+          <option>Owner</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:10px">4-digit PIN for login</label>
+        <div style="display:flex;gap:10px;justify-content:flex-start;margin-bottom:12px">
+          <div id="np0" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+          <div id="np1" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+          <div id="np2" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+          <div id="np3" style="width:48px;height:56px;border:1.5px solid rgba(0,0,0,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#2C2C2A;background:#fff;font-weight:500"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:210px">
+          <button onclick="npKey('1')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">1</button>
+          <button onclick="npKey('2')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">2</button>
+          <button onclick="npKey('3')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">3</button>
+          <button onclick="npKey('4')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">4</button>
+          <button onclick="npKey('5')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">5</button>
+          <button onclick="npKey('6')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">6</button>
+          <button onclick="npKey('7')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">7</button>
+          <button onclick="npKey('8')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">8</button>
+          <button onclick="npKey('9')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">9</button>
+          <div></div>
+          <button onclick="npKey('0')" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:20px;cursor:pointer;font-family:inherit;color:#2C2C2A">0</button>
+          <button onclick="npDel()" style="height:48px;border-radius:10px;border:1px solid rgba(0,0,0,0.1);background:#fff;font-size:17px;cursor:pointer;font-family:inherit;color:#5F5E5A">⌫</button>
+        </div>
+      </div>
+
+      <div id="ns-msg" style="font-size:13px;margin-bottom:10px;display:none"></div>
+      <button onclick="addStaff()"
+        style="width:100%;padding:13px;background:#993C1D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="ti ti-user-plus"></i> Add team member
+      </button>
+    </div>
+  </div>
+</div>
+
+
 </body>
 </html>
