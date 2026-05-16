@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Banyan Circle — Share your experience</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--br-m:#D85A30;--br-d:#712B13;--g:#3B6D11;--g-l:#EAF3DE;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.shell{max-width:430px;margin:0 auto;padding:0 0 60px}
+.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;text-align:center;position:sticky;top:0;z-index:10}
+.hdr-mark{width:34px;height:34px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
+.hdr-mark i{color:#fff;font-size:16px}
+.hdr-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--text)}
+.hdr-sub{font-size:11px;color:var(--muted)}
+.hero{background:var(--br);color:#fff;padding:28px 20px;text-align:center}
+.hero-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
+.hero-sub{font-size:13px;opacity:.85}
+.section{padding:16px}
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:18px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);transition:border-color .15s;appearance:none}
+.fc:focus{outline:none;border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:80px}
+.rating-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.rating-row:last-child{border-bottom:none}
+.rating-label{font-size:13px;color:var(--text)}
+.stars{display:flex;gap:4px}
+.star{font-size:24px;color:var(--border);cursor:pointer;transition:color .1s;line-height:1}
+.star.on{color:#EF9F27}
+.chip-g{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:7px 15px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--text);transition:all .15s;font-family:inherit}
+.chip.on{background:var(--br-l);border-color:var(--br-m);color:var(--br-d);font-weight:500}
+.chip.green.on{background:var(--g-l);border-color:var(--g);color:var(--g)}
+.btn{width:100%;padding:14px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
+.btn:hover{opacity:.9}
+.success{display:none;text-align:center;padding:40px 20px}
+.success-icon{width:64px;height:64px;background:var(--g-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.success-icon i{font-size:30px;color:var(--g)}
+.success-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--text);margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hdr">
+    <div class="hdr-mark"><i class="ti ti-tree"></i></div>
+    <div class="hdr-title">Banyan Circle</div>
+    <div class="hdr-sub" id="guest-greeting">Moments & Memories</div>
+  </div>
+
+  <div id="form-wrap">
+    <div class="hero">
+      <div class="hero-title">How was your stay?</div>
+      <div class="hero-sub">Your feedback shapes every future experience</div>
+    </div>
+
+    <div class="section">
+      <!-- Overall experience -->
+      <div class="card">
+        <div class="card-title">Overall experience</div>
+        <div class="fg">
+          <div class="chip-g" id="overall-chips">
+            <div class="chip" onclick="chip(this,'overall-chips')">✨ Exceptional</div>
+            <div class="chip" onclick="chip(this,'overall-chips')">💛 Memorable</div>
+            <div class="chip" onclick="chip(this,'overall-chips')">😊 Comfortable</div>
+            <div class="chip" onclick="chip(this,'overall-chips')">💬 Could be better</div>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">What did you enjoy most?</label>
+          <textarea class="fc" id="enjoyed" placeholder="Tell us what made your stay special…"></textarea>
+        </div>
+      </div>
+
+      <!-- Ratings -->
+      <div class="card">
+        <div class="card-title">Rate your experience</div>
+        <div class="rating-row"><div class="rating-label">Arrival & welcome</div><div class="stars" data-key="arrival"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+        <div class="rating-row"><div class="rating-label">Cleanliness</div><div class="stars" data-key="cleanliness"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+        <div class="rating-row"><div class="rating-label">Hospitality</div><div class="stars" data-key="hospitality"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+        <div class="rating-row"><div class="rating-label">Food & beverage</div><div class="stars" data-key="food"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+        <div class="rating-row"><div class="rating-label">Design & spaces</div><div class="stars" data-key="design"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+        <div class="rating-row"><div class="rating-label">Location</div><div class="stars" data-key="location"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+        <div class="rating-row"><div class="rating-label">Homekeeper</div><div class="stars" data-key="homekeeper"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="card">
+        <div class="card-title">A little more</div>
+        <div class="fg">
+          <label class="fl">Anything we missed or could improve?</label>
+          <textarea class="fc" id="missing" placeholder="We genuinely want to know…"></textarea>
+        </div>
+        <div class="fg">
+          <label class="fl">Would you return to Banyan Circle?</label>
+          <div class="chip-g" id="return-chips">
+            <div class="chip green" onclick="chip(this,'return-chips')">Without a doubt</div>
+            <div class="chip" onclick="chip(this,'return-chips')">Possibly</div>
+            <div class="chip" onclick="chip(this,'return-chips')">Unlikely</div>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">A note for the team (optional)</label>
+          <textarea class="fc" id="note" placeholder="Leave a personal message for the Banyan Circle team…"></textarea>
+        </div>
+      </div>
+
+      <button class="btn" onclick="submitFeedback()"><i class="ti ti-send"></i> Submit feedback</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="success" id="success-wrap">
+    <div class="success-icon"><i class="ti ti-heart"></i></div>
+    <div class="success-title">Thank you</div>
+    <div class="success-sub">Your feedback means the world to us.<br>We look forward to welcoming you back to Banyan Circle.</div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const supabase = createClient(
+  'https://wwdnuajhqfajvsexszpy.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
+);
+
+const guest = JSON.parse(sessionStorage.getItem('guest') || '{}');
+if (guest.name) document.getElementById('guest-greeting').textContent = 'Hello, ' + guest.name + ' 👋';
+
+// Star ratings
+const ratings = {};
+document.querySelectorAll('.stars').forEach(group => {
+  const key = group.dataset.key;
+  ratings[key] = 0;
+  group.querySelectorAll('.star').forEach((star, i) => {
+    star.addEventListener('click', () => {
+      ratings[key] = i + 1;
+      group.querySelectorAll('.star').forEach((s, j) => s.classList.toggle('on', j <= i));
+    });
+    star.addEventListener('mouseover', () => {
+      group.querySelectorAll('.star').forEach((s, j) => s.classList.toggle('on', j <= i));
+    });
+    star.addEventListener('mouseout', () => {
+      group.querySelectorAll('.star').forEach((s, j) => s.classList.toggle('on', j < ratings[key]));
+    });
+  });
+});
+
+window.chip = (el, gId) => {
+  document.getElementById(gId).querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+};
+
+window.submitFeedback = async () => {
+  const overall = document.querySelector('#overall-chips .chip.on')?.textContent;
+  const wouldReturn = document.querySelector('#return-chips .chip.on')?.textContent;
+  const { error } = await supabase.from('guest_feedback').insert({
+    guest_name: guest.name || null,
+    guest_phone: guest.phone || null,
+    overall_experience: overall || null,
+    enjoyed_most: document.getElementById('enjoyed').value || null,
+    arrival_rating: ratings.arrival || null,
+    cleanliness_rating: ratings.cleanliness || null,
+    hospitality_rating: ratings.hospitality || null,
+    food_rating: ratings.food || null,
+    design_rating: ratings.design || null,
+    location_rating: ratings.location || null,
+    homekeeper_rating: ratings.homekeeper || null,
+    missing_or_feedback: document.getElementById('missing').value || null,
+    would_return: wouldReturn || null,
+    note: document.getElementById('note').value || null,
+  });
+  document.getElementById('form-wrap').style.display = 'none';
+  document.getElementById('success-wrap').style.display = 'block';
+};
+</script>
+</body>
+</html>

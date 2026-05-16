@@ -274,3 +274,71 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 /* ---- Owner dashboard (desktop-friendly) ---- */
 .owner-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 @media (min-width: 600px) { .owner-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+
+/* ---- PWA / Task additions ---- */
+.install-banner{background:#993C1D;color:#fff;padding:12px 16px;display:none;align-items:center;gap:12px}
+.install-banner.show{display:flex}
+.install-banner p{flex:1;font-size:13px}
+.install-btn{padding:7px 14px;background:#fff;color:#993C1D;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0}
+.install-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;flex-shrink:0;line-height:1}
+
+.hdr-right{display:flex;align-items:center;gap:8px}
+.notif-btn{width:34px;height:34px;border-radius:50%;background:var(--color-background-secondary,#F1EFE8);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative}
+.notif-btn i{font-size:18px;color:#5F5E5A}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#993C1D;border:2px solid #fff;display:none}
+.notif-dot.show{display:block}
+
+.notif-panel{position:fixed;top:61px;right:0;width:min(320px,100vw);background:#fff;border-left:1px solid rgba(0,0,0,.1);border-bottom:1px solid rgba(0,0,0,.1);border-radius:0 0 0 12px;z-index:300;display:none;max-height:60vh;overflow-y:auto}
+.notif-panel.open{display:block}
+.notif-hdr{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.1);font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between}
+.notif-hdr button{background:none;border:none;font-size:12px;color:#5F5E5A;cursor:pointer}
+.notif-item{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.1);cursor:pointer}
+.notif-item:last-child{border-bottom:none}
+.notif-title{font-size:13px;font-weight:500}
+.notif-body{font-size:12px;color:#5F5E5A;margin-top:2px}
+.notif-time{font-size:11px;color:#5F5E5A;margin-top:3px}
+.notif-empty{padding:24px;text-align:center;font-size:13px;color:#5F5E5A}
+
+/* Task cards with status */
+.task-card{background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,.1);margin-bottom:10px;overflow:hidden}
+.task-card-hdr{display:flex;align-items:center;gap:10px;padding:13px 14px}
+.task-chk{width:22px;height:22px;border-radius:5px;border:1.5px solid rgba(0,0,0,.15);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.task-chk i{font-size:12px;display:none}
+.chk-done{background:#3B6D11;border-color:#3B6D11}
+.chk-done i{color:#fff;display:block}
+.chk-prog{background:#FAEEDA;border-color:#854F0B}
+.task-body{flex:1}
+.task-name{font-size:14px;font-weight:500}
+.task-meta{font-size:12px;color:#5F5E5A;margin-top:2px}
+.task-actions{border-top:1px solid rgba(0,0,0,.08);padding:10px 14px;display:flex;align-items:center;gap:6px;background:#F9F8F6;flex-wrap:wrap}
+.status-btn{padding:5px 10px;border-radius:999px;font-size:11px;font-weight:500;border:1px solid rgba(0,0,0,.1);cursor:pointer;font-family:inherit;background:#fff;color:#2C2C2A;display:flex;align-items:center;gap:3px;transition:all .15s}
+.s-ns{background:#F1EFE8;border-color:#888780;color:#444}
+.s-ip{background:#FAEEDA;border-color:#854F0B;color:#854F0B}
+.s-dn{background:#EAF3DE;border-color:#3B6D11;color:#3B6D11}
+.photo-btn{margin-left:auto;width:32px;height:32px;border-radius:7px;border:1px dashed rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;flex-shrink:0}
+.photo-btn i{font-size:15px;color:#5F5E5A}
+.photo-uploaded{border-style:solid;border-color:#3B6D11;background:#EAF3DE}
+.photo-uploaded i{color:#3B6D11}
+.task-photo-preview{width:100%;max-height:180px;object-fit:cover;border-top:1px solid rgba(0,0,0,.08)}
+
+.empty-msg{font-size:13px;color:#5F5E5A;text-align:center;padding:20px 0}
+.loading-txt{font-size:13px;color:#5F5E5A;text-align:center;padding:20px 0}
+
+/* Stat colors */
+.st-br{background:#FAECE7}
+.st-g{background:#EAF3DE}
+.st-a{background:#FAEEDA}
+.st-b{background:#E6F1FB}
+.bdg-br{background:#FAECE7;color:#712B13}
+.bdg-b{background:#E6F1FB;color:#0C447C}
+.bdg-g{background:#EAF3DE;color:#27500A}
+.bdg-a{background:#FAEEDA;color:#633806}
+.bdg-r{background:#FCEBEB;color:#791F1F}
+.bdg-muted{background:#F1EFE8;color:#5F5E5A}
+
+.upload-zone{border:1.5px dashed rgba(0,0,0,.12);border-radius:9px;padding:18px;text-align:center;cursor:pointer}
+.upload-zone i{font-size:26px;color:#5F5E5A}
+.upload-zone p{font-size:13px;color:#5F5E5A;margin-top:6px}
+
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;z-index:1000;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}

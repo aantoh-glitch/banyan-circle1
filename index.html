@@ -1,1204 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Banyan Circle — Ops</title>
-  <link rel="stylesheet" href="css/app.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Banyan Circle — Ops</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#993C1D"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Banyan Circle"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/app.css"/>
 </head>
 <body>
 <div id="toast"></div>
-
-<div class="app-shell">
-
-  <!-- Header -->
-  <header class="app-header">
-    <div class="header-brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
-      </div>
-      <div>
-        <div class="brand-name">Banyan Circle</div>
-        <div class="brand-sub" id="headerDate">Loading…</div>
-      </div>
+<div class="install-banner" id="install-banner">
+  <p>Install Banyan Circle on your home screen</p>
+  <button class="install-btn" id="install-btn">Install</button>
+  <button class="install-close" onclick="document.getElementById('install-banner').classList.remove('show')">×</button>
+</div>
+<div class="shell">
+  <header class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-mark"><i class="ti ti-tree"></i></div>
+      <div><div class="hdr-title">Banyan Circle</div><div class="hdr-sub" id="hdr-date">Operations</div></div>
     </div>
-    <button class="header-user" id="userBtn" title="Sign out">BC</button>
+    <div class="hdr-right">
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">
+        <i class="ti ti-bell"></i><div class="notif-dot" id="notif-dot"></div>
+      </button>
+      <button class="hdr-av" id="user-av" onclick="doSignOut()">BC</button>
+    </div>
   </header>
-
-  <!-- Pages -->
-  <main style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
-
-    <!-- HOME / DASHBOARD -->
-    <section class="page active" id="page-home">
-      <p class="page-sub">Good morning. Here's today at a glance.</p>
-      <div class="stat-grid">
-        <div class="stat-tile green">
-          <div class="stat-label">Staff present</div>
-          <div class="stat-value" id="dash-staff">—</div>
-          <div class="stat-hint" id="dash-staff-hint">Loading…</div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-label">Active bookings</div>
-          <div class="stat-value" id="dash-bookings">—</div>
-          <div class="stat-hint" id="dash-bookings-hint">Loading…</div>
-        </div>
-        <div class="stat-tile amber">
-          <div class="stat-label">Tasks pending</div>
-          <div class="stat-value" id="dash-tasks">—</div>
-          <div class="stat-hint">Housekeeping</div>
-        </div>
-        <div class="stat-tile blue">
-          <div class="stat-label">Open complaints</div>
-          <div class="stat-value" id="dash-complaints">—</div>
-          <div class="stat-hint" id="dash-comp-hint">Loading…</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Today's checkouts</div>
-        <div id="dash-checkouts"><div class="spinner"></div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Laundry in progress</div>
-        <div id="dash-laundry"><div class="spinner"></div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Recent activity</div>
-        <div id="dash-activity"><div class="spinner"></div></div>
-      </div>
-    </section>
-
-    <!-- ATTENDANCE -->
-    <section class="page" id="page-attendance">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Attendance</p>
-          <p class="page-sub" style="margin-bottom:0">Today — <span id="att-date">—</span></p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('att-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Log
-        </button>
-      </div>
-      <div id="att-list"><div class="spinner"></div></div>
-    </section>
-
-    <!-- HOUSEKEEPING -->
-    <section class="page" id="page-housekeeping">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Housekeeping</p>
-          <p class="page-sub" style="margin-bottom:0">Tasks &amp; photo checks</p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('hk-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add task
-        </button>
-      </div>
-      <div class="type-tabs">
-        <div class="type-tab active" onclick="filterHK(this,'post_checkout')">Post-checkout</div>
-        <div class="type-tab" onclick="filterHK(this,'regular')">Regular</div>
-        <div class="type-tab" onclick="filterHK(this,'pre_checkin')">Pre-checkin</div>
-      </div>
-      <div id="hk-list"><div class="spinner"></div></div>
-    </section>
-
-    <!-- BOOKINGS -->
-    <section class="page" id="page-bookings">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Bookings</p>
-          <p class="page-sub" style="margin-bottom:0">All channels</p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('bk-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Manual
-        </button>
-      </div>
-      <div class="cal-strip" id="bk-cal"></div>
-      <div class="card" style="margin-bottom:10px;padding:10px 14px;">
-        <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--bc-green);display:inline-block;"></span>
-          Airbnb iCal &nbsp;·&nbsp;
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--bc-blue);display:inline-block;"></span>
-          Booking.com iCal &nbsp;·&nbsp;
-          <span style="color:var(--bc-muted);" id="sync-time">Syncing…</span>
-        </div>
-      </div>
-      <div id="bk-list"><div class="spinner"></div></div>
-    </section>
-
-    <!-- LAUNDRY -->
-    <section class="page" id="page-laundry">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Laundry</p>
-          <p class="page-sub" style="margin-bottom:0">Movement &amp; return log</p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('lm-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Log send
-        </button>
-      </div>
-      <div id="laundry-list"><div class="spinner"></div></div>
-    </section>
-
-    <!-- GUESTS (complaints + feedback) -->
-    <section class="page" id="page-guests">
-      <p class="page-title">Guest interactions</p>
-      <p class="page-sub">Complaints &amp; feedback</p>
-
-      <div class="section-header">
-        <div class="section-title">Open complaints</div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('comp-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Log
-        </button>
-      </div>
-      <div class="card" id="complaints-open"><div class="spinner"></div></div>
-
-      <div class="section-header" style="margin-top:8px;">
-        <div class="section-title">Feedback summary</div>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-tile green">
-          <div class="stat-label">Avg rating</div>
-          <div class="stat-value" id="fb-avg">—</div>
-          <div class="stat-hint">out of 5</div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-label">Return intent</div>
-          <div class="stat-value" id="fb-return">—</div>
-          <div class="stat-hint">would come back</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ASSETS -->
-    <section class="page" id="page-assets">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Assets</p>
-          <p class="page-sub" style="margin-bottom:0">Register &amp; movement</p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('asset-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add
-        </button>
-      </div>
-      <div class="form-group">
-        <select class="form-control" onchange="filterAssets(this.value)">
-          <option value="">All properties</option>
-          <option value="Villa 21">Villa 21</option>
-          <option value="19A Link Heritage">19A Link Heritage</option>
-        </select>
-      </div>
-      <div id="assets-list"><div class="spinner"></div></div>
-    </section>
-
-    <!-- LOST & FOUND -->
-    <section class="page" id="page-lostandfound">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Lost &amp; Found</p>
-          <p class="page-sub" style="margin-bottom:0">Item tracking</p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('lf-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Log item
-        </button>
-      </div>
-      <div id="lf-list"><div class="spinner"></div></div>
-    </section>
-
-    <!-- COMMUNITY -->
-    <section class="page" id="page-community">
-      <div class="section-header">
-        <div>
-          <p class="page-title">Banyan Circle</p>
-          <p class="page-sub" style="margin-bottom:0">Talent community</p>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="openSheet('cm-sheet')">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add talent
-        </button>
-      </div>
-      <div class="chip-group" style="margin-bottom:14px;" id="cat-filter">
-        <div class="chip selected" onclick="filterCommunity(this,'')">All</div>
-        <div class="chip" onclick="filterCommunity(this,'Yoga')">Yoga</div>
-        <div class="chip" onclick="filterCommunity(this,'Art')">Art</div>
-        <div class="chip" onclick="filterCommunity(this,'Music')">Music</div>
-        <div class="chip" onclick="filterCommunity(this,'Food')">Food</div>
-        <div class="chip" onclick="filterCommunity(this,'Wellness')">Wellness</div>
-        <div class="chip" onclick="filterCommunity(this,'Healing')">Healing</div>
-        <div class="chip" onclick="filterCommunity(this,'Dance')">Dance</div>
-        <div class="chip" onclick="filterCommunity(this,'Pottery')">Pottery</div>
-      </div>
-      <div id="community-list"><div class="spinner"></div></div>
-    </section>
-
-  </main>
-
-  <!-- Bottom Nav -->
-  <nav class="app-nav">
-    <button class="nav-item active" onclick="goTo('home',this)">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      Home
-    </button>
-    <button class="nav-item" onclick="goTo('attendance',this)">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Staff
-    </button>
-    <button class="nav-item" onclick="goTo('housekeeping',this)">
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      Tasks
-    </button>
-    <button class="nav-item" onclick="goTo('bookings',this)">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Bookings
-    </button>
-    <button class="nav-item" onclick="goTo('guests',this)">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Guests
-    </button>
-    <button class="nav-item" onclick="goTo('assets',this)">
-      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      Assets
-    </button>
-    <button class="nav-item" onclick="goTo('lostandfound',this)">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      L&amp;F
-    </button>
-    <button class="nav-item" onclick="goTo('community',this)">
-      <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-      Circle
-    </button>
+  <div class="notif-panel" id="notif-panel">
+    <div class="notif-hdr"><span>Notifications</span><button onclick="clearNotifs()">Clear all</button></div>
+    <div id="notif-list"><div class="notif-empty">No notifications yet</div></div>
+  </div>
+  <nav class="nav">
+    <button class="nb on" onclick="nav('home',this)"><i class="ti ti-layout-dashboard"></i>Home</button>
+    <button class="nb" onclick="nav('att',this)"><i class="ti ti-users"></i>Staff</button>
+    <button class="nb" onclick="nav('hk',this)"><i class="ti ti-checklist"></i>Tasks</button>
+    <button class="nb" onclick="nav('guestlist',this)"><i class="ti ti-user-heart"></i>Guests</button>
+    <button class="nb" onclick="nav('bk',this)"><i class="ti ti-calendar"></i>Bookings</button>
+    <button class="nb" onclick="nav('laundry',this)"><i class="ti ti-wash"></i>Laundry</button>
+    <button class="nb" onclick="nav('complaints',this)"><i class="ti ti-message-circle"></i>Complaints</button>
+    <button class="nb" onclick="nav('assets',this)"><i class="ti ti-package"></i>Assets</button>
+    <button class="nb" onclick="nav('lf',this)"><i class="ti ti-search"></i>L&F</button>
+    <button class="nb" onclick="nav('community',this)"><i class="ti ti-sparkles"></i>Circle</button>
   </nav>
-</div>
 
-<!-- ============ BOTTOM SHEETS ============ -->
-
-<!-- Attendance sheet -->
-<div class="sheet-overlay" id="att-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Log attendance</div>
-    <form id="att-form">
-      <div class="form-group">
-        <label class="form-label">Name <span class="req">*</span></label>
-        <select class="form-control" id="att-staff" required></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="att-prop" required></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Status <span class="req">*</span></label>
-        <div class="chip-group" id="att-status-chips">
-          <div class="chip" onclick="selectChip(this,'att-status-chips')">Present</div>
-          <div class="chip" onclick="selectChip(this,'att-status-chips')">Half day</div>
-          <div class="chip" onclick="selectChip(this,'att-status-chips')">Leave</div>
-          <div class="chip" onclick="selectChip(this,'att-status-chips')">Sick leave</div>
-          <div class="chip" onclick="selectChip(this,'att-status-chips')">Off</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group">
-          <label class="form-label">Duty starts</label>
-          <input type="time" class="form-control" id="att-start" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Duty ends</label>
-          <input type="time" class="form-control" id="att-end" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Remarks</label>
-        <textarea class="form-control" id="att-remarks" placeholder="Optional notes…"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('att-sheet')">Cancel</button>
-    </form>
+  <!-- HOME -->
+  <div class="page on" id="p-home">
+    <div class="sg">
+      <div class="st st-g"><div class="st-l">Staff present</div><div class="st-v" id="d-staff">—</div><div class="st-h" id="d-staff-h">Loading</div></div>
+      <div class="st st-br"><div class="st-l">Active bookings</div><div class="st-v" id="d-bk">—</div><div class="st-h">Today</div></div>
+      <div class="st st-a"><div class="st-l">Pending tasks</div><div class="st-v" id="d-tasks">—</div><div class="st-h">Today</div></div>
+      <div class="st st-b"><div class="st-l">Open complaints</div><div class="st-v" id="d-comp">—</div><div class="st-h" id="d-comp-h">Loading</div></div>
+    </div>
+    <div class="card"><div class="card-ttl">Today's checkouts</div><div id="d-checkouts"><div class="loading-txt">Loading…</div></div></div>
+    <div class="card"><div class="card-ttl">My tasks today</div><div id="d-mytasks"><div class="loading-txt">Loading…</div></div></div>
   </div>
-</div>
 
-<!-- Housekeeping sheet -->
-<div class="sheet-overlay" id="hk-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Add housekeeping task</div>
-    <form id="hk-form">
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="hk-prop" required></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Task type <span class="req">*</span></label>
-        <div class="chip-group" id="hk-type-chips">
-          <div class="chip" onclick="selectChip(this,'hk-type-chips')">Post-checkout</div>
-          <div class="chip" onclick="selectChip(this,'hk-type-chips')">Regular</div>
-          <div class="chip" onclick="selectChip(this,'hk-type-chips')">Pre-checkin</div>
+  <!-- ATTENDANCE -->
+  <div class="page" id="p-att">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Attendance</div><div class="pg-sub" id="att-date">Today</div></div>
+      <button class="btn-sm" onclick="toggleForm('att-form')"><i class="ti ti-plus"></i> Log</button>
+    </div>
+    <div id="att-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Log attendance</div>
+      <div class="fg"><label class="fl">Name</label><select class="fc" id="att-staff-sel"></select></div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="att-prop-sel"></select></div>
+      <div class="fg"><label class="fl">Status</label>
+        <div class="chip-g" id="att-chips">
+          <div class="chip" onclick="chip(this,'att-chips')">Present</div>
+          <div class="chip" onclick="chip(this,'att-chips')">Half day</div>
+          <div class="chip" onclick="chip(this,'att-chips')">Leave</div>
+          <div class="chip" onclick="chip(this,'att-chips')">Sick leave</div>
+          <div class="chip" onclick="chip(this,'att-chips')">Off</div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Task name <span class="req">*</span></label>
-        <input type="text" class="form-control" id="hk-name" placeholder="e.g. Deep clean master bathroom" required />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Starts</label><input type="time" class="fc" id="att-start"></div>
+        <div class="fg"><label class="fl">Ends</label><input type="time" class="fc" id="att-end"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="hk-notes" placeholder="Extra detail…"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Add task</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('hk-sheet')">Cancel</button>
-    </form>
+      <div class="fg"><label class="fl">Remarks</label><textarea class="fc" id="att-remarks" placeholder="Optional…"></textarea></div>
+      <button class="btn-p" onclick="submitAtt()"><i class="ti ti-check"></i> Submit</button>
+      <button class="btn-s" onclick="toggleForm('att-form')">Cancel</button>
+    </div>
+    <div id="att-list"><div class="card"><div class="loading-txt">Loading…</div></div></div>
   </div>
-</div>
 
-<!-- Booking (manual) sheet -->
-<div class="sheet-overlay" id="bk-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Add manual booking</div>
-    <form id="bk-form">
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="bk-prop" required></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Guest name <span class="req">*</span></label>
-        <input type="text" class="form-control" id="bk-guest" placeholder="Full name" required />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Guest phone</label>
-        <input type="tel" class="form-control" id="bk-phone" placeholder="+91 98765 43210" />
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group">
-          <label class="form-label">Check-in <span class="req">*</span></label>
-          <input type="date" class="form-control" id="bk-checkin" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Check-out <span class="req">*</span></label>
-          <input type="date" class="form-control" id="bk-checkout" required />
+  <!-- TASKS / HOUSEKEEPING -->
+  <div class="page" id="p-hk">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Tasks</div><div class="pg-sub">Status updates & photo proof</div></div>
+      <button class="btn-sm" onclick="toggleForm('hk-form')"><i class="ti ti-plus"></i> Add</button>
+    </div>
+    <div id="hk-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Add task</div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="hk-prop-sel"></select></div>
+      <div class="fg"><label class="fl">Type</label>
+        <div class="chip-g" id="hk-type-chips">
+          <div class="chip" onclick="chip(this,'hk-type-chips')">Post-checkout</div>
+          <div class="chip" onclick="chip(this,'hk-type-chips')">Regular</div>
+          <div class="chip" onclick="chip(this,'hk-type-chips')">Pre-checkin</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group">
-          <label class="form-label">No. of guests</label>
-          <input type="number" class="form-control" id="bk-guests" min="1" value="2" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nightly rate (₹)</label>
-          <input type="number" class="form-control" id="bk-rate" placeholder="8000" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="bk-notes" placeholder="Special requests, source, etc."></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Save booking</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('bk-sheet')">Cancel</button>
-    </form>
+      <div class="fg"><label class="fl">Task name</label><input type="text" class="fc" id="hk-name" placeholder="e.g. Deep clean bathrooms"></div>
+      <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="hk-notes" placeholder="Extra detail…"></textarea></div>
+      <button class="btn-p" onclick="submitTask()"><i class="ti ti-check"></i> Add task</button>
+      <button class="btn-s" onclick="toggleForm('hk-form')">Cancel</button>
+    </div>
+    <div class="ttabs">
+      <div class="tt on" onclick="filterHK(this,'post_checkout')">Post-checkout</div>
+      <div class="tt" onclick="filterHK(this,'regular')">Regular</div>
+      <div class="tt" onclick="filterHK(this,'pre_checkin')">Pre-checkin</div>
+    </div>
+    <div id="hk-list"><div class="loading-txt">Loading…</div></div>
   </div>
-</div>
 
-<!-- Laundry movement sheet -->
-<div class="sheet-overlay" id="lm-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Log laundry sent</div>
-    <form id="lm-form">
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="lm-prop" required></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Vendor</label>
-        <select class="form-control" id="lm-vendor">
-          <option>Alma Laundry</option>
-          <option>Best</option>
-          <option>Other</option>
-        </select>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group"><label class="form-label">Bedsheets</label><input type="number" class="form-control" id="lm-bs" value="0" min="0"/></div>
-        <div class="form-group"><label class="form-label">Pillow covers</label><input type="number" class="form-control" id="lm-pc" value="0" min="0"/></div>
-        <div class="form-group"><label class="form-label">Bath towels</label><input type="number" class="form-control" id="lm-bt" value="0" min="0"/></div>
-        <div class="form-group"><label class="form-label">Hand towels</label><input type="number" class="form-control" id="lm-ht" value="0" min="0"/></div>
-        <div class="form-group"><label class="form-label">Duvet covers</label><input type="number" class="form-control" id="lm-dc" value="0" min="0"/></div>
-        <div class="form-group"><label class="form-label">Kitchen linen</label><input type="number" class="form-control" id="lm-kl" value="0" min="0"/></div>
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('lm-sheet')">Cancel</button>
-    </form>
+  <!-- GUEST LIST -->
+  <div class="page" id="p-guestlist">
+    <div class="pg-title">Current guests</div>
+    <div class="pg-sub">Who's staying right now</div>
+    <div class="card" id="guest-list-el"><div class="loading-txt">Loading…</div></div>
   </div>
-</div>
 
-<!-- Complaint sheet -->
-<div class="sheet-overlay" id="comp-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Log guest complaint</div>
-    <form id="comp-form">
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="comp-prop" required></select>
+  <!-- BOOKINGS -->
+  <div class="page" id="p-bk">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Bookings</div><div class="pg-sub">All channels</div></div>
+      <button class="btn-sm" onclick="toggleForm('bk-form')"><i class="ti ti-plus"></i> Manual</button>
+    </div>
+    <div id="bk-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Manual booking</div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="bk-prop-sel"></select></div>
+      <div class="fg"><label class="fl">Guest name</label><input type="text" class="fc" id="bk-guest" placeholder="Full name"></div>
+      <div class="fg"><label class="fl">Guest phone</label><input type="tel" class="fc" id="bk-phone"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Check-in</label><input type="date" class="fc" id="bk-ci"></div>
+        <div class="fg"><label class="fl">Check-out</label><input type="date" class="fc" id="bk-co"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Guest name</label>
-        <input type="text" class="form-control" id="comp-guest" placeholder="Guest name" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Guests</label><input type="number" class="fc" id="bk-num" value="2" min="1"></div>
+        <div class="fg"><label class="fl">Rate/night (₹)</label><input type="number" class="fc" id="bk-rate" placeholder="8000"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Complaint <span class="req">*</span></label>
-        <textarea class="form-control" id="comp-text" placeholder="Describe the issue…" required></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Assign to</label>
-        <select class="form-control" id="comp-assign"></select>
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('comp-sheet')">Cancel</button>
-    </form>
+      <button class="btn-p" onclick="submitBooking()"><i class="ti ti-check"></i> Save booking</button>
+      <button class="btn-s" onclick="toggleForm('bk-form')">Cancel</button>
+    </div>
+    <div class="cal-strip" id="bk-cal"></div>
+    <div id="bk-list"><div class="loading-txt">Loading…</div></div>
   </div>
-</div>
 
-<!-- Asset sheet -->
-<div class="sheet-overlay" id="asset-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Add asset</div>
-    <form id="asset-form">
-      <div class="form-group">
-        <label class="form-label">Asset name <span class="req">*</span></label>
-        <input type="text" class="form-control" id="asset-name" placeholder="e.g. Samsung 55&quot; TV" required />
+  <!-- LAUNDRY -->
+  <div class="page" id="p-laundry">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Laundry</div><div class="pg-sub">Movement & return</div></div>
+      <button class="btn-sm" onclick="toggleForm('lm-form')"><i class="ti ti-plus"></i> Log</button>
+    </div>
+    <div id="lm-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Log laundry sent</div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="lm-prop-sel"></select></div>
+      <div class="fg"><label class="fl">Vendor</label><select class="fc" id="lm-vendor"><option>Alma Laundry</option><option>Best</option></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Bedsheets</label><input type="number" class="fc" id="lm-bs" value="0" min="0"></div>
+        <div class="fg"><label class="fl">Pillow covers</label><input type="number" class="fc" id="lm-pc" value="0" min="0"></div>
+        <div class="fg"><label class="fl">Bath towels</label><input type="number" class="fc" id="lm-bt" value="0" min="0"></div>
+        <div class="fg"><label class="fl">Hand towels</label><input type="number" class="fc" id="lm-ht" value="0" min="0"></div>
+        <div class="fg"><label class="fl">Duvet covers</label><input type="number" class="fc" id="lm-dc" value="0" min="0"></div>
+        <div class="fg"><label class="fl">Kitchen linen</label><input type="number" class="fc" id="lm-kl" value="0" min="0"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Category</label>
-        <select class="form-control" id="asset-cat">
-          <option>Furniture</option><option>Electronics</option><option>Kitchen</option><option>Linen</option><option>Other</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="asset-prop" required></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea class="form-control" id="asset-desc" placeholder="Brand, model, colour…"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Photo</label>
-        <div class="upload-zone" onclick="document.getElementById('asset-photo-input').click()">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-          <p>Tap to upload photo</p>
-        </div>
-        <input type="file" id="asset-photo-input" accept="image/*" style="display:none;" />
-      </div>
-      <button type="submit" class="btn btn-primary">Save asset</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('asset-sheet')">Cancel</button>
-    </form>
+      <button class="btn-p" onclick="submitLaundry()"><i class="ti ti-check"></i> Submit</button>
+      <button class="btn-s" onclick="toggleForm('lm-form')">Cancel</button>
+    </div>
+    <div id="laundry-list"><div class="loading-txt">Loading…</div></div>
   </div>
-</div>
 
-<!-- Lost & Found sheet -->
-<div class="sheet-overlay" id="lf-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Log lost &amp; found item</div>
-    <form id="lf-form">
-      <div class="form-group">
-        <label class="form-label">Property <span class="req">*</span></label>
-        <select class="form-control" id="lf-prop" required></select>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group">
-          <label class="form-label">Date found <span class="req">*</span></label>
-          <input type="date" class="form-control" id="lf-date" required />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Time found</label>
-          <input type="time" class="form-control" id="lf-time" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Location in property</label>
-        <input type="text" class="form-control" id="lf-loc" placeholder="e.g. Master bedroom, under bed" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Item description <span class="req">*</span></label>
-        <input type="text" class="form-control" id="lf-item" placeholder="e.g. Gold watch, Apple AirPods" required />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Guest name</label>
-        <input type="text" class="form-control" id="lf-guest" placeholder="If known" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Found by</label>
-        <select class="form-control" id="lf-found-by"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Photo of item <span class="req">*</span></label>
-        <div class="upload-zone" onclick="document.getElementById('lf-photo-input').click()">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-          <p>Tap to upload photo</p>
-        </div>
-        <input type="file" id="lf-photo-input" accept="image/*" style="display:none;" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Remarks</label>
-        <textarea class="form-control" id="lf-remarks"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('lf-sheet')">Cancel</button>
-    </form>
+  <!-- COMPLAINTS -->
+  <div class="page" id="p-complaints">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Complaints</div><div class="pg-sub">Guest issues & resolution</div></div>
+      <button class="btn-sm" onclick="toggleForm('comp-form')"><i class="ti ti-plus"></i> Log</button>
+    </div>
+    <div id="comp-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Log complaint</div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="comp-prop-sel"></select></div>
+      <div class="fg"><label class="fl">Guest name</label><input type="text" class="fc" id="comp-guest" placeholder="Guest name"></div>
+      <div class="fg"><label class="fl">Complaint</label><textarea class="fc" id="comp-text" placeholder="Describe the issue…"></textarea></div>
+      <div class="fg"><label class="fl">Assign to</label><select class="fc" id="comp-assign-sel"></select></div>
+      <button class="btn-p" onclick="submitComplaint()"><i class="ti ti-check"></i> Submit</button>
+      <button class="btn-s" onclick="toggleForm('comp-form')">Cancel</button>
+    </div>
+    <div id="complaints-list"><div class="loading-txt">Loading…</div></div>
   </div>
-</div>
 
-<!-- Community member sheet -->
-<div class="sheet-overlay" id="cm-sheet">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Add talent</div>
-    <form id="cm-form">
-      <div class="form-group">
-        <label class="form-label">Name <span class="req">*</span></label>
-        <input type="text" class="form-control" id="cm-name" required />
+  <!-- ASSETS -->
+  <div class="page" id="p-assets">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Assets</div><div class="pg-sub">Register & movement</div></div>
+      <button class="btn-sm" onclick="toggleForm('asset-form')"><i class="ti ti-plus"></i> Add</button>
+    </div>
+    <div id="asset-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Add asset</div>
+      <div class="fg"><label class="fl">Name</label><input type="text" class="fc" id="asset-name" placeholder="e.g. Samsung TV"></div>
+      <div class="fg"><label class="fl">Category</label><select class="fc" id="asset-cat"><option>Furniture</option><option>Electronics</option><option>Kitchen</option><option>Linen</option><option>Other</option></select></div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="asset-prop-sel"></select></div>
+      <div class="fg"><label class="fl">Description</label><textarea class="fc" id="asset-desc" placeholder="Brand, model, colour…"></textarea></div>
+      <div class="fg"><label class="fl">Photo</label>
+        <div class="upload-zone" onclick="document.getElementById('asset-photo-in').click()"><i class="ti ti-camera"></i><p>Tap to upload photo</p></div>
+        <input type="file" id="asset-photo-in" accept="image/*" style="display:none">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" id="cm-email" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input type="tel" class="form-control" id="cm-phone" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Talent name <span class="req">*</span></label>
-        <input type="text" class="form-control" id="cm-talent" placeholder="e.g. Iyengar Yoga" required />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tagline</label>
-        <input type="text" class="form-control" id="cm-tagline" placeholder="A beautiful short line about their talent" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Category <span class="req">*</span></label>
-        <div class="chip-group" id="cm-cat-chips">
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Art</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Music</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Dance</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Food</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Pottery</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Healing</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Yoga</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Wellness</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Fitness</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Storytelling</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Motivational</div>
-          <div class="chip" onclick="selectChip(this,'cm-cat-chips')">Other</div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Instagram</label>
-        <input type="text" class="form-control" id="cm-ig" placeholder="@handle" />
-      </div>
-      <button type="submit" class="btn btn-primary">Add to circle</button>
-      <button type="button" class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet('cm-sheet')">Cancel</button>
-    </form>
+      <button class="btn-p" onclick="submitAsset()"><i class="ti ti-check"></i> Save</button>
+      <button class="btn-s" onclick="toggleForm('asset-form')">Cancel</button>
+    </div>
+    <div id="assets-list"><div class="loading-txt">Loading…</div></div>
   </div>
-</div>
 
-<script type="module">
-import { supabase, getUser, signOut } from './js/supabase.js';
-
-// ---- Auth guard ----
-const user = await getUser();
-if (!user) { window.location.href = '/login.html'; }
-document.getElementById('userBtn').textContent = user.email?.[0].toUpperCase() || 'BC';
-document.getElementById('userBtn').addEventListener('click', () => { if (confirm('Sign out?')) signOut(); });
-
-// ---- Date helpers ----
-const today = new Date();
-const todayStr = today.toISOString().split('T')[0];
-document.getElementById('headerDate').textContent = today.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
-document.getElementById('att-date').textContent = today.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
-const lf_date_el = document.getElementById('lf-date');
-if (lf_date_el) lf_date_el.value = todayStr;
-
-// ---- Cache ----
-let properties = [], staffList = [], hkFilter = 'post_checkout', allAssets = [], allCommunity = [];
-
-// ---- Bootstrap ----
-async function boot() {
-  const [{ data: props }, { data: staff }] = await Promise.all([
-    supabase.from('properties').select('*').order('name'),
-    supabase.from('staff').select('*').order('name'),
-  ]);
-  properties = props || [];
-  staffList = staff || [];
-  populateSelects();
-  loadDashboard();
-  loadAttendance();
-  loadBookings();
-  loadLaundry();
-  loadHousekeeping();
-  loadComplaints();
-  loadAssets();
-  loadLostFound();
-  loadCommunity();
-}
-
-function populateSelects() {
-  const propOpts = properties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-  const staffOpts = `<option value="">— None —</option>` + staffList.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-  ['att-prop','hk-prop','bk-prop','lm-prop','comp-prop','asset-prop','lf-prop'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = propOpts;
-  });
-  ['att-staff','comp-assign','lf-found-by'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = staffOpts;
-  });
-}
-
-// ---- Navigation ----
-window.goTo = (page, btn) => {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  btn.classList.add('active');
-};
-
-// ---- Sheet helpers ----
-window.openSheet = id => { document.getElementById(id).classList.add('open'); };
-window.closeSheet = id => { document.getElementById(id).classList.remove('open'); };
-document.querySelectorAll('.sheet-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) closeSheet(el.id); });
-});
-
-// ---- Chip selector ----
-window.selectChip = (el, groupId) => {
-  document.getElementById(groupId).querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-};
-
-// ---- Toast ----
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ---- Badge helpers ----
-function statusBadge(s) {
-  const map = { Present:'badge-present', 'Half day':'badge-half', Leave:'badge-leave', 'Sick leave':'badge-leave', Off:'badge-off' };
-  return `<span class="badge ${map[s]||'badge-off'}">${s}</span>`;
-}
-function sourceBadge(s) {
-  const map = { airbnb:'badge-airbnb', booking_com:'badge-bdc', manual:'badge-manual' };
-  const label = { airbnb:'Airbnb', booking_com:'Booking.com', manual:'Phone' };
-  return `<span class="badge ${map[s]||'badge-manual'}">${label[s]||s}</span>`;
-}
-function initials(name) { return name?.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() || '?'; }
-function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—'; }
-
-// ---- DASHBOARD ----
-async function loadDashboard() {
-  // Staff present today
-  const { data: att } = await supabase.from('attendance').select('*').eq('date', todayStr);
-  const present = att?.filter(a => a.status === 'Present').length || 0;
-  const onLeave = att?.filter(a => ['Leave','Sick leave'].includes(a.status)).map(a => a.staff_id) || [];
-  document.getElementById('dash-staff').textContent = `${present}/${staffList.length}`;
-  document.getElementById('dash-staff-hint').textContent = onLeave.length ? `${onLeave.length} on leave` : 'All present';
-
-  // Active bookings
-  const { data: bks } = await supabase.from('bookings').select('*').lte('check_in', todayStr).gte('check_out', todayStr);
-  document.getElementById('dash-bookings').textContent = bks?.length || 0;
-
-  // Checkouts today
-  const { data: checkouts } = await supabase.from('bookings').select('*, properties(name)').eq('check_out', todayStr);
-  const coEl = document.getElementById('dash-checkouts');
-  if (!checkouts?.length) { coEl.innerHTML = `<p style="font-size:13px;color:var(--bc-muted);">No checkouts today</p>`; }
-  else { coEl.innerHTML = checkouts.map(b => `
-    <div class="list-row">
-      <div class="list-body"><div class="list-name">${b.guest_name}</div><div class="list-meta">${b.properties?.name} · Checkout ${fmtDate(b.check_out)}</div></div>
-      ${sourceBadge(b.source)}
-    </div>`).join(''); }
-
-  // Pending tasks
-  const { count: taskCount } = await supabase.from('housekeeping_tasks').select('*', {count:'exact',head:true}).eq('is_completed', false).eq('date', todayStr);
-  document.getElementById('dash-tasks').textContent = taskCount || 0;
-
-  // Open complaints
-  const { data: comps } = await supabase.from('guest_complaints').select('*, properties(name)').eq('status', 'open');
-  document.getElementById('dash-complaints').textContent = comps?.length || 0;
-  document.getElementById('dash-comp-hint').textContent = comps?.length ? comps[0].properties?.name : 'All clear';
-
-  // Laundry
-  const { data: laundry } = await supabase.from('laundry_movement').select('*, properties(name)').eq('status', 'sent').limit(3);
-  const lEl = document.getElementById('dash-laundry');
-  if (!laundry?.length) { lEl.innerHTML = `<p style="font-size:13px;color:var(--bc-muted);">No active laundry batches</p>`; }
-  else { lEl.innerHTML = laundry.map(l => `
-    <div class="list-row">
-      <div class="list-body"><div class="list-name">${l.properties?.name} — ${l.vendor_name}</div><div class="list-meta">Sent ${fmtDate(l.sent_date)} · ${l.total_items} items</div></div>
-      <span class="badge badge-pending">Out</span>
-    </div>`).join(''); }
-
-  // Activity (recent 5 records across tables)
-  document.getElementById('dash-activity').innerHTML = `<p style="font-size:13px;color:var(--bc-muted);">Connect Supabase to see live activity feed.</p>`;
-  document.getElementById('sync-time').textContent = `Synced ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
-}
-
-// ---- ATTENDANCE ----
-async function loadAttendance() {
-  const { data } = await supabase.from('attendance').select('*, staff(name, designation), properties(name)').eq('date', todayStr).order('created_at', { ascending: false });
-  const el = document.getElementById('att-list');
-  if (!data?.length) { el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No attendance logged yet today</p></div>`; return; }
-  el.innerHTML = `<div class="card">${data.map(a => `
-    <div class="list-row">
-      <div class="list-avatar">${initials(a.staff?.name)}</div>
-      <div class="list-body">
-        <div class="list-name">${a.staff?.name}</div>
-        <div class="list-meta">${a.staff?.designation} · ${a.properties?.name}</div>
-        ${a.duty_start ? `<div class="list-meta">${a.duty_start}${a.duty_end?' – '+a.duty_end:''}</div>` : ''}
+  <!-- LOST & FOUND -->
+  <div class="page" id="p-lf">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Lost & Found</div><div class="pg-sub">Item tracking</div></div>
+      <button class="btn-sm" onclick="toggleForm('lf-form')"><i class="ti ti-plus"></i> Log item</button>
+    </div>
+    <div id="lf-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Log item</div>
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="lf-prop-sel"></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Date found</label><input type="date" class="fc" id="lf-date"></div>
+        <div class="fg"><label class="fl">Time</label><input type="time" class="fc" id="lf-time"></div>
       </div>
-      ${statusBadge(a.status)}
-    </div>`).join('')}</div>`;
-}
-
-document.getElementById('att-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const status = document.querySelector('#att-status-chips .chip.selected')?.textContent;
-  if (!status) { toast('Please select a status'); return; }
-  const { error } = await supabase.from('attendance').insert({
-    staff_id: document.getElementById('att-staff').value,
-    property_id: document.getElementById('att-prop').value,
-    date: todayStr,
-    status,
-    duty_start: document.getElementById('att-start').value || null,
-    duty_end: document.getElementById('att-end').value || null,
-    remarks: document.getElementById('att-remarks').value || null,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Attendance logged ✓');
-  closeSheet('att-sheet');
-  loadAttendance();
-  loadDashboard();
-});
-
-// ---- HOUSEKEEPING ----
-window.filterHK = (el, type) => {
-  hkFilter = type;
-  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  loadHousekeeping();
-};
-
-async function loadHousekeeping() {
-  const { data } = await supabase.from('housekeeping_tasks').select('*, properties(name), staff(name)').eq('task_type', hkFilter).eq('date', todayStr).order('created_at');
-  const el = document.getElementById('hk-list');
-  if (!data?.length) {
-    el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No tasks for today. Add one above.</p></div>`;
-    return;
-  }
-  const byProp = {};
-  data.forEach(t => {
-    const pn = t.properties?.name || 'Unknown';
-    if (!byProp[pn]) byProp[pn] = [];
-    byProp[pn].push(t);
-  });
-  el.innerHTML = Object.entries(byProp).map(([prop, tasks]) => {
-    const done = tasks.filter(t => t.is_completed).length;
-    const pct = Math.round((done/tasks.length)*100);
-    return `<div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:14px;font-weight:500;">${prop}</div>
-        <span class="badge ${done===tasks.length?'badge-done':'badge-pending'}">${done}/${tasks.length}</span>
+      <div class="fg"><label class="fl">Location in property</label><input type="text" class="fc" id="lf-loc" placeholder="e.g. Master bedroom"></div>
+      <div class="fg"><label class="fl">Item description</label><input type="text" class="fc" id="lf-item" placeholder="e.g. Gold watch"></div>
+      <div class="fg"><label class="fl">Guest name (if known)</label><input type="text" class="fc" id="lf-guest"></div>
+      <div class="fg"><label class="fl">Found by</label><select class="fc" id="lf-staff-sel"></select></div>
+      <div class="fg"><label class="fl">Photo</label>
+        <div class="upload-zone" onclick="document.getElementById('lf-photo-in').click()"><i class="ti ti-camera"></i><p>Tap to upload photo</p></div>
+        <input type="file" id="lf-photo-in" accept="image/*" style="display:none">
       </div>
-      <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>
-      ${tasks.map(t => `
-        <div class="task-row">
-          <div class="task-check ${t.is_completed?'done':''}" onclick="toggleTask('${t.id}',this)">
-            <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
-          </div>
-          <div class="task-body">
-            <div class="task-name" style="${t.is_completed?'text-decoration:line-through;color:var(--bc-muted);':''}">${t.task_name}</div>
-            ${t.notes ? `<div class="task-meta">${t.notes}</div>` : ''}
-          </div>
-          <button class="task-photo-btn ${t.photo_url?'uploaded':''}" title="Upload photo" onclick="uploadTaskPhoto('${t.id}',this)">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-          </button>
-        </div>`).join('')}
-    </div>`;
-  }).join('');
-}
+      <div class="fg"><label class="fl">Remarks</label><textarea class="fc" id="lf-remarks"></textarea></div>
+      <button class="btn-p" onclick="submitLF()"><i class="ti ti-check"></i> Submit</button>
+      <button class="btn-s" onclick="toggleForm('lf-form')">Cancel</button>
+    </div>
+    <div id="lf-list"><div class="loading-txt">Loading…</div></div>
+  </div>
 
-window.toggleTask = async (id, el) => {
-  const done = !el.classList.contains('done');
-  const { error } = await supabase.from('housekeeping_tasks').update({ is_completed: done, completed_at: done ? new Date().toISOString() : null }).eq('id', id);
-  if (error) { toast('Error updating task'); return; }
-  el.classList.toggle('done', done);
-  loadHousekeeping();
-};
-
-window.uploadTaskPhoto = async (taskId, btn) => {
-  const input = document.createElement('input');
-  input.type = 'file'; input.accept = 'image/*';
-  input.onchange = async () => {
-    const file = input.files[0];
-    if (!file) return;
-    const path = `housekeeping/${taskId}/${file.name}`;
-    const { error: upErr } = await supabase.storage.from('housekeeping-photos').upload(path, file, { upsert: true });
-    if (upErr) { toast('Upload failed'); return; }
-    const { data: { publicUrl } } = supabase.storage.from('housekeeping-photos').getPublicUrl(path);
-    await supabase.from('housekeeping_tasks').update({ photo_url: publicUrl }).eq('id', taskId);
-    btn.classList.add('uploaded');
-    toast('Photo uploaded ✓');
-  };
-  input.click();
-};
-
-document.getElementById('hk-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const typeRaw = document.querySelector('#hk-type-chips .chip.selected')?.textContent;
-  if (!typeRaw) { toast('Select a task type'); return; }
-  const typeMap = { 'Post-checkout':'post_checkout', 'Regular':'regular', 'Pre-checkin':'pre_checkin' };
-  const { error } = await supabase.from('housekeeping_tasks').insert({
-    property_id: document.getElementById('hk-prop').value,
-    task_type: typeMap[typeRaw] || 'regular',
-    task_name: document.getElementById('hk-name').value,
-    notes: document.getElementById('hk-notes').value || null,
-    date: todayStr,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Task added ✓');
-  closeSheet('hk-sheet');
-  document.getElementById('hk-form').reset();
-  loadHousekeeping();
-});
-
-// ---- BOOKINGS ----
-function buildCalStrip() {
-  const cal = document.getElementById('bk-cal');
-  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let html = '';
-  for (let i = -3; i <= 10; i++) {
-    const d = new Date(today); d.setDate(today.getDate() + i);
-    const isToday = i === 0;
-    html += `<div class="cal-day ${isToday?'today':''}">
-      <div class="cal-wday">${days[d.getDay()]}</div>
-      <div class="cal-num">${d.getDate()}</div>
-    </div>`;
-  }
-  cal.innerHTML = html;
-}
-
-async function loadBookings() {
-  buildCalStrip();
-  const { data } = await supabase.from('bookings').select('*, properties(name)').gte('check_out', todayStr).order('check_in');
-  const el = document.getElementById('bk-list');
-  if (!data?.length) { el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No upcoming bookings</p></div>`; return; }
-  el.innerHTML = `<div class="card"><div class="card-title">Active &amp; upcoming</div>${data.map(b => `
-    <div style="border:1px solid var(--bc-border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <div style="font-size:15px;font-weight:500;">${b.guest_name}</div>
-        ${sourceBadge(b.source)}
-      </div>
-      <div style="display:flex;gap:14px;font-size:13px;color:var(--bc-muted);margin-bottom:6px;">
-        <span>In: ${fmtDate(b.check_in)}</span>
-        <span>Out: ${fmtDate(b.check_out)}</span>
-        <span>${b.num_guests} guests</span>
-      </div>
-      <div style="font-size:12px;color:var(--bc-muted);">${b.properties?.name}</div>
-    </div>`).join('')}</div>`;
-}
-
-document.getElementById('bk-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const rate = parseFloat(document.getElementById('bk-rate').value) || null;
-  const ci = document.getElementById('bk-checkin').value;
-  const co = document.getElementById('bk-checkout').value;
-  const nights = rate && ci && co ? Math.round((new Date(co)-new Date(ci))/(864e5)) : null;
-  const { error } = await supabase.from('bookings').insert({
-    property_id: document.getElementById('bk-prop').value,
-    guest_name: document.getElementById('bk-guest').value,
-    guest_phone: document.getElementById('bk-phone').value || null,
-    check_in: ci, check_out: co,
-    num_guests: parseInt(document.getElementById('bk-guests').value) || 1,
-    source: 'manual',
-    nightly_rate: rate,
-    total_amount: rate && nights ? rate * nights : null,
-    notes: document.getElementById('bk-notes').value || null,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Booking saved ✓');
-  closeSheet('bk-sheet');
-  document.getElementById('bk-form').reset();
-  loadBookings();
-  loadDashboard();
-});
-
-// ---- LAUNDRY ----
-async function loadLaundry() {
-  const { data } = await supabase.from('laundry_movement').select('*, properties(name)').order('created_at', { ascending: false }).limit(10);
-  const el = document.getElementById('laundry-list');
-  if (!data?.length) { el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No laundry records yet</p></div>`; return; }
-  el.innerHTML = data.map(l => `
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:14px;font-weight:500;">${l.properties?.name}</div>
-        <span class="badge ${l.status==='sent'?'badge-pending':'badge-done'}">${l.status==='sent'?'Out':'Returned'}</span>
-      </div>
-      <div style="font-size:13px;color:var(--bc-muted);">Vendor: ${l.vendor_name} · ${fmtDate(l.sent_date)}</div>
-      <div style="font-size:13px;color:var(--bc-muted);">Total: ${l.total_items} items</div>
-      ${l.status==='sent'?`<button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="logReturn('${l.id}')">Log return</button>`:''}
-    </div>`).join('');
-}
-
-window.logReturn = async (movementId) => {
-  const invoice = prompt('Invoice amount (₹)?');
-  const paid = confirm('Mark as paid?');
-  const { error } = await supabase.from('laundry_return').insert({
-    movement_id: movementId,
-    property_id: null,
-    vendor_name: '—',
-    return_date: todayStr,
-    invoice_amount: invoice ? parseFloat(invoice) : null,
-    payment_status: paid ? 'paid' : 'unpaid',
-  });
-  if (!error) await supabase.from('laundry_movement').update({ status: 'returned' }).eq('id', movementId);
-  toast(error ? 'Error logging return' : 'Return logged ✓');
-  loadLaundry();
-};
-
-document.getElementById('lm-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const { error } = await supabase.from('laundry_movement').insert({
-    property_id: document.getElementById('lm-prop').value,
-    vendor_name: document.getElementById('lm-vendor').value,
-    sent_date: todayStr,
-    bedsheets: +document.getElementById('lm-bs').value,
-    pillow_covers: +document.getElementById('lm-pc').value,
-    bath_towels: +document.getElementById('lm-bt').value,
-    hand_towels: +document.getElementById('lm-ht').value,
-    duvet_covers: +document.getElementById('lm-dc').value,
-    kitchen_linen: +document.getElementById('lm-kl').value,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Laundry logged ✓');
-  closeSheet('lm-sheet');
-  loadLaundry();
-  loadDashboard();
-});
-
-// ---- COMPLAINTS ----
-async function loadComplaints() {
-  const { data: open } = await supabase.from('guest_complaints').select('*, properties(name), staff(name)').eq('status','open').order('created_at',{ascending:false});
-  const el = document.getElementById('complaints-open');
-  if (!open?.length) { el.innerHTML = `<p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:16px 0;">No open complaints</p>`; }
-  else { el.innerHTML = open.map(c => `
-    <div class="list-row">
-      <div class="list-body">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div class="list-name">${c.guest_name || 'Guest'}</div>
-          <span class="badge badge-open">Open</span>
+  <!-- COMMUNITY -->
+  <div class="page" id="p-community">
+    <div class="sec-hdr">
+      <div><div class="pg-title">Banyan Circle</div><div class="pg-sub">Talent community</div></div>
+      <button class="btn-sm" onclick="toggleForm('cm-form')"><i class="ti ti-plus"></i> Add talent</button>
+    </div>
+    <div id="cm-form" class="form-block" style="display:none">
+      <div class="sh-ttl">Add talent</div>
+      <div class="fg"><label class="fl">Name</label><input type="text" class="fc" id="cm-name"></div>
+      <div class="fg"><label class="fl">Talent name</label><input type="text" class="fc" id="cm-talent" placeholder="e.g. Iyengar Yoga"></div>
+      <div class="fg"><label class="fl">Category</label>
+        <div class="chip-g" id="cm-chips">
+          <div class="chip" onclick="chip(this,'cm-chips')">Art</div><div class="chip" onclick="chip(this,'cm-chips')">Music</div>
+          <div class="chip" onclick="chip(this,'cm-chips')">Yoga</div><div class="chip" onclick="chip(this,'cm-chips')">Wellness</div>
+          <div class="chip" onclick="chip(this,'cm-chips')">Food</div><div class="chip" onclick="chip(this,'cm-chips')">Pottery</div>
+          <div class="chip" onclick="chip(this,'cm-chips')">Other</div>
         </div>
-        <div class="list-meta">${c.complaint}</div>
-        <div class="list-meta">${c.properties?.name} · ${fmtDate(c.created_at?.split('T')[0])}${c.staff?' · '+c.staff.name:''}</div>
       </div>
-    </div>`).join(''); }
+      <button class="btn-p" onclick="submitCommunity()"><i class="ti ti-check"></i> Add to circle</button>
+      <button class="btn-s" onclick="toggleForm('cm-form')">Cancel</button>
+    </div>
+    <div id="community-list"><div class="loading-txt">Loading…</div></div>
+  </div>
 
-  // Feedback stats
-  const { data: fb } = await supabase.from('guest_feedback').select('arrival_rating,cleanliness_rating,hospitality_rating,would_return');
-  if (fb?.length) {
-    const ratings = fb.flatMap(f => [f.arrival_rating,f.cleanliness_rating,f.hospitality_rating].filter(Boolean));
-    const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
-    const returns = fb.filter(f=>f.would_return==='Without a doubt').length;
-    const pct = fb.length ? Math.round((returns/fb.length)*100)+'%' : '—';
-    document.getElementById('fb-avg').textContent = avg;
-    document.getElementById('fb-return').textContent = pct;
-  }
-}
+</div><!-- shell -->
 
-document.getElementById('comp-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const { error } = await supabase.from('guest_complaints').insert({
-    property_id: document.getElementById('comp-prop').value,
-    guest_name: document.getElementById('comp-guest').value || null,
-    complaint: document.getElementById('comp-text').value,
-    assigned_to: document.getElementById('comp-assign').value || null,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Complaint logged ✓');
-  closeSheet('comp-sheet');
-  document.getElementById('comp-form').reset();
-  loadComplaints();
-});
-
-// ---- ASSETS ----
-window.filterAssets = (propName) => {
-  const filtered = propName ? allAssets.filter(a => a.properties?.name === propName) : allAssets;
-  renderAssets(filtered);
-};
-
-async function loadAssets() {
-  const { data } = await supabase.from('assets').select('*, properties(name)').order('name');
-  allAssets = data || [];
-  renderAssets(allAssets);
-}
-
-function renderAssets(assets) {
-  const el = document.getElementById('assets-list');
-  if (!assets.length) { el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No assets registered yet</p></div>`; return; }
-  const byProp = {};
-  assets.forEach(a => { const p = a.properties?.name||'Unknown'; if(!byProp[p]) byProp[p]=[]; byProp[p].push(a); });
-  el.innerHTML = Object.entries(byProp).map(([prop, items]) => `
-    <div class="card">
-      <div class="card-title">${prop}</div>
-      ${items.map(a => `
-        <div class="list-row">
-          <div class="list-icon">
-            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-          </div>
-          <div class="list-body">
-            <div class="list-name">${a.name}</div>
-            <div class="list-meta">${a.category||''} · Added ${fmtDate(a.added_date)}</div>
-          </div>
-          <span class="badge badge-done">Here</span>
-        </div>`).join('')}
-    </div>`).join('');
-}
-
-document.getElementById('asset-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  let photoUrl = null;
-  const file = document.getElementById('asset-photo-input').files[0];
-  if (file) {
-    const path = `assets/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage.from('asset-photos').upload(path, file);
-    if (!upErr) { const { data: { publicUrl } } = supabase.storage.from('asset-photos').getPublicUrl(path); photoUrl = publicUrl; }
-  }
-  const { error } = await supabase.from('assets').insert({
-    name: document.getElementById('asset-name').value,
-    category: document.getElementById('asset-cat').value,
-    current_property_id: document.getElementById('asset-prop').value,
-    description: document.getElementById('asset-desc').value || null,
-    photo_url: photoUrl,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Asset saved ✓');
-  closeSheet('asset-sheet');
-  document.getElementById('asset-form').reset();
-  loadAssets();
-});
-
-// ---- LOST & FOUND ----
-async function loadLostFound() {
-  const { data } = await supabase.from('lost_and_found').select('*, properties(name), staff(name)').order('created_at',{ascending:false});
-  const el = document.getElementById('lf-list');
-  if (!data?.length) { el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No items logged yet</p></div>`; return; }
-  const pending = data.filter(i=>!['returned','disposed'].includes(i.status));
-  const resolved = data.filter(i=>['returned','disposed'].includes(i.status));
-  const renderItems = items => items.map(i => `
-    <div class="list-row">
-      <div class="list-icon">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </div>
-      <div class="list-body">
-        <div class="list-name">${i.item_description}</div>
-        <div class="list-meta">${i.properties?.name}${i.location_found?' · '+i.location_found:''} · ${fmtDate(i.found_date)}</div>
-        ${i.guest_name?`<div class="list-meta">Guest: ${i.guest_name}</div>`:''}
-      </div>
-      <span class="badge badge-${i.status==='returned'?'done':'pending'}">${i.status?.replace('_',' ')}</span>
-    </div>`).join('');
-  el.innerHTML = `
-    ${pending.length?`<div class="card"><div class="card-title">Pending (${pending.length})</div>${renderItems(pending)}</div>`:''}
-    ${resolved.length?`<div class="card"><div class="card-title">Resolved</div>${renderItems(resolved)}</div>`:''}`;
-}
-
-document.getElementById('lf-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  let photoUrl = null;
-  const file = document.getElementById('lf-photo-input').files[0];
-  if (file) {
-    const path = `lf/${Date.now()}_${file.name}`;
-    const { error: upErr } = await supabase.storage.from('lost-and-found-photos').upload(path, file);
-    if (!upErr) { const { data: { publicUrl } } = supabase.storage.from('lost-and-found-photos').getPublicUrl(path); photoUrl = publicUrl; }
-  }
-  const { error } = await supabase.from('lost_and_found').insert({
-    property_id: document.getElementById('lf-prop').value,
-    found_date: document.getElementById('lf-date').value,
-    found_time: document.getElementById('lf-time').value || null,
-    location_found: document.getElementById('lf-loc').value || null,
-    item_description: document.getElementById('lf-item').value,
-    guest_name: document.getElementById('lf-guest').value || null,
-    found_by: document.getElementById('lf-found-by').value || null,
-    photo_url: photoUrl,
-    remarks: document.getElementById('lf-remarks').value || null,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Item logged ✓');
-  closeSheet('lf-sheet');
-  document.getElementById('lf-form').reset();
-  loadLostFound();
-});
-
-// ---- COMMUNITY ----
-window.filterCommunity = (el, cat) => {
-  document.querySelectorAll('#cat-filter .chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  const filtered = cat ? allCommunity.filter(m => m.category === cat) : allCommunity;
-  renderCommunity(filtered);
-};
-
-async function loadCommunity() {
-  const { data } = await supabase.from('community_members').select('*').order('name');
-  allCommunity = data || [];
-  renderCommunity(allCommunity);
-}
-
-function renderCommunity(members) {
-  const el = document.getElementById('community-list');
-  if (!members.length) { el.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--bc-muted);text-align:center;padding:20px 0;">No community members yet</p></div>`; return; }
-  el.innerHTML = members.map(m => `
-    <div class="card" style="display:flex;gap:14px;align-items:flex-start;">
-      ${m.photo_url?`<img src="${m.photo_url}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;" />`:`<div class="list-avatar" style="width:52px;height:52px;font-size:18px;flex-shrink:0;">${initials(m.name)}</div>`}
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:15px;font-weight:500;">${m.name}</div>
-        <div style="font-size:13px;color:var(--bc-muted);">${m.talent_name||''}</div>
-        <div style="margin-top:6px;">
-          <span class="badge" style="background:var(--bc-brand-light);color:var(--bc-brand);">${m.category||'Talent'}</span>
-        </div>
-        ${m.tagline?`<div style="font-size:12px;color:var(--bc-muted);margin-top:6px;font-style:italic;">"${m.tagline}"</div>`:''}
-        ${m.rating?`<div style="font-size:13px;margin-top:4px;">★ ${m.rating}</div>`:''}
-      </div>
-    </div>`).join('');
-}
-
-document.getElementById('cm-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const cat = document.querySelector('#cm-cat-chips .chip.selected')?.textContent;
-  const { error } = await supabase.from('community_members').insert({
-    name: document.getElementById('cm-name').value,
-    email: document.getElementById('cm-email').value || null,
-    phone: document.getElementById('cm-phone').value || null,
-    talent_name: document.getElementById('cm-talent').value,
-    talent_tagline: document.getElementById('cm-tagline').value || null,
-    category: cat || null,
-    instagram: document.getElementById('cm-ig').value || null,
-  });
-  if (error) { toast('Error: ' + error.message); return; }
-  toast('Added to circle ✓');
-  closeSheet('cm-sheet');
-  document.getElementById('cm-form').reset();
-  loadCommunity();
-});
-
-boot();
-</script>
+<script type="module" src="/js/app.js"></script>
 </body>
 </html>
