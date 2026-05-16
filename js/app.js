@@ -63,24 +63,14 @@ document.addEventListener('click', e => { if (!e.target.closest('#notif-panel') 
 // ---- CACHE ----
 let properties = [], staffList = [], allAssets = [], allCommunity = [], hkFilter = 'post_checkout';
 
-// ---- PERMANENT EVENT DELEGATION ----
-// Set once on page load — survives innerHTML re-renders
-document.addEventListener('click', e => {
-
-  // Complaint row click
-  const compRow = e.target.closest('[data-complaint-id]');
-  if (compRow) { openComplaint(compRow.dataset.complaintId); return; }
-
-  // Task status buttons
-  const taskBtn = e.target.closest('[data-action][data-task]');
-  if (taskBtn) {
-    const action = taskBtn.dataset.action;
-    const taskId = taskBtn.dataset.task;
-    if (action === 'photo') uploadPhoto(taskId, taskBtn);
-    else setStatus(taskId, action, taskBtn);
-    return;
-  }
-});
+// ---- GLOBAL CLICK HANDLER ----
+// Single handler at document level — works with dynamically rendered HTML
+window._bcClick = function(type, id, el) {
+  if (type === 'complaint') openComplaint(id);
+  else if (type === 'done') setStatus(id, 'done', el);
+  else if (type === 'pending') setStatus(id, 'pending', el);
+  else if (type === 'photo') uploadPhoto(id, el);
+};
 
 // ---- BOOT ----
 async function boot() {
@@ -228,13 +218,13 @@ function renderTaskCard(t) {
       </div>
     </div>
     <div class="task-actions">
-      <button class="status-btn ${!done?'s-ns':''}" data-action="pending" data-task="${t.id}">
+      <button class="status-btn ${!done?'s-ns':''}" onclick="window._bcClick('pending','${t.id}',this)">
         Pending
       </button>
-      <button class="status-btn ${done?'s-dn':''}" data-action="done" data-task="${t.id}">
+      <button class="status-btn ${done?'s-dn':''}" onclick="window._bcClick('done','${t.id}',this)">
         Completed
       </button>
-      <button class="photo-btn ${t.photo_url?'photo-uploaded':''}" data-action="photo" data-task="${t.id}" style="margin-left:auto">
+      <button class="photo-btn ${t.photo_url?'photo-uploaded':''}" onclick="window._bcClick('photo','${t.id}',this)" style="margin-left:auto">
         <i class="ti ti-${t.photo_url?'photo':'camera'}"></i>
       </button>
     </div>
@@ -416,18 +406,18 @@ async function loadComplaints() {
   const done = data.filter(c => c.status === 'resolved');
 
   const renderCard = c => `
-    <div data-complaint-id="${c.id}" style="padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s" onmouseenter="this.style.background='#F9F8F6'" onmouseleave="this.style.background=''">
+    <button onclick="window._bcClick('complaint','${c.id}')" style="width:100%;padding:13px 0;border:none;background:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;font-family:inherit;display:block">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-        <div style="font-size:14px;font-weight:500">${c.guest_name || 'Guest'}</div>
+        <div style="font-size:14px;font-weight:500;color:#2C2C2A">${c.guest_name || 'Guest'}</div>
         <span class="bdg ${c.status==='open'?'bdg-r':c.status==='in_progress'?'bdg-a':'bdg-g'}">${c.status.replace('_',' ')}</span>
       </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.5">${c.complaint}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:5px;display:flex;gap:10px">
+      <div style="font-size:13px;color:#5F5E5A;line-height:1.5">${c.complaint}</div>
+      <div style="font-size:11px;color:#888780;margin-top:5px;display:flex;gap:10px">
         <span>${c.properties?.name || ''}</span>
         <span>${fmtDate(c.created_at?.split('T')[0])}</span>
         ${c.staff ? '<span>→ ' + c.staff.name + '</span>' : ''}
       </div>
-    </div>`;
+    </button>`;
 
   el.innerHTML = `
     ${open.length ? `<div class="card"><div class="card-ttl">Open (${open.length})</div>${open.map(renderCard).join('')}</div>` : ''}
