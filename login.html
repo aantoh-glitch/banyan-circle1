@@ -272,47 +272,35 @@ let selectedPerson = null;
 let pinEntry = '';
 
 async function loadPeople() {
-  const { data: staff, error } = await sb.from('staff').select('*').order('name');
   const el = document.getElementById('people-list');
+  let { data: staff } = await sb.from('staff').select('*').order('name');
 
-  // Always show at least the owner tile
-  const owners = (staff||[]).filter(s => s.designation === 'Owner');
-  const members = (staff||[]).filter(s => s.designation !== 'Owner');
+  // Hardcoded fallback if DB empty / not seeded yet
+  if (!staff || staff.length === 0) {
+    staff = [
+      { id:'local-aby',     name:'Aby',     designation:'Owner',                        pin:'1111' },
+      { id:'local-sherry',  name:'Sherry',  designation:'Homekeeper',                   pin:'2222' },
+      { id:'local-ajith',   name:'Ajith',   designation:'Relationship Manager',         pin:'2222' },
+      { id:'local-vineeth', name:'Vineeth', designation:'Guest Experience Coordinator', pin:'2222' },
+    ];
+  }
+
+  const owners  = staff.filter(s => s.designation === 'Owner');
+  const members = staff.filter(s => s.designation !== 'Owner');
 
   let html = '';
 
-  // Owners section
   if (owners.length) {
     html += `<div class="people-section">
       <div class="people-section-label">Owner</div>
-      <div class="people-list">
-        ${owners.map(p => personCard(p, true)).join('')}
-      </div>
-    </div>`;
-  } else {
-    // Fallback owner tile — email login
-    html += `<div class="people-section">
-      <div class="people-section-label">Owner</div>
-      <div class="people-list">
-        <button class="person-btn" onclick="window.selectPerson({name:'Owner',designation:'Owner',isOwner:true,noPin:true})">
-          <div class="person-av av-owner">OW</div>
-          <div class="person-info">
-            <div class="person-name">Owner</div>
-            <div class="person-role">Full access</div>
-          </div>
-          <i class="ti ti-chevron-right person-arrow"></i>
-        </button>
-      </div>
+      <div class="people-list">${owners.map(p => personCard(p, true)).join('')}</div>
     </div>`;
   }
 
-  // Staff section
   if (members.length) {
     html += `<div class="people-section">
       <div class="people-section-label">Staff</div>
-      <div class="people-list">
-        ${members.map(p => personCard(p, false)).join('')}
-      </div>
+      <div class="people-list">${members.map(p => personCard(p, false)).join('')}</div>
     </div>`;
   }
 
@@ -377,8 +365,7 @@ async function checkPin() {
     return;
   }
 
-  // PIN correct — store session locally (no Supabase auth needed for staff)
-  // We use localStorage to persist who's logged in
+  // PIN correct — store in localStorage
   localStorage.setItem('bc_user', JSON.stringify({
     id: selectedPerson.id,
     name: selectedPerson.name,
@@ -386,12 +373,12 @@ async function checkPin() {
     designation: selectedPerson.designation,
   }));
 
-  // If owner with PIN, also do Supabase auth if email exists
+  // If owner, also try Supabase email auth (for Supabase queries that need auth)
   if (selectedPerson.isOwner && selectedPerson.email) {
     await sb.auth.signInWithPassword({
       email: selectedPerson.email,
       password: selectedPerson.email_password || 'bc_owner_default'
-    }).catch(()=>{});
+    }).catch(() => {});
   }
 
   err.textContent = '';

@@ -547,14 +547,20 @@ async function loadStaffList() {
     <div style="margin-bottom:14px">
       <div style="font-size:11px;font-weight:500;color:#5F5E5A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">${label}</div>
       ${items.map(s => `
-        <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
           <div style="width:40px;height:40px;border-radius:50%;background:${s.designation==='Owner'?'#E6F1FB':'#FAECE7'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:${s.designation==='Owner'?'#0C447C':'#712B13'};flex-shrink:0">${ini(s.name)}</div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:500;color:#2C2C2A">${s.name}</div>
-            <div style="font-size:12px;color:#5F5E5A">${s.designation||'Staff'} · PIN: ${s.pin ? '****' : '⚠ not set'}</div>
+            <div style="font-size:12px;color:#5F5E5A">${s.designation||'Staff'}</div>
           </div>
+          <button onclick="changePin('${s.id}','${s.name}')"
+            title="Change PIN"
+            style="background:#F1EFE8;border:none;cursor:pointer;color:#5F5E5A;font-size:13px;padding:6px 10px;border-radius:7px;font-family:inherit;display:flex;align-items:center;gap:4px">
+            <i class="ti ti-lock" style="font-size:14px"></i> PIN
+          </button>
           <button onclick="removeStaff('${s.id}','${s.name}')"
-            style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:17px;padding:4px">
+            title="Remove"
+            style="background:none;border:none;cursor:pointer;color:#A32D2D;font-size:18px;padding:4px">
             <i class="ti ti-trash"></i>
           </button>
         </div>`).join('')}
@@ -562,6 +568,17 @@ async function loadStaffList() {
 
   el.innerHTML = renderGroup('Owner', owners) + renderGroup('Staff', staff);
 }
+
+window.changePin = async (id, name) => {
+  const newPin = prompt(`New 4-digit PIN for ${name}:`);
+  if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    alert('PIN must be exactly 4 digits'); return;
+  }
+  const { error } = await sb.from('staff').update({ pin: newPin }).eq('id', id);
+  if (error) { alert('Error: ' + error.message); return; }
+  alert(`PIN for ${name} updated ✓`);
+  loadStaffList();
+};
 
 window.removeStaff = async (id, name) => {
   if (!confirm(`Remove ${name} from the team?`)) return;
