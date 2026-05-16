@@ -63,6 +63,25 @@ document.addEventListener('click', e => { if (!e.target.closest('#notif-panel') 
 // ---- CACHE ----
 let properties = [], staffList = [], allAssets = [], allCommunity = [], hkFilter = 'post_checkout';
 
+// ---- PERMANENT EVENT DELEGATION ----
+// Set once on page load — survives innerHTML re-renders
+document.addEventListener('click', e => {
+
+  // Complaint row click
+  const compRow = e.target.closest('[data-complaint-id]');
+  if (compRow) { openComplaint(compRow.dataset.complaintId); return; }
+
+  // Task status buttons
+  const taskBtn = e.target.closest('[data-action][data-task]');
+  if (taskBtn) {
+    const action = taskBtn.dataset.action;
+    const taskId = taskBtn.dataset.task;
+    if (action === 'photo') uploadPhoto(taskId, taskBtn);
+    else setStatus(taskId, action, taskBtn);
+    return;
+  }
+});
+
 // ---- BOOT ----
 async function boot() {
   const [{ data: props }, { data: staff }] = await Promise.all([
@@ -193,15 +212,7 @@ async function loadHousekeeping() {
     </div>`;
   }).join('');
 
-  // Event delegation for task buttons
-  el.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const action = btn.dataset.action;
-      const taskId = btn.dataset.task;
-      if (action === 'photo') { uploadPhoto(taskId, btn); }
-      else { setStatus(taskId, action, btn); }
-    });
-  });
+
 }
 
 function renderTaskCard(t) {
@@ -423,10 +434,7 @@ async function loadComplaints() {
     ${inprog.length ? `<div class="card"><div class="card-ttl">In progress (${inprog.length})</div>${inprog.map(renderCard).join('')}</div>` : ''}
     ${done.length ? `<div class="card"><div class="card-ttl">Resolved</div>${done.map(renderCard).join('')}</div>` : ''}`;
 
-  // Event delegation — works with module scope
-  el.querySelectorAll('[data-complaint-id]').forEach(row => {
-    row.addEventListener('click', () => openComplaint(row.dataset.complaintId));
-  });
+
 }
 
 // Open complaint detail + assign sheet
