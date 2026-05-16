@@ -63,14 +63,14 @@ document.addEventListener('click', e => { if (!e.target.closest('#notif-panel') 
 // ---- CACHE ----
 let properties = [], staffList = [], allAssets = [], allCommunity = [], hkFilter = 'post_checkout';
 
-// ---- GLOBAL CLICK HANDLER ----
-// Single handler at document level — works with dynamically rendered HTML
-window._bcClick = function(type, id, el) {
+// Wire up click dispatcher — runs after module and boot() complete
+window._bcDispatch = function(type, id, el) {
   if (type === 'complaint') openComplaint(id);
-  else if (type === 'done') setStatus(id, 'done', el);
+  else if (type === 'done')    setStatus(id, 'done', el);
   else if (type === 'pending') setStatus(id, 'pending', el);
-  else if (type === 'photo') uploadPhoto(id, el);
+  else if (type === 'photo')   uploadPhoto(id, el);
 };
+// _bcReady set after boot() in boot function below
 
 // ---- BOOT ----
 async function boot() {
@@ -84,6 +84,10 @@ async function boot() {
   loadDashboard(); buildCal(); loadBookings();
   loadAttendance(); loadHousekeeping(); loadGuestList();
   loadLaundry(); loadComplaints(); loadAssets(); loadLostFound(); loadCommunity();
+  // Mark ready and drain queued clicks
+  window._bcReady = true;
+  (window._bcQueue || []).forEach(([t,i,e]) => window._bcDispatch(t,i,e));
+  window._bcQueue = [];
 }
 
 function populateSelects() {

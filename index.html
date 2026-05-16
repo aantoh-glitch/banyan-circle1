@@ -724,6 +724,20 @@ textarea.fc{resize:vertical;min-height:72px}
 
 </div><!-- shell -->
 
+
+<script>
+// Queue clicks that happen before module loads, replay after
+window._bcQueue = [];
+window._bcReady = false;
+window._bcClick = function(type, id, el) {
+  if (window._bcReady) {
+    window._bcDispatch(type, id, el);
+  } else {
+    window._bcQueue.push([type, id, el]);
+  }
+};
+window._bcDispatch = function(type, id, el) {};// overridden by module
+</script>
 <script type="module" src="/js/app.js"></script>
 </body>
 </html>
