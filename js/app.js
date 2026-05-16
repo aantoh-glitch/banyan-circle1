@@ -1,17 +1,19 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { registerSW, subscribePush, subscribeToNotifications } from '/js/push.js';
 
 const supabase = createClient(
   'https://wwdnuajhqfajvsexszpy.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// ---- AUTH ----
-const { data: { user } } = await supabase.auth.getUser();
-if (!user) { window.location.href = '/login.html'; }
+// ---- AUTH — PIN login uses localStorage ----
+const localUser = JSON.parse(localStorage.getItem('bc_user') || 'null');
+if (!localUser) {
+  window.location.href = '/login.html';
+  throw new Error('Not logged in'); // Stop script execution
+}
 
-const ini = n => n?.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase() || 'BC';
-document.getElementById('user-av').textContent = ini(user.email);
+const ini = n => (n || '?').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+document.getElementById('user-av').textContent = ini(localUser.name);
 
 // ---- DATE ----
 const today = new Date();
@@ -23,8 +25,6 @@ const lfDateEl = document.getElementById('lf-date');
 if (lfDateEl) lfDateEl.value = todayStr;
 
 // ---- PWA INSTALL ----
-await registerSW();
-await subscribePush(supabase, user.id, 'staff');
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault(); deferredPrompt = e;
@@ -58,7 +58,7 @@ window.toggleNotifPanel = () => {
 };
 window.clearNotifs = () => { notifs.length = 0; renderNotifs(); };
 document.addEventListener('click', e => { if (!e.target.closest('#notif-panel') && !e.target.closest('#notif-btn')) document.getElementById('notif-panel').classList.remove('open'); });
-subscribeToNotifications(supabase, user.id, 'staff', addNotif);
+// push notifications - configure after Supabase auth setup
 
 // ---- CACHE ----
 let properties = [], staffList = [], allAssets = [], allCommunity = [], hkFilter = 'post_checkout';

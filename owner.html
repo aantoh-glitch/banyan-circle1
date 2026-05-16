@@ -501,13 +501,12 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Auth guard — check localStorage first (PIN login), then Supabase session
+// Auth guard — PIN login only uses localStorage
 const localUser = JSON.parse(localStorage.getItem('bc_user') || 'null');
-const { data: { user } } = await sb.auth.getUser();
-if (!localUser && !user) { window.location.href = '/login.html'; }
-if (localUser && localUser.role !== 'owner') { window.location.href = '/index.html'; }
+if (!localUser) { window.location.href = '/login.html'; throw new Error('Not logged in'); }
+if (localUser.role !== 'owner') { window.location.href = '/index.html'; throw new Error('Not owner'); }
 
-const ownerName = localUser?.name || user?.user_metadata?.name || 'Owner';
+const ownerName = localUser.name || 'Owner';
 
 // Add floating "Manage team" button
 const fab = document.createElement('button');
@@ -520,11 +519,7 @@ document.body.appendChild(fab);
 const soBtn = document.createElement('button');
 soBtn.innerHTML = '<i class="ti ti-logout" style="font-size:14px"></i> Sign out';
 soBtn.style.cssText = 'position:fixed;top:16px;right:16px;padding:8px 14px;background:#fff;border:1px solid rgba(0,0,0,0.1);border-radius:999px;font-size:13px;cursor:pointer;font-family:inherit;color:#5F5E5A;display:flex;align-items:center;gap:5px;z-index:100';
-soBtn.onclick = async () => {
-  await sb.auth.signOut();
-  localStorage.removeItem('bc_user');
-  window.location.href = '/login.html';
-};
+soBtn.onclick = () => { localStorage.removeItem('bc_user'); window.location.href = '/login.html'; };
 document.body.appendChild(soBtn);
 
 window.closeStaffPanel = () => {
