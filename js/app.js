@@ -195,28 +195,25 @@ async function loadHousekeeping() {
 }
 
 function renderTaskCard(t) {
-  const s = t.is_completed ? 'done' : (t.status || 'not_started');
+  const done = t.is_completed;
   return `<div class="task-card" id="tc-${t.id}">
     <div class="task-card-hdr">
-      <div class="task-chk ${s==='done'?'chk-done':s==='in_progress'?'chk-prog':''}">
+      <div class="task-chk ${done?'chk-done':''}">
         <i class="ti ti-check"></i>
       </div>
       <div class="task-body">
-        <div class="task-name" style="${s==='done'?'text-decoration:line-through;color:var(--muted)':''}">${t.task_name}</div>
+        <div class="task-name" style="${done?'text-decoration:line-through;color:var(--muted)':''}">${t.task_name}</div>
         ${t.notes ? `<div class="task-meta">${t.notes}</div>` : ''}
       </div>
     </div>
     <div class="task-actions">
-      <button class="status-btn ${s==='not_started'?'s-ns':''}" onclick="setStatus('${t.id}','not_started',this)">
-        <i class="ti ti-circle" style="font-size:11px"></i> Not started
+      <button class="status-btn ${!done?'s-ns':''}" onclick="setStatus('${t.id}','pending',this)">
+        Pending
       </button>
-      <button class="status-btn ${s==='in_progress'?'s-ip':''}" onclick="setStatus('${t.id}','in_progress',this)">
-        <i class="ti ti-clock" style="font-size:11px"></i> In progress
+      <button class="status-btn ${done?'s-dn':''}" onclick="setStatus('${t.id}','done',this)">
+        Completed
       </button>
-      <button class="status-btn ${s==='done'?'s-dn':''}" onclick="setStatus('${t.id}','done',this)">
-        <i class="ti ti-check" style="font-size:11px"></i> Done
-      </button>
-      <button class="photo-btn ${t.photo_url?'photo-uploaded':''}" onclick="uploadPhoto('${t.id}',this)">
+      <button class="photo-btn ${t.photo_url?'photo-uploaded':''}" onclick="uploadPhoto('${t.id}',this)" style="margin-left:auto">
         <i class="ti ti-${t.photo_url?'photo':'camera'}"></i>
       </button>
     </div>
@@ -385,41 +382,138 @@ window.submitLaundry = async () => {
 
 // ---- COMPLAINTS ----
 async function loadComplaints() {
-  const { data } = await supabase.from('guest_complaints').select('*, properties(name), staff(name)').order('created_at',{ascending:false});
+  const { data } = await sb.from('guest_complaints')
+    .select('*, properties(name), staff(name)')
+    .order('created_at', { ascending: false });
   const el = document.getElementById('complaints-list');
-  if (!data?.length) { el.innerHTML='<div class="card"><div class="empty-msg">No complaints logged</div></div>'; return; }
-  const render = items => items.map(c=>`
-    <div style="padding:11px 0;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
-        <div style="font-size:14px;font-weight:500">${c.guest_name||'Guest'}</div>
-        <div style="display:flex;gap:5px;align-items:center">
-          <span class="bdg ${c.status==='open'?'bdg-r':c.status==='in_progress'?'bdg-a':'bdg-g'}">${c.status}</span>
-          ${c.status!=='resolved'?`<button style="font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-family:inherit" onclick="resolve('${c.id}')">Resolve ✓</button>`:''}
-        </div>
+  if (!data?.length) {
+    el.innerHTML = '<div class="card"><div class="empty-msg">No complaints yet</div></div>';
+    return;
+  }
+  const open = data.filter(c => c.status === 'open');
+  const inprog = data.filter(c => c.status === 'in_progress');
+  const done = data.filter(c => c.status === 'resolved');
+
+  const renderCard = c => `
+    <div onclick="openComplaint('${c.id}')" style="padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:500">${c.guest_name || 'Guest'}</div>
+        <span class="bdg ${c.status==='open'?'bdg-r':c.status==='in_progress'?'bdg-a':'bdg-g'}">${c.status.replace('_',' ')}</span>
       </div>
-      <div style="font-size:13px;color:var(--muted)">${c.complaint}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px">${c.properties?.name||''} · ${fmtDate(c.created_at?.split('T')[0])}</div>
-    </div>`).join('');
-  const open = data.filter(c=>c.status==='open');
-  const rest = data.filter(c=>c.status!=='open');
+      <div style="font-size:13px;color:var(--text);line-height:1.5">${c.complaint}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;display:flex;gap:10px">
+        <span>${c.properties?.name || ''}</span>
+        <span>${fmtDate(c.created_at?.split('T')[0])}</span>
+        ${c.staff ? '<span>→ ' + c.staff.name + '</span>' : ''}
+      </div>
+    </div>`;
+
   el.innerHTML = `
-    ${open.length?`<div class="card"><div class="card-ttl">Open (${open.length})</div>${render(open)}</div>`:''}
-    ${rest.length?`<div class="card"><div class="card-ttl">Resolved</div>${render(rest)}</div>`:''}`;
+    ${open.length ? `<div class="card"><div class="card-ttl">Open (${open.length})</div>${open.map(renderCard).join('')}</div>` : ''}
+    ${inprog.length ? `<div class="card"><div class="card-ttl">In progress (${inprog.length})</div>${inprog.map(renderCard).join('')}</div>` : ''}
+    ${done.length ? `<div class="card"><div class="card-ttl">Resolved</div>${done.map(renderCard).join('')}</div>` : ''}`;
 }
-window.resolve = async id => {
-  await supabase.from('guest_complaints').update({status:'resolved',resolved_at:new Date().toISOString()}).eq('id',id);
-  showToast('Marked resolved ✓'); loadComplaints(); loadDashboard();
+
+// Open complaint detail + assign sheet
+window.openComplaint = async (id) => {
+  const { data: c } = await sb.from('guest_complaints')
+    .select('*, properties(name), staff(name)')
+    .eq('id', id).single();
+  if (!c) return;
+
+  // Build modal
+  let modal = document.getElementById('comp-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'comp-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:flex-end;justify-content:center';
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    document.body.appendChild(modal);
+  }
+
+  const staffOpts = staffList.map(s => `<option value="${s.id}" ${c.assigned_to===s.id?'selected':''}>${s.name}</option>`).join('');
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto">
+      <div style="width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.1);margin:0 auto 20px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-family:'Playfair Display',serif;font-size:18px">Complaint</div>
+        <button onclick="document.getElementById('comp-modal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#5F5E5A;line-height:1">×</button>
+      </div>
+      <div style="font-size:13px;color:#5F5E5A;margin-bottom:6px">${c.guest_name || 'Guest'} · ${c.properties?.name || ''} · ${fmtDate(c.created_at?.split('T')[0])}</div>
+      <div style="font-size:15px;line-height:1.6;color:#2C2C2A;background:#F9F8F6;border-radius:10px;padding:14px;margin-bottom:20px">${c.complaint}</div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;color:#5F5E5A;margin-bottom:6px">Assign to</label>
+        <select id="modal-assign" style="width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:#2C2C2A;appearance:none">
+          <option value="">— Unassigned —</option>
+          ${staffOpts}
+        </select>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="assignComplaint('${c.id}')"
+          style="flex:1;padding:13px;background:#993C1D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">
+          Assign → Send to tasks
+        </button>
+        <button onclick="resolveComplaint('${c.id}')"
+          style="flex:1;padding:13px;background:#EAF3DE;color:#3B6D11;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">
+          Mark resolved
+        </button>
+      </div>
+    </div>`;
 };
-window.submitComplaint = async () => {
-  const { error } = await supabase.from('guest_complaints').insert({
-    property_id:document.getElementById('comp-prop-sel').value,
-    guest_name:document.getElementById('comp-guest').value||null,
-    complaint:document.getElementById('comp-text').value,
-    assigned_to:document.getElementById('comp-assign-sel').value||null,
+
+window.assignComplaint = async (compId) => {
+  const assignedTo = document.getElementById('modal-assign').value || null;
+
+  // Get complaint details
+  const { data: c } = await sb.from('guest_complaints')
+    .select('*, properties(name)').eq('id', compId).single();
+
+  // Update complaint status
+  await sb.from('guest_complaints').update({
+    status: 'in_progress',
+    assigned_to: assignedTo || null,
+  }).eq('id', compId);
+
+  // Create a task from this complaint
+  await sb.from('housekeeping_tasks').insert({
+    property_id: c.property_id,
+    task_type: 'regular',
+    task_name: 'Guest complaint: ' + c.complaint.slice(0, 80),
+    notes: 'From guest: ' + (c.guest_name || 'Guest'),
+    date: new Date().toISOString().split('T')[0],
+    status: 'not_started',
+    is_completed: false,
   });
-  if (error) { showToast('Error: '+error.message); return; }
-  showToast('Complaint logged ✓'); toggleForm('comp-form');
-  document.getElementById('comp-text').value='';
+
+  document.getElementById('comp-modal')?.remove();
+  showToast('Assigned & added to tasks ✓');
+  loadComplaints(); loadDashboard(); loadHousekeeping();
+};
+
+window.resolveComplaint = async (id) => {
+  await sb.from('guest_complaints').update({ status: 'resolved', resolved_at: new Date().toISOString() }).eq('id', id);
+  document.getElementById('comp-modal')?.remove();
+  showToast('Marked resolved ✓');
+  loadComplaints(); loadDashboard();
+};
+
+window.submitComplaint = async () => {
+  const text = document.getElementById('comp-text').value.trim();
+  if (!text) { showToast('Enter a complaint'); return; }
+  const { error } = await sb.from('guest_complaints').insert({
+    property_id: document.getElementById('comp-prop-sel').value,
+    guest_name: document.getElementById('comp-guest').value || null,
+    complaint: text,
+    assigned_to: document.getElementById('comp-assign-sel').value || null,
+    status: 'open',
+  });
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast('Complaint logged ✓');
+  toggleForm('comp-form');
+  document.getElementById('comp-text').value = '';
   loadComplaints(); loadDashboard();
 };
 

@@ -3,270 +3,84 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Guest</title>
+<title>Banyan Circle</title>
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#993C1D"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--br-m:#D85A30;--br-d:#712B13;--g:#3B6D11;--g-l:#EAF3DE;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--surface:#F1EFE8}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 
 /* Header */
-.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
-.hdr-back{width:34px;height:34px;border-radius:50%;background:var(--surface);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hdr-back i{font-size:17px;color:var(--muted)}
-.hdr-info{flex:1}
-.hdr-prop{font-size:15px;font-weight:500;color:var(--text)}
+.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+.back{width:36px;height:36px;border-radius:50%;background:#F1EFE8;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.back svg{width:18px;height:18px;stroke:#5F5E5A;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hdr-text{flex:1}
+.hdr-prop{font-size:15px;font-weight:500}
 .hdr-name{font-size:12px;color:var(--muted)}
-.hdr-mark{width:34px;height:34px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hdr-mark i{color:#fff;font-size:16px}
+.hdr-logo{width:34px;height:34px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-logo svg{width:16px;height:16px;fill:white}
 
-/* Screens */
-.screen{display:none;flex:1;flex-direction:column}
-.screen.on{display:flex}
+/* Page body */
+.body{flex:1;padding:24px 20px 0;display:flex;flex-direction:column}
+.page-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+textarea{width:100%;flex:1;min-height:240px;padding:16px;border:1.5px solid var(--border);border-radius:14px;font-size:16px;font-family:inherit;color:var(--text);background:var(--white);resize:none;outline:none;line-height:1.6;transition:border-color .15s}
+textarea:focus{border-color:var(--br)}
+textarea::placeholder{color:rgba(0,0,0,0.3)}
 
-/* Welcome / choose action */
-.welcome-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}
-.welcome-avatar{width:72px;height:72px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:500;color:var(--br-d);margin-bottom:16px}
-.welcome-name{font-family:'Playfair Display',serif;font-size:22px;text-align:center;margin-bottom:6px}
-.welcome-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:36px}
-.action-cards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px}
-.action-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:all .2s;text-align:left;width:100%;font-family:inherit}
-.action-card:hover{border-color:var(--br-m);box-shadow:0 4px 16px rgba(153,60,29,.1);transform:translateY(-1px)}
-.action-icon{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.action-icon i{font-size:24px}
-.icon-complaint{background:var(--br-l)}
-.icon-complaint i{color:var(--br)}
-.icon-feedback{background:var(--g-l)}
-.icon-feedback i{color:var(--g)}
-.action-body{flex:1}
-.action-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:3px}
-.action-sub{font-size:12px;color:var(--muted)}
-.action-arrow{color:rgba(0,0,0,.2);font-size:18px}
-
-/* Form screens */
-.form-body{flex:1;padding:16px;overflow-y:auto;padding-bottom:60px}
-.form-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
-.form-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-.fg{margin-bottom:14px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);appearance:none;transition:border-color .15s}
-.fc:focus{outline:none;border-color:var(--br)}
-textarea.fc{resize:vertical;min-height:100px}
-.chip-g{display:flex;flex-wrap:wrap;gap:7px}
-.chip{padding:7px 15px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--text);transition:all .15s;font-family:inherit}
-.chip.on{background:var(--br-l);border-color:var(--br-m);color:var(--br-d);font-weight:500}
-.chip.g.on{background:var(--g-l);border-color:var(--g);color:var(--g)}
-
-/* Rating stars */
-.rating-block{margin-bottom:14px}
-.rating-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
-.rating-row:last-child{border-bottom:none}
-.rating-lbl{font-size:13px;color:var(--text)}
-.stars{display:flex;gap:3px}
-.star{font-size:26px;color:rgba(0,0,0,.12);cursor:pointer;transition:color .1s;line-height:1;border:none;background:none;padding:0}
-.star.on{color:#EF9F27}
-
-/* Bottom submit */
-.submit-bar{position:sticky;bottom:0;padding:12px 16px;background:var(--white);border-top:1px solid var(--border)}
-.btn-submit{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+/* Submit bar */
+.submit-bar{padding:16px 20px;background:var(--white);border-top:1px solid var(--border);margin-top:16px;position:sticky;bottom:0}
+.submit-btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed}
 .btn-complaint{background:var(--br);color:#fff}
 .btn-feedback{background:var(--g);color:#fff}
-.btn-submit:hover{opacity:.9}
-.btn-submit:disabled{opacity:.6;cursor:not-allowed}
 
 /* Success */
-.success-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center}
-.success-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
-.success-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
-.success-sub{font-size:14px;color:var(--muted);line-height:1.6;max-width:280px;margin:0 auto 28px}
-.btn-home{padding:12px 28px;background:var(--white);border:1px solid var(--border);border-radius:999px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted)}
-
-.err-msg{font-size:13px;color:#A32D2D;margin-top:6px;display:none}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:15px;margin-bottom:12px}
+.success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.success-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.success-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:260px;margin:0 auto 28px}
+.back-home{padding:12px 28px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="shell">
-
-  <!-- Header -->
-  <div class="hdr" id="main-hdr">
-    <button class="hdr-back" onclick="goBack()"><i class="ti ti-arrow-left"></i></button>
-    <div class="hdr-info">
+  <div class="hdr">
+    <button class="back" id="back-btn">
+      <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="hdr-text">
       <div class="hdr-prop" id="hdr-prop">Banyan Circle</div>
-      <div class="hdr-name" id="hdr-name">Guest</div>
+      <div class="hdr-name" id="hdr-name"></div>
     </div>
-    <div class="hdr-mark"><i class="ti ti-tree"></i></div>
-  </div>
-
-  <!-- SCREEN: Welcome / choose -->
-  <div class="screen on" id="s-welcome">
-    <div class="welcome-body">
-      <div class="welcome-avatar" id="w-av">?</div>
-      <div class="welcome-name" id="w-name">Welcome</div>
-      <div class="welcome-sub" id="w-prop">How can we help you?</div>
-      <div class="action-cards">
-        <button class="action-card" onclick="show('s-complaint')">
-          <div class="action-icon icon-complaint"><i class="ti ti-message-exclamation"></i></div>
-          <div class="action-body">
-            <div class="action-title">Log a complaint</div>
-            <div class="action-sub">Report an issue — we'll fix it fast</div>
-          </div>
-          <i class="ti ti-chevron-right action-arrow"></i>
-        </button>
-        <button class="action-card" onclick="show('s-feedback')">
-          <div class="action-icon icon-feedback"><i class="ti ti-heart"></i></div>
-          <div class="action-body">
-            <div class="action-title">Share feedback</div>
-            <div class="action-sub">Tell us about your experience</div>
-          </div>
-          <i class="ti ti-chevron-right action-arrow"></i>
-        </button>
-      </div>
+    <div class="hdr-logo">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
     </div>
   </div>
 
-  <!-- SCREEN: Complaint -->
-  <div class="screen" id="s-complaint">
-    <div class="form-body">
-      <div class="form-title">Log a complaint</div>
-      <div class="form-sub">We'll attend to it immediately</div>
-
-      <div class="fg">
-        <label class="fl">Category</label>
-        <div class="chip-g" id="comp-cat-chips">
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">Cleanliness</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">AC / Heating</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">Plumbing</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">WiFi</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">Noise</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">Food</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">Staff</div>
-          <div class="chip" onclick="chip(this,'comp-cat-chips')">Other</div>
-        </div>
-      </div>
-
-      <div class="fg">
-        <label class="fl">Location</label>
-        <div class="chip-g" id="comp-loc-chips">
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Master bedroom</div>
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Guest bedroom</div>
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Bathroom</div>
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Kitchen</div>
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Living room</div>
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Pool / Garden</div>
-          <div class="chip" onclick="chip(this,'comp-loc-chips')">Entire property</div>
-        </div>
-      </div>
-
-      <div class="fg">
-        <label class="fl">Describe the issue</label>
-        <textarea class="fc" id="comp-text" placeholder="Tell us what happened…"></textarea>
-      </div>
-
-      <div class="fg">
-        <label class="fl">Urgency</label>
-        <div class="chip-g" id="urgency-chips">
-          <div class="chip" onclick="chip(this,'urgency-chips')">🔴 Urgent — fix now</div>
-          <div class="chip" onclick="chip(this,'urgency-chips')">🟡 Soon as possible</div>
-          <div class="chip" onclick="chip(this,'urgency-chips')">🟢 When convenient</div>
-        </div>
-      </div>
-
-      <div class="err-msg" id="comp-err"></div>
+  <div id="form-view" style="display:flex;flex-direction:column;flex:1">
+    <div class="body">
+      <div class="page-title" id="form-title"></div>
+      <div class="page-sub" id="form-sub"></div>
+      <textarea id="main-text" placeholder="Write here…"></textarea>
     </div>
     <div class="submit-bar">
-      <button class="btn-submit btn-complaint" id="comp-btn" onclick="submitComplaint()">
-        <i class="ti ti-send"></i> Submit complaint
-      </button>
+      <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
     </div>
   </div>
 
-  <!-- SCREEN: Feedback -->
-  <div class="screen" id="s-feedback">
-    <div class="form-body">
-      <div class="form-title">Your experience</div>
-      <div class="form-sub">Moments & Memories</div>
-
-      <div class="fg">
-        <label class="fl">Overall experience</label>
-        <div class="chip-g" id="overall-chips">
-          <div class="chip" onclick="chip(this,'overall-chips')">✨ Exceptional</div>
-          <div class="chip" onclick="chip(this,'overall-chips')">💛 Memorable</div>
-          <div class="chip" onclick="chip(this,'overall-chips')">😊 Comfortable</div>
-          <div class="chip" onclick="chip(this,'overall-chips')">💬 Could be better</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Rate your stay</div>
-        <div class="rating-row"><div class="rating-lbl">Arrival & welcome</div><div class="stars" data-k="arrival"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-        <div class="rating-row"><div class="rating-lbl">Cleanliness</div><div class="stars" data-k="clean"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-        <div class="rating-row"><div class="rating-lbl">Hospitality</div><div class="stars" data-k="hosp"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-        <div class="rating-row"><div class="rating-lbl">Food & beverages</div><div class="stars" data-k="food"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-        <div class="rating-row"><div class="rating-lbl">Design & spaces</div><div class="stars" data-k="design"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-        <div class="rating-row"><div class="rating-lbl">Location</div><div class="stars" data-k="loc"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-        <div class="rating-row"><div class="rating-lbl">Homekeeper</div><div class="stars" data-k="hk"><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button><button class="star">★</button></div></div>
-      </div>
-
-      <div class="fg">
-        <label class="fl">What did you enjoy most?</label>
-        <textarea class="fc" id="fb-enjoyed" placeholder="Tell us what made your stay special…"></textarea>
-      </div>
-
-      <div class="fg">
-        <label class="fl">Anything we could do better?</label>
-        <textarea class="fc" id="fb-improve" placeholder="We genuinely want to know…"></textarea>
-      </div>
-
-      <div class="fg">
-        <label class="fl">Would you return to Banyan Circle?</label>
-        <div class="chip-g" id="return-chips">
-          <div class="chip g" onclick="chip(this,'return-chips')">Without a doubt</div>
-          <div class="chip" onclick="chip(this,'return-chips')">Possibly</div>
-          <div class="chip" onclick="chip(this,'return-chips')">Unlikely</div>
-        </div>
-      </div>
-
-      <div class="fg">
-        <label class="fl">A personal note for the team (optional)</label>
-        <textarea class="fc" id="fb-note" placeholder="Leave a message for the Banyan Circle team…"></textarea>
-      </div>
-    </div>
-    <div class="submit-bar">
-      <button class="btn-submit btn-feedback" id="fb-btn" onclick="submitFeedback()">
-        <i class="ti ti-heart"></i> Submit feedback
-      </button>
+  <div id="success-view" style="display:none;flex:1;flex-direction:column">
+    <div class="success">
+      <div class="success-icon" id="s-icon"></div>
+      <div class="success-title" id="s-title"></div>
+      <div class="success-sub" id="s-sub"></div>
+      <button class="back-home" onclick="window.location.href='/login.html'">Done</button>
     </div>
   </div>
-
-  <!-- SCREEN: Success complaint -->
-  <div class="screen" id="s-comp-success">
-    <div class="success-body">
-      <div class="success-icon" style="background:#FAECE7">
-        <i class="ti ti-check" style="font-size:32px;color:var(--br)"></i>
-      </div>
-      <div class="success-title">Complaint logged</div>
-      <div class="success-sub">Our team has been notified and will attend to this right away. We're sorry for the inconvenience.</div>
-      <button class="btn-home" onclick="show('s-welcome')">Back to home</button>
-    </div>
-  </div>
-
-  <!-- SCREEN: Success feedback -->
-  <div class="screen" id="s-fb-success">
-    <div class="success-body">
-      <div class="success-icon" style="background:var(--g-l)">
-        <i class="ti ti-heart" style="font-size:32px;color:var(--g)"></i>
-      </div>
-      <div class="success-title">Thank you</div>
-      <div class="success-sub">Your feedback means the world to us. We look forward to welcoming you back to Banyan Circle.</div>
-      <button class="btn-home" onclick="show('s-welcome')">Back to home</button>
-    </div>
-  </div>
-
 </div>
 
 <script type="module">
@@ -276,136 +90,71 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Load guest from session
 const guest = JSON.parse(localStorage.getItem('bc_guest') || 'null');
-if (!guest || !guest.name) { window.location.href = '/login.html'; throw new Error('no guest'); }
+if (!guest || !guest.name) { window.location.href = '/login.html'; throw new Error(); }
 
-// Populate header and welcome
-const ini = n => (n||'?').trim().split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-document.getElementById('hdr-prop').textContent = guest.prop || 'Banyan Circle';
+const isComplaint = guest.action === 'complaint';
+
+// Header
+document.getElementById('hdr-prop').textContent = guest.prop;
 document.getElementById('hdr-name').textContent = guest.name;
-document.getElementById('w-av').textContent = ini(guest.name);
-document.getElementById('w-name').textContent = `Hello, ${guest.name.split(' ')[0]}`;
-document.getElementById('w-prop').textContent = guest.prop;
 
-// ---- Screen routing ----
-let currentScreen = 's-welcome';
+// Form
+document.getElementById('form-title').textContent = isComplaint ? 'Log a complaint' : 'Share feedback';
+document.getElementById('form-sub').textContent = isComplaint
+  ? 'Tell us what happened — we\'ll attend to it right away.'
+  : 'Tell us about your stay at Banyan Circle.';
 
-// Auto-jump based on action
-if (guest.action === 'complaint') show('s-complaint');
-else if (guest.action === 'feedback') show('s-feedback');
-window.show = id => {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
-  currentScreen = id;
-};
-window.goBack = () => {
-  if (currentScreen === 's-welcome') { window.location.href = '/login.html'; return; }
-  show('s-welcome');
-};
+const btn = document.getElementById('submit-btn');
+btn.className = 'submit-btn ' + (isComplaint ? 'btn-complaint' : 'btn-feedback');
+btn.textContent = isComplaint ? 'Submit complaint' : 'Submit feedback';
 
-// ---- Chips ----
-window.chip = (el, gId) => {
-  document.getElementById(gId).querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-};
+// Back
+document.getElementById('back-btn').onclick = () => window.location.href = '/login.html';
 
-// ---- Star ratings ----
-const ratings = {};
-document.querySelectorAll('.stars').forEach(group => {
-  const k = group.dataset.k;
-  ratings[k] = 0;
-  const stars = group.querySelectorAll('.star');
-  stars.forEach((star, i) => {
-    star.addEventListener('click', () => {
-      ratings[k] = i + 1;
-      stars.forEach((s, j) => s.classList.toggle('on', j <= i));
-    });
-    star.addEventListener('mouseenter', () => {
-      stars.forEach((s, j) => s.classList.toggle('on', j <= i));
-    });
-    star.addEventListener('mouseleave', () => {
-      stars.forEach((s, j) => s.classList.toggle('on', j < ratings[k]));
-    });
-  });
-});
-
-// ---- Get property ID ----
+// Get property ID
 async function getPropId() {
-  const { data } = await sb.from('properties').select('id').ilike('name', `%${guest.prop}%`).limit(1);
+  const { data } = await sb.from('properties').select('id').ilike('name', '%' + guest.prop + '%').limit(1);
   return data?.[0]?.id || null;
 }
 
-// ---- SUBMIT COMPLAINT ----
-window.submitComplaint = async () => {
-  const text = document.getElementById('comp-text').value.trim();
-  const err = document.getElementById('comp-err');
-  const btn = document.getElementById('comp-btn');
-  err.style.display = 'none';
-
-  if (!text) { err.textContent = 'Please describe the issue'; err.style.display = 'block'; return; }
-
+// Submit
+window.submitForm = async () => {
+  const text = document.getElementById('main-text').value.trim();
+  if (!text) { document.getElementById('main-text').focus(); return; }
   btn.disabled = true;
-  btn.innerHTML = '<i class="ti ti-loader-2"></i> Submitting…';
-
-  const cat = document.querySelector('#comp-cat-chips .chip.on')?.textContent || '';
-  const loc = document.querySelector('#comp-loc-chips .chip.on')?.textContent || '';
-  const urgency = document.querySelector('#urgency-chips .chip.on')?.textContent || '';
-  const propId = await getPropId();
-
-  const complaint = `${cat ? '['+cat+'] ' : ''}${loc ? '('+loc+') ' : ''}${text}${urgency ? ' | '+urgency : ''}`;
-
-  const { error } = await sb.from('guest_complaints').insert({
-    property_id: propId,
-    guest_name: guest.name,
-    complaint,
-    status: 'open',
-  });
-
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ti ti-send"></i> Submit complaint';
-
-  if (error) { err.textContent = 'Error: ' + error.message; err.style.display = 'block'; return; }
-
-  // Trigger real-time notification to staff (Supabase real-time handles this automatically
-  // since staff app subscribes to guest_complaints INSERT events)
-
-  localStorage.removeItem('bc_guest');
-  show('s-comp-success');
-};
-
-// ---- SUBMIT FEEDBACK ----
-window.submitFeedback = async () => {
-  const btn = document.getElementById('fb-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="ti ti-loader-2"></i> Submitting…';
+  btn.textContent = 'Submitting…';
 
   const propId = await getPropId();
 
-  const { error } = await sb.from('guest_feedback').insert({
-    guest_name: guest.name,
-    guest_phone: guest.phone || null,
-    property_id: propId,
-    overall_experience: document.querySelector('#overall-chips .chip.on')?.textContent || null,
-    enjoyed_most: document.getElementById('fb-enjoyed').value || null,
-    missing_or_feedback: document.getElementById('fb-improve').value || null,
-    would_return: document.querySelector('#return-chips .chip.on')?.textContent || null,
-    note: document.getElementById('fb-note').value || null,
-    arrival_rating: ratings.arrival || null,
-    cleanliness_rating: ratings.clean || null,
-    hospitality_rating: ratings.hosp || null,
-    food_rating: ratings.food || null,
-    design_rating: ratings.design || null,
-    location_rating: ratings.loc || null,
-    homekeeper_rating: ratings.hk || null,
-  });
+  if (isComplaint) {
+    await sb.from('guest_complaints').insert({
+      property_id: propId,
+      guest_name: guest.name,
+      complaint: text,
+      status: 'open',
+    });
+    // Success
+    document.getElementById('s-icon').innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>';
+    document.getElementById('s-icon').style.background = '#FAECE7';
+    document.getElementById('s-title').textContent = 'Complaint logged';
+    document.getElementById('s-sub').textContent = 'Our team has been notified and will look into this right away. We\'re sorry for the inconvenience.';
+  } else {
+    await sb.from('guest_feedback').insert({
+      property_id: propId,
+      guest_name: guest.name,
+      guest_phone: guest.phone || null,
+      missing_or_feedback: text,
+    });
+    document.getElementById('s-icon').innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+    document.getElementById('s-icon').style.background = '#EAF3DE';
+    document.getElementById('s-title').textContent = 'Thank you';
+    document.getElementById('s-sub').textContent = 'Your feedback means the world to us. We look forward to welcoming you back to Banyan Circle.';
+  }
 
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ti ti-heart"></i> Submit feedback';
-
-  if (error) { console.error(error); }
   localStorage.removeItem('bc_guest');
-  show('s-fb-success');
+  document.getElementById('form-view').style.display = 'none';
+  document.getElementById('success-view').style.display = 'flex';
 };
 </script>
 </body>
