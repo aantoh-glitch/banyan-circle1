@@ -192,6 +192,16 @@ async function loadHousekeeping() {
       ${tasks.map(t => renderTaskCard(t)).join('')}
     </div>`;
   }).join('');
+
+  // Event delegation for task buttons
+  el.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const action = btn.dataset.action;
+      const taskId = btn.dataset.task;
+      if (action === 'photo') { uploadPhoto(taskId, btn); }
+      else { setStatus(taskId, action, btn); }
+    });
+  });
 }
 
 function renderTaskCard(t) {
@@ -207,13 +217,13 @@ function renderTaskCard(t) {
       </div>
     </div>
     <div class="task-actions">
-      <button class="status-btn ${!done?'s-ns':''}" onclick="setStatus('${t.id}','pending',this)">
+      <button class="status-btn ${!done?'s-ns':''}" data-action="pending" data-task="${t.id}">
         Pending
       </button>
-      <button class="status-btn ${done?'s-dn':''}" onclick="setStatus('${t.id}','done',this)">
+      <button class="status-btn ${done?'s-dn':''}" data-action="done" data-task="${t.id}">
         Completed
       </button>
-      <button class="photo-btn ${t.photo_url?'photo-uploaded':''}" onclick="uploadPhoto('${t.id}',this)" style="margin-left:auto">
+      <button class="photo-btn ${t.photo_url?'photo-uploaded':''}" data-action="photo" data-task="${t.id}" style="margin-left:auto">
         <i class="ti ti-${t.photo_url?'photo':'camera'}"></i>
       </button>
     </div>
@@ -395,7 +405,7 @@ async function loadComplaints() {
   const done = data.filter(c => c.status === 'resolved');
 
   const renderCard = c => `
-    <div onclick="openComplaint('${c.id}')" style="padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer">
+    <div data-complaint-id="${c.id}" style="padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s" onmouseenter="this.style.background='#F9F8F6'" onmouseleave="this.style.background=''">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
         <div style="font-size:14px;font-weight:500">${c.guest_name || 'Guest'}</div>
         <span class="bdg ${c.status==='open'?'bdg-r':c.status==='in_progress'?'bdg-a':'bdg-g'}">${c.status.replace('_',' ')}</span>
@@ -412,6 +422,11 @@ async function loadComplaints() {
     ${open.length ? `<div class="card"><div class="card-ttl">Open (${open.length})</div>${open.map(renderCard).join('')}</div>` : ''}
     ${inprog.length ? `<div class="card"><div class="card-ttl">In progress (${inprog.length})</div>${inprog.map(renderCard).join('')}</div>` : ''}
     ${done.length ? `<div class="card"><div class="card-ttl">Resolved</div>${done.map(renderCard).join('')}</div>` : ''}`;
+
+  // Event delegation — works with module scope
+  el.querySelectorAll('[data-complaint-id]').forEach(row => {
+    row.addEventListener('click', () => openComplaint(row.dataset.complaintId));
+  });
 }
 
 // Open complaint detail + assign sheet
@@ -438,7 +453,7 @@ window.openComplaint = async (id) => {
       <div style="width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.1);margin:0 auto 20px"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div style="font-family:'Playfair Display',serif;font-size:18px">Complaint</div>
-        <button onclick="document.getElementById('comp-modal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#5F5E5A;line-height:1">×</button>
+        <button id="btn-close-modal" style="background:none;border:none;font-size:24px;cursor:pointer;color:#5F5E5A;line-height:1">×</button>
       </div>
       <div style="font-size:13px;color:#5F5E5A;margin-bottom:6px">${c.guest_name || 'Guest'} · ${c.properties?.name || ''} · ${fmtDate(c.created_at?.split('T')[0])}</div>
       <div style="font-size:15px;line-height:1.6;color:#2C2C2A;background:#F9F8F6;border-radius:10px;padding:14px;margin-bottom:20px">${c.complaint}</div>
@@ -452,16 +467,21 @@ window.openComplaint = async (id) => {
       </div>
 
       <div style="display:flex;gap:10px">
-        <button onclick="assignComplaint('${c.id}')"
+        <button id="btn-assign-modal"
           style="flex:1;padding:13px;background:#993C1D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">
           Assign → Send to tasks
         </button>
-        <button onclick="resolveComplaint('${c.id}')"
+        <button id="btn-resolve-modal"
           style="flex:1;padding:13px;background:#EAF3DE;color:#3B6D11;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">
           Mark resolved
         </button>
       </div>
     </div>`;
+
+  const cId = c.id;
+  document.getElementById('btn-close-modal').onclick = () => modal.remove();
+  document.getElementById('btn-assign-modal').onclick = () => assignComplaint(cId);
+  document.getElementById('btn-resolve-modal').onclick = () => resolveComplaint(cId);
 };
 
 window.assignComplaint = async (compId) => {
