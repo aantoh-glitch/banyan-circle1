@@ -2,173 +2,215 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Banyan Circle</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#993C1D"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Banyan Circle"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --br:#993C1D;--br-l:#FAECE7;--br-m:#D85A30;--br-d:#712B13;
-  --text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
-  --bg:#F9F8F6;--white:#fff;--surface:#F1EFE8;
-}
+:root{--br:#993C1D;--br-l:#FAECE7;--br-m:#D85A30;--br-d:#712B13;--g:#3B6D11;--g-l:#EAF3DE;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--surface:#F1EFE8}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 
-.wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px}
+/* Screens */
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px}
+.screen.on{display:flex}
 
-.brand{text-align:center;margin-bottom:40px}
-.brand-mark{width:64px;height:64px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.brand-mark i{color:#fff;font-size:30px}
-.brand-name{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);margin-bottom:6px}
-.brand-tagline{font-size:14px;color:var(--muted)}
+/* Brand */
+.brand{text-align:center;margin-bottom:36px}
+.brand-mark{width:68px;height:68px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 20px rgba(153,60,29,0.25)}
+.brand-mark i{color:#fff;font-size:32px}
+.brand-name{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);letter-spacing:-0.5px}
+.brand-tag{font-size:13px;color:var(--muted);margin-top:4px}
 
-.cards{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px}
+/* Two main buttons */
+.btn-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px}
+.main-btn{width:100%;padding:18px 20px;border-radius:16px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;display:flex;align-items:center;gap:14px;transition:all .2s;text-align:left}
+.main-btn-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.main-btn-icon i{font-size:22px}
+.main-btn-body{flex:1}
+.main-btn-title{font-size:16px;font-weight:500;margin-bottom:2px}
+.main-btn-sub{font-size:12px;opacity:.75}
+.main-btn-arrow{font-size:18px;opacity:.4}
+.btn-login{background:var(--br);color:#fff}
+.btn-login .main-btn-icon{background:rgba(255,255,255,.2)}
+.btn-login .main-btn-icon i{color:#fff}
+.btn-login:hover{background:var(--br-d);transform:translateY(-1px)}
+.btn-guest{background:var(--white);color:var(--text);border:1px solid var(--border)}
+.btn-guest .main-btn-icon{background:var(--g-l)}
+.btn-guest .main-btn-icon i{color:var(--g)}
+.btn-guest:hover{border-color:var(--g);transform:translateY(-1px)}
 
-.entry-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:20px;cursor:pointer;transition:all .2s;text-decoration:none;display:flex;align-items:center;gap:16px}
-.entry-card:hover{border-color:var(--br-m);box-shadow:0 4px 20px rgba(153,60,29,0.1);transform:translateY(-1px)}
-.entry-card:active{transform:translateY(0)}
-
-.card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.card-icon i{font-size:22px}
-.icon-staff{background:#FAECE7}
-.icon-staff i{color:#993C1D}
-.icon-guest{background:#EAF3DE}
-.icon-guest i{color:#3B6D11}
-.icon-owner{background:#E6F1FB}
-.icon-owner i{color:#185FA5}
-
-.card-body{flex:1}
-.card-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:3px}
-.card-desc{font-size:12px;color:var(--muted)}
-.card-arrow{color:var(--border);font-size:18px;transition:color .2s}
-.entry-card:hover .card-arrow{color:var(--br)}
-
-.divider{display:flex;align-items:center;gap:10px;margin:4px 0}
-.divider-line{flex:1;height:1px;background:var(--border)}
-.divider-text{font-size:11px;color:var(--muted)}
-
-/* Login form */
-.login-wrap{display:none;width:100%;max-width:360px}
+/* People list screen */
+.screen-inner{width:100%;max-width:360px}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;margin-bottom:20px;font-family:inherit;padding:0}
-.back-btn i{font-size:16px}
-.login-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:24px}
-.login-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
-.login-icon i{font-size:22px}
-.login-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:4px}
-.login-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.screen-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px}
+.screen-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
 
+.people-list{display:flex;flex-direction:column;gap:10px}
+.person-btn{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;width:100%;font-family:inherit;text-align:left}
+.person-btn:hover{border-color:var(--br-m);transform:translateY(-1px);box-shadow:0 4px 16px rgba(153,60,29,0.08)}
+.person-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0}
+.av-owner{background:#E6F1FB;color:#0C447C}
+.av-staff{background:var(--br-l);color:var(--br-d)}
+.person-info{flex:1}
+.person-name{font-size:15px;font-weight:500;color:var(--text)}
+.person-role{font-size:12px;color:var(--muted);margin-top:2px}
+.person-arrow{color:var(--border);font-size:18px}
+
+/* PIN screen */
+.pin-wrap{width:100%;max-width:320px;text-align:center}
+.pin-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;margin:0 auto 14px}
+.pin-name{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px}
+.pin-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:28px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all .15s}
+.pin-dot.filled{background:var(--br);border-color:var(--br)}
+.pin-dot.error{background:var(--r,#A32D2D);border-color:var(--r,#A32D2D)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:260px;margin:0 auto}
+.pin-key{height:62px;border-radius:12px;border:1px solid var(--border);background:var(--white);font-size:22px;font-weight:400;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pin-key:active{background:var(--br-l);border-color:var(--br-m);transform:scale(.96)}
+.pin-key.del{font-size:18px;color:var(--muted)}
+.pin-key.empty{border:none;background:none;cursor:default}
+.pin-err{font-size:13px;color:#A32D2D;margin-top:14px;min-height:20px}
+
+/* Owner email login fallback */
+.email-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:24px;width:100%;max-width:360px}
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);transition:border-color .15s;appearance:none}
 .fc:focus{outline:none;border-color:var(--br)}
+.btn-primary{width:100%;padding:13px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.err-msg{font-size:13px;color:#A32D2D;margin-top:8px}
 
-.btn{width:100%;padding:13px;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;margin-top:6px}
-.btn-staff{background:var(--br);color:#fff}
-.btn-guest{background:#3B6D11;color:#fff}
-.btn-owner{background:#185FA5;color:#fff}
-.btn:hover{opacity:.9}
-.btn:disabled{opacity:.6;cursor:not-allowed}
+/* Guest screen */
+.guest-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:24px;width:100%;max-width:360px}
+.guest-hero{text-align:center;margin-bottom:20px}
+.guest-hero-icon{width:56px;height:56px;background:var(--g-l);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.guest-hero-icon i{font-size:26px;color:var(--g)}
+.guest-hero-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
+.guest-hero-sub{font-size:13px;color:var(--muted)}
+.btn-guest-primary{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
 
-.err{font-size:13px;color:#A32D2D;margin-top:8px;display:none}
-
-.footer-text{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
+.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- Brand -->
+<!-- SCREEN 1: Landing -->
+<div class="screen on" id="s-landing">
   <div class="brand">
     <div class="brand-mark"><i class="ti ti-tree"></i></div>
     <div class="brand-name">Banyan Circle</div>
-    <div class="brand-tagline">Curated spaces, people & experiences</div>
+    <div class="brand-tag">Curated spaces, people & experiences</div>
   </div>
-
-  <!-- Entry selection -->
-  <div class="cards" id="entry-screen">
-    <a class="entry-card" onclick="showLogin('staff')">
-      <div class="card-icon icon-staff"><i class="ti ti-users"></i></div>
-      <div class="card-body">
-        <div class="card-title">Staff</div>
-        <div class="card-desc">Attendance, housekeeping, laundry & ops</div>
+  <div class="btn-wrap">
+    <button class="main-btn btn-login" onclick="show('s-people')">
+      <div class="main-btn-icon"><i class="ti ti-login"></i></div>
+      <div class="main-btn-body">
+        <div class="main-btn-title">Login</div>
+        <div class="main-btn-sub">Staff & owner access</div>
       </div>
-      <i class="ti ti-chevron-right card-arrow"></i>
-    </a>
-
-    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
-
-    <a class="entry-card" onclick="showLogin('guest')">
-      <div class="card-icon icon-guest"><i class="ti ti-heart"></i></div>
-      <div class="card-body">
-        <div class="card-title">Guest</div>
-        <div class="card-desc">Share your experience & feedback</div>
+      <i class="ti ti-chevron-right main-btn-arrow"></i>
+    </button>
+    <button class="main-btn btn-guest" onclick="show('s-guest')">
+      <div class="main-btn-icon"><i class="ti ti-heart"></i></div>
+      <div class="main-btn-body">
+        <div class="main-btn-title">Guest</div>
+        <div class="main-btn-sub">Share your experience</div>
       </div>
-      <i class="ti ti-chevron-right card-arrow"></i>
-    </a>
-
-    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
-
-    <a class="entry-card" onclick="showLogin('owner')">
-      <div class="card-icon icon-owner"><i class="ti ti-chart-bar"></i></div>
-      <div class="card-body">
-        <div class="card-title">Owner</div>
-        <div class="card-desc">Revenue, occupancy & property analytics</div>
-      </div>
-      <i class="ti ti-chevron-right card-arrow"></i>
-    </a>
+      <i class="ti ti-chevron-right main-btn-arrow"></i>
+    </button>
   </div>
+  <div class="footer">Banyan Circle · Boutique hospitality</div>
+</div>
 
-  <!-- Staff login -->
-  <div class="login-wrap" id="login-staff">
-    <button class="back-btn" onclick="showEntry()"><i class="ti ti-arrow-left"></i> Back</button>
-    <div class="login-card">
-      <div class="login-icon icon-staff"><i class="ti ti-users"></i></div>
-      <div class="login-title">Staff login</div>
-      <div class="login-sub">Operations & property management</div>
-      <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="staff-email" placeholder="you@banyancircle.com"/></div>
-      <div class="fg"><label class="fl">Password</label><input type="password" class="fc" id="staff-pw" placeholder="••••••••"/></div>
-      <div class="err" id="staff-err"></div>
-      <button class="btn btn-staff" id="staff-btn" onclick="login('staff')"><i class="ti ti-login"></i> Sign in to ops</button>
+<!-- SCREEN 2: People list -->
+<div class="screen" id="s-people">
+  <div class="screen-inner">
+    <button class="back-btn" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Back</button>
+    <div class="screen-title">Who are you?</div>
+    <div class="screen-sub">Select your name to continue</div>
+    <div class="people-list" id="people-list">
+      <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Loading…</div>
     </div>
   </div>
+</div>
 
-  <!-- Guest login / access -->
-  <div class="login-wrap" id="login-guest">
-    <button class="back-btn" onclick="showEntry()"><i class="ti ti-arrow-left"></i> Back</button>
-    <div class="login-card">
-      <div class="login-icon icon-guest"><i class="ti ti-heart"></i></div>
-      <div class="login-title">Welcome, guest</div>
-      <div class="login-sub">We'd love to hear about your stay</div>
-      <div class="fg"><label class="fl">Your name</label><input type="text" class="fc" id="guest-name" placeholder="Your name"/></div>
-      <div class="fg"><label class="fl">Mobile number</label><input type="tel" class="fc" id="guest-phone" placeholder="+91 98765 43210"/></div>
+<!-- SCREEN 3: PIN entry -->
+<div class="screen" id="s-pin">
+  <div class="pin-wrap">
+    <button class="back-btn" style="justify-content:center;margin-bottom:24px" onclick="show('s-people')"><i class="ti ti-arrow-left"></i> Back</button>
+    <div class="pin-avatar" id="pin-av"></div>
+    <div class="pin-name" id="pin-name"></div>
+    <div class="pin-sub" id="pin-sub">Enter your 4-digit PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <div class="pin-key empty"></div>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()"><i class="ti ti-backspace"></i></button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+  </div>
+</div>
+
+<!-- SCREEN 4: Owner email login (fallback / first time) -->
+<div class="screen" id="s-owner-login">
+  <div class="screen-inner">
+    <button class="back-btn" onclick="show('s-people')"><i class="ti ti-arrow-left"></i> Back</button>
+    <div class="screen-title">Owner login</div>
+    <div class="screen-sub">Sign in with your email</div>
+    <div class="email-card">
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="owner-email" placeholder="you@banyancircle.com"/></div>
+      <div class="fg"><label class="fl">Password</label><input type="password" class="fc" id="owner-pw" placeholder="••••••••"/></div>
+      <div class="err-msg" id="owner-err" style="display:none"></div>
+      <button class="btn-primary" id="owner-btn" onclick="ownerLogin()"><i class="ti ti-login"></i> Sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 5: Guest -->
+<div class="screen" id="s-guest">
+  <div class="screen-inner">
+    <button class="back-btn" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Back</button>
+    <div class="guest-card">
+      <div class="guest-hero">
+        <div class="guest-hero-icon"><i class="ti ti-heart"></i></div>
+        <div class="guest-hero-title">Welcome, guest</div>
+        <div class="guest-hero-sub">We'd love to hear about your stay</div>
+      </div>
+      <div class="fg"><label class="fl">Your name</label><input type="text" class="fc" id="g-name" placeholder="Your full name"/></div>
+      <div class="fg"><label class="fl">Mobile number</label><input type="tel" class="fc" id="g-phone" placeholder="+91 98765 43210"/></div>
       <div class="fg"><label class="fl">Property you stayed at</label>
-        <select class="fc" id="guest-prop">
+        <select class="fc" id="g-prop">
           <option value="">Select property…</option>
           <option>Villa 21</option>
           <option>19A Link Heritage</option>
         </select>
       </div>
-      <div class="err" id="guest-err"></div>
-      <button class="btn btn-guest" onclick="guestAccess()"><i class="ti ti-star"></i> Share my experience</button>
+      <div class="err-msg" id="guest-err" style="display:none"></div>
+      <button class="btn-guest-primary" onclick="guestEnter()"><i class="ti ti-arrow-right"></i> Continue</button>
     </div>
   </div>
-
-  <!-- Owner login -->
-  <div class="login-wrap" id="login-owner">
-    <button class="back-btn" onclick="showEntry()"><i class="ti ti-arrow-left"></i> Back</button>
-    <div class="login-card">
-      <div class="login-icon icon-owner"><i class="ti ti-chart-bar"></i></div>
-      <div class="login-title">Owner dashboard</div>
-      <div class="login-sub">Revenue, occupancy & analytics</div>
-      <div class="fg"><label class="fl">Email</label><input type="email" class="fc" id="owner-email" placeholder="owner@banyancircle.com"/></div>
-      <div class="fg"><label class="fl">Password</label><input type="password" class="fc" id="owner-pw" placeholder="••••••••"/></div>
-      <div class="err" id="owner-err"></div>
-      <button class="btn btn-owner" id="owner-btn" onclick="login('owner')"><i class="ti ti-login"></i> View dashboard</button>
-    </div>
-  </div>
-
-  <div class="footer-text">Banyan Circle · Curated hospitality</div>
 </div>
 
 <script type="module">
@@ -178,62 +220,166 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
 );
 
-// Check if already logged in
+// Check existing session
 const { data: { user } } = await supabase.auth.getUser();
 if (user) {
   const meta = user.user_metadata;
-  if (meta?.role === 'owner') window.location.href = '/owner.html';
-  else window.location.href = '/index.html';
+  window.location.href = meta?.role === 'owner' ? '/owner.html' : '/index.html';
 }
 
-window.showLogin = (type) => {
-  document.getElementById('entry-screen').style.display = 'none';
-  document.getElementById('login-' + type).style.display = 'block';
+// ---- Screen routing ----
+window.show = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
 };
 
-window.showEntry = () => {
-  document.querySelectorAll('.login-wrap').forEach(el => el.style.display = 'none');
-  document.getElementById('entry-screen').style.display = 'flex';
+// ---- Load people list ----
+let selectedPerson = null;
+let pinEntry = '';
+
+async function loadPeople() {
+  // Load staff from DB + hardcoded owner entries
+  const { data: staff } = await supabase.from('staff').select('*').order('name');
+
+  // Load owner accounts (users with owner role in metadata)
+  // We'll show them from a local list stored in staff table with role='owner'
+  const people = staff || [];
+
+  const el = document.getElementById('people-list');
+  if (!people.length) {
+    // No staff added yet — show owner email login only
+    el.innerHTML = `
+      <button class="person-btn" onclick="window.selectPerson({name:'Owner',role:'owner',isOwner:true})">
+        <div class="person-av av-owner">OW</div>
+        <div class="person-info"><div class="person-name">Owner</div><div class="person-role">Full access</div></div>
+        <i class="ti ti-chevron-right person-arrow"></i>
+      </button>`;
+    return;
+  }
+
+  // Separate owners from staff
+  const owners = people.filter(p => p.designation === 'Owner');
+  const staffOnly = people.filter(p => p.designation !== 'Owner');
+
+  el.innerHTML = [
+    ...owners.map(p => personCard(p, true)),
+    ...staffOnly.map(p => personCard(p, false)),
+  ].join('');
+}
+
+function personCard(p, isOwner) {
+  const ini = p.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  return `<button class="person-btn" onclick='selectPerson(${JSON.stringify({...p, isOwner})})'>
+    <div class="person-av ${isOwner?'av-owner':'av-staff'}">${ini}</div>
+    <div class="person-info">
+      <div class="person-name">${p.name}</div>
+      <div class="person-role">${isOwner?'Owner · Full access':p.designation||'Staff'}</div>
+    </div>
+    <i class="ti ti-chevron-right person-arrow"></i>
+  </button>`;
+}
+
+window.selectPerson = person => {
+  selectedPerson = person;
+  pinEntry = '';
+  updatePinDots();
+  document.getElementById('pin-err').textContent = '';
+
+  const ini = person.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  const av = document.getElementById('pin-av');
+  av.textContent = ini;
+  av.className = `pin-avatar ${person.isOwner?'av-owner':'av-staff'}`;
+  document.getElementById('pin-name').textContent = person.name;
+  document.getElementById('pin-sub').textContent = person.isOwner
+    ? (person.pin ? 'Enter your 4-digit PIN' : 'Use your email & password')
+    : 'Enter your 4-digit PIN';
+
+  // Owners without PIN go to email login
+  if (person.isOwner && !person.pin) {
+    show('s-owner-login');
+    return;
+  }
+  show('s-pin');
 };
 
-window.login = async (role) => {
-  const email = document.getElementById(role + '-email').value;
-  const pw    = document.getElementById(role + '-pw').value;
-  const btn   = document.getElementById(role + '-btn');
-  const err   = document.getElementById(role + '-err');
+// ---- PIN logic ----
+window.pinKey = digit => {
+  if (pinEntry.length >= 4) return;
+  pinEntry += digit;
+  updatePinDots();
+  if (pinEntry.length === 4) setTimeout(checkPin, 120);
+};
+
+window.pinDel = () => {
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+};
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('d' + i);
+    d.className = 'pin-dot' + (i < pinEntry.length ? ' filled' : '');
+  }
+}
+
+async function checkPin() {
+  const errEl = document.getElementById('pin-err');
+  const storedPin = selectedPerson.pin;
+
+  if (pinEntry !== storedPin) {
+    // Flash red
+    for (let i = 0; i < 4; i++) document.getElementById('d' + i).className = 'pin-dot error';
+    errEl.textContent = 'Incorrect PIN. Try again.';
+    setTimeout(() => { pinEntry = ''; updatePinDots(); errEl.textContent = ''; }, 1200);
+    return;
+  }
+
+  // PIN correct — sign in via Supabase using stored email
+  const email = selectedPerson.email;
+  const password = 'BC_' + storedPin + '_' + selectedPerson.id; // deterministic password
+  errEl.textContent = '';
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { errEl.textContent = 'Login failed. Contact owner.'; pinEntry = ''; updatePinDots(); return; }
+
+  window.location.href = selectedPerson.isOwner ? '/owner.html' : '/index.html';
+}
+
+// ---- Owner email login ----
+window.ownerLogin = async () => {
+  const btn = document.getElementById('owner-btn');
+  const err = document.getElementById('owner-err');
   err.style.display = 'none';
-  btn.disabled = true;
-  btn.textContent = 'Signing in…';
+  btn.disabled = true; btn.textContent = 'Signing in…';
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw });
+  const { error } = await supabase.auth.signInWithPassword({
+    email: document.getElementById('owner-email').value,
+    password: document.getElementById('owner-pw').value,
+  });
 
   if (error) {
-    err.textContent = error.message;
-    err.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = role === 'owner' ? 'View dashboard' : 'Sign in to ops';
+    err.textContent = error.message; err.style.display = 'block';
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i> Sign in';
     return;
   }
 
-  // Update user metadata with role
-  await supabase.auth.updateUser({ data: { role } });
-  window.location.href = role === 'owner' ? '/owner.html' : '/index.html';
+  // Set owner role in metadata
+  await supabase.auth.updateUser({ data: { role: 'owner' } });
+  window.location.href = '/owner.html';
 };
 
-window.guestAccess = () => {
-  const name  = document.getElementById('guest-name').value.trim();
-  const phone = document.getElementById('guest-phone').value.trim();
-  const prop  = document.getElementById('guest-prop').value;
-  const err   = document.getElementById('guest-err');
-  if (!name || !prop) {
-    err.textContent = 'Please enter your name and select a property.';
-    err.style.display = 'block';
-    return;
-  }
-  // Store guest info in sessionStorage and go to feedback page
-  sessionStorage.setItem('guest', JSON.stringify({ name, phone, prop }));
+// ---- Guest ----
+window.guestEnter = () => {
+  const name = document.getElementById('g-name').value.trim();
+  const prop = document.getElementById('g-prop').value;
+  const err = document.getElementById('guest-err');
+  if (!name || !prop) { err.textContent='Please fill your name and select a property.'; err.style.display='block'; return; }
+  err.style.display = 'none';
+  sessionStorage.setItem('guest', JSON.stringify({ name, phone: document.getElementById('g-phone').value, prop }));
   window.location.href = '/guest.html';
 };
+
+loadPeople();
 </script>
 </body>
 </html>
