@@ -1,5 +1,5 @@
 // Banyan Circle Service Worker — PWA + Web Push
-const CACHE = 'bc-v1';
+const CACHE = 'bc-v3';
 const ASSETS = ['/login.html', '/index.html', '/guest.html', '/owner.html', '/css/app.css', '/js/supabase.js', '/js/push.js', '/manifest.json'];
 
 // Install — cache core assets

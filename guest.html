@@ -277,8 +277,8 @@ const sb = createClient(
 );
 
 // Load guest from session
-const guest = JSON.parse(localStorage.getItem('bc_guest') || '{}');
-if (!guest.name) { window.location.href = '/login.html'; }
+const guest = JSON.parse(localStorage.getItem('bc_guest') || 'null');
+if (!guest || !guest.name) { window.location.href = '/login.html'; throw new Error('no guest'); }
 
 // Populate header and welcome
 const ini = n => (n||'?').trim().split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
