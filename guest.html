@@ -290,6 +290,10 @@ document.getElementById('w-prop').textContent = guest.prop;
 
 // ---- Screen routing ----
 let currentScreen = 's-welcome';
+
+// Auto-jump based on action
+if (guest.action === 'complaint') show('s-complaint');
+else if (guest.action === 'feedback') show('s-feedback');
 window.show = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
