@@ -3,159 +3,318 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle</title>
-<link rel="manifest" href="/manifest.json"/>
+<title>Banyan Circle — Guest</title>
 <meta name="theme-color" content="#993C1D"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-
-/* Header */
-.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
-.back{width:36px;height:36px;border-radius:50%;background:#F1EFE8;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.back svg{width:18px;height:18px;stroke:#5F5E5A;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.hdr-text{flex:1}
-.hdr-prop{font-size:15px;font-weight:500}
-.hdr-name{font-size:12px;color:var(--muted)}
-.hdr-logo{width:34px;height:34px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hdr-logo svg{width:16px;height:16px;fill:white}
-
-/* Page body */
-.body{flex:1;padding:24px 20px 0;display:flex;flex-direction:column}
-.page-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:6px}
-.page-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
-textarea{width:100%;flex:1;min-height:240px;padding:16px;border:1.5px solid var(--border);border-radius:14px;font-size:16px;font-family:inherit;color:var(--text);background:var(--white);resize:none;outline:none;line-height:1.6;transition:border-color .15s}
-textarea:focus{border-color:var(--br)}
-textarea::placeholder{color:rgba(0,0,0,0.3)}
-
-/* Submit bar */
-.submit-bar{padding:16px 20px;background:var(--white);border-top:1px solid var(--border);margin-top:16px;position:sticky;bottom:0}
-.submit-btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
-.submit-btn:disabled{opacity:.6;cursor:not-allowed}
-.btn-complaint{background:var(--br);color:#fff}
-.btn-feedback{background:var(--g);color:#fff}
-
-/* Success */
-.success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
-.success-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-.success-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:8px}
-.success-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:260px;margin:0 auto 28px}
-.back-home{padding:12px 28px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr-logo{width:36px;height:36px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-logo svg{width:18px;height:18px;fill:white}
+.hdr-info{flex:1}
+.hdr-name{font-size:15px;font-weight:500}
+.hdr-prop{font-size:12px;color:var(--muted)}
+.hdr-out{background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);font-family:inherit;padding:4px 8px;border-radius:6px}
+.bnav{background:var(--white);border-top:1px solid var(--border);display:flex;position:sticky;bottom:0;z-index:50}
+.bnt{flex:1;padding:10px 2px 8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:10px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.bnt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.bnt.on{color:var(--br)}
+.pg{display:none;padding:18px 16px 100px}
+.pg.on{display:block}
+.pg-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:5px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.fg{margin-bottom:15px}
+.fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.fc{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;transition:border-color .15s}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:none;min-height:150px;line-height:1.6}
+.fc::placeholder{color:rgba(0,0,0,.28)}
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:all .15s;background:var(--white)}
+.upload-zone:active{border-color:var(--br);background:var(--br-l)}
+.upload-zone svg{width:28px;height:28px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:8px}
+.upload-zone p{font-size:13px;color:var(--muted)}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.file-item{background:var(--g-l);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--g);display:flex;align-items:center;gap:8px}
+.sub-bar{position:sticky;bottom:62px;padding:14px 0 0;background:linear-gradient(transparent,var(--bg) 50%);margin:14px -16px -18px;padding:16px 16px 0}
+.btn-sub{width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-sub:disabled{opacity:.6;cursor:not-allowed}
+.btn-br{background:var(--br);color:#fff}
+.btn-g{background:var(--g);color:#fff}
+.btn-a{background:var(--a);color:#fff}
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px;text-align:center;padding:32px}
+.s-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.s-icon svg{width:34px;height:34px;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
+.s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:260px;margin:0 auto 24px}
+.btn-again{padding:11px 26px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+.done-banner{background:var(--g-l);border-radius:10px;padding:13px 16px;font-size:13px;color:var(--g);display:none;align-items:center;gap:10px;margin-bottom:18px}
+.done-banner svg{width:16px;height:16px;stroke:var(--g);fill:none;stroke-width:2.5;flex-shrink:0}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:12px}
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-a{background:var(--a-l);color:var(--a)}.bdg-g{background:var(--g-l);color:var(--g)}
+.lf-row{padding:11px 0;border-bottom:1px solid var(--border)}
+.lf-row:last-child{border-bottom:none}
+.tip-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
+.tip-cat{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.tip-name{font-size:15px;font-weight:500;margin-bottom:5px}
+.tip-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+.tip-tag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;margin-right:4px;margin-bottom:3px}
+.tf{flex:none;padding:7px 16px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.tf.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="shell">
-  <div class="hdr">
-    <button class="back" id="back-btn">
-      <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
-    </button>
-    <div class="hdr-text">
-      <div class="hdr-prop" id="hdr-prop">Banyan Circle</div>
-      <div class="hdr-name" id="hdr-name"></div>
-    </div>
-    <div class="hdr-logo">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
-    </div>
-  </div>
+<div class="hdr">
+  <div class="hdr-logo"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg></div>
+  <div class="hdr-info"><div class="hdr-name" id="hdr-name">Guest</div><div class="hdr-prop" id="hdr-prop">Banyan Circle</div></div>
+  <button class="hdr-out" onclick="signOut()">Sign out</button>
+</div>
 
-  <div id="form-view" style="display:flex;flex-direction:column;flex:1">
-    <div class="body">
-      <div class="page-title" id="form-title"></div>
-      <div class="page-sub" id="form-sub"></div>
-      <textarea id="main-text" placeholder="Write here…"></textarea>
+<!-- CHECK-IN -->
+<div class="pg on" id="pg-checkin">
+  <div class="pg-title">Check-in</div>
+  <div class="pg-sub">Tell us about your journey</div>
+  <div class="done-banner" id="ci-done"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>You've already checked in. Welcome!</div>
+  <div id="ci-form">
+    <div class="fg"><label class="fl">Travelling from</label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
+    <div class="fg"><label class="fl">Next destination after stay</label><input class="fc" id="ci-to" type="text" placeholder="Where are you headed next?"/></div>
+    <div class="fg"><label class="fl">Full name as on ID</label><input class="fc" id="ci-fullname" type="text"/></div>
+    <div class="fg"><label class="fl">Number of guests</label><input class="fc" id="ci-guests" type="number" min="1" value="1"/></div>
+    <div class="fg">
+      <label class="fl">ID proof — all travellers</label>
+      <div class="upload-zone" onclick="document.getElementById('ci-files').click()">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+        <p>Tap to upload · JPG, PNG or PDF · Multiple files</p>
+      </div>
+      <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="showFiles(this)"/>
+      <div class="file-list" id="ci-file-list"></div>
     </div>
-    <div class="submit-bar">
-      <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
-    </div>
+    <div class="sub-bar"><button class="btn-sub btn-br" id="ci-btn" onclick="submitCheckin()">Submit check-in</button></div>
   </div>
+</div>
 
-  <div id="success-view" style="display:none;flex:1;flex-direction:column">
+<!-- COMPLAINT -->
+<div class="pg" id="pg-complaint">
+  <div id="comp-wrap">
+    <div class="pg-title">Log a complaint</div>
+    <div class="pg-sub">Tell us what happened — we'll fix it right away</div>
+    <div class="fg"><textarea class="fc" id="comp-text" placeholder="Describe the issue in detail…"></textarea></div>
+    <div class="sub-bar"><button class="btn-sub btn-br" id="comp-btn" onclick="submitComplaint()">Submit complaint</button></div>
+  </div>
+  <div id="comp-success" style="display:none">
     <div class="success">
-      <div class="success-icon" id="s-icon"></div>
-      <div class="success-title" id="s-title"></div>
-      <div class="success-sub" id="s-sub"></div>
-      <button class="back-home" onclick="window.location.href='/login.html'">Done</button>
+      <div class="s-icon" style="background:var(--br-l)"><svg viewBox="0 0 24 24" stroke="var(--br)"><polyline points="20,6 9,17 4,12"/></svg></div>
+      <div class="s-title">Complaint logged</div>
+      <div class="s-sub">Our team has been notified and will attend to this immediately.</div>
+      <button class="btn-again" onclick="document.getElementById('comp-text').value='';document.getElementById('comp-wrap').style.display='block';this.closest('#comp-success').style.display='none'">Log another</button>
     </div>
   </div>
 </div>
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const sb = createClient(
-  'https://wwdnuajhqfajvsexszpy.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4'
-);
+<!-- FEEDBACK -->
+<div class="pg" id="pg-feedback">
+  <div id="fb-wrap">
+    <div class="pg-title">Share feedback</div>
+    <div class="pg-sub">Your experience at Banyan Circle</div>
+    <div class="fg"><textarea class="fc" id="fb-text" placeholder="What did you enjoy? What could we do better? We genuinely want to know…"></textarea></div>
+    <div class="sub-bar"><button class="btn-sub btn-g" id="fb-btn" onclick="submitFeedback()">Submit feedback</button></div>
+  </div>
+  <div id="fb-success" style="display:none">
+    <div class="success">
+      <div class="s-icon" style="background:var(--g-l)"><svg viewBox="0 0 24 24" stroke="var(--g)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+      <div class="s-title">Thank you</div>
+      <div class="s-sub">Your feedback means the world to us. We look forward to welcoming you back to Banyan Circle.</div>
+      <button class="btn-again" onclick="document.getElementById('fb-text').value='';document.getElementById('fb-wrap').style.display='block';this.closest('#fb-success').style.display='none'">Share more</button>
+    </div>
+  </div>
+</div>
 
-const guest = JSON.parse(localStorage.getItem('bc_guest') || 'null');
-if (!guest || !guest.name) { window.location.href = '/login.html'; throw new Error(); }
+<!-- LOST & FOUND -->
+<div class="pg" id="pg-lf">
+  <div class="pg-title">Lost &amp; Found</div>
+  <div class="pg-sub">Report a lost item</div>
+  <div id="lf-wrap">
+    <div class="fg"><label class="fl">What did you lose?</label><input class="fc" id="lf-item" type="text" placeholder="e.g. Blue jacket, charger, sunglasses"/></div>
+    <div class="fg"><label class="fl">Where did you last have it?</label><input class="fc" id="lf-loc" type="text" placeholder="e.g. Master bedroom, poolside"/></div>
+    <div class="fg"><label class="fl">Any other details</label><textarea class="fc" id="lf-notes" style="min-height:80px" placeholder="Colour, brand, description…"></textarea></div>
+    <div class="sub-bar"><button class="btn-sub btn-a" id="lf-btn" onclick="submitLF()">Report lost item</button></div>
+  </div>
+  <div id="lf-success" style="display:none">
+    <div class="success">
+      <div class="s-icon" style="background:var(--a-l)"><svg viewBox="0 0 24 24" stroke="var(--a)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="s-title">Reported</div>
+      <div class="s-sub">Our team will search for your item and get back to you as soon as possible.</div>
+      <button class="btn-again" onclick="document.getElementById('lf-item').value='';document.getElementById('lf-loc').value='';document.getElementById('lf-notes').value='';document.getElementById('lf-wrap').style.display='block';this.closest('#lf-success').style.display='none'">Report another</button>
+    </div>
+  </div>
+  <div style="margin-top:24px">
+    <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Items found at your property</div>
+    <div id="lf-found">Loading…</div>
+  </div>
+</div>
 
-const isComplaint = guest.action === 'complaint';
+<!-- LOCAL TIPS -->
+<div class="pg" id="pg-tips">
+  <div class="pg-title">Local tips</div>
+  <div class="pg-sub">Our favourite spots near Banyan Circle</div>
+  <div style="display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-bottom:16px;padding-bottom:4px">
+    <button class="tf on" onclick="filterTips(this,'')">All</button>
+    <button class="tf" onclick="filterTips(this,'Food')">Food</button>
+    <button class="tf" onclick="filterTips(this,'Cafe')">Cafe</button>
+    <button class="tf" onclick="filterTips(this,'Nature')">Nature</button>
+    <button class="tf" onclick="filterTips(this,'Culture')">Culture</button>
+    <button class="tf" onclick="filterTips(this,'Shopping')">Shopping</button>
+  </div>
+  <div id="tips-list"></div>
+</div>
 
-// Header
-document.getElementById('hdr-prop').textContent = guest.prop;
-document.getElementById('hdr-name').textContent = guest.name;
+<nav class="bnav">
+  <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
+  <button class="bnt" onclick="goPage('complaint',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Complaint</button>
+  <button class="bnt" onclick="goPage('feedback',this)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Feedback</button>
+  <button class="bnt" onclick="goPage('lf',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost&Found</button>
+  <button class="bnt" onclick="goPage('tips',this)"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" stroke="none" style="fill:currentColor"/></svg>Tips</button>
+</nav>
+</div>
+<div class="toast" id="toast"></div>
 
-// Form
-document.getElementById('form-title').textContent = isComplaint ? 'Log a complaint' : 'Share feedback';
-document.getElementById('form-sub').textContent = isComplaint
-  ? 'Tell us what happened — we\'ll attend to it right away.'
-  : 'Tell us about your stay at Banyan Circle.';
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const btn = document.getElementById('submit-btn');
-btn.className = 'submit-btn ' + (isComplaint ? 'btn-complaint' : 'btn-feedback');
-btn.textContent = isComplaint ? 'Submit complaint' : 'Submit feedback';
+const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!me || me.role !== 'guest') { location.href = '/index.html'; }
 
-// Back
-document.getElementById('back-btn').onclick = () => window.location.href = '/login.html';
+document.getElementById('hdr-name').textContent = me.name;
+document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
+document.getElementById('ci-fullname').value = me.name;
 
-// Get property ID
-async function getPropId() {
-  const { data } = await sb.from('properties').select('id').ilike('name', '%' + guest.prop + '%').limit(1);
-  return data?.[0]?.id || null;
+function signOut() { localStorage.removeItem('bc_me'); location.href = '/index.html'; }
+function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+
+function goPage(id, btn) {
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bnt').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  btn.classList.add('on');
+  if (id==='lf') loadLFFound();
+  if (id==='tips') renderTips('');
 }
 
-// Submit
-window.submitForm = async () => {
-  const text = document.getElementById('main-text').value.trim();
-  if (!text) { document.getElementById('main-text').focus(); return; }
-  btn.disabled = true;
-  btn.textContent = 'Submitting…';
+async function api(path, method, body) {
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json'};
+  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204)return null;
+  return r.json().catch(()=>null);
+}
 
-  const propId = await getPropId();
+// Check-in done?
+(async()=>{
+  const d=await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+me.id+'&select=id');
+  if(d&&d.length){document.getElementById('ci-done').style.display='flex';document.getElementById('ci-form').style.display='none';}
+})();
 
-  if (isComplaint) {
-    await sb.from('guest_complaints').insert({
-      property_id: propId,
-      guest_name: guest.name,
-      complaint: text,
-      status: 'open',
-    });
-    // Success
-    document.getElementById('s-icon').innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>';
-    document.getElementById('s-icon').style.background = '#FAECE7';
-    document.getElementById('s-title').textContent = 'Complaint logged';
-    document.getElementById('s-sub').textContent = 'Our team has been notified and will look into this right away. We\'re sorry for the inconvenience.';
-  } else {
-    await sb.from('guest_feedback').insert({
-      property_id: propId,
-      guest_name: guest.name,
-      guest_phone: guest.phone || null,
-      missing_or_feedback: text,
-    });
-    document.getElementById('s-icon').innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
-    document.getElementById('s-icon').style.background = '#EAF3DE';
-    document.getElementById('s-title').textContent = 'Thank you';
-    document.getElementById('s-sub').textContent = 'Your feedback means the world to us. We look forward to welcoming you back to Banyan Circle.';
+function showFiles(input){
+  document.getElementById('ci-file-list').innerHTML=Array.from(input.files).map(f=>`<div class="file-item">✓ ${f.name} <span style="margin-left:auto;font-size:11px;opacity:.7">${(f.size/1024).toFixed(0)}KB</span></div>`).join('');
+}
+
+async function getPropId(){
+  const d=await api('/rest/v1/properties?name=ilike.'+encodeURIComponent('%'+(me.prop||'')+'%')+'&select=id');
+  return d&&d[0]?d[0].id:null;
+}
+
+async function submitCheckin(){
+  const from=document.getElementById('ci-from').value.trim(),to=document.getElementById('ci-to').value.trim(),name=document.getElementById('ci-fullname').value.trim(),guests=document.getElementById('ci-guests').value,files=document.getElementById('ci-files').files,btn=document.getElementById('ci-btn');
+  if(!from||!to||!name){toast('Please fill all fields');return;}
+  if(!files.length){toast('Please upload ID proof');return;}
+  btn.disabled=true;btn.textContent='Uploading IDs…';
+  const urls=[];
+  for(const file of files){
+    const path='guest-ids/'+me.id+'/'+Date.now()+'_'+file.name;
+    const res=await fetch(SB+'/storage/v1/object/guest-ids/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY},body:file});
+    if(res.ok)urls.push(SB+'/storage/v1/object/public/guest-ids/'+path);
   }
+  btn.textContent='Saving…';
+  await api('/rest/v1/guest_checkins','POST',{guest_profile_id:me.id,guest_name:name,property_name:me.prop,travelled_from:from,travelling_to:to,num_guests:parseInt(guests)||1,id_proof_urls:urls,checked_in_at:new Date().toISOString()});
+  btn.disabled=false;
+  document.getElementById('ci-done').style.display='flex';
+  document.getElementById('ci-form').style.display='none';
+  toast('Check-in complete ✓');
+}
 
-  localStorage.removeItem('bc_guest');
-  document.getElementById('form-view').style.display = 'none';
-  document.getElementById('success-view').style.display = 'flex';
-};
+async function submitComplaint(){
+  const text=document.getElementById('comp-text').value.trim(),btn=document.getElementById('comp-btn');
+  if(!text){toast('Please describe the issue');return;}
+  btn.disabled=true;btn.textContent='Submitting…';
+  const propId=await getPropId();
+  await api('/rest/v1/guest_complaints','POST',{property_id:propId,guest_name:me.name,complaint:text,status:'open'});
+  btn.disabled=false;
+  document.getElementById('comp-wrap').style.display='none';
+  document.getElementById('comp-success').style.display='block';
+}
+
+async function submitFeedback(){
+  const text=document.getElementById('fb-text').value.trim(),btn=document.getElementById('fb-btn');
+  if(!text){toast('Please write your feedback');return;}
+  btn.disabled=true;btn.textContent='Submitting…';
+  const propId=await getPropId();
+  await api('/rest/v1/guest_feedback','POST',{property_id:propId,guest_name:me.name,missing_or_feedback:text});
+  btn.disabled=false;
+  document.getElementById('fb-wrap').style.display='none';
+  document.getElementById('fb-success').style.display='block';
+}
+
+async function submitLF(){
+  const item=document.getElementById('lf-item').value.trim(),btn=document.getElementById('lf-btn');
+  if(!item){toast('Please describe the item');return;}
+  btn.disabled=true;btn.textContent='Submitting…';
+  const propId=await getPropId();
+  await api('/rest/v1/lost_and_found','POST',{property_id:propId,guest_name:me.name,item_description:item,location_found:document.getElementById('lf-loc').value||null,found_date:new Date().toISOString().split('T')[0],status:'pending'});
+  btn.disabled=false;
+  document.getElementById('lf-wrap').style.display='none';
+  document.getElementById('lf-success').style.display='block';
+}
+
+async function loadLFFound(){
+  const propId=await getPropId();
+  const el=document.getElementById('lf-found');
+  if(!propId){el.innerHTML='';return;}
+  const d=await api('/rest/v1/lost_and_found?property_id=eq.'+propId+'&status=neq.returned&select=*&order=found_date.desc&limit=10')||[];
+  el.innerHTML=d.length?`<div class="card">${d.map(i=>`<div class="lf-row"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:14px;font-weight:500">${i.item_description}</div><span class="bdg ${i.status==='pending'?'bdg-a':'bdg-g'}">${i.status}</span></div><div style="font-size:12px;color:var(--muted);margin-top:3px">${i.location_found||''} · ${i.found_date}</div></div>`).join('')}</div>`:'<div style="font-size:13px;color:var(--muted)">No items in lost &amp; found right now</div>';
+}
+
+// Local tips
+const TIPS=[
+  {cat:'Food',name:'Cardamom Restaurant',desc:'Authentic Kerala cuisine with a rooftop view. Try the Malabar fish curry and appam.',tags:['Kerala cuisine','Rooftop']},
+  {cat:'Food',name:'The Spice Garden',desc:'Homestyle meals on banana leaves. Open for lunch only — worth the wait.',tags:['Banana leaf','Lunch']},
+  {cat:'Cafe',name:'Chai & Chill',desc:'Cosy cafe in a heritage building. Best filter coffee in town with fresh daily bakes.',tags:['Filter coffee','Cosy']},
+  {cat:'Cafe',name:'Monsoon Brew',desc:'Artisanal coffee with garden seating and excellent single-origin pour-overs.',tags:['Pour-over','Garden']},
+  {cat:'Nature',name:'Vembanad Lake Sunset',desc:'15 mins away. Rent a kettuvallam for an hour at golden hour — absolutely stunning.',tags:['Sunset','Houseboat']},
+  {cat:'Nature',name:'Kumarakom Bird Sanctuary',desc:'Over 100 bird species. Best at dawn. Binoculars available at our front desk.',tags:['Birds','Dawn']},
+  {cat:'Culture',name:'Krishnapuram Palace',desc:'18th century palace with murals and a beautiful garden. Allow 1.5 hours.',tags:['History','Architecture']},
+  {cat:'Culture',name:'Kalarippayattu Show',desc:'Watch Kerala\'s ancient martial art performed live every evening at 6PM.',tags:['Martial arts','Evening']},
+  {cat:'Shopping',name:'Kottayam Spice Market',desc:'Fresh cardamom, pepper and cinnamon straight from traders. Best prices around.',tags:['Spices','Souvenirs']},
+  {cat:'Shopping',name:'Handloom House',desc:'Beautiful Kerala handwoven fabrics and kasavu sarees. Wonderful gifts to take home.',tags:['Handcraft','Sarees']},
+];
+const TAG_CLR={Food:'background:#FFF3E0;color:#E65100',Cafe:'background:#F3E5F5;color:#7B1FA2',Nature:'background:var(--g-l);color:var(--g)',Culture:'background:var(--b-l);color:var(--b)',Shopping:'background:var(--br-l);color:var(--br)'};
+
+function renderTips(filter){
+  const list=filter?TIPS.filter(t=>t.cat===filter):TIPS;
+  document.getElementById('tips-list').innerHTML=list.map(t=>`<div class="tip-card"><div class="tip-cat">${t.cat}</div><div class="tip-name">${t.name}</div><div class="tip-desc">${t.desc}</div><div>${t.tags.map(tg=>`<span class="tip-tag" style="${TAG_CLR[t.cat]||''}">${tg}</span>`).join('')}</div></div>`).join('');
+}
+
+function filterTips(btn,cat){
+  document.querySelectorAll('.tf').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTips(cat);
+}
+
+renderTips('');
 </script>
 </body>
 </html>
