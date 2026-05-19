@@ -490,6 +490,17 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- Registration detail modal -->
+<div class="modal" id="reg-detail-modal" style="align-items:flex-start;padding:28px 20px">
+  <div class="modal-card" style="max-width:900px;width:100%;padding:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div class="modal-ttl">Guest Registration</div>
+      <button class="btn-sec" onclick="closeModal('reg-detail-modal')">✕ Close</button>
+    </div>
+    <div id="rd-body"></div>
+  </div>
+</div>
+
 <!-- Feedback modal -->
 <div class="modal" id="feedback-modal">
   <div class="modal-card" style="max-width:580px">
@@ -810,9 +821,12 @@ async function sendCommsMsg(){
 }
 
 // ── REGISTRATIONS (check-in records) ──
+let CURRENT_REG = null;
+
 async function loadRegistrations(){
+  // Exclude form_data from list query — it can be large (base64 ID images)
   const [data, sectionC] = await Promise.all([
-    api('/rest/v1/guest_checkins?select=*&order=checked_in_at.desc'),
+    api('/rest/v1/guest_checkins?select=id,guest_name,property_name,travelled_from,travelling_to,num_guests,id_proof_urls,checked_in_at&order=checked_in_at.desc'),
     api('/rest/v1/guest_section_c?select=*'),
   ]);
   const ci = data||[];
@@ -821,28 +835,148 @@ async function loadRegistrations(){
   const el = document.getElementById('reg-table');
   if(!ci.length){ el.innerHTML='<div class="empty">No check-in registrations submitted yet</div>'; return; }
   el.innerHTML = `<table class="tbl">
-    <thead><tr><th>Guest</th><th>Property</th><th>Checked in</th><th>From</th><th>Going to</th><th>Guests</th><th>ID proof</th><th>Section C</th><th></th></tr></thead>
+    <thead><tr><th>Guest</th><th>Property</th><th>Submitted</th><th>From → To</th><th>Guests</th><th>IDs</th><th>§C</th><th></th></tr></thead>
     <tbody>${ci.map(c=>{
       const sc = scMap[c.id];
-      const scBdg = sc
-        ? `<span class="bdg bdg-g">Set</span><div style="font-size:11px;color:var(--muted);margin-top:3px">${sc.plan||'—'} · ${sc.payment_status||'—'} · ${sc.billing_amount?fmt(sc.billing_amount):'—'}</div>`
-        : `<span class="bdg bdg-a">Not set</span>`;
+      const idCount=(c.id_proof_urls||[]).length;
+      const idNames=(c.id_proof_urls||[]).join(', ')||'—';
+      const scBdg = sc ? `<span class="bdg bdg-g">Set</span>` : `<span class="bdg bdg-a">Pending</span>`;
       return `<tr>
         <td style="font-weight:500">${c.guest_name||'—'}</td>
         <td>${c.property_name||'—'}</td>
-        <td>${fmtDT(c.checked_in_at)}</td>
-        <td>${c.travelled_from||'—'}</td>
-        <td>${c.travelling_to||'—'}</td>
-        <td>${c.num_guests||1}</td>
-        <td>${(c.id_proof_urls||[]).length?c.id_proof_urls.map((_,i)=>`<a href="${c.id_proof_urls[i]}" target="_blank" style="color:var(--br);font-size:12px">Doc ${i+1}</a>`).join(' '):'—'}</td>
+        <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDT(c.checked_in_at)}</td>
+        <td style="font-size:12px">${c.travelled_from||'—'} → ${c.travelling_to||'—'}</td>
+        <td style="text-align:center">${c.num_guests||1}</td>
+        <td title="${idNames}">${idCount?`<span class="bdg bdg-b">${idCount} doc${idCount>1?'s':''}</span>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
         <td>${scBdg}</td>
         <td style="white-space:nowrap">
-          <button class="btn-sm" onclick='openSC(${JSON.stringify({cid:c.id,name:c.guest_name,prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'} §C</button>
-          <button class="btn-sm" onclick="downloadRegPDF('${c.id}')" style="margin-top:4px;background:var(--br-l);color:var(--br)">PDF</button>
+          <button class="btn-sm" style="background:var(--br-l);color:var(--br)" onclick="openRegDetail('${c.id}')">View</button>
+          <button class="btn-sm" style="margin-top:4px" onclick='openSC(${JSON.stringify({cid:c.id,name:c.guest_name,prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'} §C</button>
         </td>
       </tr>`;
     }).join('')}
     </tbody></table>`;
+}
+
+// ── REGISTRATION DETAIL MODAL ──
+function renderDocCard(doc, idx, section){
+  if(!doc) return '';
+  const isImage=doc.type&&doc.type.startsWith('image/');
+  return `<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
+    ${isImage&&doc.data?`<img src="${doc.data}" style="width:100%;max-height:220px;object-fit:contain;display:block;background:#f5f5f3"/>`:
+      `<div style="padding:22px;text-align:center;background:#f5f5f3;color:var(--muted)">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <div style="font-size:11px;margin-top:6px">PDF Document</div>
+      </div>`}
+    <div style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:500">${section} ${idx+1}</div>
+        <div style="font-size:11px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${doc.name||'Document'}</div>
+      </div>
+      ${doc.data?`<button class="btn-sm" style="background:var(--br-l);color:var(--br)" onclick="downloadDoc(${idx},'${section.toLowerCase()}')">Download</button>`:'<span style="font-size:11px;color:var(--muted)">No data</span>'}
+    </div>
+  </div>`;
+}
+
+function downloadDoc(idx, section){
+  const fd=CURRENT_REG?.fd;
+  if(!fd) return;
+  const docs=section==='passport'?(fd.foreign?.passport_docs||[]):(fd.id_proofs||[]);
+  const doc=docs[idx];
+  if(!doc?.data){toast('No file data available');return;}
+  const a=document.createElement('a');
+  a.href=doc.data;
+  a.download=doc.name||'document';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function openRegDetail(cid){
+  CURRENT_REG=null;
+  const body=document.getElementById('rd-body');
+  const modal=document.getElementById('reg-detail-modal');
+  body.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted)">Loading…</div>';
+  modal.classList.add('on');
+  const [ciArr,scArr]=await Promise.all([
+    api('/rest/v1/guest_checkins?id=eq.'+cid+'&select=*'),
+    api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+cid+'&select=*'),
+  ]);
+  const c=ciArr&&ciArr[0]; const sc=scArr&&scArr[0];
+  if(!c){body.innerHTML='<div class="empty">Record not found</div>';return;}
+  const fd=c.form_data||{};
+  CURRENT_REG={c,sc,fd};
+  const idProofs=fd.id_proofs||[];
+  const passportDocs=fd.foreign?.passport_docs||[];
+  const r=(l,v)=>v?`<tr><td style="color:var(--muted);font-size:12px;width:42%;padding:5px 0;vertical-align:top;border-bottom:1px solid var(--border)">${l}</td><td style="font-size:13px;padding:5px 0 5px 8px;border-bottom:1px solid var(--border);font-weight:500">${v}</td></tr>`:'';
+  const secHdr=t=>`<div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--br-l)">${t}</div>`;
+  body.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;min-height:300px">
+      <div style="overflow-y:auto;max-height:72vh">
+        ${secHdr('Section A — Guest Details')}
+        <table style="width:100%;border-collapse:collapse">
+          ${r('Name',c.guest_name)}
+          ${r('Property',c.property_name)}
+          ${r('Organisation',fd.organisation)}
+          ${r('Permanent address',fd.permanent_address)}
+          ${r('Email',fd.email)}
+          ${r('Mobile',fd.mobile)}
+          ${r('Date of birth',fd.dob)}
+          ${r('Arrived from',c.travelled_from)}
+          ${r('Proceeding to',c.travelling_to)}
+          ${r('Arrival',(fd.arrival_date||'')+(fd.arrival_time?' · '+fd.arrival_time:''))}
+          ${r('Departure',(fd.departure_date||'')+(fd.departure_time?' · '+fd.departure_time:''))}
+          ${r('Group size',String(c.num_guests||1))}
+          ${r('Payment mode',fd.payment_mode)}
+          ${r('Dietary',fd.dietary)}
+          ${r('Special occasion',fd.special_occasion)}
+          ${r('Comfort requests',fd.comfort_requests)}
+          ${r('Declaration',fd.declaration?'Agreed ✓':'')}
+          ${r('Submitted',new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN'))}
+        </table>
+        ${fd.is_foreign&&fd.foreign?`
+        ${secHdr('Form B — Foreign National')}
+        <table style="width:100%;border-collapse:collapse">
+          ${r('Name in caps',fd.foreign.name_caps)}
+          ${r('Nationality',fd.foreign.nationality)}
+          ${r('Passport no',fd.foreign.passport_no)}
+          ${r('Passport issued',(fd.foreign.passport_date||'')+(fd.foreign.passport_place?' · '+fd.foreign.passport_place:''))}
+          ${r('Address in India',fd.foreign.india_address)}
+          ${r('India arrival',fd.foreign.india_arrival)}
+          ${r('Employed in India',fd.foreign.employed_india)}
+          ${r('Duration',fd.foreign.duration_india)}
+          ${r('Arrived from',fd.foreign.arrived_from)}
+          ${r('Reg cert',fd.foreign.reg_cert)}
+          ${r('Purpose',fd.foreign.purpose)}
+          ${r('Checkout',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
+          ${r('Proceeding to',fd.foreign.proceed_address)}
+        </table>`:''}
+        ${sc?`
+        ${secHdr('Section C — Office')}
+        <table style="width:100%;border-collapse:collapse">
+          ${r('Guests / Kids / Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].filter(v=>v!==null&&v!==undefined).join(' / '))}
+          ${r('Plan',sc.plan)}
+          ${r('Extra beds',sc.extra_beds?String(sc.extra_beds):'')}
+          ${r('Booking source',sc.booking_from)}
+          ${r('Booking mode',sc.booking_mode)}
+          ${r('Payment status',sc.payment_status)}
+          ${r('Billing',sc.billing_amount?fmt(sc.billing_amount):'')}
+          ${r('GST',sc.gst_amount?fmt(sc.gst_amount):'')}
+          ${r('Notes',sc.notes)}
+        </table>`:''}
+      </div>
+      <div style="overflow-y:auto;max-height:72vh">
+        ${secHdr('ID Documents'+(idProofs.length?' ('+idProofs.length+')':''))}
+        ${idProofs.length?idProofs.map((doc,i)=>renderDocCard(doc,i,'ID')).join(''):'<div style="font-size:13px;color:var(--muted);padding:12px 0">No ID documents uploaded</div>'}
+        ${passportDocs.length?`
+        ${secHdr('Passport Copy')}
+        ${passportDocs.map((doc,i)=>renderDocCard(doc,i,'passport')).join('')}`:''}
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-sec" onclick="closeModal('reg-detail-modal')">Close</button>
+      <button class="btn-p" onclick="downloadRegPDF('${c.id}')">Print PDF</button>
+    </div>`;
 }
 
 // ── Section C modal ──
@@ -934,63 +1068,38 @@ async function showFeedbackModal(){
   </div>`).join('');
 }
 
-// ── REGISTRATION PDF (rich) ──
+// ── REGISTRATION PDF (rich print) ──
 async function downloadRegPDF(cid){
   toast('Building PDF…');
-  const [ciArr, scArr] = await Promise.all([
-    api('/rest/v1/guest_checkins?id=eq.'+cid+'&select=*'),
-    api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+cid+'&select=*'),
-  ]);
-  const c=ciArr&&ciArr[0]; const sc=scArr&&scArr[0];
-  if(!c){toast('Record not found');return;}
-  const fd=c.form_data||{};
-
-  // Fetch a storage URL and return {url, b64, isPdf, isImage}
-  async function fetchStorageFile(u){
-    try{
-      // Try with auth headers first (needed if bucket is not fully public)
-      let r=await fetch(u,{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});
-      if(!r.ok) r=await fetch(u); // fallback: unauthenticated
-      if(!r.ok) return{url:u,b64:null,isPdf:false,isImage:false};
-      const ct=(r.headers.get('content-type')||'').toLowerCase();
-      const isImage=ct.startsWith('image/');
-      const isPdf=ct.includes('pdf');
-      if(isImage){
-        const blob=await r.blob();
-        const b64=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(blob);});
-        return{url:u,b64,isPdf:false,isImage:true};
-      }
-      return{url:u,b64:null,isPdf,isImage:false};
-    }catch(e){
-      // Guess from URL extension if fetch fails
-      const ext=(u.split('?')[0].split('.').pop()||'').toLowerCase();
-      return{url:u,b64:null,isPdf:ext==='pdf',isImage:['jpg','jpeg','png','gif','webp','heic'].includes(ext)};
-    }
+  // If already loaded in CURRENT_REG and it matches, reuse; else fetch
+  let c,sc,fd;
+  if(CURRENT_REG&&CURRENT_REG.c&&CURRENT_REG.c.id===cid){
+    ({c,sc,fd}=CURRENT_REG);
+  } else {
+    const [ciArr,scArr]=await Promise.all([
+      api('/rest/v1/guest_checkins?id=eq.'+cid+'&select=*'),
+      api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+cid+'&select=*'),
+    ]);
+    c=ciArr&&ciArr[0]; sc=scArr&&scArr[0];
+    if(!c){toast('Record not found');return;}
+    fd=c.form_data||{};
   }
+  const idProofs=fd.id_proofs||[];
+  const passportDocs=fd.foreign?.passport_docs||[];
 
-  const urls=c.id_proof_urls||[];
-  const embeds=await Promise.all(urls.map(fetchStorageFile));
-
-  const passEmbeds=[];
-  if(fd.is_foreign&&fd.foreign&&fd.foreign.passport_urls){
-    for(const u of fd.foreign.passport_urls){
-      passEmbeds.push(await fetchStorageFile(u));
+  // Render a document for print: inline image or filename note
+  function printDoc(doc,label){
+    if(!doc) return '';
+    if(doc.data&&doc.type&&doc.type.startsWith('image/')){
+      return `<div style="margin-bottom:14px;page-break-inside:avoid"><div style="font-size:10px;color:#5F5E5A;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">${label}</div><div style="font-size:10px;color:#5F5E5A;margin-bottom:5px">${doc.name||''}</div><img style="max-width:100%;max-height:260px;border:1px solid #ddd;border-radius:4px;display:block" src="${doc.data}"/></div>`;
     }
-  }
-
-  // Render a document attachment block (image embed or PDF link)
-  function renderDoc(e,label){
-    if(e.isImage&&e.b64) return `<div style="margin-bottom:10px"><div style="font-size:10px;color:#5F5E5A;margin-bottom:4px;font-weight:500">${label}</div><img style="width:100%;max-width:340px;border:1px solid #ddd;border-radius:4px;display:block" src="${e.b64}"/></div>`;
-    return `<div style="margin-bottom:10px;padding:10px 14px;background:#f5f5f3;border:1px solid #ddd;border-radius:6px;display:flex;align-items:center;gap:10px">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-      <div><div style="font-size:12px;font-weight:500;color:#222">${label}</div><a href="${e.url}" target="_blank" style="font-size:11px;color:#993C1D;text-decoration:none">Open document ↗</a></div>
-    </div>`;
+    return `<div style="margin-bottom:10px;padding:10px 12px;background:#f5f5f3;border:1px solid #ddd;border-radius:6px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#5F5E5A;margin-bottom:3px">${label}</div><div style="font-size:12px;font-weight:500">${doc.name||'Document'}</div><div style="font-size:10px;color:#5F5E5A">Attached separately — not printable inline</div></div>`;
   }
 
   const row=(l,v)=>`<tr><td>${l}</td><td>${v||'—'}</td></tr>`;
   const fname=(c.guest_name||'guest').slice(0,4).toUpperCase()+new Date().toLocaleDateString('en-GB').replace(/\//g,'').slice(0,6);
   const html=`<!doctype html><html><head><meta charset="utf-8"><title>${fname}</title>
-  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:32px;max-width:800px;margin:0 auto}h1{font-size:20px;border-bottom:2px solid #993C1D;padding-bottom:6px;margin-bottom:16px;color:#993C1D}h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:3px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td{padding:5px 2px;font-size:12px;vertical-align:top}td:first-child{color:#5F5E5A;width:40%}td:last-child{font-weight:500}.meta{font-size:10px;color:#5F5E5A;margin-top:24px;border-top:1px solid #ddd;padding-top:8px}@media print{body{padding:16px}a{color:#993C1D!important}}</style></head><body>
+  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:32px;max-width:800px;margin:0 auto}h1{font-size:20px;border-bottom:2px solid #993C1D;padding-bottom:6px;margin-bottom:16px;color:#993C1D}h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:3px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td{padding:5px 2px;font-size:12px;vertical-align:top}td:first-child{color:#5F5E5A;width:40%}td:last-child{font-weight:500}.meta{font-size:10px;color:#5F5E5A;margin-top:24px;border-top:1px solid #ddd;padding-top:8px}@media print{body{padding:16px}}</style></head><body>
   <h1>Heritance — Guest Registration</h1>
   <h2>Section A — Guest Details</h2>
   <table>
@@ -1003,37 +1112,35 @@ async function downloadRegPDF(cid){
     ${row('Date of birth',fd.dob)}
     ${row('Arrived from',c.travelled_from)}
     ${row('Proceeding to',c.travelling_to)}
-    ${row('Arrival date / time',(fd.arrival_date||'')+(fd.arrival_time?' · '+fd.arrival_time:''))}
-    ${row('Departure date / time',(fd.departure_date||'')+(fd.departure_time?' · '+fd.departure_time:''))}
+    ${row('Arrival',(fd.arrival_date||'')+(fd.arrival_time?' · '+fd.arrival_time:''))}
+    ${row('Departure',(fd.departure_date||'')+(fd.departure_time?' · '+fd.departure_time:''))}
     ${row('Group size',c.num_guests)}
     ${row('Payment mode',fd.payment_mode)}
-    ${row('Dietary requirements',fd.dietary)}
+    ${row('Dietary',fd.dietary)}
     ${row('Special occasion',fd.special_occasion)}
     ${row('Comfort requests',fd.comfort_requests)}
     ${row('Declaration',fd.declaration?'Agreed':'—')}
     ${row('Submitted',new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN'))}
   </table>
-  <h2>ID Proof</h2>
-  ${urls.length
-    ? embeds.map((e,i)=>renderDoc(e,'ID Document '+(i+1))).join('')
-    : '<p style="font-size:12px;color:#5F5E5A">No ID proof on file.</p>'}
+  <h2>ID Proof (${idProofs.length} document${idProofs.length!==1?'s':''})</h2>
+  ${idProofs.length?idProofs.map((doc,i)=>printDoc(doc,'ID Document '+(i+1))).join(''):'<p style="font-size:12px;color:#5F5E5A">No ID documents uploaded.</p>'}
   ${fd.is_foreign&&fd.foreign?`<h2>Form B — Foreign National</h2><table>
     ${row('Name (in caps)',fd.foreign.name_caps)}
     ${row('Nationality',fd.foreign.nationality)}
     ${row('Passport number',fd.foreign.passport_no)}
     ${row('Passport issued',(fd.foreign.passport_date||'')+(fd.foreign.passport_place?' · '+fd.foreign.passport_place:''))}
     ${row('Address in India',fd.foreign.india_address)}
-    ${row('Date of India arrival',fd.foreign.india_arrival)}
+    ${row('India arrival',fd.foreign.india_arrival)}
     ${row('Employed in India',fd.foreign.employed_india)}
     ${row('Duration in India',fd.foreign.duration_india)}
     ${row('Arrived from',fd.foreign.arrived_from)}
     ${row('Registration certificate',fd.foreign.reg_cert)}
     ${row('Purpose of visit',fd.foreign.purpose)}
-    ${row('Checkout date / time',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
+    ${row('Checkout',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
     ${row('Proceeding address',fd.foreign.proceed_address)}
-  </table>${passEmbeds.length?`<h2>Passport Copy</h2>${passEmbeds.map((e,i)=>renderDoc(e,'Passport '+(i+1))).join('')}`:''}`:''}
+  </table>${passportDocs.length?`<h2>Passport Copy</h2>${passportDocs.map((doc,i)=>printDoc(doc,'Passport '+(i+1))).join('')}`:''}`:''}
   ${sc?`<h2>Section C — Heritance (Office Use)</h2><table>
-    ${row('Guests / Kids / Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].filter(Boolean).join(' / '))}
+    ${row('Guests / Kids / Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].filter(v=>v!==null&&v!==undefined).join(' / '))}
     ${row('Plan / Extra beds',(sc.plan||'—')+'  ·  '+((sc.extra_beds||0)+' extra bed(s)'))}
     ${row('Booking source / mode',(sc.booking_from||'—')+'  ·  '+(sc.booking_mode||'—'))}
     ${row('Payment status',sc.payment_status)}

@@ -392,31 +392,32 @@ async function submitCheckin(){
   if(!decl){toast('Please accept the declaration');return;}
 
   const btn = document.getElementById('ci-btn');
-  btn.disabled=true; btn.textContent='Uploading IDs…';
+  btn.disabled=true;
 
-  // Upload ID proof files
-  const urls=[];
-  for(const file of files){
-    const path='guest-ids/'+me.id+'/'+Date.now()+'_'+file.name;
-    const res=await fetch(SB+'/storage/v1/object/guest-ids/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY},body:file});
-    if(res.ok) urls.push(SB+'/storage/v1/object/public/guest-ids/'+path);
+  // Convert ID proof files to base64 (stored directly in database — no storage bucket needed)
+  const id_proofs=[];
+  for(let i=0;i<files.length;i++){
+    btn.textContent=`Reading ID ${i+1} of ${files.length}…`;
+    const file=files[i];
+    const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(file);});
+    id_proofs.push({name:file.name,type:file.type,data});
   }
 
-  // Upload passport if Section B is open
+  // Convert passport if Section B open
   const sbOpen = document.getElementById('section-b').classList.contains('open');
-  const passportUrls=[];
+  const passport_docs=[];
   if(sbOpen){
     const pf=document.getElementById('fb-passport-file').files[0];
     if(pf){
-      const path='guest-ids/'+me.id+'/passport_'+Date.now()+'_'+pf.name;
-      const res=await fetch(SB+'/storage/v1/object/guest-ids/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY},body:pf});
-      if(res.ok) passportUrls.push(SB+'/storage/v1/object/public/guest-ids/'+path);
+      btn.textContent='Reading passport…';
+      const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(pf);});
+      passport_docs.push({name:pf.name,type:pf.type,data});
     }
   }
 
   btn.textContent='Saving…';
 
-  // Build form_data JSON for rich PDF later
+  // Build form_data JSON — includes id_proofs as base64 array
   const form_data = {
     organisation: document.getElementById('ci-org').value.trim(),
     permanent_address: addr,
@@ -429,6 +430,7 @@ async function submitCheckin(){
     comfort_requests: document.getElementById('ci-comfort').value.trim(),
     declaration: true,
     is_foreign: sbOpen,
+    id_proofs,   // [{name, type, data: "data:...;base64,..."}]
   };
 
   if(sbOpen){
@@ -438,7 +440,7 @@ async function submitCheckin(){
       passport_no:      document.getElementById('fb-passport-no').value.trim(),
       passport_date:    document.getElementById('fb-passport-date').value,
       passport_place:   document.getElementById('fb-passport-place').value.trim(),
-      passport_urls:    passportUrls,
+      passport_docs,   // [{name, type, data}]
       india_address:    document.getElementById('fb-india-addr').value.trim(),
       india_arrival:    document.getElementById('fb-india-arrival').value,
       employed_india:   document.querySelector('input[name="employed"]:checked')?.value||'',
@@ -459,7 +461,7 @@ async function submitCheckin(){
     travelled_from: from,
     travelling_to: to,
     num_guests: guests,
-    id_proof_urls: urls,
+    id_proof_urls: id_proofs.map(f=>f.name),  // store filenames for quick table display
     checked_in_at: new Date().toISOString(),
     form_data,
   });
