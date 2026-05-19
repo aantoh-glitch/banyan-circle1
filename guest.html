@@ -80,6 +80,9 @@ textarea.fc{resize:none;min-height:150px;line-height:1.6}
   <div class="pg-title">Check-in</div>
   <div class="pg-sub">Tell us about your journey</div>
   <div class="done-banner" id="ci-done"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>You've already checked in. Welcome!</div>
+  <div id="ci-post" style="display:none;margin-bottom:18px">
+    <button class="btn-sub btn-g" onclick="downloadPDF()">Download registration PDF</button>
+  </div>
   <div id="ci-form">
     <div class="fg"><label class="fl">Travelling from</label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
     <div class="fg"><label class="fl">Next destination after stay</label><input class="fc" id="ci-to" type="text" placeholder="Where are you headed next?"/></div>
@@ -214,9 +217,15 @@ async function api(path, method, body) {
 }
 
 // Check-in done?
+let CI_RECORD = null;
 (async()=>{
-  const d=await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+me.id+'&select=id');
-  if(d&&d.length){document.getElementById('ci-done').style.display='flex';document.getElementById('ci-form').style.display='none';}
+  const d=await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+me.id+'&select=*&order=checked_in_at.desc&limit=1');
+  if(d&&d.length){
+    CI_RECORD = d[0];
+    document.getElementById('ci-done').style.display='flex';
+    document.getElementById('ci-form').style.display='none';
+    document.getElementById('ci-post').style.display='block';
+  }
 })();
 
 function showFiles(input){
@@ -240,11 +249,84 @@ async function submitCheckin(){
     if(res.ok)urls.push(SB+'/storage/v1/object/public/guest-ids/'+path);
   }
   btn.textContent='Saving…';
-  await api('/rest/v1/guest_checkins','POST',{guest_profile_id:me.id,guest_name:name,property_name:me.prop,travelled_from:from,travelling_to:to,num_guests:parseInt(guests)||1,id_proof_urls:urls,checked_in_at:new Date().toISOString()});
+  const rec = await api('/rest/v1/guest_checkins','POST',{guest_profile_id:me.id,guest_name:name,property_name:me.prop,travelled_from:from,travelling_to:to,num_guests:parseInt(guests)||1,id_proof_urls:urls,checked_in_at:new Date().toISOString()});
+  CI_RECORD = (rec && rec[0]) || {guest_name:name,property_name:me.prop,travelled_from:from,travelling_to:to,num_guests:parseInt(guests)||1,id_proof_urls:urls,checked_in_at:new Date().toISOString()};
   btn.disabled=false;
   document.getElementById('ci-done').style.display='flex';
   document.getElementById('ci-form').style.display='none';
+  document.getElementById('ci-post').style.display='block';
   toast('Check-in complete ✓');
+}
+
+// Fetch URL as base64 data URI (best-effort; non-image or failed fetch returns null)
+async function urlToBase64(url){
+  try {
+    const r = await fetch(url);
+    if(!r.ok) return null;
+    const ct = r.headers.get('content-type')||'';
+    if(!ct.startsWith('image/')) return null;
+    const blob = await r.blob();
+    return await new Promise((resolve)=>{
+      const fr = new FileReader();
+      fr.onloadend = () => resolve(fr.result);
+      fr.onerror = () => resolve(null);
+      fr.readAsDataURL(blob);
+    });
+  } catch(e) { return null; }
+}
+
+async function downloadPDF(){
+  if(!CI_RECORD){ toast('No check-in record found'); return; }
+  toast('Building PDF…');
+  const c = CI_RECORD;
+  const urls = c.id_proof_urls || [];
+  // Convert image URLs to base64; non-images are kept as links
+  const embeds = await Promise.all(urls.map(async u => {
+    const b64 = await urlToBase64(u);
+    return { url: u, b64 };
+  }));
+  const today = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  const fname = (c.guest_name||'guest').slice(0,4).toUpperCase() + new Date().toLocaleDateString('en-GB').split('/').slice(0,3).map(x=>x.padStart(2,'0')).join('').slice(0,6);
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${fname}</title>
+    <style>
+      body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:36px;max-width:780px;margin:0 auto}
+      h1{font-size:22px;border-bottom:2px solid #993C1D;padding-bottom:8px;margin-bottom:16px;color:#993C1D}
+      h2{font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin-top:24px;margin-bottom:10px;border-bottom:1px solid #ddd;padding-bottom:4px}
+      table{width:100%;border-collapse:collapse;margin-bottom:14px}
+      td{padding:6px 0;font-size:13px;vertical-align:top}
+      td:first-child{color:#5F5E5A;width:42%}
+      td:last-child{font-weight:500}
+      .id-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+      .id-img{width:100%;border:1px solid #ddd;border-radius:6px;page-break-inside:avoid}
+      .id-link{padding:10px;background:#f5f5f5;border-radius:6px;font-size:12px;word-break:break-all}
+      .meta{font-size:11px;color:#5F5E5A;margin-top:30px;border-top:1px solid #ddd;padding-top:10px}
+      @media print { body{padding:20px} }
+    </style></head><body>
+    <h1>Banyan Circle — Guest Registration</h1>
+    <h2>Section A — Guest details</h2>
+    <table>
+      <tr><td>Guest name</td><td>${c.guest_name||'—'}</td></tr>
+      <tr><td>Property</td><td>${c.property_name||'—'}</td></tr>
+      <tr><td>Number of guests</td><td>${c.num_guests||1}</td></tr>
+      <tr><td>Travelled from</td><td>${c.travelled_from||'—'}</td></tr>
+      <tr><td>Onward destination</td><td>${c.travelling_to||'—'}</td></tr>
+      <tr><td>Check-in date</td><td>${me.check_in||'—'}</td></tr>
+      <tr><td>Check-out date</td><td>${me.check_out||'—'}</td></tr>
+      <tr><td>Submitted</td><td>${new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN')}</td></tr>
+    </table>
+    <h2>ID Proof</h2>
+    ${urls.length?`<div class="id-grid">${embeds.map((e,i)=>e.b64
+      ? `<div><div style="font-size:11px;color:#5F5E5A;margin-bottom:4px">Document ${i+1}</div><img class="id-img" src="${e.b64}"/></div>`
+      : `<div class="id-link">Document ${i+1}: <a href="${e.url}">${e.url}</a></div>`
+    ).join('')}</div>`:'<p style="font-size:13px;color:#5F5E5A">No ID proof on file.</p>'}
+    <div class="meta">Generated ${today} · Banyan Circle · This registration was submitted electronically by the guest.</div>
+    <script>setTimeout(()=>window.print(),400);<\/script>
+    </body></html>`;
+  const w = window.open('', '_blank');
+  if(!w){ toast('Allow pop-ups to download'); return; }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
 }
 
 async function submitComplaint(){
@@ -288,24 +370,26 @@ async function loadLFFound(){
   el.innerHTML=d.length?`<div class="card">${d.map(i=>`<div class="lf-row"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:14px;font-weight:500">${i.item_description}</div><span class="bdg ${i.status==='pending'?'bdg-a':'bdg-g'}">${i.status}</span></div><div style="font-size:12px;color:var(--muted);margin-top:3px">${i.location_found||''} · ${i.found_date}</div></div>`).join('')}</div>`:'<div style="font-size:13px;color:var(--muted)">No items in lost &amp; found right now</div>';
 }
 
-// Local tips
-const TIPS=[
-  {cat:'Food',name:'Cardamom Restaurant',desc:'Authentic Kerala cuisine with a rooftop view. Try the Malabar fish curry and appam.',tags:['Kerala cuisine','Rooftop']},
-  {cat:'Food',name:'The Spice Garden',desc:'Homestyle meals on banana leaves. Open for lunch only — worth the wait.',tags:['Banana leaf','Lunch']},
-  {cat:'Cafe',name:'Chai & Chill',desc:'Cosy cafe in a heritage building. Best filter coffee in town with fresh daily bakes.',tags:['Filter coffee','Cosy']},
-  {cat:'Cafe',name:'Monsoon Brew',desc:'Artisanal coffee with garden seating and excellent single-origin pour-overs.',tags:['Pour-over','Garden']},
-  {cat:'Nature',name:'Vembanad Lake Sunset',desc:'15 mins away. Rent a kettuvallam for an hour at golden hour — absolutely stunning.',tags:['Sunset','Houseboat']},
-  {cat:'Nature',name:'Kumarakom Bird Sanctuary',desc:'Over 100 bird species. Best at dawn. Binoculars available at our front desk.',tags:['Birds','Dawn']},
-  {cat:'Culture',name:'Krishnapuram Palace',desc:'18th century palace with murals and a beautiful garden. Allow 1.5 hours.',tags:['History','Architecture']},
-  {cat:'Culture',name:'Kalarippayattu Show',desc:'Watch Kerala\'s ancient martial art performed live every evening at 6PM.',tags:['Martial arts','Evening']},
-  {cat:'Shopping',name:'Kottayam Spice Market',desc:'Fresh cardamom, pepper and cinnamon straight from traders. Best prices around.',tags:['Spices','Souvenirs']},
-  {cat:'Shopping',name:'Handloom House',desc:'Beautiful Kerala handwoven fabrics and kasavu sarees. Wonderful gifts to take home.',tags:['Handcraft','Sarees']},
-];
-const TAG_CLR={Food:'background:#FFF3E0;color:#E65100',Cafe:'background:#F3E5F5;color:#7B1FA2',Nature:'background:var(--g-l);color:var(--g)',Culture:'background:var(--b-l);color:var(--b)',Shopping:'background:var(--br-l);color:var(--br)'};
+// Local tips — fetched from DB, scoped to this guest's property
+let TIPS = [];
+const TAG_CLR={Food:'background:#FFF3E0;color:#E65100',Cafe:'background:#F3E5F5;color:#7B1FA2',Nature:'background:var(--g-l);color:var(--g)',Culture:'background:var(--b-l);color:var(--b)',Shopping:'background:var(--br-l);color:var(--br)',Other:'background:var(--bg);color:var(--muted)'};
+
+async function loadTips(){
+  const propName = me.prop || 'Banyan Circle';
+  const data = await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(propName)+'&order=category,name');
+  TIPS = (data||[]).map(t => ({
+    cat: t.category || 'Other',
+    name: t.name,
+    desc: t.description || '',
+    tags: t.tags || []
+  }));
+}
 
 function renderTips(filter){
   const list=filter?TIPS.filter(t=>t.cat===filter):TIPS;
-  document.getElementById('tips-list').innerHTML=list.map(t=>`<div class="tip-card"><div class="tip-cat">${t.cat}</div><div class="tip-name">${t.name}</div><div class="tip-desc">${t.desc}</div><div>${t.tags.map(tg=>`<span class="tip-tag" style="${TAG_CLR[t.cat]||''}">${tg}</span>`).join('')}</div></div>`).join('');
+  const el = document.getElementById('tips-list');
+  if(!list.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:24px">No tips for this property yet. Check back later — your host will add favourites here.</div>'; return; }
+  el.innerHTML=list.map(t=>`<div class="tip-card"><div class="tip-cat">${t.cat}</div><div class="tip-name">${t.name}</div><div class="tip-desc">${t.desc}</div><div>${(t.tags||[]).map(tg=>`<span class="tip-tag" style="${TAG_CLR[t.cat]||''}">${tg}</span>`).join('')}</div></div>`).join('');
 }
 
 function filterTips(btn,cat){
@@ -314,7 +398,8 @@ function filterTips(btn,cat){
   renderTips(cat);
 }
 
-renderTips('');
+// Load tips once, then render
+(async()=>{ await loadTips(); renderTips(''); })();
 </script>
 </body>
 </html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Banyan Circle — Landlord</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+
+.layout{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
+.main{flex:1;padding:28px 32px;max-width:1100px}
+
+.sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sb-mark{width:36px;height:36px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.sb-mark svg{width:18px;height:18px;fill:white}
+.sb-name{font-family:'Playfair Display',serif;font-size:16px}
+.sb-sub{font-size:11px;color:var(--muted)}
+.sb-nav{flex:1;padding:0 12px}
+.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
+.sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sb-btn:hover{background:var(--bg);color:var(--text)}
+.sb-btn.on{background:var(--br-l);color:var(--br);font-weight:500}
+.sb-btn.on svg{stroke:var(--br)}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.sb-prop{font-size:11px;color:var(--muted);margin-bottom:6px}
+.sb-signout{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
+
+.pg{display:none}
+.pg.on{display:block}
+.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:16px}
+.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
+
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-a{background:var(--a-l);color:#633806}
+.bdg-r{background:var(--r-l);color:#791F1F}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px 20px}
+.kpi-l{font-size:12px;color:var(--muted);margin-bottom:8px}
+.kpi-v{font-size:26px;font-weight:500;line-height:1}
+.kpi-d{font-size:12px;margin-top:6px;color:var(--muted)}
+
+.prop-hero{background:linear-gradient(135deg,#FAECE7,#fff);border-radius:14px;border:1px solid var(--border);padding:26px;margin-bottom:16px}
+.prop-name{font-family:'Playfair Display',serif;font-size:30px;margin-bottom:6px}
+.prop-addr{font-size:13px;color:var(--muted);margin-bottom:14px}
+.prop-desc{font-size:15px;line-height:1.7;color:var(--text)}
+
+.action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.action-btn{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;text-align:left;font-family:inherit;transition:all .15s}
+.action-btn:hover{border-color:var(--br);box-shadow:0 3px 14px rgba(153,60,29,.08)}
+.action-btn svg{width:24px;height:24px;stroke:var(--br);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
+.action-lbl{font-size:15px;font-weight:500;margin-bottom:4px}
+.action-sub{font-size:12px;color:var(--muted)}
+
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-mark"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg></div>
+    <div><div class="sb-name">Banyan Circle</div><div class="sb-sub">Landlord</div></div>
+  </div>
+  <div class="sb-nav">
+    <button class="sb-btn on" onclick="goPage('property',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Property
+    </button>
+    <button class="sb-btn" onclick="goPage('documents',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Documents
+    </button>
+    <button class="sb-btn" onclick="goPage('earnings',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>Earnings
+    </button>
+    <button class="sb-btn" onclick="goPage('maintenance',this)">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance
+    </button>
+    <button class="sb-btn" onclick="goPage('comms',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Internal comms
+    </button>
+    <button class="sb-btn" onclick="goPage('utilities',this)">
+      <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>Utility payments
+    </button>
+  </div>
+  <div class="sb-footer">
+    <div class="sb-user" id="sb-user">Landlord</div>
+    <div class="sb-prop" id="sb-prop">—</div>
+    <button class="sb-signout" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+<!-- PROPERTY -->
+<div class="pg on" id="pg-property">
+  <div class="pg-title">My property</div>
+  <div class="pg-sub">Welcome back. Here's an overview of your home.</div>
+  <div id="prop-hero-wrap">Loading…</div>
+  <div class="action-grid">
+    <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=documents]').click()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <div class="action-lbl">Documents</div><div class="action-sub" id="doc-count">—</div>
+    </button>
+    <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=earnings]').click()">
+      <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
+      <div class="action-lbl">Earnings report</div><div class="action-sub" id="earn-sum">—</div>
+    </button>
+    <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=maintenance]').click()">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <div class="action-lbl">Maintenance</div><div class="action-sub" id="maint-sum">—</div>
+    </button>
+    <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=comms]').click()">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div class="action-lbl">Internal comms</div><div class="action-sub" id="msg-sum">—</div>
+    </button>
+    <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=utilities]').click()">
+      <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
+      <div class="action-lbl">Utility payments</div><div class="action-sub" id="util-sum">—</div>
+    </button>
+  </div>
+</div>
+
+<!-- DOCUMENTS -->
+<div class="pg" id="pg-documents">
+  <div class="pg-title">Documents</div>
+  <div class="pg-sub">Lease, licenses, insurance and certificates — uploaded by Office</div>
+  <div class="card">
+    <div id="docs-list">Loading…</div>
+  </div>
+</div>
+
+<!-- EARNINGS -->
+<div class="pg" id="pg-earnings">
+  <div class="pg-title">Earnings report</div>
+  <div class="pg-sub">Revenue from bookings less expenses</div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-l">Gross revenue (90 days)</div><div class="kpi-v" id="e-rev">—</div></div>
+    <div class="kpi"><div class="kpi-l">Utility costs (90 days)</div><div class="kpi-v" id="e-util">—</div></div>
+    <div class="kpi"><div class="kpi-l">Maintenance (90 days)</div><div class="kpi-v" id="e-maint">—</div></div>
+    <div class="kpi"><div class="kpi-l">Net earnings (90 days)</div><div class="kpi-v" style="color:var(--g)" id="e-net">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">Bookings — last 20</div>
+    <div id="e-bookings">Loading…</div>
+  </div>
+</div>
+
+<!-- MAINTENANCE -->
+<div class="pg" id="pg-maintenance">
+  <div class="pg-title">Maintenance</div>
+  <div class="pg-sub">Track issues at your property. Raise a request below — Manager and Office will see it.</div>
+  <div class="card">
+    <div class="card-ttl">Raise an issue</div>
+    <div class="fg"><label class="fl">What needs attention?</label><textarea class="fc" id="mt-issue" placeholder="Describe the issue…"></textarea></div>
+    <div style="display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:end">
+      <div class="fg" style="margin-bottom:0"><label class="fl">Priority</label>
+        <select class="fc" id="mt-prio"><option>normal</option><option>high</option><option>low</option></select>
+      </div>
+      <div style="text-align:right"><button class="btn-p" onclick="raiseMaint()">Submit</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-ttl">All issues at this property</div>
+    <div id="maint-list">Loading…</div>
+  </div>
+</div>
+
+<!-- COMMS -->
+<div class="pg" id="pg-comms">
+  <div class="pg-title">Internal communication</div>
+  <div class="pg-sub">Thread with Manager and Office</div>
+  <div class="card">
+    <div id="msgs-list" style="max-height:480px;overflow-y:auto;margin-bottom:14px">Loading…</div>
+    <div style="display:flex;gap:8px">
+      <input class="fc" id="msg-input" type="text" placeholder="Write a message…" style="flex:1"/>
+      <button class="btn-p" onclick="sendMsg()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- UTILITIES -->
+<div class="pg" id="pg-utilities">
+  <div class="pg-title">Utility payments log</div>
+  <div class="pg-sub">Electricity, water, gas, internet — logged by Office</div>
+  <div class="card">
+    <div id="util-list">Loading…</div>
+  </div>
+</div>
+
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+// Auth
+const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+if (!me || me.role !== 'landlord') { location.href='/index.html'; throw new Error('No auth'); }
+const PROP = me.prop || me.property_name;
+
+document.getElementById('sb-user').textContent = me.name || 'Landlord';
+document.getElementById('sb-prop').textContent = PROP || '—';
+
+async function api(path, method, body) {
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  return r.json().catch(()=>null);
+}
+
+function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
+const fmt=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
+const fmtDate=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+
+// Navigation
+function goPage(id,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='property') loadProperty();
+  if(id==='documents') loadDocs();
+  if(id==='earnings') loadEarnings();
+  if(id==='maintenance') loadMaint();
+  if(id==='comms') loadMsgs();
+  if(id==='utilities') loadUtilities();
+}
+
+// ── PROPERTY ──
+async function loadProperty(){
+  const p = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=*'))?.[0];
+  const el = document.getElementById('prop-hero-wrap');
+  if(!p){ el.innerHTML='<div class="card"><div class="empty">Property not found</div></div>'; return; }
+  el.innerHTML = `<div class="prop-hero">
+    <div class="prop-name">${p.name}</div>
+    <div class="prop-addr">${p.address||'Address not set'}</div>
+    <div class="prop-desc">${(p.description||'No description added yet. Office can set this from the backend.').replace(/\n/g,'<br>')}</div>
+  </div>`;
+
+  // Summaries for action tiles
+  const [docs, mt, msgs, util] = await Promise.all([
+    api('/rest/v1/property_documents?property_name=eq.'+encodeURIComponent(PROP)+'&select=id'),
+    api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(PROP)+'&status=neq.resolved&select=id'),
+    api('/rest/v1/internal_messages?property_name=eq.'+encodeURIComponent(PROP)+'&select=id'),
+    api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&status=eq.pending&select=amount'),
+  ]);
+  document.getElementById('doc-count').textContent  = (docs?.length||0)+' file(s)';
+  document.getElementById('maint-sum').textContent  = (mt?.length||0)+' open issue(s)';
+  document.getElementById('msg-sum').textContent    = (msgs?.length||0)+' message(s)';
+  const pending = (util||[]).reduce((s,r)=>s+(r.amount||0),0);
+  document.getElementById('util-sum').textContent = pending ? fmt(pending)+' pending' : 'All paid';
+
+  // Earnings quick number
+  const since = new Date(Date.now()-90*86400000).toISOString().slice(0,10);
+  const propRow = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=id'))?.[0];
+  let rev = 0;
+  if(propRow){
+    const bk = await api('/rest/v1/bookings?property_id=eq.'+propRow.id+'&checkin=gte.'+since+'&select=total_amount')||[];
+    rev = bk.reduce((s,b)=>s+(b.total_amount||0),0);
+  }
+  document.getElementById('earn-sum').textContent = fmt(rev)+' (90 days)';
+}
+
+// ── DOCUMENTS ──
+async function loadDocs(){
+  const data = await api('/rest/v1/property_documents?property_name=eq.'+encodeURIComponent(PROP)+'&order=uploaded_at.desc')||[];
+  const el = document.getElementById('docs-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No documents uploaded yet. Office will upload lease, licenses and certificates here.</div>'; return; }
+  el.innerHTML = `<table class="tbl"><thead><tr><th>Title</th><th>Type</th><th>Uploaded</th><th></th></tr></thead><tbody>
+    ${data.map(d=>`<tr>
+      <td><b>${d.title}</b></td>
+      <td>${d.doc_type||'—'}</td>
+      <td>${fmtDate(d.uploaded_at)}</td>
+      <td style="text-align:right"><a href="${d.file_url}" target="_blank" class="btn-sec" style="text-decoration:none">View / Download</a></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── EARNINGS ──
+async function loadEarnings(){
+  const since = new Date(Date.now()-90*86400000).toISOString().slice(0,10);
+  const propRow = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=id'))?.[0];
+  let bookings = [];
+  if(propRow){
+    bookings = await api('/rest/v1/bookings?property_id=eq.'+propRow.id+'&checkin=gte.'+since+'&select=*&order=checkin.desc&limit=20') || [];
+  }
+  const rev = bookings.reduce((s,b)=>s+(b.total_amount||0),0);
+  const utils = await api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&status=eq.paid&paid_on=gte.'+since+'&select=amount')||[];
+  const utilSum = utils.reduce((s,u)=>s+(u.amount||0),0);
+  // Maintenance has no cost field in current schema — show count cost-free
+  const maint = await api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(PROP)+'&created_at=gte.'+since+'&select=id')||[];
+
+  document.getElementById('e-rev').textContent  = fmt(rev);
+  document.getElementById('e-util').textContent = fmt(utilSum);
+  document.getElementById('e-maint').textContent = (maint.length||0)+' issues';
+  document.getElementById('e-net').textContent  = fmt(rev - utilSum);
+
+  const el = document.getElementById('e-bookings');
+  if(!bookings.length){ el.innerHTML='<div class="empty">No bookings in the last 90 days</div>'; return; }
+  el.innerHTML = `<table class="tbl"><thead><tr><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Source</th><th>Amount</th></tr></thead><tbody>
+    ${bookings.map(b=>`<tr>
+      <td>${b.guest_name||'—'}</td>
+      <td>${fmtDate(b.checkin)}</td>
+      <td>${fmtDate(b.checkout)}</td>
+      <td>${b.source||'—'}</td>
+      <td>${fmt(b.total_amount)}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── MAINTENANCE ──
+async function loadMaint(){
+  const data = await api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(PROP)+'&order=created_at.desc')||[];
+  const el = document.getElementById('maint-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No maintenance issues logged</div>'; return; }
+  el.innerHTML = `<table class="tbl"><thead><tr><th>Issue</th><th>Priority</th><th>Status</th><th>Raised</th><th>By</th></tr></thead><tbody>
+    ${data.map(m=>`<tr>
+      <td style="max-width:280px">${m.issue}</td>
+      <td>${m.priority||'normal'}</td>
+      <td><span class="bdg ${m.status==='resolved'?'bdg-g':m.status==='in_progress'?'bdg-a':'bdg-r'}">${(m.status||'open').replace('_',' ')}</span></td>
+      <td>${fmtDate(m.created_at)}</td>
+      <td>${m.raised_by||'—'} (${m.raised_role||'—'})</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+async function raiseMaint(){
+  const issue = document.getElementById('mt-issue').value.trim();
+  const prio = document.getElementById('mt-prio').value;
+  if(!issue){ toast('Describe the issue'); return; }
+  await api('/rest/v1/maintenance_log','POST',{
+    property_name: PROP,
+    issue,
+    priority: prio,
+    status: 'open',
+    raised_by: me.name,
+    raised_role: 'landlord',
+  });
+  document.getElementById('mt-issue').value='';
+  toast('Issue submitted');
+  loadMaint();
+}
+
+// ── COMMS ──
+async function loadMsgs(){
+  const data = await api('/rest/v1/internal_messages?property_name=eq.'+encodeURIComponent(PROP)+'&order=created_at.asc')||[];
+  const el = document.getElementById('msgs-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No messages yet. Send the first one below.</div>'; return; }
+  el.innerHTML = data.map(m=>{
+    const isMe = m.from_role==='landlord';
+    const align = isMe?'flex-end':'flex-start';
+    const bg = isMe?'var(--br)':'#fff';
+    const fg = isMe?'#fff':'var(--text)';
+    return `<div style="display:flex;justify-content:${align};margin-bottom:10px">
+      <div style="max-width:75%;background:${bg};color:${fg};border:1px solid var(--border);border-radius:12px;padding:10px 14px">
+        <div style="font-size:11px;opacity:.75;margin-bottom:3px">${m.from_role} · ${m.from_name||''} · ${fmtDate(m.created_at)}</div>
+        <div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+async function sendMsg(){
+  const txt = document.getElementById('msg-input').value.trim();
+  if(!txt) return;
+  await api('/rest/v1/internal_messages','POST',{
+    property_name: PROP,
+    from_role: 'landlord',
+    from_name: me.name,
+    message: txt,
+  });
+  document.getElementById('msg-input').value='';
+  loadMsgs();
+}
+
+// ── UTILITIES ──
+async function loadUtilities(){
+  const data = await api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=month.desc')||[];
+  const el = document.getElementById('util-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No utility payments logged yet</div>'; return; }
+  el.innerHTML = `<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th>Proof</th></tr></thead><tbody>
+    ${data.map(u=>`<tr>
+      <td>${u.month||'—'}</td>
+      <td>${u.utility_type||'—'}</td>
+      <td>${fmt(u.amount)}</td>
+      <td><span class="bdg ${u.status==='paid'?'bdg-g':'bdg-a'}">${u.status}</span></td>
+      <td>${fmtDate(u.paid_on)}</td>
+      <td>${u.proof_url?`<a href="${u.proof_url}" target="_blank" style="color:var(--br);font-size:12px">View</a>`:'—'}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// Boot
+loadProperty();
+</script>
+</body>
+</html>

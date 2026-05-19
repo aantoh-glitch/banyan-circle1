@@ -42,6 +42,8 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .pav{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0}
 .pav-owner{background:#E6F1FB;color:#0C447C}
 .pav-staff{background:var(--br-l);color:#712B13}
+.pav-landlord{background:#EAF3DE;color:#3B6D11}
+.pav-office{background:#222;color:#fff}
 .pname{font-size:16px;font-weight:500;color:var(--text)}
 
 /* ── PIN ── */
@@ -89,6 +91,15 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <div class="scr-title">Who are you?</div>
     <div class="people" id="people-list">
       <div style="font-size:14px;color:var(--muted);text-align:center;padding:20px">Loading…</div>
+    </div>
+    <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">
+      <button class="person" onclick='selectPerson({id:"office",name:"OFFICE",pin:"0000",role:"office"})' style="border-color:#333;background:#fafafa">
+        <div class="pav pav-office" style="font-size:13px">⚙</div>
+        <div>
+          <div class="pname" style="color:#333">OFFICE</div>
+          <div style="font-size:11px;color:var(--muted)">Backend admin</div>
+        </div>
+      </button>
     </div>
   </div>
 </div>
@@ -161,7 +172,14 @@ async function api(path, opts) {
 
 // Already logged in?
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (me) { location.href = me.role === 'owner' ? '/owner.html' : me.role === 'guest' ? '/guest.html' : '/ops.html'; }
+function routeFor(role){
+  if(role==='office')   return '/admin.html';
+  if(role==='owner')    return '/owner.html';
+  if(role==='landlord') return '/landlord.html';
+  if(role==='guest')    return '/guest.html';
+  return '/ops.html';
+}
+if (me) { location.href = routeFor(me.role); throw new Error('Already signed in'); }
 
 function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
 const ini = n => (n || '').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase() || '?';
@@ -174,16 +192,37 @@ const DEFAULTS = [
   { id: 'vineeth', name: 'Vineeth', pin: '2222', role: 'staff' },
 ];
 
+function avClass(role){
+  if(role==='owner')    return 'pav-owner';
+  if(role==='landlord') return 'pav-landlord';
+  return 'pav-staff';
+}
+
 async function loadPeople() {
   let people = DEFAULTS;
   try {
-    const data = await api('/rest/v1/staff?select=id,name,designation,pin&order=name');
-    if (data && data.length) people = data.map(s => ({ id: s.id, name: s.name, pin: s.pin || '2222', role: s.designation === 'Owner' ? 'owner' : 'staff' }));
+    const [staff, landlords] = await Promise.all([
+      api('/rest/v1/staff?select=id,name,designation,pin&order=name'),
+      api('/rest/v1/landlords?select=id,name,pin,property_name&order=name'),
+    ]);
+    const merged = [];
+    if (staff && staff.length) {
+      merged.push(...staff.map(s => ({
+        id: s.id, name: s.name, pin: s.pin || '2222',
+        role: (s.designation==='Owner' || s.designation==='Manager') ? 'owner' : 'staff'
+      })));
+    }
+    if (landlords && landlords.length) {
+      merged.push(...landlords.map(l => ({
+        id: l.id, name: l.name, pin: l.pin, role: 'landlord', prop: l.property_name
+      })));
+    }
+    if (merged.length) people = merged;
   } catch(e) {}
   document.getElementById('people-list').innerHTML = people.map(p =>
     `<button class="person" onclick='selectPerson(${JSON.stringify(p)})'>
-      <div class="pav ${p.role==='owner'?'pav-owner':'pav-staff'}">${ini(p.name)}</div>
-      <div class="pname">${p.name}</div>
+      <div class="pav ${avClass(p.role)}">${ini(p.name)}</div>
+      <div class="pname">${p.name}${p.role==='landlord'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Landlord · ${p.prop||''}</span>`:''}</div>
     </button>`).join('');
 }
 loadPeople();
@@ -196,7 +235,7 @@ window.selectPerson = p => {
   document.getElementById('pin-err').textContent = '';
   const av = document.getElementById('pin-av');
   av.textContent = ini(p.name);
-  av.className = 'pin-av ' + (p.role === 'owner' ? 'pav-owner' : 'pav-staff');
+  av.className = 'pin-av ' + (p.role==='office' ? 'pav-office' : avClass(p.role));
   document.getElementById('pin-name').textContent = p.name;
   show('s-pin');
 };
@@ -217,8 +256,10 @@ function checkPin() {
     setTimeout(() => { pin = ''; dots(); document.getElementById('pin-err').textContent = ''; }, 1200);
     return;
   }
-  localStorage.setItem('bc_me', JSON.stringify({ id: sel.id, name: sel.name, role: sel.role }));
-  location.href = sel.role === 'owner' ? '/owner.html' : '/ops.html';
+  const payload = { id: sel.id, name: sel.name, role: sel.role };
+  if (sel.prop) payload.prop = sel.prop;
+  localStorage.setItem('bc_me', JSON.stringify(payload));
+  location.href = routeFor(sel.role);
 }
 
 // Guest login - name first, then PIN

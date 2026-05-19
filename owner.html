@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Banyan Circle — Owner Dashboard</title>
+<title>Banyan Circle — Manager Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -128,6 +128,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 /* Bdg */
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
 .bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}.bdg-r{background:#FCEBEB;color:#791F1F}
+
+.ptab{padding:7px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
+.ptab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
 </style>
 </head>
 <body>
@@ -137,7 +140,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <div class="sidebar">
   <div class="sb-logo">
     <div class="sb-mark"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg></div>
-    <div><div class="sb-name">Banyan Circle</div><div class="sb-sub">Owner view</div></div>
+    <div><div class="sb-name">Banyan Circle</div><div class="sb-sub">Manager view</div></div>
   </div>
   <div class="sb-nav">
     <button class="sb-btn on" onclick="goPage('dashboard',this)">
@@ -152,6 +155,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <button class="sb-btn" onclick="goPage('staff-mgmt',this)">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff
     </button>
+    <button class="sb-btn" onclick="goPage('manage-prop',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Manage property
+    </button>
     <button class="sb-btn" onclick="goPage('expenses',this)">
       <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>Expenses
     </button>
@@ -163,7 +169,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     </button>
   </div>
   <div class="sb-footer">
-    <div class="sb-user" id="sb-user">Owner</div>
+    <div class="sb-user" id="sb-user">Manager</div>
     <button class="sb-signout" onclick="signOut()">Sign out</button>
   </div>
 </div>
@@ -280,10 +286,30 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 </div>
 
+<!-- MANAGE PROPERTY -->
+<div class="pg" id="pg-manage-prop">
+  <div class="pg-title">Manage property</div>
+  <div class="pg-sub">Edit the description guests and landlords see, and curate local tips per property</div>
+  <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap" id="mp-prop-tabs"></div>
+  <div class="card">
+    <div class="card-ttl" id="mp-prop-label">Property</div>
+    <div class="fg"><label class="fl">Address</label><input class="fc" id="mp-address"/></div>
+    <div class="fg"><label class="fl">Description (shown to landlord and guests)</label><textarea class="fc" id="mp-desc" style="min-height:110px"></textarea></div>
+    <button class="btn-p" onclick="saveMpProperty()">Save changes</button>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="card-ttl" style="margin:0">Local tips for this property</div>
+      <button class="btn-p" onclick="openTipModal()">+ Add tip</button>
+    </div>
+    <div id="mp-tips-list">Loading…</div>
+  </div>
+</div>
+
 <!-- CHECK-INS -->
 <div class="pg" id="pg-checkins">
   <div class="pg-title">Guest check-ins</div>
-  <div class="pg-sub">ID proofs and travel details submitted by guests</div>
+  <div class="pg-sub">ID proofs, travel details, and Heritance Section C — managed here only, not shown on the guest form</div>
   <div class="card">
     <div id="checkin-table">Loading…</div>
   </div>
@@ -298,6 +324,68 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
 </div><!-- main -->
 </div><!-- layout -->
+
+<!-- Section C modal -->
+<div id="sc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--white);border-radius:14px;padding:24px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">Section C — Heritance</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px" id="sc-sub">Booking & billing</div>
+    <input type="hidden" id="sc-checkin-id"/>
+    <input type="hidden" id="sc-row-id"/>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div class="fg"><label class="fl">Num guests</label><input class="fc" id="sc-guests" type="number"/></div>
+      <div class="fg"><label class="fl">Kids</label><input class="fc" id="sc-kids" type="number"/></div>
+      <div class="fg"><label class="fl">Rooms</label><input class="fc" id="sc-rooms" type="number"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div class="fg"><label class="fl">Plan</label>
+        <select class="fc" id="sc-plan"><option value="">—</option><option>CP</option><option>EP</option><option>MAP</option><option>AP</option></select>
+      </div>
+      <div class="fg"><label class="fl">Extra beds</label><input class="fc" id="sc-beds" type="number"/></div>
+      <div class="fg"><label class="fl">Booking from</label>
+        <select class="fc" id="sc-from"><option value="">—</option><option>Airbnb</option><option>Booking.com</option><option>Direct</option><option>Agent</option><option>Other</option></select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div class="fg"><label class="fl">Booking mode</label>
+        <select class="fc" id="sc-mode"><option value="">—</option><option>Online</option><option>Phone</option><option>Walk-in</option></select>
+      </div>
+      <div class="fg"><label class="fl">Payment status</label>
+        <select class="fc" id="sc-paystatus"><option value="">—</option><option>paid</option><option>pending</option><option>partial</option></select>
+      </div>
+      <div class="fg"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Billing amount (₹)</label><input class="fc" id="sc-bill" type="number" step="0.01"/></div>
+      <div class="fg"><label class="fl">GST (₹)</label><input class="fc" id="sc-gst" type="number" step="0.01"/></div>
+    </div>
+    <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="sc-notes" style="min-height:70px"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-edit" onclick="closeSC()">Cancel</button>
+      <button class="btn-p" onclick="saveSC()">Save Section C</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tip modal -->
+<div id="tip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--white);border-radius:14px;padding:24px;max-width:520px;width:100%">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:14px" id="tp-ttl">Add tip</div>
+    <input type="hidden" id="tp-id"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Name</label><input class="fc" id="tp-name"/></div>
+      <div class="fg"><label class="fl">Category</label>
+        <select class="fc" id="tp-cat"><option>Food</option><option>Cafe</option><option>Nature</option><option>Culture</option><option>Shopping</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Description</label><textarea class="fc" id="tp-desc" style="min-height:80px"></textarea></div>
+    <div class="fg"><label class="fl">Tags (comma separated)</label><input class="fc" id="tp-tags"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-edit" onclick="closeTipModal()">Cancel</button>
+      <button class="btn-p" onclick="saveTip()">Save</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
@@ -331,6 +419,7 @@ function goPage(id,btn){
   if(id==='expenses') loadExpenses();
   if(id==='checkins') loadCheckins();
   if(id==='complaints-ow') loadOwnerComplaints();
+  if(id==='manage-prop') loadManageProp();
 }
 
 // Period data
@@ -485,23 +574,175 @@ async function loadExpenses(){
   el.innerHTML=`<div style="font-size:14px">${data.length} batches · ${fmt(total)} total</div><div style="font-size:13px;color:var(--g);margin-top:4px">${fmt(paid)} paid</div><div style="font-size:13px;color:#A32D2D;margin-top:2px">${fmt(total-paid)} unpaid</div>`;
 }
 
-// Guest check-ins
+// Guest check-ins (with Section C)
 async function loadCheckins(){
-  const data=await api('/rest/v1/guest_checkins?select=*&order=checked_in_at.desc')||[];
+  const [data, sectionC] = await Promise.all([
+    api('/rest/v1/guest_checkins?select=*&order=checked_in_at.desc'),
+    api('/rest/v1/guest_section_c?select=*'),
+  ]);
+  const ci = data || [];
+  const scMap = {};
+  (sectionC||[]).forEach(s => { scMap[s.guest_checkin_id] = s; });
   const el=document.getElementById('checkin-table');
-  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:24px">No check-ins submitted yet</div>';return;}
+  if(!ci.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:24px">No check-ins submitted yet</div>';return;}
   el.innerHTML=`<table class="ci-table">
-    <thead><tr><th>Guest</th><th>Property</th><th>Checked in</th><th>From</th><th>Going to</th><th>Guests</th><th>ID proof</th></tr></thead>
-    <tbody>${data.map(c=>`<tr>
-      <td>${c.guest_name||'—'}</td>
-      <td>${c.property_name||'—'}</td>
-      <td>${fmtDate(c.checked_in_at)}</td>
-      <td>${c.travelled_from||'—'}</td>
-      <td>${c.travelling_to||'—'}</td>
-      <td>${c.num_guests||1}</td>
-      <td>${(c.id_proof_urls||[]).length?c.id_proof_urls.map((_,i)=>`<a href="${c.id_proof_urls[i]}" target="_blank" style="color:var(--br);font-size:12px">Doc ${i+1}</a>`).join(' '):'—'}</td>
-    </tr>`).join('')}</tbody>
+    <thead><tr><th>Guest</th><th>Property</th><th>Checked in</th><th>From</th><th>Going to</th><th>Guests</th><th>ID proof</th><th>Section C</th><th></th></tr></thead>
+    <tbody>${ci.map(c=>{
+      const sc = scMap[c.id];
+      const scBadge = sc
+        ? `<span class="bdg bdg-g">Set</span><div style="font-size:11px;color:var(--muted);margin-top:3px">${sc.plan||'—'} · ${sc.payment_status||'—'} · ${sc.billing_amount?fmt(sc.billing_amount):'—'}</div>`
+        : `<span class="bdg bdg-a">Not set</span>`;
+      return `<tr>
+        <td>${c.guest_name||'—'}</td>
+        <td>${c.property_name||'—'}</td>
+        <td>${fmtDate(c.checked_in_at)}</td>
+        <td>${c.travelled_from||'—'}</td>
+        <td>${c.travelling_to||'—'}</td>
+        <td>${c.num_guests||1}</td>
+        <td>${(c.id_proof_urls||[]).length?c.id_proof_urls.map((_,i)=>`<a href="${c.id_proof_urls[i]}" target="_blank" style="color:var(--br);font-size:12px">Doc ${i+1}</a>`).join(' '):'—'}</td>
+        <td>${scBadge}</td>
+        <td><button class="sm-btn sm-pin" onclick='openSC(${JSON.stringify({cid:c.id, name:c.guest_name, prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'}</button></td>
+      </tr>`;
+    }).join('')}</tbody>
   </table>`;
+}
+
+// ── Section C modal ──
+async function openSC(info){
+  document.getElementById('sc-checkin-id').value = info.cid;
+  document.getElementById('sc-sub').textContent = `${info.name||'Guest'} · ${info.prop||''}`;
+  ['sc-guests','sc-kids','sc-rooms','sc-beds','sc-bill','sc-gst','sc-notes'].forEach(i=>document.getElementById(i).value='');
+  ['sc-plan','sc-from','sc-mode','sc-paystatus'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('sc-row-id').value='';
+  const ex = await api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+info.cid+'&select=*');
+  if(ex && ex.length){
+    const s = ex[0];
+    document.getElementById('sc-row-id').value = s.id;
+    document.getElementById('sc-guests').value = s.num_guests||'';
+    document.getElementById('sc-kids').value = s.num_kids||'';
+    document.getElementById('sc-rooms').value = s.num_rooms||'';
+    document.getElementById('sc-beds').value = s.extra_beds||'';
+    document.getElementById('sc-bill').value = s.billing_amount||'';
+    document.getElementById('sc-gst').value = s.gst_amount||'';
+    document.getElementById('sc-notes').value = s.notes||'';
+    document.getElementById('sc-plan').value = s.plan||'';
+    document.getElementById('sc-from').value = s.booking_from||'';
+    document.getElementById('sc-mode').value = s.booking_mode||'';
+    document.getElementById('sc-paystatus').value = s.payment_status||'';
+  }
+  document.getElementById('sc-modal').style.display='flex';
+}
+function closeSC(){ document.getElementById('sc-modal').style.display='none'; }
+async function saveSC(){
+  const cid = document.getElementById('sc-checkin-id').value;
+  const rowId = document.getElementById('sc-row-id').value;
+  const body = {
+    guest_checkin_id: cid,
+    num_guests: parseInt(document.getElementById('sc-guests').value)||null,
+    num_kids:   parseInt(document.getElementById('sc-kids').value)||null,
+    num_rooms:  parseInt(document.getElementById('sc-rooms').value)||null,
+    plan:       document.getElementById('sc-plan').value||null,
+    extra_beds: parseInt(document.getElementById('sc-beds').value)||null,
+    booking_from: document.getElementById('sc-from').value||null,
+    booking_mode: document.getElementById('sc-mode').value||null,
+    payment_status: document.getElementById('sc-paystatus').value||null,
+    billing_amount: parseFloat(document.getElementById('sc-bill').value)||null,
+    gst_amount:    parseFloat(document.getElementById('sc-gst').value)||null,
+    notes: document.getElementById('sc-notes').value.trim()||null,
+    updated_by: me.name,
+    updated_at: new Date().toISOString(),
+  };
+  if(rowId) await api('/rest/v1/guest_section_c?id=eq.'+rowId,'PATCH',body);
+  else      await api('/rest/v1/guest_section_c','POST',body);
+  closeSC();
+  loadCheckins();
+}
+
+// ── Manage property (description + per-property tips) ──
+let MP_PROPS=[], MP_CURRENT='';
+async function loadManageProp(){
+  if(!MP_PROPS.length){
+    MP_PROPS = await api('/rest/v1/properties?select=*&order=name')||[];
+    if(MP_PROPS.length && !MP_CURRENT) MP_CURRENT = MP_PROPS[0].name;
+  }
+  const tabsEl = document.getElementById('mp-prop-tabs');
+  tabsEl.innerHTML = MP_PROPS.map(p=>`<button class="ptab ${MP_CURRENT===p.name?'on':''}" onclick="setMpProp('${p.name.replace(/'/g,"\\'")}')">${p.name}</button>`).join('');
+  const cur = MP_PROPS.find(p=>p.name===MP_CURRENT);
+  if(!cur){ document.getElementById('mp-prop-label').textContent='No property selected'; return; }
+  document.getElementById('mp-prop-label').textContent = cur.name;
+  document.getElementById('mp-address').value = cur.address||'';
+  document.getElementById('mp-desc').value    = cur.description||'';
+  loadMpTips();
+}
+window.setMpProp = p => { MP_CURRENT = p; loadManageProp(); };
+
+async function saveMpProperty(){
+  const cur = MP_PROPS.find(p=>p.name===MP_CURRENT);
+  if(!cur) return;
+  await api('/rest/v1/properties?id=eq.'+cur.id,'PATCH',{
+    address: document.getElementById('mp-address').value.trim(),
+    description: document.getElementById('mp-desc').value.trim(),
+  });
+  // refresh cache
+  MP_PROPS = await api('/rest/v1/properties?select=*&order=name')||[];
+  alert('Saved');
+}
+
+async function loadMpTips(){
+  const data = await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(MP_CURRENT)+'&order=category,name')||[];
+  const el = document.getElementById('mp-tips-list');
+  if(!data.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:12px 0">No tips for this property yet</div>'; return; }
+  el.innerHTML = data.map(t=>`
+    <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${t.category||'—'}</div>
+        <div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.name}</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5">${t.description||''}</div>
+        ${(t.tags||[]).length?`<div style="margin-top:6px">${t.tags.map(tg=>`<span class="bdg" style="background:var(--b-l);color:var(--b);margin-right:4px">${tg}</span>`).join('')}</div>`:''}
+      </div>
+      <div style="display:flex;gap:6px;align-items:flex-start">
+        <button class="sm-btn sm-pin" onclick='editTip(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
+        <button class="sm-btn sm-del" onclick="deleteTip('${t.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function openTipModal(){
+  document.getElementById('tp-id').value='';
+  document.getElementById('tp-ttl').textContent='Add tip · '+MP_CURRENT;
+  ['tp-name','tp-desc','tp-tags'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('tp-cat').value='Food';
+  document.getElementById('tip-modal').style.display='flex';
+}
+function closeTipModal(){ document.getElementById('tip-modal').style.display='none'; }
+function editTip(t){
+  document.getElementById('tp-id').value=t.id;
+  document.getElementById('tp-ttl').textContent='Edit tip';
+  document.getElementById('tp-name').value=t.name||'';
+  document.getElementById('tp-desc').value=t.description||'';
+  document.getElementById('tp-tags').value=(t.tags||[]).join(', ');
+  document.getElementById('tp-cat').value=t.category||'Food';
+  document.getElementById('tip-modal').style.display='flex';
+}
+async function saveTip(){
+  const id=document.getElementById('tp-id').value;
+  const body={
+    property_name: MP_CURRENT,
+    name: document.getElementById('tp-name').value.trim(),
+    category: document.getElementById('tp-cat').value,
+    description: document.getElementById('tp-desc').value.trim()||null,
+    tags: document.getElementById('tp-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
+  };
+  if(!body.name){ alert('Need a name'); return; }
+  if(id) await api('/rest/v1/local_tips?id=eq.'+id,'PATCH',body);
+  else   await api('/rest/v1/local_tips','POST',body);
+  closeTipModal();
+  loadMpTips();
+}
+async function deleteTip(id){
+  if(!confirm('Delete this tip?')) return;
+  await api('/rest/v1/local_tips?id=eq.'+id,'DELETE');
+  loadMpTips();
 }
 
 // Owner complaints view
