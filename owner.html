@@ -3,134 +3,118 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Banyan Circle — Manager Dashboard</title>
+<title>Banyan Circle — Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 
-/* Layout */
 .layout{display:flex;min-height:100vh}
 .sidebar{width:220px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
 .main{flex:1;padding:28px 32px;max-width:1200px}
 
-/* Sidebar */
 .sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
 .sb-mark{width:36px;height:36px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sb-mark svg{width:18px;height:18px;fill:white}
 .sb-name{font-family:'Playfair Display',serif;font-size:16px}
 .sb-sub{font-size:11px;color:var(--muted)}
-.sb-nav{flex:1;padding:0 12px}
+.sb-nav{flex:1;padding:0 12px;overflow-y:auto}
 .sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;transition:all .15s;text-align:left;margin-bottom:2px}
 .sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .sb-btn:hover{background:var(--bg);color:var(--text)}
 .sb-btn.on{background:var(--br-l);color:var(--br);font-weight:500}
 .sb-btn.on svg{stroke:var(--br)}
+.sb-badge{margin-left:auto;background:var(--r);color:#fff;border-radius:999px;font-size:10px;font-weight:500;padding:2px 6px;min-width:18px;text-align:center}
 .sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
 .sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
 .sb-signout{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
 
-/* Pages */
 .pg{display:none}
 .pg.on{display:block}
 .pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
 .pg-sub{font-size:14px;color:var(--muted);margin-bottom:28px}
 
-/* Period tabs */
-.period-tabs{display:flex;gap:8px;margin-bottom:24px}
-.ptab{padding:8px 18px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
-.ptab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
-
-/* KPI grid */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
-.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px 20px}
-.kpi-l{font-size:12px;color:var(--muted);margin-bottom:8px}
-.kpi-v{font-size:28px;font-weight:500;line-height:1}
-.kpi-d{font-size:12px;margin-top:6px}
-.up{color:var(--g)}.flat{color:var(--muted)}
-
-/* Two col */
-.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
-.three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
-@media(max-width:900px){.two-col,.three-col{grid-template-columns:1fr}}
+/* KPI stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:20px 22px;cursor:pointer;transition:all .18s}
+.stat:hover{border-color:var(--br);box-shadow:0 4px 18px rgba(153,60,29,.1)}
+.stat-l{font-size:12px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+.stat-v{font-size:36px;font-weight:500;line-height:1;color:var(--text)}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.stat.red .stat-v{color:var(--r)}
+.stat.green .stat-v{color:var(--g)}
+.stat.amber .stat-v{color:var(--a)}
 
 /* Cards */
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
 .card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 
-/* Source bars */
-.src-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-.src-lbl{font-size:13px;width:110px;flex-shrink:0}
-.src-bar-wrap{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
-.src-bar{height:100%;border-radius:4px}
-.src-val{font-size:13px;font-weight:500;width:36px;text-align:right;flex-shrink:0}
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg)}
 
-/* Expense rows */
-.exp-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}
-.exp-row:last-child{border-bottom:none}
-.exp-bold{font-weight:500}
+/* Badges */
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-a{background:var(--a-l);color:#633806}
+.bdg-r{background:var(--r-l);color:#791F1F}
+.bdg-b{background:var(--b-l);color:#0C447C}
 
-/* Staff rows */
-.staff-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.staff-row:last-child{border-bottom:none}
-.s-av{width:36px;height:36px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#712B13;flex-shrink:0}
-.s-name{font-size:14px;font-weight:500}
-.s-role{font-size:12px;color:var(--muted)}
-.s-days{font-size:13px;color:var(--muted);margin-left:auto}
+/* Property tabs */
+.prop-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.ptab{padding:8px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.ptab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
 
-/* Prop blocks */
-.prop-block{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.prop-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.prop-name{font-size:15px;font-weight:500;margin-bottom:6px}
-.occ-row{display:flex;align-items:center;gap:10px;margin:8px 0}
-.occ-bar{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
-.occ-fill{height:100%;background:var(--br);border-radius:3px}
-.prop-stats{display:flex;gap:24px;font-size:13px}
-.psv{font-size:17px;font-weight:500}
-.psl{font-size:11px;color:var(--muted);margin-top:2px}
-
-/* Activity */
-.act-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-.act-row:last-child{border-bottom:none}
-.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.act-txt{font-size:13px}
-.act-time{font-size:11px;color:var(--muted);margin-top:2px}
-
-/* Staff management */
-.sm-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.sm-row:last-child{border-bottom:none}
-.sm-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
-.sm-info{flex:1}
-.sm-name{font-size:14px;font-weight:500}
-.sm-meta{font-size:12px;color:var(--muted);margin-top:2px}
-.sm-btns{display:flex;gap:6px}
-.sm-btn{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:none}
-.sm-pin{background:var(--bg);color:var(--muted)}
-.sm-del{background:var(--r-l,#FCEBEB);color:var(--r,#A32D2D)}
-
-/* Add staff form */
-.add-staff-form{background:var(--bg);border-radius:12px;padding:18px;border:1px solid var(--border);margin-top:16px}
+/* Forms */
 .fg{margin-bottom:12px}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
 .fc:focus{border-color:var(--br)}
-.btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:hover{background:#712B13}
+.btn-sec{padding:8px 14px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-sm{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:none;background:var(--bg);color:var(--muted)}
+.btn-sm:hover{background:var(--br-l);color:var(--br)}
 
-/* Guest checkins table */
-.ci-table{width:100%;border-collapse:collapse;font-size:13px}
-.ci-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.ci-table td{padding:10px;border-bottom:1px solid var(--border)}
-.ci-table tr:last-child td{border-bottom:none}
+/* Guest pill */
+.guest-pill{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.guest-pill:last-child{border-bottom:none}
+.gav{width:38px;height:38px;border-radius:50%;background:var(--br-l);color:#712B13;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.g-name{font-size:14px;font-weight:500}
+.g-meta{font-size:12px;color:var(--muted);margin-top:2px}
 
-/* Bdg */
-.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}.bdg-r{background:#FCEBEB;color:#791F1F}
+/* Complaint/request card */
+.comp-row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)}
+.comp-row:last-child{border-bottom:none}
+.comp-body{flex:1;font-size:13px;line-height:1.5}
+.comp-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.comp-status{flex-shrink:0}
 
-.ptab{padding:7px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.ptab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+/* Comms */
+.msg-bubble{margin-bottom:10px;display:flex}
+.msg-bubble.me{justify-content:flex-end}
+.msg-inner{max-width:72%;padding:10px 14px;border-radius:12px;border:1px solid var(--border)}
+.msg-bubble.me .msg-inner{background:#222;color:#fff;border-color:#222}
+.msg-from{font-size:11px;opacity:.65;margin-bottom:3px}
+.msg-text{font-size:13px;line-height:1.55;white-space:pre-wrap}
+
+/* Section C modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.today-tag{display:inline-block;background:#FFF3CD;color:#856404;font-size:10px;font-weight:500;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -140,32 +124,36 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <div class="sidebar">
   <div class="sb-logo">
     <div class="sb-mark"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg></div>
-    <div><div class="sb-name">Banyan Circle</div><div class="sb-sub">Manager view</div></div>
+    <div><div class="sb-name">Banyan Circle</div><div class="sb-sub">Manager</div></div>
   </div>
   <div class="sb-nav">
     <button class="sb-btn on" onclick="goPage('dashboard',this)">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview
     </button>
-    <button class="sb-btn" onclick="goPage('revenue',this)">
-      <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>Revenue
+    <button class="sb-btn" onclick="goPage('guests',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Current Guests
     </button>
-    <button class="sb-btn" onclick="goPage('occupancy',this)">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Occupancy
+    <button class="sb-btn" onclick="goPage('checkins-due',this)">
+      <svg viewBox="0 0 24 24"><path d="M15 3h6v6M10 14L21 3"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/></svg>Check-ins Due
+      <span class="sb-badge" id="badge-checkins" style="display:none">0</span>
     </button>
-    <button class="sb-btn" onclick="goPage('staff-mgmt',this)">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff
+    <button class="sb-btn" onclick="goPage('checkouts-due',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 21H3v-6M14 10L3 21"/><path d="M3 12V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>Check-outs Due
+      <span class="sb-badge" id="badge-checkouts" style="display:none">0</span>
     </button>
-    <button class="sb-btn" onclick="goPage('manage-prop',this)">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Manage property
-    </button>
-    <button class="sb-btn" onclick="goPage('expenses',this)">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>Expenses
-    </button>
-    <button class="sb-btn" onclick="goPage('checkins',this)">
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-ins
-    </button>
-    <button class="sb-btn" onclick="goPage('complaints-ow',this)">
+    <button class="sb-btn" onclick="goPage('complaints',this)">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Complaints
+      <span class="sb-badge" id="badge-complaints" style="display:none">0</span>
+    </button>
+    <button class="sb-btn" onclick="goPage('requests',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Requests
+      <span class="sb-badge" id="badge-requests" style="display:none">0</span>
+    </button>
+    <button class="sb-btn" onclick="goPage('comms',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>Landlord Comms
+    </button>
+    <button class="sb-btn" onclick="goPage('registrations',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Registrations
     </button>
   </div>
   <div class="sb-footer">
@@ -177,167 +165,155 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <!-- Main -->
 <div class="main">
 
-<!-- DASHBOARD -->
+<!-- OVERVIEW DASHBOARD -->
 <div class="pg on" id="pg-dashboard">
-  <div class="pg-title">Dashboard</div>
+  <div class="pg-title">Good <span id="greeting-time">morning</span>, <span id="greeting-name">Manager</span></div>
   <div class="pg-sub" id="dash-date"></div>
-  <div class="period-tabs">
-    <button class="ptab" onclick="setPeriod('week',this)">Week</button>
-    <button class="ptab on" onclick="setPeriod('month',this)">Month</button>
-    <button class="ptab" onclick="setPeriod('quarter',this)">Quarter</button>
-  </div>
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-l">Total revenue</div><div class="kpi-v" id="k-rev">—</div><div class="kpi-d up" id="k-rev-d">—</div></div>
-    <div class="kpi"><div class="kpi-l">Occupancy</div><div class="kpi-v" id="k-occ">—</div><div class="kpi-d up" id="k-occ-d">—</div></div>
-    <div class="kpi"><div class="kpi-l">Bookings</div><div class="kpi-v" id="k-bk">—</div><div class="kpi-d flat" id="k-bk-d">—</div></div>
-    <div class="kpi"><div class="kpi-l">Avg nightly rate</div><div class="kpi-v" id="k-anr">—</div><div class="kpi-d up" id="k-anr-d">—</div></div>
-    <div class="kpi"><div class="kpi-l">Net profit</div><div class="kpi-v" id="k-np">—</div><div class="kpi-d flat">After expenses</div></div>
-    <div class="kpi"><div class="kpi-l">Guest rating</div><div class="kpi-v" id="k-rating">—</div><div class="kpi-d flat" id="k-rating-d">—</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-ttl">Revenue by property</div>
-    <div style="height:220px;position:relative"><canvas id="rev-chart"></canvas></div>
-    <div style="display:flex;gap:20px;margin-top:12px;font-size:12px;color:var(--muted)">
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--br);margin-right:5px"></span>Villa 21</span>
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#F5C4B3;margin-right:5px"></span>19A Link Heritage</span>
+  <div class="stat-grid" id="dash-stats">
+    <div class="stat" onclick="goPageByName('guests')">
+      <div class="stat-l">In-house guests</div>
+      <div class="stat-v" id="s-guests">—</div>
+      <div class="stat-sub">Across both properties</div>
+    </div>
+    <div class="stat" onclick="goPageByName('checkins-due')">
+      <div class="stat-l">Checking in today</div>
+      <div class="stat-v green" id="s-ci-today">—</div>
+      <div class="stat-sub" id="s-ci-sub">—</div>
+    </div>
+    <div class="stat" onclick="goPageByName('checkouts-due')">
+      <div class="stat-l">Checking out today</div>
+      <div class="stat-v amber" id="s-co-today">—</div>
+      <div class="stat-sub" id="s-co-sub">—</div>
+    </div>
+    <div class="stat" onclick="goPageByName('complaints')">
+      <div class="stat-l">Open complaints</div>
+      <div class="stat-v" id="s-complaints">—</div>
+      <div class="stat-sub">Needs attention</div>
+    </div>
+    <div class="stat" onclick="goPageByName('requests')">
+      <div class="stat-l">Pending requests</div>
+      <div class="stat-v" id="s-requests">—</div>
+      <div class="stat-sub">Housekeeping tasks</div>
     </div>
   </div>
 
-  <div class="two-col">
+  <!-- Today's arrivals & departures snapshot -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div class="card">
-      <div class="card-ttl">Properties</div>
-      <div class="prop-block">
-        <div class="prop-name">Villa 21</div>
-        <div class="occ-row"><div class="occ-bar"><div class="occ-fill" id="occ-v21" style="width:0%"></div></div><div style="font-size:13px;font-weight:500" id="occ-v21-pct">—</div></div>
-        <div class="prop-stats">
-          <div><div class="psv" id="rev-v21">—</div><div class="psl">Revenue</div></div>
-          <div><div class="psv" id="nights-v21">—</div><div class="psl">Nights</div></div>
-          <div><div class="psv" id="rating-v21">4.9</div><div class="psl">Rating</div></div>
-        </div>
-      </div>
-      <div class="prop-block">
-        <div class="prop-name">19A Link Heritage</div>
-        <div class="occ-row"><div class="occ-bar"><div class="occ-fill" id="occ-link" style="width:0%"></div></div><div style="font-size:13px;font-weight:500" id="occ-link-pct">—</div></div>
-        <div class="prop-stats">
-          <div><div class="psv" id="rev-link">—</div><div class="psl">Revenue</div></div>
-          <div><div class="psv" id="nights-link">—</div><div class="psl">Nights</div></div>
-          <div><div class="psv" id="rating-link">4.7</div><div class="psl">Rating</div></div>
-        </div>
-      </div>
+      <div class="card-ttl">Arriving today</div>
+      <div id="dash-arrivals"><div class="empty">Loading…</div></div>
     </div>
     <div class="card">
-      <div class="card-ttl">Booking sources</div>
-      <div id="src-bars"></div>
-      <div style="margin-top:20px">
-        <div class="card-ttl">Guest satisfaction</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div><div style="font-size:24px;font-weight:500" id="gs-rating">—</div><div style="font-size:11px;color:var(--muted)">Avg rating</div></div>
-          <div><div style="font-size:24px;font-weight:500" id="gs-return">—</div><div style="font-size:11px;color:var(--muted)">Return intent</div></div>
-          <div><div style="font-size:24px;font-weight:500" id="gs-reviews">—</div><div style="font-size:11px;color:var(--muted)">Reviews</div></div>
-          <div><div style="font-size:24px;font-weight:500" id="gs-comp">—</div><div style="font-size:11px;color:var(--muted)">Open complaints</div></div>
-        </div>
-      </div>
+      <div class="card-ttl">Departing today</div>
+      <div id="dash-departures"><div class="empty">Loading…</div></div>
     </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-ttl">Open complaints — quick view</div>
+    <div id="dash-complaints"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
-<!-- STAFF MANAGEMENT -->
-<div class="pg" id="pg-staff-mgmt">
-  <div class="pg-title">Staff management</div>
-  <div class="pg-sub">Add, edit and manage team PIN access</div>
+<!-- CURRENT GUESTS -->
+<div class="pg" id="pg-guests">
+  <div class="pg-title">Current Guests</div>
+  <div class="pg-sub">In-house right now across both properties</div>
+  <div class="prop-tabs" id="guests-tabs"></div>
   <div class="card">
-    <div class="card-ttl">Team</div>
-    <div id="staff-mgmt-list">Loading…</div>
-  </div>
-  <div class="add-staff-form">
-    <div style="font-size:13px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Add team member</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 120px auto;gap:10px;align-items:end">
-      <div class="fg" style="margin-bottom:0"><label class="fl">Name</label><input class="fc" id="ns-name" type="text" placeholder="Full name"/></div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">Role</label>
-        <select class="fc" id="ns-role"><option>Homekeeper</option><option>Relationship Manager</option><option>Guest Experience Coordinator</option><option>Owner</option></select>
-      </div>
-      <div class="fg" style="margin-bottom:0"><label class="fl">PIN (4 digits)</label><input class="fc" id="ns-pin" type="text" maxlength="4" placeholder="e.g. 3456"/></div>
-      <div></div>
-      <button class="btn-p" onclick="addStaff()">Add</button>
-    </div>
+    <div class="card-ttl" id="guests-prop-label">Guests</div>
+    <div id="guests-list"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
-<!-- EXPENSES -->
-<div class="pg" id="pg-expenses">
-  <div class="pg-title">Expenses</div>
-  <div class="pg-sub">Cost breakdown by category</div>
-  <div class="two-col">
-    <div class="card">
-      <div class="card-ttl">This month</div>
-      <div class="exp-row"><span style="color:var(--muted)">Laundry</span><span id="exp-laundry">—</span></div>
-      <div class="exp-row"><span style="color:var(--muted)">Supplies</span><span id="exp-supplies">—</span></div>
-      <div class="exp-row"><span style="color:var(--muted)">Maintenance</span><span id="exp-maint">—</span></div>
-      <div class="exp-row"><span style="color:var(--muted)">Staff costs</span><span id="exp-staff">—</span></div>
-      <div class="exp-row"><span style="color:var(--muted)">Platform fees</span><span id="exp-platform">—</span></div>
-      <div class="exp-row"><span class="exp-bold">Total</span><span class="exp-bold" id="exp-total">—</span></div>
-      <div class="exp-row"><span class="exp-bold" style="color:var(--g)">Net profit</span><span class="exp-bold" style="color:var(--g)" id="exp-profit">—</span></div>
-    </div>
-    <div class="card">
-      <div class="card-ttl">Laundry invoices</div>
-      <div id="laundry-spend">Loading…</div>
-    </div>
-  </div>
-</div>
-
-<!-- MANAGE PROPERTY -->
-<div class="pg" id="pg-manage-prop">
-  <div class="pg-title">Manage property</div>
-  <div class="pg-sub">Edit the description guests and landlords see, and curate local tips per property</div>
-  <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap" id="mp-prop-tabs"></div>
+<!-- CHECK-INS DUE -->
+<div class="pg" id="pg-checkins-due">
+  <div class="pg-title">Check-ins Due</div>
+  <div class="pg-sub">Arriving today and in the next 3 days</div>
+  <div class="prop-tabs" id="ci-tabs"></div>
   <div class="card">
-    <div class="card-ttl" id="mp-prop-label">Property</div>
-    <div class="fg"><label class="fl">Address</label><input class="fc" id="mp-address"/></div>
-    <div class="fg"><label class="fl">Description (shown to landlord and guests)</label><textarea class="fc" id="mp-desc" style="min-height:110px"></textarea></div>
-    <button class="btn-p" onclick="saveMpProperty()">Save changes</button>
-  </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div class="card-ttl" style="margin:0">Local tips for this property</div>
-      <button class="btn-p" onclick="openTipModal()">+ Add tip</button>
-    </div>
-    <div id="mp-tips-list">Loading…</div>
+    <div class="card-ttl" id="ci-prop-label">Arrivals</div>
+    <div id="ci-list"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
-<!-- CHECK-INS -->
-<div class="pg" id="pg-checkins">
-  <div class="pg-title">Guest check-ins</div>
-  <div class="pg-sub">ID proofs, travel details, and Heritance Section C — managed here only, not shown on the guest form</div>
+<!-- CHECK-OUTS DUE -->
+<div class="pg" id="pg-checkouts-due">
+  <div class="pg-title">Check-outs Due</div>
+  <div class="pg-sub">Departing today and in the next 3 days</div>
+  <div class="prop-tabs" id="co-tabs"></div>
   <div class="card">
-    <div id="checkin-table">Loading…</div>
+    <div class="card-ttl" id="co-prop-label">Departures</div>
+    <div id="co-list"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
-<!-- COMPLAINTS OWNER VIEW -->
-<div class="pg" id="pg-complaints-ow">
+<!-- COMPLAINTS -->
+<div class="pg" id="pg-complaints">
   <div class="pg-title">Complaints</div>
-  <div class="pg-sub">All guest complaints</div>
-  <div id="ow-comp-list">Loading…</div>
+  <div class="pg-sub">All guest complaints — open and resolved</div>
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="ptab on" id="comp-tab-open" onclick="setCompFilter('open',this)">Open</button>
+    <button class="ptab" id="comp-tab-all" onclick="setCompFilter('all',this)">All</button>
+  </div>
+  <div id="comp-list"><div class="empty">Loading…</div></div>
+</div>
+
+<!-- REQUESTS (housekeeping tasks) -->
+<div class="pg" id="pg-requests">
+  <div class="pg-title">Requests</div>
+  <div class="pg-sub">Housekeeping tasks and service requests from staff</div>
+  <div class="prop-tabs" id="req-tabs"></div>
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="ptab on" id="req-tab-pending" onclick="setReqFilter('pending',this)">Pending</button>
+    <button class="ptab" id="req-tab-all" onclick="setReqFilter('all',this)">All</button>
+  </div>
+  <div class="card">
+    <div class="card-ttl" id="req-prop-label">Tasks</div>
+    <div id="req-list"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
+<!-- LANDLORD COMMS -->
+<div class="pg" id="pg-comms">
+  <div class="pg-title">Landlord Comms</div>
+  <div class="pg-sub">Internal thread between you and the property landlords</div>
+  <div class="prop-tabs" id="comms-tabs"></div>
+  <div class="card">
+    <div class="card-ttl" id="comms-prop-label">Thread</div>
+    <div id="comms-msgs" style="max-height:440px;overflow-y:auto;margin-bottom:14px"><div class="empty">Loading…</div></div>
+    <div style="display:flex;gap:8px">
+      <input class="fc" id="comms-input" type="text" placeholder="Write a message…" style="flex:1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCommsMsg();}"/>
+      <button class="btn-p" onclick="sendCommsMsg()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATIONS (guest check-in records + Section C) -->
+<div class="pg" id="pg-registrations">
+  <div class="pg-title">Guest Registrations</div>
+  <div class="pg-sub">Submitted check-in forms, ID proofs and Heritance Section C</div>
+  <div class="card">
+    <div id="reg-table"><div class="empty">Loading…</div></div>
+  </div>
 </div>
 
 </div><!-- main -->
 </div><!-- layout -->
 
 <!-- Section C modal -->
-<div id="sc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--white);border-radius:14px;padding:24px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto">
-    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px">Section C — Heritance</div>
+<div class="modal" id="sc-modal">
+  <div class="modal-card">
+    <div class="modal-ttl">Section C — Heritance</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:18px" id="sc-sub">Booking & billing</div>
     <input type="hidden" id="sc-checkin-id"/>
     <input type="hidden" id="sc-row-id"/>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    <div class="row-grid-3">
       <div class="fg"><label class="fl">Num guests</label><input class="fc" id="sc-guests" type="number"/></div>
       <div class="fg"><label class="fl">Kids</label><input class="fc" id="sc-kids" type="number"/></div>
       <div class="fg"><label class="fl">Rooms</label><input class="fc" id="sc-rooms" type="number"/></div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    <div class="row-grid-3">
       <div class="fg"><label class="fl">Plan</label>
         <select class="fc" id="sc-plan"><option value="">—</option><option>CP</option><option>EP</option><option>MAP</option><option>AP</option></select>
       </div>
@@ -346,7 +322,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
         <select class="fc" id="sc-from"><option value="">—</option><option>Airbnb</option><option>Booking.com</option><option>Direct</option><option>Agent</option><option>Other</option></select>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    <div class="row-grid-3">
       <div class="fg"><label class="fl">Booking mode</label>
         <select class="fc" id="sc-mode"><option value="">—</option><option>Online</option><option>Phone</option><option>Walk-in</option></select>
       </div>
@@ -355,34 +331,14 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       </div>
       <div class="fg"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="fg"><label class="fl">Billing amount (₹)</label><input class="fc" id="sc-bill" type="number" step="0.01"/></div>
+    <div class="row-grid">
+      <div class="fg"><label class="fl">Billing (₹)</label><input class="fc" id="sc-bill" type="number" step="0.01"/></div>
       <div class="fg"><label class="fl">GST (₹)</label><input class="fc" id="sc-gst" type="number" step="0.01"/></div>
     </div>
     <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="sc-notes" style="min-height:70px"></textarea></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <button class="btn-edit" onclick="closeSC()">Cancel</button>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeSC()">Cancel</button>
       <button class="btn-p" onclick="saveSC()">Save Section C</button>
-    </div>
-  </div>
-</div>
-
-<!-- Tip modal -->
-<div id="tip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--white);border-radius:14px;padding:24px;max-width:520px;width:100%">
-    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:14px" id="tp-ttl">Add tip</div>
-    <input type="hidden" id="tp-id"/>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="fg"><label class="fl">Name</label><input class="fc" id="tp-name"/></div>
-      <div class="fg"><label class="fl">Category</label>
-        <select class="fc" id="tp-cat"><option>Food</option><option>Cafe</option><option>Nature</option><option>Culture</option><option>Shopping</option><option>Other</option></select>
-      </div>
-    </div>
-    <div class="fg"><label class="fl">Description</label><textarea class="fc" id="tp-desc" style="min-height:80px"></textarea></div>
-    <div class="fg"><label class="fl">Tags (comma separated)</label><input class="fc" id="tp-tags"/></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <button class="btn-edit" onclick="closeTipModal()">Cancel</button>
-      <button class="btn-p" onclick="saveTip()">Save</button>
     </div>
   </div>
 </div>
@@ -393,218 +349,333 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 // Auth
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
-if (!me||me.role!=='owner') location.href='/index.html';
-document.getElementById('sb-user').textContent = me.name||'Owner';
+if (!me || me.role !== 'owner') { location.href='/index.html'; throw new Error('No auth'); }
+document.getElementById('sb-user').textContent = me.name || 'Manager';
+document.getElementById('greeting-name').textContent = (me.name||'Manager').split(' ')[0];
+
+// Greeting by time
+const hr = new Date().getHours();
+document.getElementById('greeting-time').textContent = hr < 12 ? 'morning' : hr < 17 ? 'afternoon' : 'evening';
 document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 async function api(path, method, body) {
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json'};
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
-  if(r.status===204)return null;
+  if(r.status===204) return null;
   return r.json().catch(()=>null);
 }
 
-function signOut(){localStorage.removeItem('bc_me');location.href='/index.html';}
-const fmt=n=>'₹'+Math.round(n).toLocaleString('en-IN');
-const fmtDate=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
-const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
+const fmt = n => '₹'+Math.round(n||0).toLocaleString('en-IN');
+const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+const fmtDT = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+const ini = n => (n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+const TODAY = new Date().toISOString().slice(0,10);
+const datePlus = n => { const d = new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+const isToday = d => d === TODAY;
 
-// Navigation
-function goPage(id,btn){
+// Nav
+let PROPS = [];
+async function ensureProps(){
+  if(!PROPS.length) PROPS = await api('/rest/v1/properties?select=*&order=name')||[];
+  return PROPS;
+}
+
+function goPage(id, btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
-  btn.classList.add('on');
-  if(id==='staff-mgmt') loadStaff();
-  if(id==='expenses') loadExpenses();
-  if(id==='checkins') loadCheckins();
-  if(id==='complaints-ow') loadOwnerComplaints();
-  if(id==='manage-prop') loadManageProp();
+  if(btn) btn.classList.add('on');
+  if(id==='dashboard')      loadDashboard();
+  if(id==='guests')         loadCurrentGuests();
+  if(id==='checkins-due')   loadCheckinsDue();
+  if(id==='checkouts-due')  loadCheckoutsDue();
+  if(id==='complaints')     loadComplaints();
+  if(id==='requests')       loadRequests();
+  if(id==='comms')          loadComms();
+  if(id==='registrations')  loadRegistrations();
 }
 
-// Period data
-const PERIODS = {
-  week:{rev:38000,occ:82,bk:4,anr:9100,np:24000},
-  month:{rev:184000,occ:76,bk:14,anr:8400,np:121000},
-  quarter:{rev:520000,occ:71,bk:38,anr:8100,np:340000}
-};
-let activePeriod='month', revChart=null;
-
-function setPeriod(p,btn){
-  activePeriod=p;
-  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  renderKPIs();
+function goPageByName(id){
+  const btn = Array.from(document.querySelectorAll('.sb-btn')).find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"));
+  goPage(id, btn);
 }
 
-function renderKPIs(){
-  const d=PERIODS[activePeriod];
-  const mul=activePeriod==='week'?0.25:activePeriod==='quarter'?3:1;
-  document.getElementById('k-rev').textContent=fmt(d.rev);
-  document.getElementById('k-occ').textContent=d.occ+'%';
-  document.getElementById('k-bk').textContent=d.bk;
-  document.getElementById('k-anr').textContent=fmt(d.anr);
-  document.getElementById('k-np').textContent=fmt(d.np);
-  document.getElementById('k-rev-d').textContent='+18% vs last period';
-  document.getElementById('k-occ-d').textContent='+9pts vs last period';
-  document.getElementById('k-bk-d').textContent='Airbnb · BDC · Direct';
-  document.getElementById('k-anr-d').textContent='+₹600 vs last period';
-
-  // Properties
-  const v21Occ=activePeriod==='week'?84:activePeriod==='month'?76:72;
-  const lkOcc=activePeriod==='week'?78:activePeriod==='month'?60:65;
-  document.getElementById('occ-v21').style.width=v21Occ+'%';
-  document.getElementById('occ-v21-pct').textContent=v21Occ+'%';
-  document.getElementById('occ-link').style.width=lkOcc+'%';
-  document.getElementById('occ-link-pct').textContent=lkOcc+'%';
-  document.getElementById('rev-v21').textContent=activePeriod==='week'?'₹21K':activePeriod==='month'?'₹1.04L':'₹2.9L';
-  document.getElementById('rev-link').textContent=activePeriod==='week'?'₹17K':activePeriod==='month'?'₹80K':'₹2.3L';
-  document.getElementById('nights-v21').textContent=activePeriod==='week'?6:activePeriod==='month'?19:54;
-  document.getElementById('nights-link').textContent=activePeriod==='week'?5:activePeriod==='month'?15:47;
-
-  // Sources
-  document.getElementById('src-bars').innerHTML=`
-    <div class="src-row"><div class="src-lbl">Airbnb</div><div class="src-bar-wrap"><div class="src-bar" style="width:64%;background:var(--br)"></div></div><div class="src-val">64%</div></div>
-    <div class="src-row"><div class="src-lbl">Booking.com</div><div class="src-bar-wrap"><div class="src-bar" style="width:21%;background:var(--b)"></div></div><div class="src-val">21%</div></div>
-    <div class="src-row"><div class="src-lbl">Direct/phone</div><div class="src-bar-wrap"><div class="src-bar" style="width:15%;background:#888"></div></div><div class="src-val">15%</div></div>`;
-
-  // Expenses
-  const expMul=mul;
-  const exps={laundry:4200,supplies:2800,maint:6500,staff:28000,platform:9200};
-  Object.entries(exps).forEach(([k,v])=>{const el=document.getElementById('exp-'+k);if(el)el.textContent=fmt(v*expMul);});
-  const total=Object.values(exps).reduce((a,b)=>a+b,0)*expMul;
-  if(document.getElementById('exp-total')) document.getElementById('exp-total').textContent=fmt(total);
-  if(document.getElementById('exp-profit')) document.getElementById('exp-profit').textContent=fmt(d.rev-total);
-
-  // Chart
-  updateChart(mul);
-}
-
-function updateChart(mul) {
-  const labels=['1','3','5','7','9','11','13','15','17','19','21','23','25','27','29','31'];
-  const v21=[4200,0,8400,6300,8400,0,4200,8400,8400,0,6300,8400,0,8400,4200,6300].map(v=>Math.round(v*mul));
-  const link=[0,5600,5600,0,5600,5600,0,5600,0,5600,5600,0,5600,5600,0,5600].map(v=>Math.round(v*mul));
-  if(revChart) revChart.destroy();
-  revChart=new Chart(document.getElementById('rev-chart'),{
-    type:'bar',
-    data:{labels,datasets:[
-      {label:'Villa 21',data:v21,backgroundColor:'#993C1D',borderRadius:3,borderSkipped:false},
-      {label:'19A Link Heritage',data:link,backgroundColor:'#F5C4B3',borderRadius:3,borderSkipped:false}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10},color:'#888',autoSkip:true,maxRotation:0}},y:{stacked:true,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#888',callback:v=>'₹'+(v/1000).toFixed(0)+'K'}}}}
-  });
-}
-
-// Guest satisfaction from DB
-async function loadGuestStats(){
-  const [fb,comps]=await Promise.all([
-    api('/rest/v1/guest_feedback?select=arrival_rating,cleanliness_rating,hospitality_rating,would_return'),
-    api('/rest/v1/guest_complaints?status=eq.open&select=id')
+// ── DASHBOARD ──
+async function loadDashboard(){
+  await ensureProps();
+  const [currentGuests, allGuests, ciToday, coToday, openComps, pendReqs] = await Promise.all([
+    api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&select=id,name,property_name'),
+    api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
+    api('/rest/v1/guest_profiles?check_in=eq.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
+    api('/rest/v1/guest_profiles?check_out=eq.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
+    api('/rest/v1/guest_complaints?status=eq.open&select=id,guest_name,complaint,created_at,property_id'),
+    api('/rest/v1/housekeeping_tasks?status=neq.completed&select=id&limit=100'),
   ]);
-  if(fb&&fb.length){
-    const ratings=fb.flatMap(f=>[f.arrival_rating,f.cleanliness_rating,f.hospitality_rating].filter(Boolean));
-    const avg=ratings.length?(ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1):'—';
-    const ret=Math.round(fb.filter(f=>f.would_return==='Without a doubt').length/fb.length*100)+'%';
-    document.getElementById('gs-rating').textContent=avg;
-    document.getElementById('gs-return').textContent=ret;
-    document.getElementById('gs-reviews').textContent=fb.length;
-    document.getElementById('k-rating').textContent=avg;
-    document.getElementById('k-rating-d').textContent=fb.length+' reviews';
-  } else {
-    document.getElementById('gs-rating').textContent='4.8';
-    document.getElementById('gs-return').textContent='91%';
-    document.getElementById('gs-reviews').textContent='0';
-    document.getElementById('k-rating').textContent='4.8';
-    document.getElementById('k-rating-d').textContent='Sample data';
+
+  const cg = currentGuests||[];
+  const ci = ciToday||[];
+  const co = coToday||[];
+  const comps = openComps||[];
+  const reqs = pendReqs||[];
+
+  document.getElementById('s-guests').textContent = cg.length;
+  document.getElementById('s-ci-today').textContent = ci.length;
+  document.getElementById('s-ci-sub').textContent = ci.length===1 ? '1 guest' : ci.length+' guests';
+  document.getElementById('s-co-today').textContent = co.length;
+  document.getElementById('s-co-sub').textContent = co.length===1 ? '1 guest' : co.length+' guests';
+  document.getElementById('s-complaints').textContent = comps.length;
+  document.getElementById('s-requests').textContent = reqs.length;
+
+  // Update badges
+  updateBadge('badge-checkins', ci.length);
+  updateBadge('badge-checkouts', co.length);
+  updateBadge('badge-complaints', comps.length);
+  updateBadge('badge-requests', reqs.length);
+
+  // Arrivals snapshot
+  const arrEl = document.getElementById('dash-arrivals');
+  if(!ci.length){ arrEl.innerHTML='<div class="empty">No arrivals today</div>'; }
+  else arrEl.innerHTML = ci.map(g=>`
+    <div class="guest-pill">
+      <div class="gav">${ini(g.name)}</div>
+      <div><div class="g-name">${g.name}</div><div class="g-meta">${g.property_name||'—'} · Check-out ${fmtDate(g.check_out)}</div></div>
+    </div>`).join('');
+
+  // Departures snapshot
+  const depEl = document.getElementById('dash-departures');
+  if(!co.length){ depEl.innerHTML='<div class="empty">No departures today</div>'; }
+  else depEl.innerHTML = co.map(g=>`
+    <div class="guest-pill">
+      <div class="gav">${ini(g.name)}</div>
+      <div><div class="g-name">${g.name}</div><div class="g-meta">${g.property_name||'—'} · Checked in ${fmtDate(g.check_in)}</div></div>
+    </div>`).join('');
+
+  // Complaints quick view
+  const cmpEl = document.getElementById('dash-complaints');
+  if(!comps.length){ cmpEl.innerHTML='<div class="empty">No open complaints 🎉</div>'; }
+  else {
+    cmpEl.innerHTML = comps.slice(0,5).map(c=>`
+      <div class="comp-row">
+        <div class="comp-body">
+          <div>${c.guest_name||'Guest'}</div>
+          <div style="margin-top:3px;color:var(--text)">${c.complaint}</div>
+          <div class="comp-meta">${fmtDT(c.created_at)}</div>
+        </div>
+        <div class="comp-status"><span class="bdg bdg-r">open</span></div>
+      </div>`).join('');
+    if(comps.length>5) cmpEl.innerHTML += `<div style="font-size:13px;color:var(--muted);padding:10px 0">+${comps.length-5} more — <a href="#" onclick="goPageByName('complaints');return false" style="color:var(--br)">view all</a></div>`;
   }
-  document.getElementById('gs-comp').textContent=(comps&&comps.length)||0;
 }
 
-// Staff management
-async function loadStaff(){
-  const data=await api('/rest/v1/staff?select=*&order=name')||[];
-  const el=document.getElementById('staff-mgmt-list');
-  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:16px 0">No staff added yet</div>';return;}
-  const owners=data.filter(s=>s.designation==='Owner');
-  const rest=data.filter(s=>s.designation!=='Owner');
-  const render=(items,isOwner)=>items.map(s=>`
-    <div class="sm-row">
-      <div class="sm-av" style="background:${isOwner?'#E6F1FB':'var(--br-l)'};color:${isOwner?'#0C447C':'#712B13'}">${ini(s.name)}</div>
-      <div class="sm-info"><div class="sm-name">${s.name}</div><div class="sm-meta">${s.designation||'Staff'} · PIN: ${s.pin?'••••':'not set'}</div></div>
-      <div class="sm-btns">
-        <button class="sm-btn sm-pin" onclick="changePin('${s.id}','${s.name}')">Change PIN</button>
-        <button class="sm-btn sm-del" onclick="deleteStaff('${s.id}','${s.name}')">Remove</button>
+function updateBadge(id, count){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(count>0){ el.textContent=count; el.style.display='block'; }
+  else el.style.display='none';
+}
+
+// ── CURRENT GUESTS ──
+let guestsProp = '';
+async function loadCurrentGuests(){
+  await ensureProps();
+  if(!guestsProp) guestsProp = PROPS[0]?.name||'';
+  renderPropTabs('guests-tabs', guestsProp, 'setGuestsProp');
+  document.getElementById('guests-prop-label').textContent = guestsProp ? 'In-house at '+guestsProp : 'Guests';
+  const data = await api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&property_name=eq.'+encodeURIComponent(guestsProp)+'&select=*&order=check_in.desc')||[];
+  const el = document.getElementById('guests-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No guests in-house at this property</div>'; return; }
+  el.innerHTML = data.map(g=>`
+    <div class="guest-pill">
+      <div class="gav">${ini(g.name)}</div>
+      <div style="flex:1">
+        <div class="g-name">${g.name}</div>
+        <div class="g-meta">Checked in ${fmtDate(g.check_in)} · Checking out ${fmtDate(g.check_out)}${g.mobile?' · '+g.mobile:''}</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);text-align:right">
+        ${daysLeft(g.check_out)} day${daysLeft(g.check_out)===1?'':'s'} left
       </div>
     </div>`).join('');
-  el.innerHTML=(owners.length?`<div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Owner</div>${render(owners,true)}`:'')
-    +(rest.length?`<div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px">Staff</div>${render(rest,false)}`:'');
+}
+window.setGuestsProp = p => { guestsProp=p; loadCurrentGuests(); };
+function daysLeft(d){ const diff=new Date(d+'T23:59:59')-new Date(); return Math.max(0,Math.ceil(diff/86400000)); }
+
+// ── CHECK-INS DUE ──
+let ciProp = '';
+async function loadCheckinsDue(){
+  await ensureProps();
+  if(!ciProp) ciProp = PROPS[0]?.name||'';
+  renderPropTabs('ci-tabs', ciProp, 'setCiProp');
+  document.getElementById('ci-prop-label').textContent = ciProp ? 'Arrivals at '+ciProp : 'Arrivals';
+  const data = await api('/rest/v1/guest_profiles?check_in=gte.'+TODAY+'&check_in=lte.'+datePlus(3)+'&property_name=eq.'+encodeURIComponent(ciProp)+'&select=*&order=check_in.asc')||[];
+  const el = document.getElementById('ci-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No arrivals in the next 3 days</div>'; return; }
+  el.innerHTML = data.map(g=>`
+    <div class="guest-pill">
+      <div class="gav" style="background:${isToday(g.check_in)?'var(--g-l)':'var(--b-l)'};color:${isToday(g.check_in)?'#27500A':'#0C447C'}">${ini(g.name)}</div>
+      <div style="flex:1">
+        <div class="g-name">${g.name}${isToday(g.check_in)?'<span class="today-tag">TODAY</span>':''}</div>
+        <div class="g-meta">Arriving ${fmtDate(g.check_in)} · Departing ${fmtDate(g.check_out)}${g.mobile?' · '+g.mobile:''}</div>
+      </div>
+    </div>`).join('');
+}
+window.setCiProp = p => { ciProp=p; loadCheckinsDue(); };
+
+// ── CHECK-OUTS DUE ──
+let coProp = '';
+async function loadCheckoutsDue(){
+  await ensureProps();
+  if(!coProp) coProp = PROPS[0]?.name||'';
+  renderPropTabs('co-tabs', coProp, 'setCoProp');
+  document.getElementById('co-prop-label').textContent = coProp ? 'Departures at '+coProp : 'Departures';
+  const data = await api('/rest/v1/guest_profiles?check_out=gte.'+TODAY+'&check_out=lte.'+datePlus(3)+'&property_name=eq.'+encodeURIComponent(coProp)+'&select=*&order=check_out.asc')||[];
+  const el = document.getElementById('co-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No departures in the next 3 days</div>'; return; }
+  el.innerHTML = data.map(g=>`
+    <div class="guest-pill">
+      <div class="gav" style="background:${isToday(g.check_out)?'#FFF3CD':'var(--a-l)'};color:${isToday(g.check_out)?'#856404':'#633806'}">${ini(g.name)}</div>
+      <div style="flex:1">
+        <div class="g-name">${g.name}${isToday(g.check_out)?'<span class="today-tag">TODAY</span>':''}</div>
+        <div class="g-meta">Checked in ${fmtDate(g.check_in)} · Departing ${fmtDate(g.check_out)}${g.mobile?' · '+g.mobile:''}</div>
+      </div>
+    </div>`).join('');
+}
+window.setCoProp = p => { coProp=p; loadCheckoutsDue(); };
+
+// ── COMPLAINTS ──
+let compFilter = 'open';
+function setCompFilter(f, btn){
+  compFilter = f;
+  document.querySelectorAll('#pg-complaints .ptab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  loadComplaints();
+}
+async function loadComplaints(){
+  const path = compFilter==='open'
+    ? '/rest/v1/guest_complaints?status=eq.open&select=*&order=created_at.desc'
+    : '/rest/v1/guest_complaints?select=*&order=created_at.desc';
+  const data = await api(path)||[];
+  const el = document.getElementById('comp-list');
+  if(!data.length){ el.innerHTML='<div class="card"><div class="empty">No complaints '+compFilter+'</div></div>'; return; }
+  const statusBdg = s => s==='open'?'bdg-r':s==='in_progress'?'bdg-a':'bdg-g';
+  el.innerHTML = `<div class="card"><table class="tbl">
+    <thead><tr><th>Guest</th><th>Property</th><th>Complaint</th><th>Date</th><th>Status</th><th>Assigned to</th><th></th></tr></thead>
+    <tbody>${data.map(c=>`<tr>
+      <td style="font-weight:500">${c.guest_name||'Guest'}</td>
+      <td style="color:var(--muted)">${c.property_name||c.property_id||'—'}</td>
+      <td style="max-width:240px">${c.complaint}</td>
+      <td style="color:var(--muted)">${fmtDT(c.created_at)}</td>
+      <td><span class="bdg ${statusBdg(c.status)}">${(c.status||'open').replace('_',' ')}</span></td>
+      <td style="color:var(--muted)">${c.assigned_to||'—'}</td>
+      <td><button class="btn-sm" onclick="resolveComplaint('${c.id}')" ${c.status==='resolved'?'disabled style="opacity:.4"':''}>Mark resolved</button></td>
+    </tr>`).join('')}
+    </tbody></table></div>`;
+}
+async function resolveComplaint(id){
+  await api('/rest/v1/guest_complaints?id=eq.'+id,'PATCH',{status:'resolved'});
+  loadComplaints();
+  loadDashboardBadges();
 }
 
-async function addStaff(){
-  const name=document.getElementById('ns-name').value.trim();
-  const role=document.getElementById('ns-role').value;
-  const pin=document.getElementById('ns-pin').value.trim();
-  if(!name||!pin||pin.length!==4||!/^\d{4}$/.test(pin)){alert('Enter name and a 4-digit PIN');return;}
-  await api('/rest/v1/staff','POST',{name,designation:role,pin});
-  document.getElementById('ns-name').value='';document.getElementById('ns-pin').value='';
-  loadStaff();
+// ── REQUESTS (housekeeping tasks) ──
+let reqFilter = 'pending', reqProp = '';
+function setReqFilter(f, btn){
+  reqFilter = f;
+  document.querySelectorAll('#pg-requests .ptab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  loadRequests();
+}
+async function loadRequests(){
+  await ensureProps();
+  if(!reqProp) reqProp = PROPS[0]?.name||'all';
+  renderPropTabsWithAll('req-tabs', reqProp, 'setReqProp');
+  document.getElementById('req-prop-label').textContent = reqProp==='all'?'All tasks':'Tasks at '+reqProp;
+  let path = '/rest/v1/housekeeping_tasks?select=*&order=created_at.desc';
+  if(reqProp!=='all') path += '&property_id=eq.'+encodeURIComponent(reqProp);
+  if(reqFilter==='pending') path += '&status=neq.completed';
+  const data = await api(path)||[];
+  const el = document.getElementById('req-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No '+(reqFilter==='pending'?'pending ':'')+'tasks</div>'; return; }
+  const statusBdg = s => s==='completed'?'bdg-g':s==='in_progress'?'bdg-a':'bdg-r';
+  el.innerHTML = data.map(t=>`
+    <div class="comp-row">
+      <div class="comp-body">
+        <div style="font-weight:500">${t.task_description||t.task||'Task'}</div>
+        <div class="comp-meta">${t.property_id||'—'} · Assigned to: ${t.assigned_to||'Unassigned'} · ${fmtDT(t.created_at)}</div>
+        ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px">${t.notes}</div>`:''}
+      </div>
+      <div class="comp-status"><span class="bdg ${statusBdg(t.status)}">${(t.status||'pending').replace('_',' ')}</span></div>
+    </div>`).join('');
+}
+window.setReqProp = p => { reqProp=p; loadRequests(); };
+
+// ── LANDLORD COMMS ──
+let commsProp = '';
+async function loadComms(){
+  await ensureProps();
+  if(!commsProp) commsProp = PROPS[0]?.name||'';
+  renderPropTabs('comms-tabs', commsProp, 'setCommsProp');
+  document.getElementById('comms-prop-label').textContent = commsProp ? 'Thread · '+commsProp : 'Thread';
+  const data = await api('/rest/v1/internal_messages?property_name=eq.'+encodeURIComponent(commsProp)+'&order=created_at.asc')||[];
+  const el = document.getElementById('comms-msgs');
+  if(!data.length){ el.innerHTML='<div class="empty">No messages yet for this property</div>'; return; }
+  el.innerHTML = data.map(m=>{
+    const isMe = m.from_role==='owner' || m.from_role==='manager';
+    return `<div class="msg-bubble${isMe?' me':''}">
+      <div class="msg-inner">
+        <div class="msg-from">${m.from_role==='landlord'?'Landlord':'Manager'} · ${m.from_name||''} · ${fmtDT(m.created_at)}</div>
+        <div class="msg-text">${m.message}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+window.setCommsProp = p => { commsProp=p; loadComms(); };
+
+async function sendCommsMsg(){
+  const txt = document.getElementById('comms-input').value.trim();
+  if(!txt) return;
+  await api('/rest/v1/internal_messages','POST',{
+    property_name: commsProp,
+    from_role: 'manager',
+    from_name: me.name||'Manager',
+    message: txt,
+  });
+  document.getElementById('comms-input').value='';
+  loadComms();
 }
 
-async function changePin(id,name){
-  const p=prompt('New 4-digit PIN for '+name+':');
-  if(!p||p.length!==4||!/^\d{4}$/.test(p)){alert('Must be 4 digits');return;}
-  await api('/rest/v1/staff?id=eq.'+id,'PATCH',{pin:p});
-  alert('PIN updated for '+name);
-  loadStaff();
-}
-
-async function deleteStaff(id,name){
-  if(!confirm('Remove '+name+'?'))return;
-  await api('/rest/v1/staff?id=eq.'+id,'DELETE');
-  loadStaff();
-}
-
-// Expenses (laundry from DB)
-async function loadExpenses(){
-  const data=await api('/rest/v1/laundry_return?select=invoice_amount,payment_status&order=created_at.desc')||[];
-  const el=document.getElementById('laundry-spend');
-  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No invoices yet</div>';return;}
-  const total=data.reduce((s,r)=>s+(r.invoice_amount||0),0);
-  const paid=data.filter(r=>r.payment_status==='paid').reduce((s,r)=>s+(r.invoice_amount||0),0);
-  el.innerHTML=`<div style="font-size:14px">${data.length} batches · ${fmt(total)} total</div><div style="font-size:13px;color:var(--g);margin-top:4px">${fmt(paid)} paid</div><div style="font-size:13px;color:#A32D2D;margin-top:2px">${fmt(total-paid)} unpaid</div>`;
-}
-
-// Guest check-ins (with Section C)
-async function loadCheckins(){
+// ── REGISTRATIONS (check-in records) ──
+async function loadRegistrations(){
   const [data, sectionC] = await Promise.all([
     api('/rest/v1/guest_checkins?select=*&order=checked_in_at.desc'),
     api('/rest/v1/guest_section_c?select=*'),
   ]);
-  const ci = data || [];
+  const ci = data||[];
   const scMap = {};
-  (sectionC||[]).forEach(s => { scMap[s.guest_checkin_id] = s; });
-  const el=document.getElementById('checkin-table');
-  if(!ci.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:24px">No check-ins submitted yet</div>';return;}
-  el.innerHTML=`<table class="ci-table">
+  (sectionC||[]).forEach(s=>{ scMap[s.guest_checkin_id]=s; });
+  const el = document.getElementById('reg-table');
+  if(!ci.length){ el.innerHTML='<div class="empty">No check-in registrations submitted yet</div>'; return; }
+  el.innerHTML = `<table class="tbl">
     <thead><tr><th>Guest</th><th>Property</th><th>Checked in</th><th>From</th><th>Going to</th><th>Guests</th><th>ID proof</th><th>Section C</th><th></th></tr></thead>
     <tbody>${ci.map(c=>{
       const sc = scMap[c.id];
-      const scBadge = sc
+      const scBdg = sc
         ? `<span class="bdg bdg-g">Set</span><div style="font-size:11px;color:var(--muted);margin-top:3px">${sc.plan||'—'} · ${sc.payment_status||'—'} · ${sc.billing_amount?fmt(sc.billing_amount):'—'}</div>`
         : `<span class="bdg bdg-a">Not set</span>`;
       return `<tr>
-        <td>${c.guest_name||'—'}</td>
+        <td style="font-weight:500">${c.guest_name||'—'}</td>
         <td>${c.property_name||'—'}</td>
-        <td>${fmtDate(c.checked_in_at)}</td>
+        <td>${fmtDT(c.checked_in_at)}</td>
         <td>${c.travelled_from||'—'}</td>
         <td>${c.travelling_to||'—'}</td>
         <td>${c.num_guests||1}</td>
         <td>${(c.id_proof_urls||[]).length?c.id_proof_urls.map((_,i)=>`<a href="${c.id_proof_urls[i]}" target="_blank" style="color:var(--br);font-size:12px">Doc ${i+1}</a>`).join(' '):'—'}</td>
-        <td>${scBadge}</td>
-        <td><button class="sm-btn sm-pin" onclick='openSC(${JSON.stringify({cid:c.id, name:c.guest_name, prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'}</button></td>
+        <td>${scBdg}</td>
+        <td><button class="btn-sm" onclick='openSC(${JSON.stringify({cid:c.id,name:c.guest_name,prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'} §C</button></td>
       </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+    }).join('')}
+    </tbody></table>`;
 }
 
 // ── Section C modal ──
@@ -615,158 +686,74 @@ async function openSC(info){
   ['sc-plan','sc-from','sc-mode','sc-paystatus'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('sc-row-id').value='';
   const ex = await api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+info.cid+'&select=*');
-  if(ex && ex.length){
-    const s = ex[0];
-    document.getElementById('sc-row-id').value = s.id;
-    document.getElementById('sc-guests').value = s.num_guests||'';
-    document.getElementById('sc-kids').value = s.num_kids||'';
-    document.getElementById('sc-rooms').value = s.num_rooms||'';
-    document.getElementById('sc-beds').value = s.extra_beds||'';
-    document.getElementById('sc-bill').value = s.billing_amount||'';
-    document.getElementById('sc-gst').value = s.gst_amount||'';
-    document.getElementById('sc-notes').value = s.notes||'';
-    document.getElementById('sc-plan').value = s.plan||'';
-    document.getElementById('sc-from').value = s.booking_from||'';
-    document.getElementById('sc-mode').value = s.booking_mode||'';
-    document.getElementById('sc-paystatus').value = s.payment_status||'';
+  if(ex&&ex.length){
+    const s=ex[0];
+    document.getElementById('sc-row-id').value=s.id;
+    document.getElementById('sc-guests').value=s.num_guests||'';
+    document.getElementById('sc-kids').value=s.num_kids||'';
+    document.getElementById('sc-rooms').value=s.num_rooms||'';
+    document.getElementById('sc-beds').value=s.extra_beds||'';
+    document.getElementById('sc-bill').value=s.billing_amount||'';
+    document.getElementById('sc-gst').value=s.gst_amount||'';
+    document.getElementById('sc-notes').value=s.notes||'';
+    document.getElementById('sc-plan').value=s.plan||'';
+    document.getElementById('sc-from').value=s.booking_from||'';
+    document.getElementById('sc-mode').value=s.booking_mode||'';
+    document.getElementById('sc-paystatus').value=s.payment_status||'';
   }
-  document.getElementById('sc-modal').style.display='flex';
+  document.getElementById('sc-modal').classList.add('on');
 }
-function closeSC(){ document.getElementById('sc-modal').style.display='none'; }
+function closeSC(){ document.getElementById('sc-modal').classList.remove('on'); }
 async function saveSC(){
-  const cid = document.getElementById('sc-checkin-id').value;
-  const rowId = document.getElementById('sc-row-id').value;
-  const body = {
-    guest_checkin_id: cid,
-    num_guests: parseInt(document.getElementById('sc-guests').value)||null,
-    num_kids:   parseInt(document.getElementById('sc-kids').value)||null,
-    num_rooms:  parseInt(document.getElementById('sc-rooms').value)||null,
-    plan:       document.getElementById('sc-plan').value||null,
-    extra_beds: parseInt(document.getElementById('sc-beds').value)||null,
-    booking_from: document.getElementById('sc-from').value||null,
-    booking_mode: document.getElementById('sc-mode').value||null,
-    payment_status: document.getElementById('sc-paystatus').value||null,
-    billing_amount: parseFloat(document.getElementById('sc-bill').value)||null,
-    gst_amount:    parseFloat(document.getElementById('sc-gst').value)||null,
-    notes: document.getElementById('sc-notes').value.trim()||null,
-    updated_by: me.name,
-    updated_at: new Date().toISOString(),
+  const cid=document.getElementById('sc-checkin-id').value;
+  const rowId=document.getElementById('sc-row-id').value;
+  const body={
+    guest_checkin_id:cid,
+    num_guests:parseInt(document.getElementById('sc-guests').value)||null,
+    num_kids:parseInt(document.getElementById('sc-kids').value)||null,
+    num_rooms:parseInt(document.getElementById('sc-rooms').value)||null,
+    plan:document.getElementById('sc-plan').value||null,
+    extra_beds:parseInt(document.getElementById('sc-beds').value)||null,
+    booking_from:document.getElementById('sc-from').value||null,
+    booking_mode:document.getElementById('sc-mode').value||null,
+    payment_status:document.getElementById('sc-paystatus').value||null,
+    billing_amount:parseFloat(document.getElementById('sc-bill').value)||null,
+    gst_amount:parseFloat(document.getElementById('sc-gst').value)||null,
+    notes:document.getElementById('sc-notes').value.trim()||null,
+    updated_by:me.name,
+    updated_at:new Date().toISOString(),
   };
   if(rowId) await api('/rest/v1/guest_section_c?id=eq.'+rowId,'PATCH',body);
   else      await api('/rest/v1/guest_section_c','POST',body);
   closeSC();
-  loadCheckins();
+  loadRegistrations();
 }
 
-// ── Manage property (description + per-property tips) ──
-let MP_PROPS=[], MP_CURRENT='';
-async function loadManageProp(){
-  if(!MP_PROPS.length){
-    MP_PROPS = await api('/rest/v1/properties?select=*&order=name')||[];
-    if(MP_PROPS.length && !MP_CURRENT) MP_CURRENT = MP_PROPS[0].name;
-  }
-  const tabsEl = document.getElementById('mp-prop-tabs');
-  tabsEl.innerHTML = MP_PROPS.map(p=>`<button class="ptab ${MP_CURRENT===p.name?'on':''}" onclick="setMpProp('${p.name.replace(/'/g,"\\'")}')">${p.name}</button>`).join('');
-  const cur = MP_PROPS.find(p=>p.name===MP_CURRENT);
-  if(!cur){ document.getElementById('mp-prop-label').textContent='No property selected'; return; }
-  document.getElementById('mp-prop-label').textContent = cur.name;
-  document.getElementById('mp-address').value = cur.address||'';
-  document.getElementById('mp-desc').value    = cur.description||'';
-  loadMpTips();
+// ── Property tab helpers ──
+function renderPropTabs(containerId, current, onClickFn){
+  const el = document.getElementById(containerId);
+  el.innerHTML = PROPS.map(p=>`<button class="ptab ${current===p.name?'on':''}" onclick="${onClickFn}('${p.name.replace(/'/g,"\\'")}')">${p.name}</button>`).join('');
 }
-window.setMpProp = p => { MP_CURRENT = p; loadManageProp(); };
-
-async function saveMpProperty(){
-  const cur = MP_PROPS.find(p=>p.name===MP_CURRENT);
-  if(!cur) return;
-  await api('/rest/v1/properties?id=eq.'+cur.id,'PATCH',{
-    address: document.getElementById('mp-address').value.trim(),
-    description: document.getElementById('mp-desc').value.trim(),
-  });
-  // refresh cache
-  MP_PROPS = await api('/rest/v1/properties?select=*&order=name')||[];
-  alert('Saved');
+function renderPropTabsWithAll(containerId, current, onClickFn){
+  const el = document.getElementById(containerId);
+  el.innerHTML = `<button class="ptab ${current==='all'?'on':''}" onclick="${onClickFn}('all')">All</button>`
+    + PROPS.map(p=>`<button class="ptab ${current===p.name?'on':''}" onclick="${onClickFn}('${p.name.replace(/'/g,"\\'")}')">${p.name}</button>`).join('');
 }
 
-async function loadMpTips(){
-  const data = await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(MP_CURRENT)+'&order=category,name')||[];
-  const el = document.getElementById('mp-tips-list');
-  if(!data.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:12px 0">No tips for this property yet</div>'; return; }
-  el.innerHTML = data.map(t=>`
-    <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
-      <div style="flex:1">
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${t.category||'—'}</div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.name}</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.5">${t.description||''}</div>
-        ${(t.tags||[]).length?`<div style="margin-top:6px">${t.tags.map(tg=>`<span class="bdg" style="background:var(--b-l);color:var(--b);margin-right:4px">${tg}</span>`).join('')}</div>`:''}
-      </div>
-      <div style="display:flex;gap:6px;align-items:flex-start">
-        <button class="sm-btn sm-pin" onclick='editTip(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
-        <button class="sm-btn sm-del" onclick="deleteTip('${t.id}')">Delete</button>
-      </div>
-    </div>`).join('');
-}
-
-function openTipModal(){
-  document.getElementById('tp-id').value='';
-  document.getElementById('tp-ttl').textContent='Add tip · '+MP_CURRENT;
-  ['tp-name','tp-desc','tp-tags'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('tp-cat').value='Food';
-  document.getElementById('tip-modal').style.display='flex';
-}
-function closeTipModal(){ document.getElementById('tip-modal').style.display='none'; }
-function editTip(t){
-  document.getElementById('tp-id').value=t.id;
-  document.getElementById('tp-ttl').textContent='Edit tip';
-  document.getElementById('tp-name').value=t.name||'';
-  document.getElementById('tp-desc').value=t.description||'';
-  document.getElementById('tp-tags').value=(t.tags||[]).join(', ');
-  document.getElementById('tp-cat').value=t.category||'Food';
-  document.getElementById('tip-modal').style.display='flex';
-}
-async function saveTip(){
-  const id=document.getElementById('tp-id').value;
-  const body={
-    property_name: MP_CURRENT,
-    name: document.getElementById('tp-name').value.trim(),
-    category: document.getElementById('tp-cat').value,
-    description: document.getElementById('tp-desc').value.trim()||null,
-    tags: document.getElementById('tp-tags').value.split(',').map(s=>s.trim()).filter(Boolean),
-  };
-  if(!body.name){ alert('Need a name'); return; }
-  if(id) await api('/rest/v1/local_tips?id=eq.'+id,'PATCH',body);
-  else   await api('/rest/v1/local_tips','POST',body);
-  closeTipModal();
-  loadMpTips();
-}
-async function deleteTip(id){
-  if(!confirm('Delete this tip?')) return;
-  await api('/rest/v1/local_tips?id=eq.'+id,'DELETE');
-  loadMpTips();
-}
-
-// Owner complaints view
-async function loadOwnerComplaints(){
-  const data=await api('/rest/v1/guest_complaints?select=*,properties(name),staff(name)&order=created_at.desc')||[];
-  const el=document.getElementById('ow-comp-list');
-  if(!data.length){el.innerHTML='<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:24px">No complaints yet</div></div>';return;}
-  const statusBdg=s=>s==='open'?'bdg-r':s==='in_progress'?'bdg-a':'bdg-g';
-  el.innerHTML=`<div class="card"><table class="ci-table">
-    <thead><tr><th>Guest</th><th>Property</th><th>Complaint</th><th>Date</th><th>Status</th><th>Assigned</th></tr></thead>
-    <tbody>${data.map(c=>`<tr>
-      <td>${c.guest_name||'Guest'}</td>
-      <td>${c.properties?.name||'—'}</td>
-      <td style="max-width:200px">${c.complaint}</td>
-      <td>${fmtDate(c.created_at)}</td>
-      <td><span class="bdg ${statusBdg(c.status)}">${c.status.replace('_',' ')}</span></td>
-      <td>${c.staff?.name||'—'}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+// Refresh badges without full reload
+async function loadDashboardBadges(){
+  const [comps, reqs] = await Promise.all([
+    api('/rest/v1/guest_complaints?status=eq.open&select=id'),
+    api('/rest/v1/housekeeping_tasks?status=neq.completed&select=id&limit=100'),
+  ]);
+  updateBadge('badge-complaints', (comps||[]).length);
+  updateBadge('badge-requests', (reqs||[]).length);
+  document.getElementById('s-complaints').textContent = (comps||[]).length;
+  document.getElementById('s-requests').textContent = (reqs||[]).length;
 }
 
 // Boot
-renderKPIs();
-loadGuestStats();
+loadDashboard();
 </script>
 </body>
 </html>
