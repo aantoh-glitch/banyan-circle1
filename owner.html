@@ -944,71 +944,107 @@ async function downloadRegPDF(cid){
   const c=ciArr&&ciArr[0]; const sc=scArr&&scArr[0];
   if(!c){toast('Record not found');return;}
   const fd=c.form_data||{};
+
+  // Fetch a storage URL and return {url, b64, isPdf, isImage}
+  async function fetchStorageFile(u){
+    try{
+      // Try with auth headers first (needed if bucket is not fully public)
+      let r=await fetch(u,{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});
+      if(!r.ok) r=await fetch(u); // fallback: unauthenticated
+      if(!r.ok) return{url:u,b64:null,isPdf:false,isImage:false};
+      const ct=(r.headers.get('content-type')||'').toLowerCase();
+      const isImage=ct.startsWith('image/');
+      const isPdf=ct.includes('pdf');
+      if(isImage){
+        const blob=await r.blob();
+        const b64=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(blob);});
+        return{url:u,b64,isPdf:false,isImage:true};
+      }
+      return{url:u,b64:null,isPdf,isImage:false};
+    }catch(e){
+      // Guess from URL extension if fetch fails
+      const ext=(u.split('?')[0].split('.').pop()||'').toLowerCase();
+      return{url:u,b64:null,isPdf:ext==='pdf',isImage:['jpg','jpeg','png','gif','webp','heic'].includes(ext)};
+    }
+  }
+
   const urls=c.id_proof_urls||[];
-  const embeds=await Promise.all(urls.map(async u=>{
-    try{const r=await fetch(u);if(!r.ok)return{url:u,b64:null};const ct=r.headers.get('content-type')||'';if(!ct.startsWith('image/'))return{url:u,b64:null};const blob=await r.blob();const b64=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(blob);});return{url:u,b64};}catch(e){return{url:u,b64:null};}
-  }));
+  const embeds=await Promise.all(urls.map(fetchStorageFile));
+
   const passEmbeds=[];
   if(fd.is_foreign&&fd.foreign&&fd.foreign.passport_urls){
     for(const u of fd.foreign.passport_urls){
-      try{const r=await fetch(u);if(!r.ok){passEmbeds.push({url:u,b64:null});continue;}const ct=r.headers.get('content-type')||'';if(!ct.startsWith('image/')){passEmbeds.push({url:u,b64:null});continue;}const blob=await r.blob();const b64=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(blob);});passEmbeds.push({url:u,b64});}catch(e){passEmbeds.push({url:u,b64:null});}
+      passEmbeds.push(await fetchStorageFile(u));
     }
   }
+
+  // Render a document attachment block (image embed or PDF link)
+  function renderDoc(e,label){
+    if(e.isImage&&e.b64) return `<div style="margin-bottom:10px"><div style="font-size:10px;color:#5F5E5A;margin-bottom:4px;font-weight:500">${label}</div><img style="width:100%;max-width:340px;border:1px solid #ddd;border-radius:4px;display:block" src="${e.b64}"/></div>`;
+    return `<div style="margin-bottom:10px;padding:10px 14px;background:#f5f5f3;border:1px solid #ddd;border-radius:6px;display:flex;align-items:center;gap:10px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <div><div style="font-size:12px;font-weight:500;color:#222">${label}</div><a href="${e.url}" target="_blank" style="font-size:11px;color:#993C1D;text-decoration:none">Open document ↗</a></div>
+    </div>`;
+  }
+
   const row=(l,v)=>`<tr><td>${l}</td><td>${v||'—'}</td></tr>`;
   const fname=(c.guest_name||'guest').slice(0,4).toUpperCase()+new Date().toLocaleDateString('en-GB').replace(/\//g,'').slice(0,6);
   const html=`<!doctype html><html><head><meta charset="utf-8"><title>${fname}</title>
-  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:32px;max-width:800px;margin:0 auto}h1{font-size:20px;border-bottom:2px solid #993C1D;padding-bottom:6px;margin-bottom:16px;color:#993C1D}h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:3px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td{padding:5px 2px;font-size:12px;vertical-align:top}td:first-child{color:#5F5E5A;width:40%}td:last-child{font-weight:500}.id-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}.id-img{width:100%;border:1px solid #ddd;border-radius:4px}.meta{font-size:10px;color:#5F5E5A;margin-top:24px;border-top:1px solid #ddd;padding-top:8px}@media print{body{padding:16px}}</style></head><body>
-  <h1>Banyan Circle — Guest Registration</h1>
+  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:32px;max-width:800px;margin:0 auto}h1{font-size:20px;border-bottom:2px solid #993C1D;padding-bottom:6px;margin-bottom:16px;color:#993C1D}h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:3px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td{padding:5px 2px;font-size:12px;vertical-align:top}td:first-child{color:#5F5E5A;width:40%}td:last-child{font-weight:500}.meta{font-size:10px;color:#5F5E5A;margin-top:24px;border-top:1px solid #ddd;padding-top:8px}@media print{body{padding:16px}a{color:#993C1D!important}}</style></head><body>
+  <h1>Heritance — Guest Registration</h1>
   <h2>Section A — Guest Details</h2>
   <table>
     ${row('Guest name',c.guest_name)}
     ${row('Property',c.property_name)}
-    ${row('Organisation',fd.organisation)}
+    ${row('Organisation / Designation',fd.organisation)}
     ${row('Permanent address',fd.permanent_address)}
     ${row('Email',fd.email)}
     ${row('Mobile',fd.mobile)}
     ${row('Date of birth',fd.dob)}
     ${row('Arrived from',c.travelled_from)}
     ${row('Proceeding to',c.travelling_to)}
-    ${row('Arrival date/time',(fd.arrival_date||'')+(fd.arrival_time?' '+fd.arrival_time:''))}
-    ${row('Departure date/time',(fd.departure_date||'')+(fd.departure_time?' '+fd.departure_time:''))}
+    ${row('Arrival date / time',(fd.arrival_date||'')+(fd.arrival_time?' · '+fd.arrival_time:''))}
+    ${row('Departure date / time',(fd.departure_date||'')+(fd.departure_time?' · '+fd.departure_time:''))}
     ${row('Group size',c.num_guests)}
     ${row('Payment mode',fd.payment_mode)}
-    ${row('Dietary',fd.dietary)}
+    ${row('Dietary requirements',fd.dietary)}
     ${row('Special occasion',fd.special_occasion)}
     ${row('Comfort requests',fd.comfort_requests)}
+    ${row('Declaration',fd.declaration?'Agreed':'—')}
     ${row('Submitted',new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN'))}
   </table>
   <h2>ID Proof</h2>
-  ${urls.length?`<div class="id-grid">${embeds.map((e,i)=>e.b64?`<div><div style="font-size:10px;color:#5F5E5A;margin-bottom:3px">Document ${i+1}</div><img class="id-img" src="${e.b64}"/></div>`:`<div><a href="${e.url}" style="font-size:11px;color:#993C1D">Document ${i+1}</a></div>`).join('')}</div>`:'<p style="font-size:12px;color:#5F5E5A">No ID proof on file.</p>'}
-  ${fd.is_foreign&&fd.foreign?`<h2>Form B — Foreign Passport</h2><table>
-    ${row('Name (caps)',fd.foreign.name_caps)}
+  ${urls.length
+    ? embeds.map((e,i)=>renderDoc(e,'ID Document '+(i+1))).join('')
+    : '<p style="font-size:12px;color:#5F5E5A">No ID proof on file.</p>'}
+  ${fd.is_foreign&&fd.foreign?`<h2>Form B — Foreign National</h2><table>
+    ${row('Name (in caps)',fd.foreign.name_caps)}
     ${row('Nationality',fd.foreign.nationality)}
-    ${row('Passport no',fd.foreign.passport_no)}
-    ${row('Passport issued',fd.foreign.passport_date+' '+fd.foreign.passport_place)}
+    ${row('Passport number',fd.foreign.passport_no)}
+    ${row('Passport issued',(fd.foreign.passport_date||'')+(fd.foreign.passport_place?' · '+fd.foreign.passport_place:''))}
     ${row('Address in India',fd.foreign.india_address)}
     ${row('Date of India arrival',fd.foreign.india_arrival)}
     ${row('Employed in India',fd.foreign.employed_india)}
     ${row('Duration in India',fd.foreign.duration_india)}
     ${row('Arrived from',fd.foreign.arrived_from)}
-    ${row('Reg cert',fd.foreign.reg_cert)}
-    ${row('Purpose',fd.foreign.purpose)}
-    ${row('Checkout date/time',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' '+fd.foreign.checkout_time:''))}
+    ${row('Registration certificate',fd.foreign.reg_cert)}
+    ${row('Purpose of visit',fd.foreign.purpose)}
+    ${row('Checkout date / time',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
     ${row('Proceeding address',fd.foreign.proceed_address)}
-  </table>${passEmbeds.length?`<h2>Passport Copy</h2><div class="id-grid">${passEmbeds.map((e,i)=>e.b64?`<img class="id-img" src="${e.b64}"/>`:`<a href="${e.url}" style="font-size:11px;color:#993C1D">Passport ${i+1}</a>`).join('')}</div>`:''}`:''}
-  ${sc?`<h2>Section C — Heritance (Office)</h2><table>
-    ${row('Guests/Kids/Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].join(' / '))}
-    ${row('Plan / Extra beds',(sc.plan||'')+'  '+((sc.extra_beds||0)+' extra beds'))}
-    ${row('Booking from / mode',(sc.booking_from||'')+'  '+(sc.booking_mode||''))}
+  </table>${passEmbeds.length?`<h2>Passport Copy</h2>${passEmbeds.map((e,i)=>renderDoc(e,'Passport '+(i+1))).join('')}`:''}`:''}
+  ${sc?`<h2>Section C — Heritance (Office Use)</h2><table>
+    ${row('Guests / Kids / Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].filter(Boolean).join(' / '))}
+    ${row('Plan / Extra beds',(sc.plan||'—')+'  ·  '+((sc.extra_beds||0)+' extra bed(s)'))}
+    ${row('Booking source / mode',(sc.booking_from||'—')+'  ·  '+(sc.booking_mode||'—'))}
     ${row('Payment status',sc.payment_status)}
-    ${row('Billing / GST',(sc.billing_amount?fmt(sc.billing_amount):'—')+'  '+(sc.gst_amount?'GST '+fmt(sc.gst_amount):''))}
+    ${row('Billing / GST',(sc.billing_amount?fmt(sc.billing_amount):'—')+(sc.gst_amount?'  +  GST '+fmt(sc.gst_amount):''))}
     ${row('Notes',sc.notes)}
   </table>`:''}
-  <div class="meta">Generated ${new Date().toLocaleString('en-IN')} · Banyan Circle · Submitted electronically by guest.</div>
-  <script>setTimeout(()=>window.print(),400);<\/script>
+  <div class="meta">Generated ${new Date().toLocaleString('en-IN')} · Heritance — A Property by Banyan Circle · Submitted electronically by guest</div>
+  <script>setTimeout(()=>window.print(),600);<\/script>
   </body></html>`;
   const w=window.open('','_blank');
-  if(!w){toast('Allow pop-ups');return;}
+  if(!w){toast('Allow pop-ups to generate PDF');return;}
   w.document.open(); w.document.write(html); w.document.close();
 }
 
