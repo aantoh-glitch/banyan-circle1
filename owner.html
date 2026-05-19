@@ -155,6 +155,18 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('registrations',this)">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Registrations
     </button>
+    <button class="sb-btn" onclick="goPage('staff-mgmt',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff
+    </button>
+    <button class="sb-btn" onclick="goPage('bookings',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bookings
+    </button>
+    <button class="sb-btn" onclick="goPage('billing',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
+    </button>
+    <button class="sb-btn" onclick="goPage('laundry',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Laundry
+    </button>
   </div>
   <div class="sb-footer">
     <div class="sb-user" id="sb-user">Manager</div>
@@ -194,6 +206,16 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="stat-l">Pending requests</div>
       <div class="stat-v" id="s-requests">—</div>
       <div class="stat-sub">Housekeeping tasks</div>
+    </div>
+    <div class="stat" onclick="goPageByName('staff-mgmt')">
+      <div class="stat-l">Staff in today</div>
+      <div class="stat-v green" id="s-staff-in">—</div>
+      <div class="stat-sub">Attendance today</div>
+    </div>
+    <div class="stat" onclick="showFeedbackModal()">
+      <div class="stat-l">Guest feedback</div>
+      <div class="stat-v" id="s-feedback">—</div>
+      <div class="stat-sub">Total responses</div>
     </div>
   </div>
 
@@ -298,6 +320,131 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- STAFF MANAGEMENT -->
+<div class="pg" id="pg-staff-mgmt">
+  <div class="pg-title">Staff</div>
+  <div class="pg-sub">Attendance, task load and activity log</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
+    <div class="card" style="margin-bottom:0;text-align:center">
+      <div class="card-ttl">Tasks pending</div>
+      <div style="font-size:40px;font-weight:500;color:var(--r)" id="sm-pending">—</div>
+    </div>
+    <div class="card" style="margin-bottom:0;text-align:center">
+      <div class="card-ttl">Tasks completed</div>
+      <div style="font-size:40px;font-weight:500;color:var(--g)" id="sm-done">—</div>
+    </div>
+  </div>
+  <div class="card-ttl" style="margin-bottom:10px">Team</div>
+  <div id="sm-staff-btns" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">Loading…</div>
+  <div id="sm-staff-detail" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-family:'Playfair Display',serif;font-size:20px" id="sm-detail-name"></div>
+      <button class="btn-sec" onclick="document.getElementById('sm-staff-detail').style.display='none'">← Back</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-ttl">Attendance (30 days)</div>
+        <div id="sm-att-log" style="font-size:13px;max-height:240px;overflow-y:auto">Loading…</div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-ttl">Activity (30 days)</div>
+        <div id="sm-act-log" style="font-size:13px;max-height:240px;overflow-y:auto">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKINGS -->
+<div class="pg" id="pg-bookings">
+  <div class="pg-title">Bookings</div>
+  <div class="pg-sub">Log reservations and track collections</div>
+  <div class="card">
+    <div class="card-ttl">Add booking</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Property</label><select class="fc" id="bk-prop"></select></div>
+      <div class="fg"><label class="fl">Guest name</label><input class="fc" id="bk-guest" type="text" placeholder="Full name"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Check-in</label><input class="fc" id="bk-in" type="date"/></div>
+      <div class="fg"><label class="fl">Check-out</label><input class="fc" id="bk-out" type="date"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">No. of guests</label><input class="fc" id="bk-num" type="number" min="1" value="1"/></div>
+      <div class="fg"><label class="fl">Total amount (₹)</label><input class="fc" id="bk-total" type="number" step="0.01"/></div>
+      <div class="fg"><label class="fl">Collected (₹)</label><input class="fc" id="bk-collected" type="number" step="0.01" value="0"/></div>
+    </div>
+    <div class="fg"><label class="fl">Notes</label><input class="fc" id="bk-notes" type="text" placeholder="Booking source, special notes…"/></div>
+    <button class="btn-p" onclick="addBooking()">Add booking</button>
+  </div>
+  <div class="card">
+    <div class="card-ttl">All bookings</div>
+    <div id="bk-list">Loading…</div>
+  </div>
+</div>
+
+<!-- BILLING -->
+<div class="pg" id="pg-billing">
+  <div class="pg-title">Billing</div>
+  <div class="pg-sub">Generate an invoice for any stay</div>
+  <div class="card">
+    <div class="card-ttl">Guest &amp; stay</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Guest name</label>
+        <select class="fc" id="bl-guest" onchange="onBillGuestChange()"><option value="">— Select guest —</option></select>
+      </div>
+      <div class="fg"><label class="fl">Property</label><input class="fc" id="bl-prop" readonly placeholder="Auto-filled"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Check-in</label><input class="fc" id="bl-in" type="date"/></div>
+      <div class="fg"><label class="fl">Check-out</label><input class="fc" id="bl-out" type="date"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="card-ttl" style="margin:0">Particulars</div>
+      <button class="btn-sec" onclick="addBillLine()">+ Add line</button>
+    </div>
+    <div id="bl-lines"></div>
+    <div style="border-top:2px solid var(--border);padding-top:12px;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div class="fg" style="margin:0;flex:1;margin-right:10px"><label class="fl">GST %</label><input class="fc" id="bl-gst-pct" type="number" value="18" oninput="calcBillTotal()"/></div>
+        <div style="flex:1;text-align:right;padding-top:24px">
+          <div style="font-size:13px;color:var(--muted)">Subtotal: <span id="bl-subtotal" style="font-weight:500">₹0</span></div>
+          <div style="font-size:13px;color:var(--muted)">GST: <span id="bl-gst-amt" style="font-weight:500">₹0</span></div>
+          <div style="font-size:18px;font-weight:500;color:var(--text);margin-top:4px">Total: <span id="bl-total">₹0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn-p" onclick="downloadBillPDF()">Download PDF invoice</button>
+  </div>
+</div>
+
+<!-- LAUNDRY MOVEMENT -->
+<div class="pg" id="pg-laundry">
+  <div class="pg-title">Laundry Movement</div>
+  <div class="pg-sub">Track items sent and returned</div>
+  <div class="prop-tabs" id="lau-tabs"></div>
+  <div class="card">
+    <div class="card-ttl">Add log</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Date</label><input class="fc" id="lau-date" type="date"/></div>
+      <div class="fg"><label class="fl">Vendor / Service</label><input class="fc" id="lau-vendor" type="text" placeholder="Laundry service name"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Items given out</label><textarea class="fc" id="lau-given" style="min-height:90px" placeholder="6 bed sheets&#10;4 pillow covers&#10;3 bath towels"></textarea></div>
+      <div class="fg"><label class="fl">Items received back</label><textarea class="fc" id="lau-received" style="min-height:90px" placeholder="Leave blank if not yet returned"></textarea></div>
+    </div>
+    <div class="fg"><label class="fl">Notes</label><input class="fc" id="lau-notes" type="text" placeholder="Invoice no., any damage, etc."/></div>
+    <button class="btn-p" onclick="addLaundryLog()">Save log</button>
+  </div>
+  <div class="card">
+    <div class="card-ttl" id="lau-log-label">Log</div>
+    <div id="lau-list">Loading…</div>
+  </div>
+</div>
+
 </div><!-- main -->
 </div><!-- layout -->
 
@@ -340,6 +487,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="btn-sec" onclick="closeSC()">Cancel</button>
       <button class="btn-p" onclick="saveSC()">Save Section C</button>
     </div>
+  </div>
+</div>
+
+<!-- Feedback modal -->
+<div class="modal" id="feedback-modal">
+  <div class="modal-card" style="max-width:580px">
+    <div class="modal-ttl">Guest Feedback</div>
+    <div id="fb-modal-body" style="max-height:420px;overflow-y:auto;font-size:14px"></div>
+    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('feedback-modal')">Close</button></div>
   </div>
 </div>
 
@@ -394,6 +550,10 @@ function goPage(id, btn){
   if(id==='requests')       loadRequests();
   if(id==='comms')          loadComms();
   if(id==='registrations')  loadRegistrations();
+  if(id==='staff-mgmt')     loadStaffMgmt();
+  if(id==='bookings')       loadBookings();
+  if(id==='billing')        loadBillingGuests();
+  if(id==='laundry')        loadLaundry();
 }
 
 function goPageByName(id){
@@ -404,13 +564,15 @@ function goPageByName(id){
 // ── DASHBOARD ──
 async function loadDashboard(){
   await ensureProps();
-  const [currentGuests, allGuests, ciToday, coToday, openComps, pendReqs] = await Promise.all([
+  const [currentGuests, allGuests, ciToday, coToday, openComps, pendReqs, staffIn, feedback] = await Promise.all([
     api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&select=id,name,property_name'),
     api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
     api('/rest/v1/guest_profiles?check_in=eq.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
     api('/rest/v1/guest_profiles?check_out=eq.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
     api('/rest/v1/guest_complaints?status=eq.open&select=id,guest_name,complaint,created_at,property_id'),
     api('/rest/v1/housekeeping_tasks?status=neq.completed&select=id&limit=100'),
+    api('/rest/v1/attendance?date=eq.'+TODAY+'&select=id,staff_id'),
+    api('/rest/v1/guest_feedback?select=id&limit=1000'),
   ]);
 
   const cg = currentGuests||[];
@@ -426,6 +588,8 @@ async function loadDashboard(){
   document.getElementById('s-co-sub').textContent = co.length===1 ? '1 guest' : co.length+' guests';
   document.getElementById('s-complaints').textContent = comps.length;
   document.getElementById('s-requests').textContent = reqs.length;
+  document.getElementById('s-staff-in').textContent = (staffIn||[]).length;
+  document.getElementById('s-feedback').textContent = (feedback||[]).length;
 
   // Update badges
   updateBadge('badge-checkins', ci.length);
@@ -672,7 +836,10 @@ async function loadRegistrations(){
         <td>${c.num_guests||1}</td>
         <td>${(c.id_proof_urls||[]).length?c.id_proof_urls.map((_,i)=>`<a href="${c.id_proof_urls[i]}" target="_blank" style="color:var(--br);font-size:12px">Doc ${i+1}</a>`).join(' '):'—'}</td>
         <td>${scBdg}</td>
-        <td><button class="btn-sm" onclick='openSC(${JSON.stringify({cid:c.id,name:c.guest_name,prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'} §C</button></td>
+        <td style="white-space:nowrap">
+          <button class="btn-sm" onclick='openSC(${JSON.stringify({cid:c.id,name:c.guest_name,prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'} §C</button>
+          <button class="btn-sm" onclick="downloadRegPDF('${c.id}')" style="margin-top:4px;background:var(--br-l);color:var(--br)">PDF</button>
+        </td>
       </tr>`;
     }).join('')}
     </tbody></table>`;
@@ -750,6 +917,288 @@ async function loadDashboardBadges(){
   updateBadge('badge-requests', (reqs||[]).length);
   document.getElementById('s-complaints').textContent = (comps||[]).length;
   document.getElementById('s-requests').textContent = (reqs||[]).length;
+}
+
+function openModal(id){ document.getElementById(id).classList.add('on'); }
+function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+
+// ── FEEDBACK MODAL ──
+async function showFeedbackModal(){
+  openModal('feedback-modal');
+  const data=await api('/rest/v1/guest_feedback?select=*&order=created_at.desc&limit=50')||[];
+  const el=document.getElementById('fb-modal-body');
+  if(!data.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)">No feedback yet</div>';return;}
+  el.innerHTML=data.map(f=>`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+    <div style="font-weight:500">${f.guest_name||'Guest'} <span style="font-size:11px;color:var(--muted);font-weight:400">· ${f.property_name||''} · ${fmtDT(f.created_at)}</span></div>
+    <div style="margin-top:4px;color:var(--text)">${f.missing_or_feedback||f.feedback||'—'}</div>
+  </div>`).join('');
+}
+
+// ── REGISTRATION PDF (rich) ──
+async function downloadRegPDF(cid){
+  toast('Building PDF…');
+  const [ciArr, scArr] = await Promise.all([
+    api('/rest/v1/guest_checkins?id=eq.'+cid+'&select=*'),
+    api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+cid+'&select=*'),
+  ]);
+  const c=ciArr&&ciArr[0]; const sc=scArr&&scArr[0];
+  if(!c){toast('Record not found');return;}
+  const fd=c.form_data||{};
+  const urls=c.id_proof_urls||[];
+  const embeds=await Promise.all(urls.map(async u=>{
+    try{const r=await fetch(u);if(!r.ok)return{url:u,b64:null};const ct=r.headers.get('content-type')||'';if(!ct.startsWith('image/'))return{url:u,b64:null};const blob=await r.blob();const b64=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(blob);});return{url:u,b64};}catch(e){return{url:u,b64:null};}
+  }));
+  const passEmbeds=[];
+  if(fd.is_foreign&&fd.foreign&&fd.foreign.passport_urls){
+    for(const u of fd.foreign.passport_urls){
+      try{const r=await fetch(u);if(!r.ok){passEmbeds.push({url:u,b64:null});continue;}const ct=r.headers.get('content-type')||'';if(!ct.startsWith('image/')){passEmbeds.push({url:u,b64:null});continue;}const blob=await r.blob();const b64=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(blob);});passEmbeds.push({url:u,b64});}catch(e){passEmbeds.push({url:u,b64:null});}
+    }
+  }
+  const row=(l,v)=>`<tr><td>${l}</td><td>${v||'—'}</td></tr>`;
+  const fname=(c.guest_name||'guest').slice(0,4).toUpperCase()+new Date().toLocaleDateString('en-GB').replace(/\//g,'').slice(0,6);
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${fname}</title>
+  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:32px;max-width:800px;margin:0 auto}h1{font-size:20px;border-bottom:2px solid #993C1D;padding-bottom:6px;margin-bottom:16px;color:#993C1D}h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:3px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td{padding:5px 2px;font-size:12px;vertical-align:top}td:first-child{color:#5F5E5A;width:40%}td:last-child{font-weight:500}.id-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}.id-img{width:100%;border:1px solid #ddd;border-radius:4px}.meta{font-size:10px;color:#5F5E5A;margin-top:24px;border-top:1px solid #ddd;padding-top:8px}@media print{body{padding:16px}}</style></head><body>
+  <h1>Banyan Circle — Guest Registration</h1>
+  <h2>Section A — Guest Details</h2>
+  <table>
+    ${row('Guest name',c.guest_name)}
+    ${row('Property',c.property_name)}
+    ${row('Organisation',fd.organisation)}
+    ${row('Permanent address',fd.permanent_address)}
+    ${row('Email',fd.email)}
+    ${row('Mobile',fd.mobile)}
+    ${row('Date of birth',fd.dob)}
+    ${row('Arrived from',c.travelled_from)}
+    ${row('Proceeding to',c.travelling_to)}
+    ${row('Arrival date/time',(fd.arrival_date||'')+(fd.arrival_time?' '+fd.arrival_time:''))}
+    ${row('Departure date/time',(fd.departure_date||'')+(fd.departure_time?' '+fd.departure_time:''))}
+    ${row('Group size',c.num_guests)}
+    ${row('Payment mode',fd.payment_mode)}
+    ${row('Dietary',fd.dietary)}
+    ${row('Special occasion',fd.special_occasion)}
+    ${row('Comfort requests',fd.comfort_requests)}
+    ${row('Submitted',new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN'))}
+  </table>
+  <h2>ID Proof</h2>
+  ${urls.length?`<div class="id-grid">${embeds.map((e,i)=>e.b64?`<div><div style="font-size:10px;color:#5F5E5A;margin-bottom:3px">Document ${i+1}</div><img class="id-img" src="${e.b64}"/></div>`:`<div><a href="${e.url}" style="font-size:11px;color:#993C1D">Document ${i+1}</a></div>`).join('')}</div>`:'<p style="font-size:12px;color:#5F5E5A">No ID proof on file.</p>'}
+  ${fd.is_foreign&&fd.foreign?`<h2>Form B — Foreign Passport</h2><table>
+    ${row('Name (caps)',fd.foreign.name_caps)}
+    ${row('Nationality',fd.foreign.nationality)}
+    ${row('Passport no',fd.foreign.passport_no)}
+    ${row('Passport issued',fd.foreign.passport_date+' '+fd.foreign.passport_place)}
+    ${row('Address in India',fd.foreign.india_address)}
+    ${row('Date of India arrival',fd.foreign.india_arrival)}
+    ${row('Employed in India',fd.foreign.employed_india)}
+    ${row('Duration in India',fd.foreign.duration_india)}
+    ${row('Arrived from',fd.foreign.arrived_from)}
+    ${row('Reg cert',fd.foreign.reg_cert)}
+    ${row('Purpose',fd.foreign.purpose)}
+    ${row('Checkout date/time',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' '+fd.foreign.checkout_time:''))}
+    ${row('Proceeding address',fd.foreign.proceed_address)}
+  </table>${passEmbeds.length?`<h2>Passport Copy</h2><div class="id-grid">${passEmbeds.map((e,i)=>e.b64?`<img class="id-img" src="${e.b64}"/>`:`<a href="${e.url}" style="font-size:11px;color:#993C1D">Passport ${i+1}</a>`).join('')}</div>`:''}`:''}
+  ${sc?`<h2>Section C — Heritance (Office)</h2><table>
+    ${row('Guests/Kids/Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].join(' / '))}
+    ${row('Plan / Extra beds',(sc.plan||'')+'  '+((sc.extra_beds||0)+' extra beds'))}
+    ${row('Booking from / mode',(sc.booking_from||'')+'  '+(sc.booking_mode||''))}
+    ${row('Payment status',sc.payment_status)}
+    ${row('Billing / GST',(sc.billing_amount?fmt(sc.billing_amount):'—')+'  '+(sc.gst_amount?'GST '+fmt(sc.gst_amount):''))}
+    ${row('Notes',sc.notes)}
+  </table>`:''}
+  <div class="meta">Generated ${new Date().toLocaleString('en-IN')} · Banyan Circle · Submitted electronically by guest.</div>
+  <script>setTimeout(()=>window.print(),400);<\/script>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(!w){toast('Allow pop-ups');return;}
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// ── STAFF MANAGEMENT ──
+async function loadStaffMgmt(){
+  const [staffData,pending,done]=await Promise.all([
+    api('/rest/v1/staff?select=*&order=name')||[],
+    api('/rest/v1/housekeeping_tasks?status=neq.completed&select=id&limit=500'),
+    api('/rest/v1/housekeeping_tasks?status=eq.completed&select=id&limit=500'),
+  ]);
+  document.getElementById('sm-pending').textContent=(pending||[]).length;
+  document.getElementById('sm-done').textContent=(done||[]).length;
+  const staff=staffData||[];
+  const btnsEl=document.getElementById('sm-staff-btns');
+  if(!staff.length){btnsEl.innerHTML='<div style="font-size:13px;color:var(--muted)">No staff found</div>';return;}
+  btnsEl.innerHTML=staff.map(s=>`<button style="padding:10px 18px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--br)'" onmouseout="this.style.borderColor='var(--border)'" onclick='showStaffDetail(${JSON.stringify(s).replace(/'/g,"&#39;")})'>${s.name}</button>`).join('');
+  document.getElementById('sm-staff-detail').style.display='none';
+}
+async function showStaffDetail(s){
+  document.getElementById('sm-detail-name').textContent=s.name+' — '+s.designation;
+  document.getElementById('sm-staff-detail').style.display='block';
+  document.getElementById('sm-att-log').innerHTML='Loading…';
+  document.getElementById('sm-act-log').innerHTML='Loading…';
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);
+  const from=cutoff.toISOString().slice(0,10);
+  const [att,tasks]=await Promise.all([
+    api('/rest/v1/attendance?staff_id=eq.'+s.id+'&date=gte.'+from+'&select=*&order=date.desc'),
+    api('/rest/v1/housekeeping_tasks?assigned_to=eq.'+encodeURIComponent(s.name)+'&select=*&order=created_at.desc&limit=30'),
+  ]);
+  // Attendance
+  const attEl=document.getElementById('sm-att-log');
+  const attData=att||[];
+  if(!attData.length){attEl.innerHTML='<div style="color:var(--muted);padding:8px 0">No attendance records</div>';}
+  else attEl.innerHTML=attData.map(a=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${fmtDT(a.date)}</span><span style="color:${a.status==='present'?'var(--g)':'var(--r)'}">${a.status||'—'}</span></div>`).join('');
+  // Activity (tasks)
+  const actEl=document.getElementById('sm-act-log');
+  const taskData=tasks||[];
+  if(!taskData.length){actEl.innerHTML='<div style="color:var(--muted);padding:8px 0">No tasks in past 30 days</div>';}
+  else actEl.innerHTML=taskData.map(t=>`<div style="padding:5px 0;border-bottom:1px solid var(--border)"><div style="font-size:12px">${t.task_description||t.task||'Task'}</div><div style="font-size:11px;color:var(--muted)">${fmtDT(t.created_at)} · ${(t.status||'').replace('_',' ')}</div></div>`).join('');
+  document.getElementById('sm-staff-detail').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── BOOKINGS ──
+async function loadBookings(){
+  await ensureProps();
+  const sel=document.getElementById('bk-prop');
+  sel.innerHTML=PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  const data=await api('/rest/v1/bookings?select=*&order=check_in.desc&limit=50')||[];
+  const el=document.getElementById('bk-list');
+  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No bookings yet</div>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Guest</th><th>Property</th><th>Check-in</th><th>Check-out</th><th>Guests</th><th>Total</th><th>Collected</th><th>Balance</th></tr></thead>
+  <tbody>${data.map(b=>{
+    const bal=(b.amount_total||0)-(b.amount_collected||0);
+    return `<tr>
+      <td style="font-weight:500">${b.guest_name||'—'}</td>
+      <td style="color:var(--muted)">${b.property_name||b.property_id||'—'}</td>
+      <td>${fmtDate(b.check_in)}</td>
+      <td>${fmtDate(b.check_out)}</td>
+      <td>${b.num_guests||1}</td>
+      <td>${fmt(b.amount_total||0)}</td>
+      <td style="color:var(--g)">${fmt(b.amount_collected||0)}</td>
+      <td style="color:${bal>0?'var(--r)':'var(--g)'};font-weight:500">${fmt(bal)}</td>
+    </tr>`;}).join('')}
+  </tbody></table>`;
+}
+async function addBooking(){
+  const prop=document.getElementById('bk-prop').value;
+  const guest=document.getElementById('bk-guest').value.trim();
+  const cin=document.getElementById('bk-in').value;
+  const cout=document.getElementById('bk-out').value;
+  const num=parseInt(document.getElementById('bk-num').value)||1;
+  const total=parseFloat(document.getElementById('bk-total').value)||0;
+  const collected=parseFloat(document.getElementById('bk-collected').value)||0;
+  const notes=document.getElementById('bk-notes').value.trim();
+  if(!guest||!cin||!cout){alert('Need guest name, check-in and check-out');return;}
+  await api('/rest/v1/bookings','POST',{property_name:prop,guest_name:guest,check_in:cin,check_out:cout,num_guests:num,amount_total:total,amount_collected:collected,notes:notes||null});
+  ['bk-guest','bk-notes'].forEach(id=>document.getElementById(id).value='');
+  ['bk-total','bk-collected'].forEach(id=>document.getElementById(id).value='0');
+  loadBookings();
+}
+
+// ── BILLING ──
+let BL_LINES=[{desc:'Stay',amount:0}];
+async function loadBillingGuests(){
+  await ensureProps();
+  const guests=await api('/rest/v1/guest_profiles?select=*&order=check_in.desc&limit=100')||[];
+  const sel=document.getElementById('bl-guest');
+  sel.innerHTML='<option value="">— Select guest —</option>'+guests.map(g=>`<option value="${g.id}" data-prop="${g.property_name}" data-in="${g.check_in}" data-out="${g.check_out}">${g.name} · ${g.property_name}</option>`).join('');
+  renderBillLines();
+}
+function onBillGuestChange(){
+  const sel=document.getElementById('bl-guest');
+  const opt=sel.options[sel.selectedIndex];
+  document.getElementById('bl-prop').value=opt.dataset.prop||'';
+  document.getElementById('bl-in').value=opt.dataset.in||'';
+  document.getElementById('bl-out').value=opt.dataset.out||'';
+}
+function renderBillLines(){
+  const el=document.getElementById('bl-lines');
+  el.innerHTML=BL_LINES.map((l,i)=>`<div style="display:grid;grid-template-columns:1fr 140px 32px;gap:8px;margin-bottom:8px;align-items:center">
+    <input class="fc" style="padding:8px 10px" value="${l.desc}" onchange="BL_LINES[${i}].desc=this.value" placeholder="Description"/>
+    <input class="fc" style="padding:8px 10px" type="number" value="${l.amount||''}" onchange="BL_LINES[${i}].amount=parseFloat(this.value)||0;calcBillTotal()" placeholder="Amount"/>
+    <button onclick="BL_LINES.splice(${i},1);renderBillLines()" style="background:var(--r-l);color:var(--r);border:none;border-radius:7px;padding:8px;cursor:pointer;font-size:14px">×</button>
+  </div>`).join('');
+  calcBillTotal();
+}
+function addBillLine(){ BL_LINES.push({desc:'',amount:0}); renderBillLines(); }
+function calcBillTotal(){
+  const subtotal=BL_LINES.reduce((a,l)=>a+(l.amount||0),0);
+  const gstPct=parseFloat(document.getElementById('bl-gst-pct').value)||0;
+  const gstAmt=subtotal*(gstPct/100);
+  const total=subtotal+gstAmt;
+  document.getElementById('bl-subtotal').textContent=fmt(subtotal);
+  document.getElementById('bl-gst-amt').textContent=fmt(gstAmt);
+  document.getElementById('bl-total').textContent=fmt(total);
+}
+function downloadBillPDF(){
+  const sel=document.getElementById('bl-guest');
+  const opt=sel.options[sel.selectedIndex];
+  const guestName=opt.text||'Guest';
+  const prop=document.getElementById('bl-prop').value;
+  const cin=document.getElementById('bl-in').value;
+  const cout=document.getElementById('bl-out').value;
+  const gstPct=parseFloat(document.getElementById('bl-gst-pct').value)||0;
+  const subtotal=BL_LINES.reduce((a,l)=>a+(l.amount||0),0);
+  const gstAmt=subtotal*(gstPct/100);
+  const total=subtotal+gstAmt;
+  const today=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Invoice</title>
+  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:40px;max-width:680px;margin:0 auto}h1{font-size:22px;color:#993C1D;margin-bottom:4px}h3{font-size:13px;font-weight:400;color:#5F5E5A;margin-bottom:28px}.meta td{padding:3px 0;font-size:13px;color:#5F5E5A;width:120px}.meta td:last-child{font-weight:500;color:#222}.tbl{width:100%;border-collapse:collapse;margin:16px 0}.tbl th{background:#993C1D;color:#fff;padding:8px 10px;text-align:left;font-size:12px}.tbl td{padding:8px 10px;border-bottom:1px solid #eee;font-size:13px}.tbl td:last-child{text-align:right}.totals{text-align:right;margin-top:8px;font-size:14px}.totals div{padding:3px 0}.total-row{font-size:18px;font-weight:600;color:#993C1D;padding-top:8px;border-top:2px solid #993C1D;margin-top:4px}.meta2{font-size:10px;color:#999;margin-top:32px;border-top:1px solid #eee;padding-top:10px}</style></head><body>
+  <h1>Banyan Circle</h1><h3>Invoice · ${today}</h3>
+  <table class="meta"><tr><td>Guest</td><td>${guestName.split('·')[0].trim()}</td></tr><tr><td>Property</td><td>${prop||'—'}</td></tr><tr><td>Check-in</td><td>${cin||'—'}</td></tr><tr><td>Check-out</td><td>${cout||'—'}</td></tr></table>
+  <table class="tbl"><thead><tr><th>Particulars</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+  ${BL_LINES.filter(l=>l.desc).map(l=>`<tr><td>${l.desc}</td><td>${fmt(l.amount)}</td></tr>`).join('')}
+  </tbody></table>
+  <div class="totals">
+    <div>Subtotal: <strong>${fmt(subtotal)}</strong></div>
+    <div>GST (${gstPct}%): <strong>${fmt(gstAmt)}</strong></div>
+    <div class="total-row">Total: ${fmt(total)}</div>
+  </div>
+  <div class="meta2">Banyan Circle · Thank you for staying with us · This is a computer-generated invoice</div>
+  <script>setTimeout(()=>window.print(),400);<\/script>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(!w){toast('Allow pop-ups');return;}
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// ── LAUNDRY MOVEMENT ──
+let lauProp='';
+async function loadLaundry(){
+  await ensureProps();
+  if(!lauProp) lauProp=PROPS[0]?.name||'';
+  renderPropTabs('lau-tabs',lauProp,'setLauProp');
+  document.getElementById('lau-log-label').textContent='Log · '+lauProp;
+  // Set default date to today
+  if(!document.getElementById('lau-date').value) document.getElementById('lau-date').value=TODAY;
+  const data=await api('/rest/v1/laundry_movement?property_name=eq.'+encodeURIComponent(lauProp)+'&select=*&order=created_at.desc&limit=30')||[];
+  const el=document.getElementById('lau-list');
+  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">No logs yet for this property</div>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Date</th><th>Vendor</th><th>Given out</th><th>Received back</th><th>Notes</th></tr></thead>
+  <tbody>${data.map(l=>`<tr>
+    <td>${fmtDate(l.movement_date||l.date||l.created_at)}</td>
+    <td>${l.vendor||l.laundry_service||'—'}</td>
+    <td style="font-size:12px;white-space:pre-wrap;max-width:160px">${l.items_given||l.items_sent||'—'}</td>
+    <td style="font-size:12px;white-space:pre-wrap;max-width:160px">${l.items_received||l.items_returned||'—'}</td>
+    <td style="font-size:12px;color:var(--muted)">${l.notes||'—'}</td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+window.setLauProp=p=>{lauProp=p;loadLaundry();};
+async function addLaundryLog(){
+  const date=document.getElementById('lau-date').value;
+  const vendor=document.getElementById('lau-vendor').value.trim();
+  const given=document.getElementById('lau-given').value.trim();
+  const received=document.getElementById('lau-received').value.trim();
+  const notes=document.getElementById('lau-notes').value.trim();
+  if(!given){alert('Please enter items given out');return;}
+  await api('/rest/v1/laundry_movement','POST',{
+    property_name:lauProp,
+    movement_date:date,
+    vendor:vendor||null,
+    items_given:given,
+    items_received:received||null,
+    notes:notes||null,
+    logged_by:me.name,
+  });
+  ['lau-vendor','lau-given','lau-received','lau-notes'].forEach(id=>document.getElementById(id).value='');
+  toast('Log saved');
+  loadLaundry();
 }
 
 // Boot

@@ -323,8 +323,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="fg"><label class="fl">Name</label><input class="fc" id="mt-name"/></div>
       <div class="fg"><label class="fl">Category</label>
         <select class="fc" id="mt-cat">
-          <option>Food</option><option>Cafe</option><option>Nature</option>
-          <option>Culture</option><option>Shopping</option><option>Other</option>
+          <option>In</option><option>Around</option><option>Beyond</option>
         </select>
       </div>
     </div>
@@ -681,19 +680,26 @@ async function loadTipsPage(){
   const data = await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(SCOPE.tips)+'&order=category,name')||[];
   const el = document.getElementById('tips-list');
   if(!data.length){ el.innerHTML='<div class="empty">No tips for this property yet</div>'; return; }
-  el.innerHTML = data.map(t=>`
-    <div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
-      <div style="flex:1">
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${t.category||'—'}</div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.name}</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.5">${t.description||''}</div>
-        ${(t.tags||[]).length?`<div style="margin-top:6px">${t.tags.map(tg=>`<span class="bdg bdg-b" style="margin-right:4px">${tg}</span>`).join('')}</div>`:''}
-      </div>
-      <div style="display:flex;gap:6px;align-items:flex-start">
-        <button class="btn-edit" onclick='editTip(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
-        <button class="btn-del" onclick="deleteTip('${t.id}')">Delete</button>
-      </div>
-    </div>`).join('');
+  const renderTipItem = t => `<div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+    <div style="flex:1">
+      <div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.name}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5">${t.description||''}</div>
+      ${(t.tags||[]).length?`<div style="margin-top:6px">${t.tags.map(tg=>`<span class="bdg bdg-b" style="margin-right:4px">${tg}</span>`).join('')}</div>`:''}
+    </div>
+    <div style="display:flex;gap:6px;align-items:flex-start">
+      <button class="btn-edit" onclick='editTip(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
+      <button class="btn-del" onclick="deleteTip('${t.id}')">Delete</button>
+    </div>
+  </div>`;
+  const sections=['In','Around','Beyond'];
+  const sectionLabels={In:'In — at the property',Around:'Around — local area',Beyond:'Beyond — curated experiences'};
+  el.innerHTML=sections.map(cat=>{
+    const items=data.filter(t=>(t.category||'')===cat);
+    return `<div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:500;color:var(--br);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--br-l)">${sectionLabels[cat]}</div>
+      ${items.length?items.map(renderTipItem).join(''):'<div style="font-size:13px;color:var(--muted);padding:8px 0">No tips added yet</div>'}
+    </div>`;
+  }).join('');
 }
 window.setTipsProp = p => { SCOPE.tips = p; loadTipsPage(); };
 
@@ -701,7 +707,7 @@ function openTipModal(){
   document.getElementById('mt-id').value='';
   document.getElementById('mt-ttl').textContent='Add tip · '+SCOPE.tips;
   ['mt-name','mt-desc','mt-tags'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('mt-cat').value='Food';
+  document.getElementById('mt-cat').value='In';
   openModal('modal-tip');
 }
 function editTip(t){
@@ -710,7 +716,7 @@ function editTip(t){
   document.getElementById('mt-name').value=t.name||'';
   document.getElementById('mt-desc').value=t.description||'';
   document.getElementById('mt-tags').value=(t.tags||[]).join(', ');
-  document.getElementById('mt-cat').value=t.category||'Food';
+  document.getElementById('mt-cat').value=t.category||'In';
   openModal('modal-tip');
 }
 async function saveTip(){
