@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Assets</title>
+<meta name="theme-color" content="#F9F8F6"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F9F8F6;--white:#fff;--text:#1a1a18;--muted:#7a7870;
+  --border:rgba(0,0,0,0.08);--br:#993C1D;--br-l:#FAECE7;
+  --g:#3B6D11;--g-l:#EAF3DE;--r:#A32D2D;--r-l:#FCEBEB;
+  --a:#854F0B;--a-l:#FAEEDA;
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.shell{max-width:960px;margin:0 auto;padding:0 0 60px}
+
+/* Header */
+.hdr{display:flex;align-items:center;gap:12px;padding:16px 24px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.back{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:18px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none}
+.hdr-info{flex:1}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600}
+.hdr-sub{font-size:12px;color:var(--muted);margin-top:1px}
+
+/* Content */
+.content{padding:28px 24px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:24px}
+.tab{padding:8px 20px;border-radius:999px;border:1px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.tab.on{background:var(--text);color:#fff;border-color:var(--text)}
+
+/* Buttons */
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+.btn-p:hover{background:#712B13}
+.btn-p svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+
+/* Table */
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:24px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafafa}
+.sl{color:var(--muted);font-size:12px;width:40px}
+.item-name{font-weight:500}
+.qty{font-variant-numeric:tabular-nums}
+
+/* Photo cell */
+.asset-photo{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;cursor:pointer}
+.no-photo{width:52px;height:52px;border-radius:8px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s}
+.no-photo:hover{border-color:var(--br)}
+.no-photo svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.photo-input{display:none}
+
+/* Remove button */
+.btn-remove{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-remove:hover{background:#f5d0d0}
+
+/* Removed log */
+.removed-badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500;background:var(--r-l);color:var(--r)}
+.removed-date{font-size:12px;color:var(--muted)}
+.removed-reason{font-size:12px;color:var(--muted);font-style:italic}
+
+/* Empty */
+.empty{text-align:center;padding:40px;font-size:13px;color:var(--muted)}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:16px;padding:26px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.fc:focus{border-color:var(--br)}
+
+/* Photo upload preview in modal */
+.photo-preview-wrap{position:relative;display:inline-block}
+.photo-preview{width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:none}
+.photo-placeholder{width:80px;height:80px;border-radius:10px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:border-color .15s}
+.photo-placeholder:hover{border-color:var(--br)}
+.photo-placeholder svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.photo-placeholder span{font-size:11px;color:var(--muted)}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.on{display:flex}
+.lightbox img{max-width:90vw;max-height:88vh;border-radius:12px;object-fit:contain}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="hdr">
+    <a class="back" onclick="history.back()">←</a>
+    <div class="hdr-info">
+      <div class="hdr-title" id="hdr-title">Assets</div>
+      <div class="hdr-sub" id="hdr-sub">Loading…</div>
+    </div>
+    <button class="btn-p" id="add-btn" onclick="openAddModal()" style="display:none">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Asset
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab on" id="tab-active" onclick="switchTab('active')">Active Assets</button>
+      <button class="tab" id="tab-removed" onclick="switchTab('removed')">Removed Log</button>
+    </div>
+
+    <!-- Active assets -->
+    <div id="view-active">
+      <div class="card">
+        <div id="assets-table">
+          <div class="empty">Loading assets…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Removed log -->
+    <div id="view-removed" style="display:none">
+      <div class="card">
+        <div id="removed-table">
+          <div class="empty">Loading removed items…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Asset Modal -->
+<div class="modal" id="modal-add">
+  <div class="modal-card">
+    <div class="modal-title" id="modal-add-title">Add Asset</div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fg">
+      <label class="fl">Item name</label>
+      <input class="fc" id="add-item" placeholder="e.g. Iron, TV, Mattress"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Quantity</label>
+      <input class="fc" id="add-qty" type="number" min="1" value="1"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Photo</label>
+      <div class="photo-preview-wrap" onclick="document.getElementById('add-photo-input').click()">
+        <div class="photo-placeholder" id="add-photo-placeholder">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Upload photo</span>
+        </div>
+        <img id="add-photo-preview" class="photo-preview" alt="preview"/>
+      </div>
+      <input type="file" id="add-photo-input" class="photo-input" accept="image/*" onchange="previewPhoto(this)"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-add')">Cancel</button>
+      <button class="btn-p" id="add-save-btn" onclick="saveAsset()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Confirmation Modal -->
+<div class="modal" id="modal-remove">
+  <div class="modal-card">
+    <div class="modal-title">Remove Asset</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Removing <strong id="remove-item-name"></strong>. This will be logged in the removal history.</p>
+    <div class="fg">
+      <label class="fl">Reason (optional)</label>
+      <input class="fc" id="remove-reason" placeholder="e.g. Broken, Lost, Replaced…"/>
+    </div>
+    <input type="hidden" id="remove-asset-id"/>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-remove')">Cancel</button>
+      <button class="btn-p" style="background:var(--r)" id="remove-confirm-btn" onclick="confirmRemove()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="asset photo"/>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+const params = new URLSearchParams(location.search);
+const PROPERTY = decodeURIComponent(params.get('property') || '');
+
+if (!PROPERTY) {
+  document.getElementById('hdr-sub').textContent = 'No property specified';
+} else {
+  document.getElementById('hdr-title').textContent = PROPERTY;
+  document.getElementById('hdr-sub').textContent = 'Asset inventory';
+  document.getElementById('add-btn').style.display = 'inline-flex';
+}
+
+let currentTab = 'active';
+let photoFile = null;
+
+// ── API ──
+async function api(path, method, body) {
+  const h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Accept: 'application/json', Prefer: 'return=representation' };
+  const r = await fetch(SB + path, { method: method || 'GET', headers: h, body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 204 || r.headers.get('content-length') === '0') return null;
+  return r.json().catch(() => null);
+}
+
+// ── Tabs ──
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-active').classList.toggle('on', tab === 'active');
+  document.getElementById('tab-removed').classList.toggle('on', tab === 'removed');
+  document.getElementById('view-active').style.display = tab === 'active' ? 'block' : 'none';
+  document.getElementById('view-removed').style.display = tab === 'removed' ? 'block' : 'none';
+  if (tab === 'active') loadAssets();
+  else loadRemoved();
+}
+
+// ── Load active assets ──
+async function loadAssets() {
+  const el = document.getElementById('assets-table');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const data = await api(`/rest/v1/assets?property_name=eq.${encodeURIComponent(PROPERTY)}&removed=eq.false&order=created_at.asc`) || [];
+  if (!data.length) {
+    el.innerHTML = '<div class="empty">No assets added yet — click Add Asset to get started</div>';
+    return;
+  }
+  el.innerHTML = `<table class="tbl">
+    <thead><tr>
+      <th style="width:44px">SL</th>
+      <th>Item</th>
+      <th style="width:80px">Qty</th>
+      <th style="width:70px">Photo</th>
+      <th style="width:90px"></th>
+    </tr></thead>
+    <tbody>
+      ${data.map((a, i) => `<tr>
+        <td class="sl">${i + 1}</td>
+        <td class="item-name">${esc(a.item)}</td>
+        <td class="qty">${a.quantity ?? 1}</td>
+        <td>
+          ${a.photo_url
+            ? `<img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>`
+            : `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.item)}')">
+                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+               </div>`
+          }
+        </td>
+        <td style="text-align:right">
+          <button class="btn-remove" onclick="openRemoveModal('${a.id}','${esc(a.item).replace(/'/g,"\\'")}')">Remove</button>
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── Load removed log ──
+async function loadRemoved() {
+  const el = document.getElementById('removed-table');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const data = await api(`/rest/v1/assets?property_name=eq.${encodeURIComponent(PROPERTY)}&removed=eq.true&order=removed_at.desc`) || [];
+  if (!data.length) {
+    el.innerHTML = '<div class="empty">No removed items yet</div>';
+    return;
+  }
+  el.innerHTML = `<table class="tbl">
+    <thead><tr>
+      <th style="width:44px">SL</th>
+      <th>Item</th>
+      <th style="width:80px">Qty</th>
+      <th style="width:70px">Photo</th>
+      <th>Removed on</th>
+      <th>Reason</th>
+    </tr></thead>
+    <tbody>
+      ${data.map((a, i) => `<tr>
+        <td class="sl">${i + 1}</td>
+        <td class="item-name" style="color:var(--muted);text-decoration:line-through">${esc(a.item)}</td>
+        <td class="qty">${a.quantity ?? 1}</td>
+        <td>
+          ${a.photo_url
+            ? `<img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>`
+            : '<span style="font-size:11px;color:var(--muted)">—</span>'}
+        </td>
+        <td class="removed-date">${a.removed_at ? fmtDate(a.removed_at) : '—'}</td>
+        <td class="removed-reason">${a.removed_reason ? esc(a.removed_reason) : '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── Add / Edit modal ──
+function openAddModal() {
+  document.getElementById('edit-id').value = '';
+  document.getElementById('modal-add-title').textContent = 'Add Asset';
+  document.getElementById('add-item').value = '';
+  document.getElementById('add-qty').value = '1';
+  document.getElementById('add-photo-input').value = '';
+  document.getElementById('add-photo-preview').style.display = 'none';
+  document.getElementById('add-photo-placeholder').style.display = 'flex';
+  photoFile = null;
+  openModal('modal-add');
+}
+
+function openEditPhotoModal(id, item) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('modal-add-title').textContent = 'Add Photo — ' + item;
+  document.getElementById('add-item').value = item;
+  document.getElementById('add-photo-input').value = '';
+  document.getElementById('add-photo-preview').style.display = 'none';
+  document.getElementById('add-photo-placeholder').style.display = 'flex';
+  photoFile = null;
+  openModal('modal-add');
+}
+
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  photoFile = file;
+  const url = URL.createObjectURL(file);
+  const preview = document.getElementById('add-photo-preview');
+  preview.src = url;
+  preview.style.display = 'block';
+  document.getElementById('add-photo-placeholder').style.display = 'none';
+}
+
+async function saveAsset() {
+  const btn = document.getElementById('add-save-btn');
+  const item = document.getElementById('add-item').value.trim();
+  const qty = parseInt(document.getElementById('add-qty').value) || 1;
+  const editId = document.getElementById('edit-id').value;
+
+  if (!item) { toast('Enter an item name'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  let photoUrl = null;
+
+  if (photoFile) {
+    const fname = `${PROPERTY.replace(/\s+/g,'_')}_${Date.now()}.jpg`;
+    try {
+      const up = await fetch(SB + '/storage/v1/object/asset-photos/' + fname, {
+        method: 'POST',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': photoFile.type || 'image/jpeg', 'x-upsert': 'true' },
+        body: photoFile
+      });
+      if (up.ok) photoUrl = SB + '/storage/v1/object/public/asset-photos/' + fname;
+      else { const e = await up.json().catch(()=>{}); console.error('Photo upload failed', e); }
+    } catch(e) { console.error(e); }
+  }
+
+  try {
+    if (editId) {
+      const body = {};
+      if (photoUrl) body.photo_url = photoUrl;
+      await api(`/rest/v1/assets?id=eq.${editId}`, 'PATCH', body);
+    } else {
+      await api('/rest/v1/assets', 'POST', {
+        property_name: PROPERTY,
+        item,
+        quantity: qty,
+        photo_url: photoUrl,
+        removed: false
+      });
+    }
+    toast('✓ Saved');
+    closeModal('modal-add');
+    loadAssets();
+  } catch(e) {
+    toast('Error saving — ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Save';
+}
+
+// ── Remove ──
+function openRemoveModal(id, name) {
+  document.getElementById('remove-asset-id').value = id;
+  document.getElementById('remove-item-name').textContent = name;
+  document.getElementById('remove-reason').value = '';
+  openModal('modal-remove');
+}
+
+async function confirmRemove() {
+  const btn = document.getElementById('remove-confirm-btn');
+  const id = document.getElementById('remove-asset-id').value;
+  const reason = document.getElementById('remove-reason').value.trim() || null;
+
+  btn.disabled = true;
+  btn.textContent = 'Removing…';
+
+  try {
+    await api(`/rest/v1/assets?id=eq.${id}`, 'PATCH', {
+      removed: true,
+      removed_at: new Date().toISOString(),
+      removed_reason: reason
+    });
+    toast('Item removed and logged');
+    closeModal('modal-remove');
+    loadAssets();
+  } catch(e) {
+    toast('Error — ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Remove';
+}
+
+// ── Lightbox ──
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('on');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('on');
+}
+
+// ── Helpers ──
+function openModal(id) { document.getElementById(id).classList.add('on'); }
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(s) { if(!s) return '—'; return new Date(s).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// Boot
+if (PROPERTY) loadAssets();
+</script>
+</body>
+</html>
