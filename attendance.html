@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Attendance</title>
+<meta name="theme-color" content="#F9F8F6"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F9F8F6;--white:#fff;--text:#1a1a18;--muted:#7a7870;
+  --border:rgba(0,0,0,0.08);--br:#993C1D;--br-l:#FAECE7;
+  --g:#3B6D11;--g-l:#EAF3DE;--r:#A32D2D;--r-l:#FCEBEB;
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.shell{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:48px}
+
+/* Header */
+.hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.back{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:18px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none}
+.hdr-info{flex:1}
+.hdr-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600}
+.hdr-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* Clock */
+.clock-card{margin:20px 20px 0;background:var(--text);border-radius:20px;padding:28px 24px;color:#fff;position:relative;overflow:hidden}
+.clock-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.clock-card::after{content:'';position:absolute;bottom:-30px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.03)}
+.clock-time{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:500;letter-spacing:-1px;line-height:1}
+.clock-date{font-size:13px;opacity:.6;margin-top:6px;font-weight:300}
+.clock-name{font-size:12px;opacity:.45;margin-top:14px;letter-spacing:.5px;text-transform:uppercase}
+
+/* Log button */
+.log-section{padding:16px 20px}
+.log-btn{
+  width:100%;padding:16px;border-radius:14px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.log-btn-in{background:var(--g);color:#fff}
+.log-btn-out{background:var(--br);color:#fff}
+.log-btn:active{transform:scale(.98);opacity:.9}
+.log-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.log-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* Location + photo panel */
+.capture-panel{background:var(--white);border:1px solid var(--border);border-radius:16px;margin:0 20px 16px;overflow:hidden;display:none}
+.capture-panel.show{display:block}
+.cap-section{padding:16px}
+.cap-label{font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.loc-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.loc-icon{width:32px;height:32px;border-radius:8px;background:var(--g-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.loc-icon svg{width:16px;height:16px;stroke:var(--g);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.loc-text{flex:1;font-size:13px;color:var(--text);line-height:1.4}
+.loc-text.muted{color:var(--muted)}
+
+.cap-divider{height:1px;background:var(--border);margin:0 16px}
+
+/* Camera */
+.cam-wrap{position:relative;background:#111;overflow:hidden}
+video#cam-preview{width:100%;display:block;max-height:220px;object-fit:cover}
+canvas#cam-canvas{display:none}
+img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
+.cam-controls{padding:12px 16px;display:flex;gap:8px;align-items:center}
+.cam-btn{padding:9px 18px;border-radius:999px;border:1.5px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;background:var(--white);color:var(--text);display:flex;align-items:center;gap:6px}
+.cam-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.cam-btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
+.cam-status{font-size:12px;color:var(--muted);margin-left:auto}
+
+/* Submit */
+.submit-wrap{padding:0 20px 8px}
+.submit-btn{width:100%;padding:15px;background:var(--text);color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .18s;display:none}
+.submit-btn.show{display:block}
+.submit-btn:active{opacity:.85;transform:scale(.98)}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* History */
+.history-section{padding:0 20px}
+.history-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;margin-bottom:14px}
+.log-card{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.log-card-hdr{padding:12px 14px;display:flex;align-items:center;gap:10px}
+.log-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-in{background:var(--g)}.dot-out{background:var(--br)}
+.log-type-label{font-size:13px;font-weight:500;flex:1}
+.log-time{font-size:12px;color:var(--muted)}
+.log-loc{font-size:12px;color:var(--muted);padding:0 14px 10px 34px;line-height:1.4}
+.log-photo{width:100%;max-height:140px;object-fit:cover;display:block;border-top:1px solid var(--border)}
+.empty{text-align:center;padding:32px;font-size:13px;color:var(--muted)}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header -->
+  <div class="hdr">
+    <a class="back" href="/ops.html">←</a>
+    <div class="hdr-info">
+      <div class="hdr-title">Attendance</div>
+      <div class="hdr-sub" id="hdr-name">—</div>
+    </div>
+  </div>
+
+  <!-- Clock -->
+  <div class="clock-card">
+    <div class="clock-time" id="clock">00:00:00</div>
+    <div class="clock-date" id="clock-date"></div>
+    <div class="clock-name" id="clock-name"></div>
+  </div>
+
+  <!-- Log button -->
+  <div class="log-section">
+    <button class="log-btn log-btn-in" id="main-log-btn" onclick="startLog('in')">
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Log In
+    </button>
+  </div>
+
+  <!-- Capture panel (location + camera) -->
+  <div class="capture-panel" id="capture-panel">
+
+    <!-- Location -->
+    <div class="cap-section">
+      <div class="cap-label">Location</div>
+      <div class="loc-row">
+        <div class="loc-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="loc-text muted" id="loc-text">Fetching location…</div>
+      </div>
+    </div>
+
+    <div class="cap-divider"></div>
+
+    <!-- Camera -->
+    <div class="cap-section">
+      <div class="cap-label">Photo</div>
+      <div class="cam-wrap" id="cam-wrap">
+        <video id="cam-preview" autoplay playsinline muted></video>
+        <canvas id="cam-canvas"></canvas>
+        <img id="cam-snap" alt="snapshot"/>
+      </div>
+      <div class="cam-controls">
+        <button class="cam-btn" id="cam-open-btn" onclick="openCamera()">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Open Camera
+        </button>
+        <button class="cam-btn primary" id="cam-snap-btn" onclick="takeSnap()" style="display:none">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" style="fill:white"/></svg>
+          Capture
+        </button>
+        <button class="cam-btn" id="cam-retake-btn" onclick="retakeSnap()" style="display:none">Retake</button>
+        <span class="cam-status" id="cam-status"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-wrap">
+    <button class="submit-btn" id="submit-btn" onclick="submitLog()">Submit</button>
+  </div>
+
+  <!-- History -->
+  <div class="history-section">
+    <div class="history-title">My Log</div>
+    <div id="history-list"><div class="empty">Loading…</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.href = '/index.html';
+
+const name = me.name || 'Staff';
+document.getElementById('hdr-name').textContent = name;
+document.getElementById('clock-name').textContent = name;
+
+// ── Clock ──
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  document.getElementById('clock-date').textContent = now.toLocaleDateString('en-IN', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+tickClock(); setInterval(tickClock, 1000);
+
+// ── API ──
+async function api(path, method, body) {
+  const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
+  const r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
+  if (r.status===204||r.headers.get('content-length')==='0') return null;
+  return r.json().catch(()=>null);
+}
+
+// ── State ──
+let currentType = null; // 'in' or 'out'
+let locationText = null;
+let locationCoords = null;
+let snapBlob = null;
+let stream = null;
+
+// ── Start log flow ──
+function startLog(type) {
+  currentType = type;
+  snapBlob = null;
+  locationText = null;
+
+  // Update button appearance
+  const btn = document.getElementById('main-log-btn');
+  btn.disabled = true;
+  btn.innerHTML = type === 'in'
+    ? '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Log In'
+    : '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out';
+
+  document.getElementById('capture-panel').classList.add('show');
+  document.getElementById('loc-text').textContent = 'Fetching location…';
+  document.getElementById('loc-text').classList.add('muted');
+
+  // Reset camera
+  stopCamera();
+  document.getElementById('cam-preview').style.display = 'none';
+  document.getElementById('cam-snap').style.display = 'none';
+  document.getElementById('cam-open-btn').style.display = 'flex';
+  document.getElementById('cam-snap-btn').style.display = 'none';
+  document.getElementById('cam-retake-btn').style.display = 'none';
+  document.getElementById('cam-status').textContent = '';
+  document.getElementById('submit-btn').classList.remove('show');
+
+  fetchLocation();
+}
+
+// ── Location ──
+function fetchLocation() {
+  if (!navigator.geolocation) {
+    document.getElementById('loc-text').textContent = 'Geolocation not supported';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const {latitude:lat, longitude:lng} = pos.coords;
+    locationCoords = {lat, lng};
+    // Reverse geocode via nominatim (free, no key needed)
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const data = await res.json();
+      const addr = data.address || {};
+      locationText = [
+        addr.neighbourhood || addr.suburb || addr.quarter,
+        addr.city || addr.town || addr.village,
+        addr.state
+      ].filter(Boolean).join(', ') || data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    } catch {
+      locationText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+    const el = document.getElementById('loc-text');
+    el.textContent = locationText;
+    el.classList.remove('muted');
+    checkReadyToSubmit();
+  }, err => {
+    document.getElementById('loc-text').textContent = 'Location unavailable — ' + err.message;
+    locationText = 'Unknown location';
+    checkReadyToSubmit();
+  }, {enableHighAccuracy:true, timeout:10000});
+}
+
+// ── Camera ──
+async function openCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}, audio:false});
+    const vid = document.getElementById('cam-preview');
+    vid.srcObject = stream;
+    vid.style.display = 'block';
+    document.getElementById('cam-open-btn').style.display = 'none';
+    document.getElementById('cam-snap-btn').style.display = 'flex';
+    document.getElementById('cam-status').textContent = '';
+  } catch(e) {
+    document.getElementById('cam-status').textContent = 'Camera denied';
+  }
+}
+
+function takeSnap() {
+  const vid = document.getElementById('cam-preview');
+  const canvas = document.getElementById('cam-canvas');
+  canvas.width = vid.videoWidth;
+  canvas.height = vid.videoHeight;
+  canvas.getContext('2d').drawImage(vid, 0, 0);
+  canvas.toBlob(blob => {
+    snapBlob = blob;
+    const img = document.getElementById('cam-snap');
+    img.src = URL.createObjectURL(blob);
+    img.style.display = 'block';
+    vid.style.display = 'none';
+    stopCamera();
+    document.getElementById('cam-snap-btn').style.display = 'none';
+    document.getElementById('cam-retake-btn').style.display = 'flex';
+    document.getElementById('cam-status').textContent = '✓ Photo taken';
+    checkReadyToSubmit();
+  }, 'image/jpeg', 0.85);
+}
+
+function retakeSnap() {
+  snapBlob = null;
+  document.getElementById('cam-snap').style.display = 'none';
+  document.getElementById('cam-retake-btn').style.display = 'none';
+  document.getElementById('cam-status').textContent = '';
+  checkReadyToSubmit();
+  openCamera();
+}
+
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach(t=>t.stop()); stream = null; }
+}
+
+function checkReadyToSubmit() {
+  // Ready when location is resolved (photo optional but encouraged)
+  if (locationText) {
+    document.getElementById('submit-btn').classList.add('show');
+  }
+}
+
+// ── Submit ──
+async function submitLog() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  let photoUrl = null;
+
+  // Upload photo if taken
+  if (snapBlob) {
+    const fname = `attendance/${me.id}_${Date.now()}.jpg`;
+    const up = await fetch(SB+'/storage/v1/object/attendance-photos/'+fname, {
+      method:'POST',
+      headers:{apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'image/jpeg', 'x-upsert':'true'},
+      body: snapBlob
+    });
+    if (up.ok) photoUrl = SB+'/storage/v1/object/public/attendance-photos/'+fname;
+  }
+
+  const record = {
+    staff_id: me.id,
+    staff_name: me.name,
+    type: currentType,          // 'in' or 'out'
+    logged_at: new Date().toISOString(),
+    location_text: locationText,
+    location_lat: locationCoords?.lat || null,
+    location_lng: locationCoords?.lng || null,
+    photo_url: photoUrl,
+    date: new Date().toISOString().split('T')[0]
+  };
+
+  try {
+    await api('/rest/v1/attendance_log', 'POST', record);
+    toast('✓ Logged ' + (currentType === 'in' ? 'in' : 'out') + ' successfully');
+  } catch(e) {
+    toast('Error saving — try again');
+  }
+
+  // Reset UI
+  stopCamera();
+  document.getElementById('capture-panel').classList.remove('show');
+  document.getElementById('submit-btn').classList.remove('show');
+  const mainBtn = document.getElementById('main-log-btn');
+  mainBtn.disabled = false;
+  // Toggle button for next action
+  if (currentType === 'in') {
+    mainBtn.className = 'log-btn log-btn-out';
+    mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out';
+    mainBtn.onclick = () => startLog('out');
+  } else {
+    mainBtn.className = 'log-btn log-btn-in';
+    mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Log In';
+    mainBtn.onclick = () => startLog('in');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Submit';
+  currentType = null; snapBlob = null; locationText = null; locationCoords = null;
+
+  loadHistory();
+}
+
+// ── History ──
+async function loadHistory() {
+  const today = new Date().toISOString().split('T')[0];
+  const el = document.getElementById('history-list');
+  // Load last 30 days
+  const from = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
+  const data = await api(`/rest/v1/attendance_log?staff_id=eq.${me.id}&date=gte.${from}&order=logged_at.desc`) || [];
+
+  if (!data.length) { el.innerHTML = '<div class="empty">No attendance logged yet</div>'; return; }
+
+  // Group by date
+  const byDate = {};
+  data.forEach(r => {
+    if (!byDate[r.date]) byDate[r.date] = [];
+    byDate[r.date].push(r);
+  });
+
+  el.innerHTML = Object.entries(byDate).map(([date, logs]) => {
+    const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+    const isToday = date === today;
+    return `<div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        ${dateLabel}${isToday?'<span style="background:var(--g-l);color:var(--g);font-size:10px;padding:2px 8px;border-radius:999px">Today</span>':''}
+      </div>
+      ${logs.map(r => {
+        const t = new Date(r.logged_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+        const isIn = r.type === 'in';
+        return `<div class="log-card">
+          <div class="log-card-hdr">
+            <div class="log-type-dot ${isIn?'dot-in':'dot-out'}"></div>
+            <div class="log-type-label">${isIn ? 'Logged In' : 'Logged Out'}</div>
+            <div class="log-time">${t}</div>
+          </div>
+          ${r.location_text ? `<div class="log-loc">📍 ${r.location_text}</div>` : ''}
+          ${r.photo_url ? `<img class="log-photo" src="${r.photo_url}" alt="photo"/>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  // Set button state based on last log today
+  const todayLogs = byDate[today];
+  if (todayLogs && todayLogs.length) {
+    const last = todayLogs[0]; // already desc order
+    const mainBtn = document.getElementById('main-log-btn');
+    mainBtn.disabled = false;
+    if (last.type === 'in') {
+      mainBtn.className = 'log-btn log-btn-out';
+      mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out';
+      mainBtn.onclick = () => startLog('out');
+    } else {
+      mainBtn.className = 'log-btn log-btn-in';
+      mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Log In';
+      mainBtn.onclick = () => startLog('in');
+    }
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 3000);
+}
+
+loadHistory();
+</script>
+</body>
+</html>
