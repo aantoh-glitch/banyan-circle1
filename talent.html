@@ -315,7 +315,7 @@ function fillForm(data){
   if(cats.includes(data.category)) document.getElementById('p-cat').value = data.category;
   if(data.category==='Others' && data.category_other){ document.getElementById('cat-others-fg').style.display=''; document.getElementById('p-cat-other').value=data.category_other||''; }
   if(data.photo_url) document.getElementById('p-photo-current').innerHTML = `Current: <a href="${data.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
-  if(data.bio_url) document.getElementById('p-bio-current').innerHTML = `Current: <a href="${data.bio_url}" target="_blank" style="color:var(--br)">View file</a>`;
+  if(data.bio_url) document.getElementById('p-bio-current').innerHTML = `Current: <a href="${data.bio_url}" target="_blank" style="color:var(--br)">Download ${data.bio_name||'file'}</a>`;
   if(data.venues) setVenueChecks(data.venues);
 }
 
@@ -376,13 +376,40 @@ async function saveProfile(){
     venues: getVenueChecks()
   };
 
-  // Handle file upload hints (actual upload would need Supabase Storage)
-  const photoFile = document.getElementById('p-photo').files[0];
-  const bioFile = document.getElementById('p-bio').files[0];
-  if(photoFile) body._photo_note = photoFile.name;
-  if(bioFile) body._bio_note = bioFile.name;
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  async function uploadToStorage(bucket, file, folder){
+    const ext = file.name.split('.').pop();
+    const path = folder + '/' + Date.now() + '_' + file.name.replace(/\s+/g,'_');
+    const res = await fetch(SB+'/storage/v1/object/'+bucket+'/'+path, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': file.type||'application/octet-stream', 'x-upsert': 'true' },
+      body: file
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>{}); throw new Error(e?.message||e?.error||('Upload failed: '+res.status)); }
+    return SB+'/storage/v1/object/public/'+bucket+'/'+path;
+  }
 
   try{
+    const photoFile = document.getElementById('p-photo').files[0];
+    const bioFile   = document.getElementById('p-bio').files[0];
+
+    if(photoFile){
+      if(photoFile.size > 5 * 1024 * 1024){ alert('Photo must be under 5 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
+      btn.textContent = 'Uploading photo…';
+      body.photo_url  = await uploadToStorage('talent-photos', photoFile, talentId);
+      body.photo_name = photoFile.name;
+    }
+    if(bioFile){
+      if(bioFile.size > 10 * 1024 * 1024){ alert('CV/Biodata must be under 10 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
+      btn.textContent = 'Uploading CV…';
+      body.bio_url  = await uploadToStorage('talent-bios', bioFile, talentId);
+      body.bio_name = bioFile.name;
+    }
+
+    btn.textContent = 'Saving…';
     if(profileExists){
       await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);
     } else {
@@ -392,11 +419,20 @@ async function saveProfile(){
     // Also update name in talents table
     await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
     document.getElementById('prof-heading').textContent = 'Edit Profile';
-    document.getElementById('save-btn').textContent = 'Update profile';
+
+    // Refresh current file links
+    if(photoFile) document.getElementById('p-photo-current').innerHTML = `Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+    if(bioFile)   document.getElementById('p-bio-current').innerHTML   = `Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
+
     const s = document.getElementById('save-status');
     s.style.display=''; setTimeout(()=>s.style.display='none', 2000);
     toast('Profile saved ✓');
-  } catch(e){ alert('Error saving: '+e.message); }
+  } catch(e){
+    alert('Error: '+e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Update profile';
+  }
 }
 
 // --- SCHEDULE ---
