@@ -254,18 +254,18 @@ async function loadAssets() {
     <tbody>
       ${data.map((a, i) => `<tr>
         <td class="sl">${i + 1}</td>
-        <td class="item-name">${esc(a.item)}</td>
+        <td class="item-name">${esc(a.name)}</td>
         <td class="qty">${a.quantity ?? 1}</td>
         <td>
           ${a.photo_url
             ? `<img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>`
-            : `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.item)}')">
+            : `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.name)}')">
                 <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                </div>`
           }
         </td>
         <td style="text-align:right">
-          <button class="btn-remove" onclick="openRemoveModal('${a.id}','${esc(a.item).replace(/'/g,"\\'")}')">Remove</button>
+          <button class="btn-remove" onclick="openRemoveModal('${a.id}','${esc(a.name).replace(/'/g,"\\'")}')">Remove</button>
         </td>
       </tr>`).join('')}
     </tbody>
@@ -293,7 +293,7 @@ async function loadRemoved() {
     <tbody>
       ${data.map((a, i) => `<tr>
         <td class="sl">${i + 1}</td>
-        <td class="item-name" style="color:var(--muted);text-decoration:line-through">${esc(a.item)}</td>
+        <td class="item-name" style="color:var(--muted);text-decoration:line-through">${esc(a.name)}</td>
         <td class="qty">${a.quantity ?? 1}</td>
         <td>
           ${a.photo_url
@@ -376,7 +376,7 @@ async function saveAsset() {
     } else {
       await api('/rest/v1/assets', 'POST', {
         property_name: PROPERTY,
-        item,
+        name: item,
         quantity: qty,
         photo_url: photoUrl,
         removed: false
