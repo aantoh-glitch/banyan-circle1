@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Banyan Circle — Talent Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fg{margin-bottom:14px}
+.btn-p{padding:10px 20px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-p:hover{background:#712B13}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:16px}
+.section-hdg{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin:28px 0 14px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-a{background:var(--a-l);color:#633806}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none}
+.tab-row{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:22px}
+.tab{padding:10px 18px;background:none;border:none;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:400;transition:all .15s}
+.tab.on{color:var(--br);font-weight:500;border-bottom-color:var(--br)}
+.opt-label{display:flex;align-items:center;gap:7px;font-size:13px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;user-select:none}
+.opt-label:hover{border-color:var(--br);background:var(--br-l)}
+.opt-label input{accent-color:var(--br)}
+/* Login screen */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:0}
+.login-box{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:36px 32px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.07)}
+.login-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:20px}
+.dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all .15s;display:inline-block}
+.dot.on{background:var(--br);border-color:var(--br)}
+.dot.err{background:var(--r);border-color:var(--r)}
+.key{height:56px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:22px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;width:100%}
+.key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
+.pin-err{font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:8px}
+/* Main app */
+#app-screen{display:none;min-height:100vh}
+.top-bar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.top-logo{font-family:'Playfair Display',serif;font-size:18px;color:var(--text)}
+.top-user{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br)}
+.main-content{max-width:820px;margin:0 auto;padding:28px 20px}
+/* Schedule */
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.sched-day{border:1.5px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.sched-day.free{background:var(--g-l);border-color:#86C860;color:#27500A}
+.sched-day.available{background:var(--a-l);border-color:#C88A40;color:#633806}
+.sched-day:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.day-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;opacity:.7}
+.day-num{font-size:18px;font-weight:600;font-family:'Playfair Display',serif}
+.day-status{font-size:10px;font-weight:500;margin-top:2px}
+.sched-legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:14px;align-items:center}
+.leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+/* Month nav */
+.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.month-nav button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.month-nav button:hover{border-color:var(--br);color:var(--br)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">Talent Portal</div>
+    <div class="login-sub" id="login-sub">Enter your 4-digit PIN to continue</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+      <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <button class="key" onclick="addKey('1')">1</button><button class="key" onclick="addKey('2')">2</button><button class="key" onclick="addKey('3')">3</button>
+      <button class="key" onclick="addKey('4')">4</button><button class="key" onclick="addKey('5')">5</button><button class="key" onclick="addKey('6')">6</button>
+      <button class="key" onclick="addKey('7')">7</button><button class="key" onclick="addKey('8')">8</button><button class="key" onclick="addKey('9')">9</button>
+      <div></div><button class="key" onclick="addKey('0')">0</button>
+      <button class="key" onclick="delKey()" style="font-size:16px;color:var(--muted)">⌫</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen">
+  <div class="top-bar">
+    <div class="top-logo">Banyan Circle · Talent</div>
+    <div class="top-user">
+      <div class="avatar" id="top-avatar">?</div>
+      <span id="top-name" style="font-size:14px;font-weight:500"></span>
+      <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="tab-row">
+      <button class="tab on" onclick="setTab('profile',this)">My Profile</button>
+      <button class="tab" onclick="setTab('schedule',this)">My Schedule</button>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="tab-profile">
+      <div class="card">
+        <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px" id="prof-heading">My Profile</div>
+        <div class="fg">
+          <label class="fl">Name <span style="color:var(--r)">*</span></label>
+          <input class="fc" id="p-name" placeholder="Your full name"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="e.g. 28"/></div>
+          <div class="fg"><label class="fl">Phone number</label><input class="fc" id="p-phone" placeholder="e.g. +91 98765 43210"/></div>
+        </div>
+        <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
+        <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
+        <div class="fg">
+          <label class="fl">Category</label>
+          <select class="fc" id="p-cat">
+            <option value="">Select a category</option>
+            <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
+            <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
+            <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
+            <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
+          </select>
+        </div>
+        <div id="cat-others-fg" class="fg" style="display:none">
+          <label class="fl">Please specify your category</label>
+          <input class="fc" id="p-cat-other" placeholder="Your talent category"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Name your talent</label>
+          <input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/>
+        </div>
+        <div class="fg">
+          <label class="fl">A beautiful short line about your talent</label>
+          <input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Describe your talent — how it gives a transformational experience to intimate groups</label>
+          <textarea class="fc" id="p-desc" style="min-height:100px" placeholder="Describe what you do and the experience you create…"></textarea>
+        </div>
+
+        <div class="section-hdg" style="margin-top:6px">Links & Media</div>
+        <div class="fg">
+          <label class="fl">Instagram profile link</label>
+          <input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/yourhandle"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Link to a performance or demo video</label>
+          <input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/..."/>
+        </div>
+        <div class="fg">
+          <label class="fl">Your photo</label>
+          <input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/>
+          <div id="p-photo-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Biodata / CV (PDF or Word)</label>
+          <input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="padding:8px"/>
+          <div id="p-bio-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
+        </div>
+
+        <div class="section-hdg">Venues</div>
+        <div class="fg">
+          <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
+          <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px">
+            <!-- loaded dynamically -->
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+          <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
+          <span id="save-status" style="font-size:13px;color:var(--g);display:none">✓ Saved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE TAB -->
+    <div id="tab-schedule" style="display:none">
+      <div class="card">
+        <div class="month-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;flex:1" id="month-label"></div>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="sched-legend">
+          <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Free</span>
+          <span><span class="leg-dot" style="background:var(--a-l);border:1.5px solid #C88A40"></span> Available</span>
+          <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
+          <span style="font-size:11px;opacity:.7;margin-left:auto">Click a date to toggle status</span>
+        </div>
+        <div class="sched-grid" id="sched-day-labels" style="margin-bottom:6px">
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sun</div>
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Mon</div>
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Tue</div>
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Wed</div>
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Thu</div>
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Fri</div>
+          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sat</div>
+        </div>
+        <div class="sched-grid" id="sched-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+// Helpers
+async function api(path, method, body) {
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  const json=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
+const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+
+// --- PIN LOGIN ---
+let pinStr = '';
+const params = new URLSearchParams(location.search);
+const talentId = params.get('id') || '';
+const talentNameParam = params.get('name') || 'Talent';
+let TALENT = null;
+
+// Update login sub
+document.getElementById('login-sub').textContent = talentNameParam
+  ? 'Welcome, ' + talentNameParam + '. Enter your 4-digit PIN.'
+  : 'Enter your 4-digit PIN to continue.';
+
+function addKey(d){
+  if(pinStr.length>=4) return;
+  pinStr += d;
+  updateDots();
+  if(pinStr.length===4) setTimeout(checkPin,150);
+}
+function delKey(){ pinStr=pinStr.slice(0,-1); updateDots(); }
+function updateDots(state){
+  for(let i=0;i<4;i++){
+    const el=document.getElementById('d'+i);
+    el.className='dot'+(state==='err'?' err':i<pinStr.length?' on':'');
+  }
+}
+
+async function checkPin(){
+  try{
+    const rows = await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId)+'&select=*') || [];
+    if(!rows.length){ showPinErr('Talent not found'); return; }
+    const row = rows[0];
+    if(String(row.pin) !== pinStr){ showPinErr('Wrong PIN'); return; }
+    TALENT = row;
+    launchApp();
+  } catch(e){ showPinErr('Error: '+e.message); }
+}
+
+function showPinErr(msg){
+  updateDots('err');
+  document.getElementById('pin-err').textContent = msg;
+  setTimeout(()=>{ pinStr=''; updateDots(); document.getElementById('pin-err').textContent=''; }, 1400);
+}
+
+function launchApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  const n = TALENT.name || talentNameParam;
+  document.getElementById('top-name').textContent = n;
+  document.getElementById('top-avatar').textContent = ini(n);
+  loadProfile();
+  loadProperties();
+}
+
+function signOut(){
+  TALENT = null; pinStr = '';
+  document.getElementById('login-screen').style.display = '';
+  document.getElementById('app-screen').style.display = 'none';
+  updateDots();
+}
+
+// --- TABS ---
+function setTab(id, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-profile').style.display = id==='profile' ? '' : 'none';
+  document.getElementById('tab-schedule').style.display = id==='schedule' ? '' : 'none';
+  if(id==='schedule') renderSchedule();
+}
+
+// --- PROFILE ---
+let profileExists = false;
+
+function fillForm(data){
+  document.getElementById('p-name').value = data.name || '';
+  document.getElementById('p-age').value = data.age || '';
+  document.getElementById('p-phone').value = data.phone || '';
+  document.getElementById('p-email').value = data.email || '';
+  document.getElementById('p-location').value = data.location || '';
+  document.getElementById('p-talent-name').value = data.talent_name || '';
+  document.getElementById('p-tagline').value = data.tagline || '';
+  document.getElementById('p-desc').value = data.description || '';
+  document.getElementById('p-instagram').value = data.instagram || '';
+  document.getElementById('p-performance').value = data.performance_link || '';
+  // Category
+  const cats = ['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
+  if(cats.includes(data.category)) document.getElementById('p-cat').value = data.category;
+  if(data.category==='Others' && data.category_other){ document.getElementById('cat-others-fg').style.display=''; document.getElementById('p-cat-other').value=data.category_other||''; }
+  if(data.photo_url) document.getElementById('p-photo-current').innerHTML = `Current: <a href="${data.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+  if(data.bio_url) document.getElementById('p-bio-current').innerHTML = `Current: <a href="${data.bio_url}" target="_blank" style="color:var(--br)">View file</a>`;
+  if(data.venues) setVenueChecks(data.venues);
+}
+
+async function loadProfile(){
+  try{
+    const rows = await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*') || [];
+    if(rows.length){
+      profileExists = true;
+      fillForm(rows[0]);
+      document.getElementById('prof-heading').textContent = 'Edit Profile';
+      document.getElementById('save-btn').textContent = 'Update profile';
+    } else {
+      // Pre-fill name from TALENT
+      document.getElementById('p-name').value = TALENT.name || '';
+    }
+  } catch(e){ console.error(e); }
+}
+
+let ALL_PROPS = [];
+async function loadProperties(){
+  ALL_PROPS = await api('/rest/v1/properties?select=name&order=name') || [];
+  const el = document.getElementById('p-venues');
+  el.innerHTML = ALL_PROPS.map(p => `
+    <label class="opt-label">
+      <input type="checkbox" name="venue" value="${p.name}"/> ${p.name}
+    </label>`).join('');
+}
+function setVenueChecks(venuesArr){
+  document.querySelectorAll('[name="venue"]').forEach(cb => {
+    cb.checked = venuesArr.includes(cb.value);
+  });
+}
+function getVenueChecks(){
+  return [...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value);
+}
+
+document.getElementById('p-cat').addEventListener('change', function(){
+  document.getElementById('cat-others-fg').style.display = this.value==='Others' ? '' : 'none';
+});
+
+async function saveProfile(){
+  const name = document.getElementById('p-name').value.trim();
+  if(!name){ alert('Name is required'); return; }
+  const body = {
+    talent_id: talentId,
+    name,
+    age: parseInt(document.getElementById('p-age').value)||null,
+    phone: document.getElementById('p-phone').value.trim()||null,
+    email: document.getElementById('p-email').value.trim()||null,
+    location: document.getElementById('p-location').value.trim()||null,
+    category: document.getElementById('p-cat').value||null,
+    category_other: document.getElementById('p-cat').value==='Others' ? document.getElementById('p-cat-other').value.trim()||null : null,
+    talent_name: document.getElementById('p-talent-name').value.trim()||null,
+    tagline: document.getElementById('p-tagline').value.trim()||null,
+    description: document.getElementById('p-desc').value.trim()||null,
+    instagram: document.getElementById('p-instagram').value.trim()||null,
+    performance_link: document.getElementById('p-performance').value.trim()||null,
+    venues: getVenueChecks()
+  };
+
+  // Handle file upload hints (actual upload would need Supabase Storage)
+  const photoFile = document.getElementById('p-photo').files[0];
+  const bioFile = document.getElementById('p-bio').files[0];
+  if(photoFile) body._photo_note = photoFile.name;
+  if(bioFile) body._bio_note = bioFile.name;
+
+  try{
+    if(profileExists){
+      await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);
+    } else {
+      await api('/rest/v1/talent_profiles','POST',body);
+      profileExists = true;
+    }
+    // Also update name in talents table
+    await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
+    document.getElementById('prof-heading').textContent = 'Edit Profile';
+    document.getElementById('save-btn').textContent = 'Update profile';
+    const s = document.getElementById('save-status');
+    s.style.display=''; setTimeout(()=>s.style.display='none', 2000);
+    toast('Profile saved ✓');
+  } catch(e){ alert('Error saving: '+e.message); }
+}
+
+// --- SCHEDULE ---
+let scheduleData = {}; // { 'YYYY-MM-DD': 'free'|'available'|null }
+let schedYear, schedMonth;
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function changeMonth(d){
+  schedMonth += d;
+  if(schedMonth > 11){ schedMonth=0; schedYear++; }
+  if(schedMonth < 0){ schedMonth=11; schedYear--; }
+  renderSchedule();
+}
+
+async function renderSchedule(){
+  const now = new Date();
+  if(schedYear===undefined){ schedYear=now.getFullYear(); schedMonth=now.getMonth(); }
+  document.getElementById('month-label').textContent = MONTHS[schedMonth] + ' ' + schedYear;
+
+  // Load this month's schedule from DB
+  const monthStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0');
+  try{
+    const rows = await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status') || [];
+    scheduleData = {};
+    rows.forEach(r => scheduleData[r.date] = r.status);
+  } catch(e){ console.error(e); }
+
+  const grid = document.getElementById('sched-grid');
+  const firstDay = new Date(schedYear, schedMonth, 1).getDay();
+  const daysInMonth = new Date(schedYear, schedMonth+1, 0).getDate();
+  const today = new Date().toISOString().slice(0,10);
+
+  let html = '';
+  // Empty cells
+  for(let i=0;i<firstDay;i++) html += '<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const status = scheduleData[dateStr] || '';
+    const cls = status==='free' ? 'sched-day free' : status==='available' ? 'sched-day available' : 'sched-day';
+    const statusLabel = status==='free' ? 'Free' : status==='available' ? 'Available' : '';
+    const isToday = dateStr===today;
+    html += `<div class="${cls}" onclick="toggleDay('${dateStr}')" style="${isToday?'box-shadow:0 0 0 2px var(--br);':''}">
+      <div class="day-num" style="${isToday?'color:var(--br)':''}">${d}</div>
+      <div class="day-status">${statusLabel}</div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+async function toggleDay(dateStr){
+  const cur = scheduleData[dateStr] || '';
+  const next = cur==='' ? 'free' : cur==='free' ? 'available' : null;
+
+  try{
+    const exists = cur !== '';
+    if(next===null){
+      await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+dateStr,'DELETE');
+      delete scheduleData[dateStr];
+    } else if(exists){
+      await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+dateStr,'PATCH',{status:next});
+      scheduleData[dateStr] = next;
+    } else {
+      await api('/rest/v1/talent_schedule','POST',{talent_id:talentId, date:dateStr, status:next});
+      scheduleData[dateStr] = next;
+    }
+    renderSchedule();
+  } catch(e){ toast('Error: '+e.message); }
+}
+</script>
+</body>
+</html>
