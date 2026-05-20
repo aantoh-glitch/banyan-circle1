@@ -478,7 +478,8 @@ function setGuestTab(tab,btn){
   if(tab==='registrations') loadGuestRegistrations();
 }
 
-async function deleteCheckin(id,name){
+async function deleteCheckin(id,btn){
+  const name=btn.closest('tr').querySelector('td:first-child').textContent||'this guest';
   if(!confirm('Delete registration for '+name+'? This cannot be undone.'))return;
   try{
     await api('/rest/v1/guest_checkins?id=eq.'+id,'DELETE');
@@ -503,7 +504,7 @@ async function loadGuestRegistrations(){
         <td style="font-size:12px">${c.travelled_from||'—'} → ${c.travelling_to||'—'}</td>
         <td style="text-align:center">${c.num_guests||1}</td>
         <td>${idHtml}</td>
-        <td style="white-space:nowrap;display:flex;gap:6px;align-items:center"><button class="btn-edit" onclick="openAdminRegDetail('${c.id}')">View</button><button class="btn-del" onclick="deleteCheckin('${c.id}','${(c.guest_name||\'\').replace(/\'/g,\'\')}')" title="Delete" style="padding:5px 9px;font-size:13px">✕</button></td>
+        <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="openAdminRegDetail('${c.id}')">View</button> <button class="btn-del" onclick="deleteCheckin('${c.id}',this)" title="Delete" style="padding:5px 9px;font-size:13px">✕</button></td>
       </tr>`;
     }).join('')}</tbody></table>`;
 }
