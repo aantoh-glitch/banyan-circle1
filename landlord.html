@@ -76,6 +76,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .action-lbl{font-size:15px;font-weight:500;margin-bottom:4px}
 .action-sub{font-size:12px;color:var(--muted)}
 
+.section-hdg{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none}
 </style>
@@ -97,7 +99,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Documents
     </button>
     <button class="sb-btn" onclick="goPage('earnings',this)">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>Earnings
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>Financials
     </button>
     <button class="sb-btn" onclick="goPage('maintenance',this)">
       <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance
@@ -131,7 +133,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </button>
     <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=earnings]').click()">
       <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
-      <div class="action-lbl">Earnings report</div><div class="action-sub" id="earn-sum">—</div>
+      <div class="action-lbl">Financials</div><div class="action-sub" id="earn-sum">—</div>
     </button>
     <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=maintenance]').click()">
       <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
@@ -157,19 +159,45 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
-<!-- EARNINGS -->
+<!-- FINANCIALS -->
 <div class="pg" id="pg-earnings">
-  <div class="pg-title">Earnings report</div>
-  <div class="pg-sub">Revenue from bookings less expenses</div>
+  <div class="pg-title">Financials</div>
+  <div class="pg-sub">Revenue and expenses for your property — logged by Office</div>
+
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-l">Gross revenue (90 days)</div><div class="kpi-v" id="e-rev">—</div></div>
-    <div class="kpi"><div class="kpi-l">Utility costs (90 days)</div><div class="kpi-v" id="e-util">—</div></div>
-    <div class="kpi"><div class="kpi-l">Maintenance (90 days)</div><div class="kpi-v" id="e-maint">—</div></div>
-    <div class="kpi"><div class="kpi-l">Net earnings (90 days)</div><div class="kpi-v" style="color:var(--g)" id="e-net">—</div></div>
+    <div class="kpi"><div class="kpi-l">Total Revenue</div><div class="kpi-v" style="color:var(--g)" id="e-rev">—</div></div>
+    <div class="kpi"><div class="kpi-l">Total Expenses</div><div class="kpi-v" style="color:var(--r)" id="e-expense">—</div></div>
+    <div class="kpi"><div class="kpi-l">Net Profit / Loss</div><div class="kpi-v" id="e-net">—</div></div>
   </div>
+
+  <div class="section-hdg">Revenue</div>
   <div class="card">
-    <div class="card-ttl">Bookings — last 20</div>
-    <div id="e-bookings">Loading…</div>
+    <div id="e-rev-table">Loading…</div>
+    <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+      <span style="font-size:13px;color:var(--muted)">Total Revenue</span>
+      <span id="e-rev-total" style="font-size:20px;font-weight:600;color:var(--g);font-family:'Playfair Display',serif">₹0</span>
+    </div>
+  </div>
+
+  <div class="section-hdg">Expenses</div>
+  <div class="card">
+    <div id="e-exp-table">Loading…</div>
+    <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+      <span style="font-size:13px;color:var(--muted)">Total Expenses</span>
+      <span id="e-exp-total" style="font-size:20px;font-weight:600;color:var(--r);font-family:'Playfair Display',serif">₹0</span>
+    </div>
+  </div>
+
+  <div class="section-hdg">Net Profit / Loss</div>
+  <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+    <div>
+      <div id="e-profit-amt" style="font-size:34px;font-weight:500;font-family:'Playfair Display',serif;color:var(--g)">₹0</div>
+      <div id="e-profit-note" style="font-size:13px;color:var(--muted);margin-top:4px">Revenue minus expenses</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <select class="fc" id="e-dl-month" style="width:190px"></select>
+      <button class="btn-sec" onclick="downloadEarningsReport()" style="white-space:nowrap">⬇ Download monthly report</button>
+    </div>
   </div>
 </div>
 
@@ -222,10 +250,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-// Auth
+// Auth — landlord only, scoped to their property
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if (!me || me.role !== 'landlord') { location.href='/index.html'; throw new Error('No auth'); }
-const PROP = me.prop || me.property_name;
+const PROP = me.prop || me.property_name;   // e.g. "19A Link Heritage" or "Villa 21"
 
 document.getElementById('sb-user').textContent = me.name || 'Landlord';
 document.getElementById('sb-prop').textContent = PROP || '—';
@@ -248,15 +276,15 @@ function goPage(id,btn){
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='property') loadProperty();
-  if(id==='documents') loadDocs();
-  if(id==='earnings') loadEarnings();
+  if(id==='property')    loadProperty();
+  if(id==='documents')   loadDocs();
+  if(id==='earnings')    loadEarnings();
   if(id==='maintenance') loadMaint();
-  if(id==='comms') loadMsgs();
-  if(id==='utilities') loadUtilities();
+  if(id==='comms')       loadMsgs();
+  if(id==='utilities')   loadUtilities();
 }
 
-// ── PROPERTY ──
+// ── PROPERTY overview ──
 async function loadProperty(){
   const p = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=*'))?.[0];
   const el = document.getElementById('prop-hero-wrap');
@@ -264,10 +292,9 @@ async function loadProperty(){
   el.innerHTML = `<div class="prop-hero">
     <div class="prop-name">${p.name}</div>
     <div class="prop-addr">${p.address||'Address not set'}</div>
-    <div class="prop-desc">${(p.description||'No description added yet. Office can set this from the backend.').replace(/\n/g,'<br>')}</div>
+    <div class="prop-desc">${(p.description||'No description added yet.').replace(/\n/g,'<br>')}</div>
   </div>`;
 
-  // Summaries for action tiles
   const [docs, mt, msgs, util] = await Promise.all([
     api('/rest/v1/property_documents?property_name=eq.'+encodeURIComponent(PROP)+'&select=id'),
     api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(PROP)+'&status=neq.resolved&select=id'),
@@ -277,18 +304,18 @@ async function loadProperty(){
   document.getElementById('doc-count').textContent  = (docs?.length||0)+' file(s)';
   document.getElementById('maint-sum').textContent  = (mt?.length||0)+' open issue(s)';
   document.getElementById('msg-sum').textContent    = (msgs?.length||0)+' message(s)';
-  const pending = (util||[]).reduce((s,r)=>s+(r.amount||0),0);
-  document.getElementById('util-sum').textContent = pending ? fmt(pending)+' pending' : 'All paid';
+  const pending = (util||[]).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+  document.getElementById('util-sum').textContent   = pending ? fmt(pending)+' pending' : 'All paid';
 
-  // Earnings quick number
-  const since = new Date(Date.now()-90*86400000).toISOString().slice(0,10);
-  const propRow = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=id'))?.[0];
-  let rev = 0;
-  if(propRow){
-    const bk = await api('/rest/v1/bookings?property_id=eq.'+propRow.id+'&checkin=gte.'+since+'&select=total_amount')||[];
-    rev = bk.reduce((s,b)=>s+(b.total_amount||0),0);
-  }
-  document.getElementById('earn-sum').textContent = fmt(rev)+' (90 days)';
+  // Financials quick number on the tile
+  const [revData, expData] = await Promise.all([
+    api('/rest/v1/property_revenues?property_name=eq.'+encodeURIComponent(PROP)+'&select=amount'),
+    api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&select=amount'),
+  ]);
+  const revT = Array.isArray(revData) ? revData.reduce((s,r)=>s+(parseFloat(r.amount)||0),0) : 0;
+  const expT = (expData||[]).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const profit = revT - expT;
+  document.getElementById('earn-sum').textContent = fmt(Math.abs(profit))+(profit<0?' (loss)':'');
 }
 
 // ── DOCUMENTS ──
@@ -306,36 +333,121 @@ async function loadDocs(){
   </tbody></table>`;
 }
 
-// ── EARNINGS ──
+// ── FINANCIALS ──
+// Reads from the exact same tables as admin.html Financials section,
+// automatically scoped to this landlord's property (PROP).
 async function loadEarnings(){
-  const since = new Date(Date.now()-90*86400000).toISOString().slice(0,10);
-  const propRow = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=id'))?.[0];
-  let bookings = [];
-  if(propRow){
-    bookings = await api('/rest/v1/bookings?property_id=eq.'+propRow.id+'&checkin=gte.'+since+'&select=*&order=checkin.desc&limit=20') || [];
+  const [revenuesRaw, expensesRaw] = await Promise.all([
+    api('/rest/v1/property_revenues?property_name=eq.'+encodeURIComponent(PROP)+'&order=date.desc'),
+    api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=month.desc'),
+  ]);
+
+  const expList = Array.isArray(expensesRaw) ? expensesRaw : [];
+  const expTotal = expList.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+
+  // Revenue — handle case where table doesn't exist yet
+  let revList = [];
+  let revTotal = 0;
+  if(!revenuesRaw || revenuesRaw.message){
+    document.getElementById('e-rev-table').innerHTML='<div class="empty">Revenue table not set up yet — ask Office to run the SQL setup in Supabase.</div>';
+  } else {
+    revList = revenuesRaw;
+    revTotal = revList.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+    document.getElementById('e-rev-total').textContent = fmt(revTotal);
+    if(!revList.length){
+      document.getElementById('e-rev-table').innerHTML='<div class="empty">No revenue recorded yet for this property</div>';
+    } else {
+      document.getElementById('e-rev-table').innerHTML=`<table class="tbl">
+        <thead><tr><th>Item / Source</th><th>Date</th><th>Amount</th></tr></thead>
+        <tbody>${revList.map(r=>`<tr>
+          <td style="font-weight:500">${r.item||'—'}</td>
+          <td>${fmtDate(r.date)}</td>
+          <td style="color:var(--g);font-weight:500">${fmt(r.amount)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+    }
   }
-  const rev = bookings.reduce((s,b)=>s+(b.total_amount||0),0);
-  const utils = await api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&status=eq.paid&paid_on=gte.'+since+'&select=amount')||[];
-  const utilSum = utils.reduce((s,u)=>s+(u.amount||0),0);
-  // Maintenance has no cost field in current schema — show count cost-free
-  const maint = await api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(PROP)+'&created_at=gte.'+since+'&select=id')||[];
 
-  document.getElementById('e-rev').textContent  = fmt(rev);
-  document.getElementById('e-util').textContent = fmt(utilSum);
-  document.getElementById('e-maint').textContent = (maint.length||0)+' issues';
-  document.getElementById('e-net').textContent  = fmt(rev - utilSum);
+  // Expenses table
+  document.getElementById('e-exp-total').textContent = fmt(expTotal);
+  if(!expList.length){
+    document.getElementById('e-exp-table').innerHTML='<div class="empty">No expenses recorded yet for this property</div>';
+  } else {
+    document.getElementById('e-exp-table').innerHTML=`<table class="tbl">
+      <thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th>Proof</th></tr></thead>
+      <tbody>${expList.map(u=>`<tr>
+        <td>${u.month||'—'}</td>
+        <td>${u.utility_type||'—'}</td>
+        <td>${fmt(u.amount)}</td>
+        <td><span class="bdg ${u.status==='paid'?'bdg-g':'bdg-a'}">${u.status}</span></td>
+        <td>${fmtDate(u.paid_on)}</td>
+        <td>${u.proof_url?`<a href="${u.proof_url}" target="_blank" style="color:var(--br);font-size:12px">View</a>`:'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
 
-  const el = document.getElementById('e-bookings');
-  if(!bookings.length){ el.innerHTML='<div class="empty">No bookings in the last 90 days</div>'; return; }
-  el.innerHTML = `<table class="tbl"><thead><tr><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Source</th><th>Amount</th></tr></thead><tbody>
-    ${bookings.map(b=>`<tr>
-      <td>${b.guest_name||'—'}</td>
-      <td>${fmtDate(b.checkin)}</td>
-      <td>${fmtDate(b.checkout)}</td>
-      <td>${b.source||'—'}</td>
-      <td>${fmt(b.total_amount)}</td>
-    </tr>`).join('')}
-  </tbody></table>`;
+  // KPIs + net profit
+  const profit = revTotal - expTotal;
+  document.getElementById('e-rev').textContent     = fmt(revTotal);
+  document.getElementById('e-expense').textContent = fmt(expTotal);
+  document.getElementById('e-net').textContent     = fmt(Math.abs(profit))+(profit<0?' (loss)':'');
+  document.getElementById('e-net').style.color     = profit>=0?'var(--g)':'var(--r)';
+  document.getElementById('e-profit-amt').textContent = fmt(Math.abs(profit))+(profit<0?' (loss)':'');
+  document.getElementById('e-profit-amt').style.color = profit>=0?'var(--g)':'var(--r)';
+  document.getElementById('e-profit-note').textContent = 'Revenue '+fmt(revTotal)+' − Expenses '+fmt(expTotal);
+
+  populateEarnMonths();
+}
+
+function populateEarnMonths(){
+  const sel=document.getElementById('e-dl-month');
+  const months=[];
+  const now=new Date();
+  for(let i=0;i<18;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.toISOString().slice(0,7));}
+  sel.innerHTML=months.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+async function downloadEarningsReport(){
+  const month=document.getElementById('e-dl-month').value;
+  if(!month){alert('Select a month');return;}
+  const [expensesRaw, revenuesRaw] = await Promise.all([
+    api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&month=eq.'+month+'&order=utility_type'),
+    api('/rest/v1/property_revenues?property_name=eq.'+encodeURIComponent(PROP)+'&date=gte.'+month+'-01&date=lte.'+month+'-31&order=date'),
+  ]);
+  const expList = Array.isArray(expensesRaw)?expensesRaw:[];
+  const revList = Array.isArray(revenuesRaw)?revenuesRaw:[];
+  const eT=expList.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const rT=revList.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+  const pr=rT-eT;
+  const fI=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
+  const fD=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>BC Report</title>
+  <style>body{font-family:Arial,sans-serif;padding:40px;color:#222;font-size:14px}
+  h1{font-size:24px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:#666;margin:24px 0 8px;border-bottom:2px solid #eee;padding-bottom:6px}
+  table{width:100%;border-collapse:collapse}th{text-align:left;padding:7px 10px;background:#f7f7f7;border-bottom:2px solid #ddd;font-size:11px;text-transform:uppercase;color:#666}
+  td{padding:9px 10px;border-bottom:1px solid #eee}.green{color:#27500A}.red{color:#A32D2D}
+  .profit-box{border-radius:10px;padding:22px 24px;margin-top:28px;border:2px solid}.p-val{font-size:36px;font-weight:700}</style>
+  </head><body>
+  <h1>Banyan Circle · ${PROP}</h1>
+  <p style="color:#888;font-size:13px">Monthly Financial Report · ${month}</p>
+  <h2>Revenue</h2>
+  ${revList.length?`<table><thead><tr><th>Item / Source</th><th>Date</th><th>Amount</th></tr></thead><tbody>
+    ${revList.map(r=>`<tr><td>${r.item}</td><td>${fD(r.date)}</td><td>${fI(r.amount)}</td></tr>`).join('')}
+    <tr style="font-weight:700;background:#fafafa"><td colspan="2">Total</td><td class="green">${fI(rT)}</td></tr>
+  </tbody></table>`:'<p style="color:#aaa">No revenue recorded this month.</p>'}
+  <h2>Expenses</h2>
+  ${expList.length?`<table><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+    ${expList.map(e=>`<tr><td>${e.month}</td><td>${e.utility_type}</td><td>${fI(e.amount)}</td><td>${e.status}</td></tr>`).join('')}
+    <tr style="font-weight:700;background:#fafafa"><td colspan="2">Total</td><td class="red">${fI(eT)}</td><td></td></tr>
+  </tbody></table>`:'<p style="color:#aaa">No expenses recorded this month.</p>'}
+  <div class="profit-box" style="border-color:${pr>=0?'#c8e6c9':'#ffcdd2'}">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:8px">Net Profit / Loss</div>
+    <div class="p-val ${pr>=0?'green':'red'}">${fI(Math.abs(pr))}${pr<0?' (loss)':''}</div>
+    <div style="font-size:13px;color:#999;margin-top:6px">Revenue ${fI(rT)} − Expenses ${fI(eT)}</div>
+  </div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  window.open(URL.createObjectURL(blob),'_blank');
 }
 
 // ── MAINTENANCE ──
@@ -358,12 +470,8 @@ async function raiseMaint(){
   const prio = document.getElementById('mt-prio').value;
   if(!issue){ toast('Describe the issue'); return; }
   await api('/rest/v1/maintenance_log','POST',{
-    property_name: PROP,
-    issue,
-    priority: prio,
-    status: 'open',
-    raised_by: me.name,
-    raised_role: 'landlord',
+    property_name: PROP, issue, priority: prio, status: 'open',
+    raised_by: me.name, raised_role: 'landlord',
   });
   document.getElementById('mt-issue').value='';
   toast('Issue submitted');
@@ -377,10 +485,9 @@ async function loadMsgs(){
   if(!data.length){ el.innerHTML='<div class="empty">No messages yet. Send the first one below.</div>'; return; }
   el.innerHTML = data.map(m=>{
     const isMe = m.from_role==='landlord';
-    const align = isMe?'flex-end':'flex-start';
     const bg = isMe?'var(--br)':'#fff';
     const fg = isMe?'#fff':'var(--text)';
-    return `<div style="display:flex;justify-content:${align};margin-bottom:10px">
+    return `<div style="display:flex;justify-content:${isMe?'flex-end':'flex-start'};margin-bottom:10px">
       <div style="max-width:75%;background:${bg};color:${fg};border:1px solid var(--border);border-radius:12px;padding:10px 14px">
         <div style="font-size:11px;opacity:.75;margin-bottom:3px">${m.from_role} · ${m.from_name||''} · ${fmtDate(m.created_at)}</div>
         <div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div>
@@ -393,10 +500,7 @@ async function sendMsg(){
   const txt = document.getElementById('msg-input').value.trim();
   if(!txt) return;
   await api('/rest/v1/internal_messages','POST',{
-    property_name: PROP,
-    from_role: 'landlord',
-    from_name: me.name,
-    message: txt,
+    property_name: PROP, from_role: 'landlord', from_name: me.name, message: txt,
   });
   document.getElementById('msg-input').value='';
   loadMsgs();
