@@ -822,7 +822,12 @@ const TALENT_CATEGORIES = ['Art','Music','Dance','Food','Pottery','Healing','Yog
 const CAT_COLORS = {Art:'#C06B2D',Music:'#2D7AB5',Dance:'#9C3B8C',Food:'#4A8C2D',Pottery:'#8B6B3D',Healing:'#3B8C7A',Yoga:'#6B3B8C',Therapy:'#8C3B4A',Wellness:'#2D8C5A',Fitness:'#8C5A2D',Mentalism:'#3B4A8C',Palmistry:'#8C3B7A',Games:'#5A8C2D',Standups:'#C04A2D',Storytelling:'#2D5A8C',Motivational:'#8C7A2D',Others:'#5A5A5A'};
 
 async function loadTalentsPage(){
-  const data = await api('/rest/v1/talents?select=*&order=name') || [];
+  let data;
+  try{ data = await api('/rest/v1/talents?select=*&order=name') || []; }
+  catch(e){
+    document.getElementById('talents-list').innerHTML='<div class="empty" style="color:var(--r)">Could not load talents. Make sure the <b>talents</b> table exists in Supabase.<br><br><code style="font-size:11px;background:#f4f4f4;padding:6px 10px;border-radius:6px;display:inline-block;margin-top:6px">create table talents (id uuid primary key default gen_random_uuid(), name text, pin text, short_desc text, category text, created_at timestamptz default now());</code></div>';
+    return;
+  }
   const el = document.getElementById('talents-list');
   if(!data.length){ el.innerHTML='<div class="empty">No talents yet. Add the first one.</div>'; return; }
   el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:4px 0">
@@ -865,12 +870,16 @@ function editTalentRow(t){
 }
 async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
-  const body={name:document.getElementById('mtal-name').value.trim(),pin:document.getElementById('mtal-pin').value.trim(),short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value};
-  if(!body.name){alert('Name is required');return;}
-  if(body.pin&&!/^\d{4}$/.test(body.pin)){alert('PIN must be 4 digits');return;}
-  if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
-  else await api('/rest/v1/talents','POST',body);
-  closeModal('modal-talent'); toast('Saved'); loadTalentsPage();
+  const name=document.getElementById('mtal-name').value.trim();
+  const pin=document.getElementById('mtal-pin').value.trim();
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value};
+  if(!name){alert('Name is required');return;}
+  if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
+  try{
+    if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
+    else await api('/rest/v1/talents','POST',body);
+    closeModal('modal-talent'); toast('Saved'); loadTalentsPage();
+  }catch(e){ alert('Save failed: '+e.message); }
 }
 async function deleteTalent(id,name){
   if(!confirm('Remove talent '+name+'?'))return;
