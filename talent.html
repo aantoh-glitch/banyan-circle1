@@ -64,6 +64,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .month-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .month-nav button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .month-nav button:hover{border-color:var(--br);color:var(--br)}
+/* Time modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px}
+.modal-date{font-size:13px;color:var(--muted);margin-bottom:20px}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.btn-danger{padding:9px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin-right:auto}
+.btn-danger:hover{background:var(--r);color:#fff}
 </style>
 </head>
 <body>
@@ -192,7 +201,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
           <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Free</span>
           <span><span class="leg-dot" style="background:var(--a-l);border:1.5px solid #C88A40"></span> Available</span>
           <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
-          <span style="font-size:11px;opacity:.7;margin-left:auto">Click a date to toggle status</span>
+          <span style="font-size:11px;opacity:.7;margin-left:auto">Click a date to set availability</span>
         </div>
         <div class="sched-grid" id="sched-day-labels" style="margin-bottom:6px">
           <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sun</div>
@@ -205,6 +214,29 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </div>
         <div class="sched-grid" id="sched-grid"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIME SLOT MODAL -->
+<div class="modal-backdrop" id="time-modal" style="display:none" onclick="closeTimeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">Set availability</div>
+    <div class="modal-date" id="modal-date"></div>
+    <div class="time-row">
+      <div class="fg" style="margin:0">
+        <label class="fl">From</label>
+        <input class="fc" type="time" id="modal-start" value="09:00"/>
+      </div>
+      <div class="fg" style="margin:0">
+        <label class="fl">To</label>
+        <input class="fc" type="time" id="modal-end" value="17:00"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" id="modal-remove-btn" onclick="removeDay()">Remove</button>
+      <button class="btn-sec" onclick="closeTimeModal()">Cancel</button>
+      <button class="btn-p" onclick="saveTimeSlot()">Save</button>
     </div>
   </div>
 </div>
@@ -436,9 +468,11 @@ async function saveProfile(){
 }
 
 // --- SCHEDULE ---
-let scheduleData = {}; // { 'YYYY-MM-DD': 'free'|'available'|null }
+let scheduleData = {}; // { 'YYYY-MM-DD': {status, time_start, time_end} }
 let schedYear, schedMonth;
+let modalDateStr = null;
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 function changeMonth(d){
   schedMonth += d;
@@ -447,17 +481,18 @@ function changeMonth(d){
   renderSchedule();
 }
 
+function fmt12(t){ if(!t) return ''; const [h,m]=t.split(':'); const hr=+h; return (hr%12||12)+':'+(m||'00')+' '+(hr<12?'AM':'PM'); }
+
 async function renderSchedule(){
   const now = new Date();
   if(schedYear===undefined){ schedYear=now.getFullYear(); schedMonth=now.getMonth(); }
   document.getElementById('month-label').textContent = MONTHS[schedMonth] + ' ' + schedYear;
 
-  // Load this month's schedule from DB
   const monthStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0');
   try{
-    const rows = await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status') || [];
+    const rows = await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status,time_start,time_end') || [];
     scheduleData = {};
-    rows.forEach(r => scheduleData[r.date] = r.status);
+    rows.forEach(r => scheduleData[r.date] = {status:r.status, time_start:r.time_start, time_end:r.time_end});
   } catch(e){ console.error(e); }
 
   const grid = document.getElementById('sched-grid');
@@ -466,39 +501,69 @@ async function renderSchedule(){
   const today = new Date().toISOString().slice(0,10);
 
   let html = '';
-  // Empty cells
   for(let i=0;i<firstDay;i++) html += '<div></div>';
   for(let d=1;d<=daysInMonth;d++){
     const dateStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const status = scheduleData[dateStr] || '';
+    const entry = scheduleData[dateStr];
+    const status = entry?.status || '';
     const cls = status==='free' ? 'sched-day free' : status==='available' ? 'sched-day available' : 'sched-day';
-    const statusLabel = status==='free' ? 'Free' : status==='available' ? 'Available' : '';
     const isToday = dateStr===today;
-    html += `<div class="${cls}" onclick="toggleDay('${dateStr}')" style="${isToday?'box-shadow:0 0 0 2px var(--br);':''}">
+    let timeLabel = '';
+    if(entry?.time_start && entry?.time_end) timeLabel = `<div class="day-status" style="font-size:9px">${fmt12(entry.time_start)}–${fmt12(entry.time_end)}</div>`;
+    else if(status) timeLabel = `<div class="day-status">${status==='free'?'Free':'Available'}</div>`;
+    html += `<div class="${cls}" onclick="openTimeModal('${dateStr}')" style="${isToday?'box-shadow:0 0 0 2px var(--br);':''}">
       <div class="day-num" style="${isToday?'color:var(--br)':''}">${d}</div>
-      <div class="day-status">${statusLabel}</div>
+      ${timeLabel}
     </div>`;
   }
   grid.innerHTML = html;
 }
 
-async function toggleDay(dateStr){
-  const cur = scheduleData[dateStr] || '';
-  const next = cur==='' ? 'free' : cur==='free' ? 'available' : null;
+function openTimeModal(dateStr){
+  modalDateStr = dateStr;
+  const entry = scheduleData[dateStr];
+  const d = new Date(dateStr+'T00:00:00');
+  document.getElementById('modal-date').textContent = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  document.getElementById('modal-title').textContent = entry ? 'Edit availability' : 'Mark as available';
+  document.getElementById('modal-start').value = entry?.time_start?.slice(0,5) || '09:00';
+  document.getElementById('modal-end').value = entry?.time_end?.slice(0,5) || '17:00';
+  document.getElementById('modal-remove-btn').style.display = entry ? '' : 'none';
+  document.getElementById('time-modal').style.display = 'flex';
+}
 
+function closeTimeModal(e){
+  if(e && e.target !== document.getElementById('time-modal')) return;
+  document.getElementById('time-modal').style.display = 'none';
+  modalDateStr = null;
+}
+
+async function saveTimeSlot(){
+  const start = document.getElementById('modal-start').value;
+  const end = document.getElementById('modal-end').value;
+  if(!start || !end){ toast('Please set both times'); return; }
+  if(end <= start){ toast('End time must be after start time'); return; }
+  const entry = scheduleData[modalDateStr];
+  const payload = { talent_id: talentId, date: modalDateStr, status: 'available', time_start: start, time_end: end };
   try{
-    const exists = cur !== '';
-    if(next===null){
-      await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+dateStr,'DELETE');
-      delete scheduleData[dateStr];
-    } else if(exists){
-      await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+dateStr,'PATCH',{status:next});
-      scheduleData[dateStr] = next;
+    if(entry){
+      await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:start,time_end:end});
     } else {
-      await api('/rest/v1/talent_schedule','POST',{talent_id:talentId, date:dateStr, status:next});
-      scheduleData[dateStr] = next;
+      await api('/rest/v1/talent_schedule','POST',payload);
     }
-    renderSchedule();
+    document.getElementById('time-modal').style.display = 'none';
+    modalDateStr = null;
+    await renderSchedule();
+    toast('Saved ✓');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+async function removeDay(){
+  try{
+    await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE');
+    document.getElementById('time-modal').style.display = 'none';
+    modalDateStr = null;
+    await renderSchedule();
+    toast('Removed');
   } catch(e){ toast('Error: '+e.message); }
 }
 </script>
