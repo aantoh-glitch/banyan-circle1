@@ -445,7 +445,7 @@ async function loadStaff(){
   if(!data.length){el.innerHTML='<div class="empty">No team members yet</div>';return;}
   el.innerHTML=`<table class="tbl"><thead><tr><th>Name</th><th>Designation</th><th>PIN</th><th>Email</th><th></th></tr></thead><tbody>
     ${data.map(s=>`<tr><td><b>${s.name}</b></td><td>${s.designation||'—'}</td><td>${s.pin?'••••':'<span style="color:var(--r)">not set</span>'}</td><td>${s.email||'—'}</td>
-    <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editStaff(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button> <button class="btn-del" onclick="deleteStaff('${s.id}','${(s.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`).join('')}
+    <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editStaff(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button> <a href="/attendance.html?staff_id=${s.id}&staff_name=${encodeURIComponent(s.name||'')}" target="_blank" style="padding:6px 12px;background:var(--b-l);color:var(--b);border-radius:7px;font-size:12px;font-weight:500;font-family:inherit;text-decoration:none;display:inline-block;margin:0 4px">Attendance</a> <button class="btn-del" onclick="deleteStaff('${s.id}','${(s.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`).join('')}
   </tbody></table>`;
 }
 function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-role').value='Homekeeper'; openModal('modal-staff'); }

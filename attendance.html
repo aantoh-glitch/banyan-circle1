@@ -178,12 +178,26 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.href = '/index.html';
+// Support viewing a specific staff member's log from admin (via URL params)
+const params = new URLSearchParams(location.search);
+const adminView = params.has('staff_id');
+
+let me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (adminView) {
+  // Admin viewing a staff member's attendance — use URL params
+  me = { id: params.get('staff_id'), name: decodeURIComponent(params.get('staff_name') || 'Staff'), role: 'staff' };
+} else {
+  if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.href = '/index.html';
+}
 
 const name = me.name || 'Staff';
-document.getElementById('hdr-name').textContent = name;
+document.getElementById('hdr-name').textContent = adminView ? name + ' — Attendance Log' : name;
 document.getElementById('clock-name').textContent = name;
+
+// Hide log button if admin is just viewing
+if (adminView) {
+  document.getElementById('main-log-btn').style.display = 'none';
+}
 
 // ── Clock ──
 function tickClock() {
