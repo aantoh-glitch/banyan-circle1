@@ -395,13 +395,23 @@ async function submitLog() {
   let photoUrl = null;
 
   if (snapBlob) {
-    const fname = `attendance/${me.id}_${Date.now()}.jpg`;
-    const up = await fetch(SB+'/storage/v1/object/attendance-photos/'+fname, {
-      method:'POST',
-      headers:{apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'image/jpeg', 'x-upsert':'true'},
-      body: snapBlob
-    });
-    if (up.ok) photoUrl = SB+'/storage/v1/object/public/attendance-photos/'+fname;
+    const fname = `${me.id}_${Date.now()}.jpg`;
+    try {
+      const up = await fetch(SB+'/storage/v1/object/attendance-photos/'+fname, {
+        method:'POST',
+        headers:{apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'image/jpeg', 'x-upsert':'true'},
+        body: snapBlob
+      });
+      if (up.ok) {
+        photoUrl = SB+'/storage/v1/object/public/attendance-photos/'+fname;
+      } else {
+        const errBody = await up.json().catch(()=>({}));
+        console.error('Photo upload failed', up.status, errBody);
+        toast('⚠️ Photo upload failed: ' + (errBody.message || errBody.error || up.status));
+      }
+    } catch(uploadErr) {
+      console.error('Photo upload exception', uploadErr);
+    }
   }
 
   const record = {
