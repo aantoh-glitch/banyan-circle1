@@ -95,9 +95,12 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <div class="pg-title">Check-in</div>
   <div class="pg-sub">Register with Property by Heritance</div>
 
-  <div class="done-banner" id="ci-done">
-    <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
-    You've already checked in. Welcome to Banyan Circle!
+  <div class="done-banner" id="ci-done" style="flex-direction:column;align-items:flex-start;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px;width:100%">
+      <svg viewBox="0 0 24 24" style="flex-shrink:0"><polyline points="20,6 9,17 4,12"/></svg>
+      <span>Registration submitted. Welcome to Banyan Circle!</span>
+    </div>
+    <button onclick="editCheckin()" style="font-size:13px;font-weight:500;color:var(--br);background:none;border:1.5px solid var(--br);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;width:100%">Edit / update registration</button>
   </div>
 
   <div id="ci-form">
@@ -342,6 +345,35 @@ async function api(path, method, body) {
   return json;
 }
 
+// ── Edit existing check-in ──
+function editCheckin(){
+  if(!CI_RECORD) return;
+  const fd=CI_RECORD.form_data||{};
+  document.getElementById('ci-name').value=CI_RECORD.guest_name||'';
+  document.getElementById('ci-address').value=fd.permanent_address||'';
+  document.getElementById('ci-email').value=fd.email||'';
+  document.getElementById('ci-mobile').value=fd.mobile||'';
+  document.getElementById('ci-dob').value=fd.dob||'';
+  document.getElementById('ci-org').value=fd.organisation||'';
+  document.getElementById('ci-from').value=CI_RECORD.travelled_from||'';
+  document.getElementById('ci-to').value=CI_RECORD.travelling_to||'';
+  document.getElementById('ci-arr-date').value=fd.arrival_date||'';
+  document.getElementById('ci-arr-time').value=fd.arrival_time||'';
+  document.getElementById('ci-dep-date').value=fd.departure_date||'';
+  document.getElementById('ci-dep-time').value=fd.departure_time||'';
+  document.getElementById('ci-guests').value=CI_RECORD.num_guests||1;
+  document.getElementById('ci-dietary').value=fd.dietary||'';
+  document.getElementById('ci-occasion').value=fd.special_occasion||'';
+  document.getElementById('ci-comfort').value=fd.comfort_requests||'';
+  if(fd.payment_mode){const r=document.querySelector(`input[name="payment"][value="${fd.payment_mode}"]`);if(r)r.checked=true;}
+  document.getElementById('ci-declaration').checked=!!fd.declaration;
+  const existing=(fd.id_proofs||[]).map(f=>f.name);
+  if(existing.length) document.getElementById('ci-file-list').innerHTML=`<div class="file-item">Existing: ${existing.join(', ')} <span style="margin-left:auto;font-size:11px;opacity:.7">Upload new to replace</span></div>`;
+  document.getElementById('ci-done').style.display='none';
+  document.getElementById('ci-form').style.display='block';
+  document.getElementById('ci-btn').textContent='Update registration';
+}
+
 // ── Section B toggle ──
 function toggleSectionB(el){
   const body = document.getElementById('section-b');
@@ -388,21 +420,26 @@ async function submitCheckin(){
   const decl   = document.getElementById('ci-declaration').checked;
   const files  = document.getElementById('ci-files').files;
 
+  const isEdit=!!(CI_RECORD&&CI_RECORD.id);
   if(!name||!addr||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
-  if(!files.length){toast('Please upload ID proof');return;}
+  if(!files.length&&!(CI_RECORD?.form_data?.id_proofs?.length)){toast('Please upload ID proof');return;}
   if(!payment){toast('Please select payment mode');return;}
   if(!decl){toast('Please accept the declaration');return;}
 
   const btn = document.getElementById('ci-btn');
   btn.disabled=true;
 
-  // Convert ID proof files to base64 (stored directly in database — no storage bucket needed)
-  const id_proofs=[];
-  for(let i=0;i<files.length;i++){
-    btn.textContent=`Reading ID ${i+1} of ${files.length}…`;
-    const file=files[i];
-    const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(file);});
-    id_proofs.push({name:file.name,type:file.type,data});
+  // Convert ID proof files to base64 (or keep existing on edit if no new files uploaded)
+  let id_proofs=[];
+  if(files.length){
+    for(let i=0;i<files.length;i++){
+      btn.textContent=`Reading ID ${i+1} of ${files.length}…`;
+      const file=files[i];
+      const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(file);});
+      id_proofs.push({name:file.name,type:file.type,data});
+    }
+  } else if(isEdit){
+    id_proofs=CI_RECORD.form_data?.id_proofs||[];
   }
 
   // Convert passport if Section B open
@@ -456,23 +493,30 @@ async function submitCheckin(){
     };
   }
 
+  const payload={
+    guest_profile_id: me.id,
+    guest_name: name,
+    property_name: me.prop,
+    travelled_from: from,
+    travelling_to: to,
+    num_guests: guests,
+    id_proof_urls: id_proofs.map(f=>f.name),
+    form_data,
+  };
   try {
-    const rec=await api('/rest/v1/guest_checkins','POST',{
-      guest_profile_id: me.id,
-      guest_name: name,
-      property_name: me.prop,
-      travelled_from: from,
-      travelling_to: to,
-      num_guests: guests,
-      id_proof_urls: id_proofs.map(f=>f.name),  // store filenames for quick table display
-      checked_in_at: new Date().toISOString(),
-      form_data,
-    });
-    CI_RECORD=(rec&&rec[0])||{guest_name:name};
+    if(isEdit){
+      await api('/rest/v1/guest_checkins?id=eq.'+CI_RECORD.id,'PATCH',payload);
+      CI_RECORD={...CI_RECORD,...payload,form_data};
+    } else {
+      payload.checked_in_at=new Date().toISOString();
+      const rec=await api('/rest/v1/guest_checkins','POST',payload);
+      CI_RECORD=(rec&&rec[0])||{guest_name:name};
+    }
     btn.disabled=false;
+    btn.textContent='Submit registration';
     document.getElementById('ci-done').style.display='flex';
     document.getElementById('ci-form').style.display='none';
-    toast('Registration complete ✓');
+    toast(isEdit?'Registration updated ✓':'Registration complete ✓');
   } catch(err) {
     btn.disabled=false;
     btn.textContent='Submit registration';

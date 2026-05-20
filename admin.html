@@ -289,7 +289,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"><label class="fl">Check-in</label><input class="fc" id="mg-in" type="date"/></div>
     <div class="fg"><label class="fl">Check-out</label><input class="fc" id="mg-out" type="date"/></div>
   </div>
-  <div class="fg"><label class="fl">Mobile (optional)</label><input class="fc" id="mg-mobile"/></div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-guest')">Cancel</button><button class="btn-p" onclick="saveGuest()">Save</button></div>
 </div></div>
 
@@ -355,7 +354,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="modal-card" style="max-width:820px;width:100%;padding:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div style="font-family:'Playfair Display',serif;font-size:22px">Guest Registration</div>
-      <button class="btn-sec" onclick="closeModal('admin-reg-modal')">✕ Close</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-p" onclick="downloadAdminRegPDF()" style="font-size:13px;padding:8px 16px">⬇ Download PDF</button>
+        <button class="btn-sec" onclick="closeModal('admin-reg-modal')">✕ Close</button>
+      </div>
     </div>
     <div id="admin-rd-body" style="max-height:76vh;overflow-y:auto"></div>
   </div>
@@ -372,7 +374,9 @@ async function api(path, method, body) {
   const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204) return null;
-  return r.json().catch(()=>null);
+  const json=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
 }
 function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
@@ -461,10 +465,10 @@ async function loadGuests(){
     <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editGuest(${JSON.stringify(g).replace(/'/g,"&#39;")})'>Edit</button> <button class="btn-del" onclick="deleteGuest('${g.id}','${(g.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`).join('')}
   </tbody></table>`;
 }
-async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-in','mg-out','mg-mobile'].forEach(i=>document.getElementById(i).value=''); if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
-function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; document.getElementById('mg-mobile').value=g.mobile||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
-async function saveGuest(){ const id=document.getElementById('mg-id').value; const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,mobile:document.getElementById('mg-mobile').value.trim()||null,created_by:'OFFICE'}; if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;} if(!body.property_name){alert('Please select a property');return;} try{let res; if(id)res=await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body); else res=await api('/rest/v1/guest_profiles','POST',body); if(res&&res.message){alert('Supabase error: '+res.message);return;} closeModal('modal-guest'); toast('Guest saved ✓'); loadGuests();}catch(e){alert('Error: '+e.message);} }
-async function deleteGuest(id,name){ if(!confirm('Remove '+name+'? This will not delete their check-in submissions.'))return; await api('/rest/v1/guest_profiles?id=eq.'+id,'DELETE'); loadGuests(); }
+async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-in','mg-out'].forEach(i=>document.getElementById(i).value=''); if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
+function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
+async function saveGuest(){ const id=document.getElementById('mg-id').value; const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,created_by:'OFFICE'}; if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;} if(!body.property_name){alert('Please select a property');return;} try{ if(id) await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body); else await api('/rest/v1/guest_profiles','POST',body); closeModal('modal-guest'); toast('Guest saved ✓'); loadGuests();}catch(e){alert('Error: '+e.message);} }
+async function deleteGuest(id,name){ if(!confirm('Remove '+name+'? Their submitted registrations will be kept.'))return; try{ await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+id,'PATCH',{guest_profile_id:null}); await api('/rest/v1/guest_profiles?id=eq.'+id,'DELETE'); toast(name+' removed'); loadGuests(); }catch(e){ alert('Could not remove: '+e.message); } }
 
 // GUEST TAB TOGGLE
 function setGuestTab(tab,btn){
@@ -526,7 +530,7 @@ async function openAdminRegDetail(cid){
             </div>`}
           <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
             <div style="font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${doc.name||'Document '+(i+1)}</div>
-            ${doc.data?`<button onclick="dlAdminDoc(${i},'${label.toLowerCase().includes('passport')?'passport':'id'}')" style="font-size:11px;color:var(--br);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;font-weight:500">DL</button>`:''}
+            ${doc.data?`<button onclick="dlAdminDoc(${i},'${label.toLowerCase().includes('passport')?'passport':'id'}')" style="font-size:11px;color:var(--br);background:var(--br-l);border:none;border-radius:5px;cursor:pointer;font-family:inherit;padding:3px 8px;font-weight:500">↓ Download</button>`:''}
           </div>
         </div>`;
       }).join('')}
@@ -566,6 +570,44 @@ function dlAdminDoc(idx,section){
   const doc=docs[idx];
   if(!doc?.data){toast('No file data available');return;}
   const a=document.createElement('a'); a.href=doc.data; a.download=doc.name||'document'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function downloadAdminRegPDF(){
+  if(!ADMIN_REG){toast('No record loaded');return;}
+  const c=ADMIN_REG; const fd=c.form_data||{};
+  const name=c.guest_name||'Guest';
+  const fn=name.substring(0,4).toUpperCase()+(c.checked_in_at?new Date(c.checked_in_at).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,''):'');
+  const fL=(d)=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const r=(l,v)=>v?`<tr><td style="color:#666;font-size:12px;width:38%;padding:5px 0;border-bottom:1px solid #eee;vertical-align:top">${l}</td><td style="font-size:13px;padding:5px 0 5px 10px;border-bottom:1px solid #eee;font-weight:500">${v}</td></tr>`:'';
+  const imgTags=(fd.id_proofs||[]).filter(d=>d.data&&d.type&&d.type.startsWith('image/')).map(d=>`<img src="${d.data}" style="max-width:180px;max-height:130px;object-fit:contain;border:1px solid #ddd;border-radius:6px;margin:4px"/>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${fn}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#222;padding:36px;font-size:14px}
+  .hdr{border-bottom:3px solid #993C1D;margin-bottom:22px;padding-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end}
+  h1{font-size:22px;color:#993C1D}h2{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#993C1D;margin:18px 0 8px;padding-bottom:5px;border-bottom:2px solid #FAECE7}
+  table{width:100%;border-collapse:collapse}.decl{margin-top:20px;font-size:12px;color:#666;border-top:1px solid #eee;padding-top:14px}
+  @media print{body{padding:18px}}</style></head><body>
+  <div class="hdr"><div><h1>Property by Heritance</h1><div style="font-size:12px;color:#888;margin-top:3px">Guest Registration Card</div></div>
+  <div style="text-align:right;font-size:12px;color:#888"><div>${c.property_name||'Banyan Circle'}</div><div>Ref: ${fn}</div></div></div>
+  <h2>Section A — Guest Details</h2>
+  <table>${r('Guest name',c.guest_name)}${r('Organisation',fd.organisation)}${r('Permanent address',fd.permanent_address)}
+  ${r('Email',fd.email)}${r('Mobile',fd.mobile)}${r('Date of birth',fd.dob)}
+  ${r('Arrived from',c.travelled_from)}${r('Proceeding to',c.travelling_to)}
+  ${r('Arrival',fd.arrival_date+(fd.arrival_time?' · '+fd.arrival_time:''))}
+  ${r('Departure',fd.departure_date+(fd.departure_time?' · '+fd.departure_time:''))}
+  ${r('Group size',String(c.num_guests||1))}${r('Payment mode',fd.payment_mode)}
+  ${r('Dietary preferences',fd.dietary)}${r('Special occasion',fd.special_occasion)}
+  ${r('Comfort requests',fd.comfort_requests)}</table>
+  ${fd.is_foreign&&fd.foreign?`<h2>Form B — Foreign National</h2><table>
+  ${r('Name in caps',fd.foreign.name_caps)}${r('Nationality',fd.foreign.nationality)}${r('Passport no',fd.foreign.passport_no)}
+  ${r('Passport issued',fd.foreign.passport_date+(fd.foreign.passport_place?' · '+fd.foreign.passport_place:''))}
+  ${r('Address in India',fd.foreign.india_address)}${r('India arrival',fd.foreign.india_arrival)}
+  ${r('Employed in India',fd.foreign.employed_india)}${r('Duration',fd.foreign.duration_india)}
+  ${r('Purpose',fd.foreign.purpose)}${r('Checkout',fd.foreign.checkout_date+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
+  ${r('Proceeding address',fd.foreign.proceed_address)}</table>`:''}
+  ${imgTags?`<h2>ID Documents</h2><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">${imgTags}</div>`:''}
+  <div class="decl">Declaration: The information provided above is accurate and the guest agrees to all applicable hospitality policies and local regulations. &nbsp;&nbsp;Submitted: ${c.checked_in_at?new Date(c.checked_in_at).toLocaleString('en-IN'):''}</div>
+  <script>window.onload=()=>{document.title='${fn}';window.print()}<\/script></body></html>`;
+  const blob=new Blob([html],{type:'text/html'}); window.open(URL.createObjectURL(blob),'_blank');
 }
 
 // PROPERTY SCOPED TABS
