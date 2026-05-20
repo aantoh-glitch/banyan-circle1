@@ -337,7 +337,9 @@ async function api(path, method, body) {
   const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204)return null;
-  return r.json().catch(()=>null);
+  const json=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
 }
 
 // ── Section B toggle ──
@@ -454,23 +456,30 @@ async function submitCheckin(){
     };
   }
 
-  const rec=await api('/rest/v1/guest_checkins','POST',{
-    guest_profile_id: me.id,
-    guest_name: name,
-    property_name: me.prop,
-    travelled_from: from,
-    travelling_to: to,
-    num_guests: guests,
-    id_proof_urls: id_proofs.map(f=>f.name),  // store filenames for quick table display
-    checked_in_at: new Date().toISOString(),
-    form_data,
-  });
-  CI_RECORD=(rec&&rec[0])||{guest_name:name};
-
-  btn.disabled=false;
-  document.getElementById('ci-done').style.display='flex';
-  document.getElementById('ci-form').style.display='none';
-  toast('Registration complete ✓');
+  try {
+    const rec=await api('/rest/v1/guest_checkins','POST',{
+      guest_profile_id: me.id,
+      guest_name: name,
+      property_name: me.prop,
+      travelled_from: from,
+      travelling_to: to,
+      num_guests: guests,
+      id_proof_urls: id_proofs.map(f=>f.name),  // store filenames for quick table display
+      checked_in_at: new Date().toISOString(),
+      form_data,
+    });
+    CI_RECORD=(rec&&rec[0])||{guest_name:name};
+    btn.disabled=false;
+    document.getElementById('ci-done').style.display='flex';
+    document.getElementById('ci-form').style.display='none';
+    toast('Registration complete ✓');
+  } catch(err) {
+    btn.disabled=false;
+    btn.textContent='Submit registration';
+    toast('Save failed: '+(err.message||'Please try again'));
+    console.error('submitCheckin error:', err);
+    return;
+  }
 }
 
 // ── REQUESTS ──
