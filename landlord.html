@@ -109,6 +109,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('utilities',this)">
       <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>Utility payments
     </button>
+    <button class="sb-btn" onclick="goPage('assets',this)">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>Assets
+    </button>
   </div>
   <div class="sb-footer">
     <div class="sb-user" id="sb-user">Landlord</div>
@@ -145,6 +148,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=utilities]').click()">
       <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
       <div class="action-lbl">Utility payments</div><div class="action-sub" id="util-sum">—</div>
+    </button>
+    <button class="action-btn" onclick="document.querySelector('.sb-btn[onclick*=assets]').click()">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <div class="action-lbl">Assets</div><div class="action-sub" id="asset-sum">—</div>
     </button>
   </div>
 </div>
@@ -242,6 +249,34 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- ASSETS -->
+<div class="pg" id="pg-assets">
+  <div class="pg-title">Asset inventory</div>
+  <div class="pg-sub" id="asset-pg-sub">Items in your property — managed by Office and staff</div>
+
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <button class="btn-p" id="asset-tab-active" onclick="switchAssetTab('active')" style="background:var(--text)">Active Assets</button>
+    <button class="btn-sec" id="asset-tab-removed" onclick="switchAssetTab('removed')">Removed Log</button>
+  </div>
+
+  <div id="asset-view-active">
+    <div class="card">
+      <div id="asset-active-table"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <div id="asset-view-removed" style="display:none">
+    <div class="card">
+      <div id="asset-removed-table"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox for assets -->
+<div id="asset-lightbox" onclick="closeAssetLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;cursor:zoom-out">
+  <img id="asset-lightbox-img" src="" alt="asset photo" style="max-width:90vw;max-height:88vh;border-radius:12px;object-fit:contain"/>
+</div>
+
 </div></div>
 <div class="toast" id="toast"></div>
 
@@ -281,6 +316,7 @@ function goPage(id,btn){
   if(id==='maintenance') loadMaint();
   if(id==='comms')       loadMsgs();
   if(id==='utilities')   loadUtilities();
+  if(id==='assets')      loadLandlordAssets('active');
 }
 
 // ── PROPERTY overview ──
@@ -294,17 +330,19 @@ async function loadProperty(){
     <div class="prop-desc">${(p.description||'No description added yet.').replace(/\n/g,'<br>')}</div>
   </div>`;
 
-  const [docs, mt, msgs, util] = await Promise.all([
+  const [docs, mt, msgs, util, assets] = await Promise.all([
     api('/rest/v1/property_documents?property_name=eq.'+encodeURIComponent(PROP)+'&select=id'),
     api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(PROP)+'&status=neq.resolved&select=id'),
     api('/rest/v1/internal_messages?property_name=eq.'+encodeURIComponent(PROP)+'&select=id'),
     api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&status=eq.pending&select=amount'),
+    api('/rest/v1/assets?property_name=eq.'+encodeURIComponent(PROP)+'&removed=eq.false&select=id'),
   ]);
   document.getElementById('doc-count').textContent  = (docs?.length||0)+' file(s)';
   document.getElementById('maint-sum').textContent  = (mt?.length||0)+' open issue(s)';
   document.getElementById('msg-sum').textContent    = (msgs?.length||0)+' message(s)';
   const pending = (util||[]).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
   document.getElementById('util-sum').textContent   = pending ? fmt(pending)+' pending' : 'All paid';
+  document.getElementById('asset-sum').textContent  = (assets?.length||0)+' item(s)';
 
   // Financials quick number on the tile
   const [revData, expData] = await Promise.all([
@@ -520,6 +558,90 @@ async function loadUtilities(){
       <td>${u.proof_url?`<a href="${u.proof_url}" target="_blank" style="color:var(--br);font-size:12px">View</a>`:'—'}</td>
     </tr>`).join('')}
   </tbody></table>`;
+}
+
+// ── ASSETS ──
+let currentAssetTab = 'active';
+
+function switchAssetTab(tab) {
+  currentAssetTab = tab;
+  const btnA = document.getElementById('asset-tab-active');
+  const btnR = document.getElementById('asset-tab-removed');
+  if (tab === 'active') {
+    btnA.style.background = 'var(--text)'; btnA.className = 'btn-p';
+    btnR.className = 'btn-sec';
+    document.getElementById('asset-view-active').style.display = 'block';
+    document.getElementById('asset-view-removed').style.display = 'none';
+    loadLandlordAssets('active');
+  } else {
+    btnR.style.background = 'var(--text)'; btnR.className = 'btn-p';
+    btnA.className = 'btn-sec';
+    document.getElementById('asset-view-active').style.display = 'none';
+    document.getElementById('asset-view-removed').style.display = 'block';
+    loadLandlordAssets('removed');
+  }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function loadLandlordAssets(tab) {
+  if (tab === 'active') {
+    const el = document.getElementById('asset-active-table');
+    el.innerHTML = '<div class="empty">Loading…</div>';
+    const data = await api('/rest/v1/assets?property_name=eq.'+encodeURIComponent(PROP)+'&removed=eq.false&order=created_at.asc') || [];
+    if (!data.length) { el.innerHTML = '<div class="empty">No assets logged yet for this property</div>'; return; }
+    el.innerHTML = `<table class="tbl">
+      <thead><tr>
+        <th style="width:40px">SL</th>
+        <th>Item</th>
+        <th style="width:70px">Qty</th>
+        <th style="width:70px">Photo</th>
+      </tr></thead>
+      <tbody>
+        ${data.map((a,i) => `<tr>
+          <td style="color:var(--muted);font-size:12px">${i+1}</td>
+          <td style="font-weight:500">${esc(a.name)}</td>
+          <td>${a.quantity ?? 1}</td>
+          <td>${a.photo_url
+            ? `<img src="${a.photo_url}" alt="photo" onclick="openAssetLightbox('${a.photo_url}')" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer"/>`
+            : '<span style="font-size:11px;color:var(--muted)">—</span>'
+          }</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  } else {
+    const el = document.getElementById('asset-removed-table');
+    el.innerHTML = '<div class="empty">Loading…</div>';
+    const data = await api('/rest/v1/assets?property_name=eq.'+encodeURIComponent(PROP)+'&removed=eq.true&order=removed_at.desc') || [];
+    if (!data.length) { el.innerHTML = '<div class="empty">No items removed yet</div>'; return; }
+    el.innerHTML = `<table class="tbl">
+      <thead><tr>
+        <th style="width:40px">SL</th>
+        <th>Item</th>
+        <th style="width:70px">Qty</th>
+        <th>Removed on</th>
+        <th>Reason</th>
+      </tr></thead>
+      <tbody>
+        ${data.map((a,i) => `<tr>
+          <td style="color:var(--muted);font-size:12px">${i+1}</td>
+          <td style="font-weight:500;color:var(--muted);text-decoration:line-through">${esc(a.name)}</td>
+          <td>${a.quantity ?? 1}</td>
+          <td style="font-size:12px;color:var(--muted)">${a.removed_at ? fmtDate(a.removed_at) : '—'}</td>
+          <td style="font-size:12px;color:var(--muted);font-style:italic">${a.removed_reason ? esc(a.removed_reason) : '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+}
+
+function openAssetLightbox(url) {
+  const lb = document.getElementById('asset-lightbox');
+  document.getElementById('asset-lightbox-img').src = url;
+  lb.style.display = 'flex';
+}
+function closeAssetLightbox() {
+  document.getElementById('asset-lightbox').style.display = 'none';
 }
 
 // Boot
