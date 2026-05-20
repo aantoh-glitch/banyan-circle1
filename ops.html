@@ -3,812 +3,235 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Ops</title>
-<meta name="theme-color" content="#993C1D"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<title>Heritance — Staff</title>
+<meta name="theme-color" content="#1a1a18"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--r:#A32D2D;--r-l:#FCEBEB;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
+:root{
+  --bg:#F9F8F6;
+  --text:#1a1a18;
+  --muted:#7a7870;
+  --border:rgba(0,0,0,0.08);
+  --white:#fff;
+  --br:#993C1D;
+  --br-l:#FAECE7;
+}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 0 48px}
 
 /* Header */
-.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:13px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
-.hdr-logo{width:34px;height:34px;background:var(--br);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hdr-logo svg{width:17px;height:17px;fill:white}
-.hdr-title{font-family:'Playfair Display',serif;font-size:15px;flex:1}
-.hdr-date{font-size:11px;color:var(--muted)}
-.hdr-av{width:32px;height:32px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#712B13;border:none;cursor:pointer;font-family:inherit}
+.hdr{
+  padding:32px 24px 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+.hdr-logo{
+  width:160px;
+  object-fit:contain;
+  display:block;
+  margin-bottom:8px;
+}
+.hdr-divider{
+  width:40px;height:1px;
+  background:var(--border);
+  margin:12px auto 0;
+}
 
-/* Top nav */
-.top-nav{background:var(--white);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 4px;position:sticky;top:61px;z-index:99}
-.top-nav::-webkit-scrollbar{display:none}
-.tnb{flex:none;padding:11px 10px;font-size:11px;color:var(--muted);border:none;background:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-family:inherit;transition:color .15s}
-.tnb.on{color:var(--br);border-bottom-color:var(--br);font-weight:500}
+/* User strip */
+.user-strip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 24px;
+  background:var(--white);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  margin-bottom:32px;
+}
+.user-info{}
+.user-name{font-size:14px;font-weight:500;color:var(--text)}
+.user-date{font-size:11px;color:var(--muted);margin-top:1px}
+.sign-out{
+  font-size:12px;color:var(--muted);
+  background:none;border:1px solid var(--border);
+  border-radius:999px;padding:5px 14px;
+  cursor:pointer;font-family:inherit;
+  transition:all .18s;
+}
+.sign-out:active{background:var(--bg)}
 
-/* Pages */
-.pg{display:none;padding:14px 16px 80px;flex:1}
-.pg.on{display:block}
-.pg-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:2px}
-.pg-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+/* Section label */
+.section-label{
+  font-family:'DM Sans',sans-serif;
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+  padding:0 24px;
+  margin-bottom:14px;
+}
 
-/* Cards */
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
-.card-ttl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+/* Dashboard grid */
+.dash-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  padding:0 24px;
+}
 
-/* Stat grid */
-.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
-.st{border-radius:10px;padding:13px}
-.st-br{background:var(--br-l)}.st-g{background:var(--g-l)}.st-a{background:var(--a-l)}.st-b{background:var(--b-l)}
-.st-l{font-size:11px;color:var(--muted);margin-bottom:4px}
-.st-v{font-size:24px;font-weight:500}
-.st-h{font-size:11px;color:var(--muted);margin-top:3px}
+.dash-btn{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 18px 20px;
+  cursor:pointer;
+  text-align:left;
+  font-family:inherit;
+  text-decoration:none;
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.dash-btn::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:var(--text);
+  opacity:0;
+  transition:opacity .18s;
+}
+.dash-btn:active::after{opacity:.04}
 
-/* Badges */
-.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500;white-space:nowrap}
-.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
-.bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:var(--b-l);color:#0C447C}
-.bdg-br{background:var(--br-l);color:#712B13}.bdg-x{background:#F1EFE8;color:var(--muted)}
+.dash-btn:nth-child(1){border-top:3px solid #3B6D11}
+.dash-btn:nth-child(2){border-top:3px solid #993C1D}
+.dash-btn:nth-child(3){border-top:3px solid #185FA5}
+.dash-btn:nth-child(4){border-top:3px solid #854F0B}
 
-/* Rows */
-.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
-.row:last-child{border-bottom:none;padding-bottom:0}
-.av{width:36px;height:36px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#712B13;flex-shrink:0}
-.rb{flex:1;min-width:0}
-.rn{font-size:14px;font-weight:500}
-.rm{font-size:12px;color:var(--muted);margin-top:2px}
+.db-icon{
+  width:38px;height:38px;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.db-icon svg{width:20px;height:20px;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;fill:none}
 
-/* Task cards */
-.tc{background:var(--white);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
-.tc-body{padding:12px 14px}
-.tc-name{font-size:14px;font-weight:500;margin-bottom:2px}
-.tc-note{font-size:12px;color:var(--muted)}
-.tc-actions{border-top:1px solid var(--border);padding:8px 14px;background:var(--bg);display:flex;gap:7px;align-items:center}
-.tc-btn{padding:6px 14px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;background:var(--white);transition:all .15s}
-.tc-btn:active{transform:scale(.96)}
-.tc-pending{background:var(--a-l);border-color:var(--a);color:var(--a)}
-.tc-done{background:var(--g-l);border-color:var(--g);color:var(--g)}
-.tc-photo{margin-left:auto;width:32px;height:32px;border-radius:7px;border:1.5px dashed var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px}
-.tc-photo.uploaded{border-style:solid;border-color:var(--g);background:var(--g-l)}
-.tc-img{width:100%;max-height:160px;object-fit:cover;display:block;border-top:1px solid var(--border)}
+.dash-btn:nth-child(1) .db-icon{background:#EAF3DE;color:#3B6D11}
+.dash-btn:nth-child(1) .db-icon svg{stroke:#3B6D11}
+.dash-btn:nth-child(2) .db-icon{background:#FAECE7;color:#993C1D}
+.dash-btn:nth-child(2) .db-icon svg{stroke:#993C1D}
+.dash-btn:nth-child(3) .db-icon{background:#E6F1FB;color:#185FA5}
+.dash-btn:nth-child(3) .db-icon svg{stroke:#185FA5}
+.dash-btn:nth-child(4) .db-icon{background:#FAEEDA;color:#854F0B}
+.dash-btn:nth-child(4) .db-icon svg{stroke:#854F0B}
 
-/* Progress bar */
-.pbar{height:4px;background:#F1EFE8;border-radius:2px;margin:6px 0 10px;overflow:hidden}
-.pfill{height:100%;background:var(--br);border-radius:2px;transition:width .3s}
+.db-label{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;
+  font-weight:600;
+  line-height:1.2;
+  color:var(--text);
+}
+.db-sub{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+  font-family:'DM Sans',sans-serif;
+  font-weight:400;
+}
 
-/* Type tabs */
-.ttabs{display:flex;gap:6px;margin-bottom:12px}
-.tt{flex:1;padding:7px;text-align:center;font-size:11px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.tt.on{background:var(--br-l);border-color:#D85A30;color:#712B13;font-weight:500}
-
-/* Form elements */
-.fg{margin-bottom:12px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:vertical;min-height:80px}
-.chip-g{display:flex;flex-wrap:wrap;gap:6px}
-.chip{padding:6px 13px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--text);font-family:inherit}
-.chip.on{background:var(--br-l);border-color:#D85A30;color:#712B13;font-weight:500}
-
-/* Buttons */
-.btn-p{width:100%;padding:12px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:6px}
-.btn-s{width:100%;padding:10px;background:var(--white);color:var(--br);border:1px solid #D85A30;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:6px}
-.btn-sm{padding:6px 12px;font-size:12px;width:auto;background:var(--br);color:#fff;border:none;border-radius:7px;cursor:pointer;font-family:inherit}
-
-/* Complaint rows - clickable */
-.comp-row{width:100%;padding:12px 0;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;font-family:inherit;display:block;transition:background .15s}
-.comp-row:last-child{border-bottom:none}
-.comp-row:active{background:var(--bg)}
-.comp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.comp-name{font-size:14px;font-weight:500;color:var(--text)}
-.comp-txt{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:4px}
-.comp-meta{font-size:11px;color:#888}
-
-/* Guest profile rows */
-.gp-row{padding:10px 0;border-bottom:1px solid var(--border)}
-.gp-row:last-child{border-bottom:none}
-.gp-name{font-size:14px;font-weight:500}
-.gp-meta{font-size:12px;color:var(--muted);margin-top:2px}
-
-/* Sheet overlay */
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
-.ov.open{display:flex}
-.sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
-.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 20px}
-.sheet-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px}
-.sheet-close{position:absolute;top:20px;right:20px;background:none;border:none;font-size:26px;cursor:pointer;color:var(--muted);line-height:1}
-
-/* Toast */
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-
-/* Booking card */
-.bk-card{border:1px solid var(--border);border-radius:9px;padding:11px;margin-bottom:7px}
-.bk-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
-.bk-g{font-size:14px;font-weight:500}
-.bk-d{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-bottom:4px;flex-wrap:wrap}
-
-/* Cal strip */
-.cal-strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:4px}
-.cal-strip::-webkit-scrollbar{display:none}
-.cd{flex:none;width:42px;padding:7px 0;border-radius:8px;text-align:center;border:1px solid var(--border);background:var(--white)}
-.cd.td{background:var(--br);border-color:var(--br)}
-.cd.td .cn,.cd.td .cw{color:#fff}
-.cw{font-size:10px;color:var(--muted)}
-.cn{font-size:14px;font-weight:500}
+/* Footer */
+.footer{
+  margin-top:40px;
+  text-align:center;
+  font-size:11px;
+  color:var(--border);
+  letter-spacing:.5px;
+}
 </style>
 </head>
 <body>
 <div class="shell">
 
-<div class="hdr">
-  <div class="hdr-logo"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg></div>
-  <div>
-    <div class="hdr-title">Banyan Circle</div>
-    <div class="hdr-date" id="hdr-date"></div>
+  <div class="hdr">
+    <img class="hdr-logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QLcRXhpZgAATU0AKgAAAAgABAE7AAIAAAAGAAABSodpAAQAAAABAAABUJydAAEAAAAMAAACyOocAAcAAAEMAAAAPgAAAAAc6gAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT1JUSE8AAAWQAwACAAAAFAAAAp6QBAACAAAAFAAAArKSkQACAAAAAzMyAACSkgACAAAAAzMyAADqHAAHAAABDAAAAZIAAAAAHOoAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADIwMjY6MDU6MTkgMTM6MDA6MjAAMjAyNjowNToxOSAxMzowMDoyMAAAAE8AUgBUAEgATwAAAP/hBBhodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+DQo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIj48cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPjxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSJ1dWlkOmZhZjViZGQ1LWJhM2QtMTFkYS1hZDMxLWQzM2Q3NTE4MmYxYiIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIi8+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDI2LTA1LTE5VDEzOjAwOjIwLjMyMDwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPjxkYzpjcmVhdG9yPjxyZGY6U2VxIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpsaT5PUlRITzwvcmRmOmxpPjwvcmRmOlNlcT4NCgkJCTwvZGM6Y3JlYXRvcj48L3JkZjpEZXNjcmlwdGlvbj48L3JkZjpSREY+PC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPD94cGFja2V0IGVuZD0n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" alt="Heritance"/>
+    <div class="hdr-divider"></div>
   </div>
-  <button class="hdr-av" id="hdr-av" onclick="signOut()">BC</button>
-</div>
 
-<nav class="top-nav">
-  <button class="tnb on" onclick="goPage('home',this)">Home</button>
-  <button class="tnb" onclick="goPage('tasks',this)">Tasks</button>
-  <button class="tnb" onclick="goPage('complaints',this)">Complaints</button>
-  <button class="tnb" onclick="goPage('guests',this)">Guests</button>
-  <button class="tnb" onclick="goPage('bookings',this)">Bookings</button>
-  <button class="tnb" onclick="goPage('attendance',this)">Attendance</button>
-  <button class="tnb" onclick="goPage('laundry',this)">Laundry</button>
-  <button class="tnb" onclick="goPage('assets',this)">Assets</button>
-  <button class="tnb" onclick="goPage('lf',this)">L&amp;F</button>
-</nav>
-
-<!-- HOME -->
-<div class="pg on" id="pg-home">
-  <div class="sg">
-    <div class="st st-g"><div class="st-l">Staff present</div><div class="st-v" id="d-staff">—</div><div class="st-h" id="d-staff-h">—</div></div>
-    <div class="st st-br"><div class="st-l">Active bookings</div><div class="st-v" id="d-bk">—</div><div class="st-h">Today</div></div>
-    <div class="st st-a"><div class="st-l">Pending tasks</div><div class="st-v" id="d-tasks">—</div><div class="st-h">Today</div></div>
-    <div class="st st-b"><div class="st-l">Open complaints</div><div class="st-v" id="d-comp">—</div><div class="st-h" id="d-comp-h">—</div></div>
-  </div>
-  <div class="card"><div class="card-ttl">Today's checkouts</div><div id="d-checkouts">—</div></div>
-  <div class="card"><div class="card-ttl">Recent complaints</div><div id="d-recent-comp">—</div></div>
-</div>
-
-<!-- TASKS -->
-<div class="pg" id="pg-tasks">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Tasks</div><div class="pg-sub">Today's housekeeping</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addtask')">+ Add</button>
-  </div>
-  <div class="ttabs">
-    <div class="tt on" onclick="filterTask(this,'post_checkout')">Post-checkout</div>
-    <div class="tt" onclick="filterTask(this,'regular')">Regular</div>
-    <div class="tt" onclick="filterTask(this,'pre_checkin')">Pre-checkin</div>
-  </div>
-  <div id="task-list">Loading…</div>
-</div>
-
-<!-- COMPLAINTS -->
-<div class="pg" id="pg-complaints">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Complaints</div><div class="pg-sub">Tap to open & assign</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addcomp')">+ Log</button>
-  </div>
-  <div id="comp-list">Loading…</div>
-</div>
-
-<!-- GUESTS (profiles) -->
-<div class="pg" id="pg-guests">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Guest profiles</div><div class="pg-sub">Manage guest access</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addguest')">+ Add guest</button>
-  </div>
-  <div id="guest-prof-list">Loading…</div>
-</div>
-
-<!-- BOOKINGS -->
-<div class="pg" id="pg-bookings">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Bookings</div><div class="pg-sub">All channels</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addbooking')">+ Manual</button>
-  </div>
-  <div class="cal-strip" id="bk-cal"></div>
-  <div id="bk-list">Loading…</div>
-</div>
-
-<!-- ATTENDANCE -->
-<div class="pg" id="pg-attendance">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Attendance</div><div class="pg-sub" id="att-date"></div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addatt')">+ Log</button>
-  </div>
-  <div id="att-list">Loading…</div>
-</div>
-
-<!-- LAUNDRY -->
-<div class="pg" id="pg-laundry">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Laundry</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addlaundry')">+ Log</button>
-  </div>
-  <div id="laundry-list">Loading…</div>
-</div>
-
-<!-- ASSETS -->
-<div class="pg" id="pg-assets">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Assets</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addasset')">+ Add</button>
-  </div>
-  <div id="asset-list">Loading…</div>
-</div>
-
-<!-- L&F -->
-<div class="pg" id="pg-lf">
-  <div class="sec-hdr">
-    <div><div class="pg-title">Lost &amp; Found</div></div>
-    <button class="btn-sm" onclick="openSheet('sh-addlf')">+ Log</button>
-  </div>
-  <div id="lf-list">Loading…</div>
-</div>
-
-</div><!-- shell -->
-
-<!-- ══ SHEETS ══ -->
-
-<!-- Add task -->
-<div class="ov" id="sh-addtask"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addtask')">×</button>
-  <div class="sheet-title">Add task</div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="t-prop"></select></div>
-  <div class="fg"><label class="fl">Type</label>
-    <div class="chip-g" id="t-type-chips">
-      <div class="chip" onclick="chip(this,'t-type-chips')">Post-checkout</div>
-      <div class="chip" onclick="chip(this,'t-type-chips')">Regular</div>
-      <div class="chip" onclick="chip(this,'t-type-chips')">Pre-checkin</div>
+  <div class="user-strip">
+    <div class="user-info">
+      <div class="user-name" id="user-name">—</div>
+      <div class="user-date" id="user-date"></div>
     </div>
+    <button class="sign-out" onclick="signOut()">Sign out</button>
   </div>
-  <div class="fg"><label class="fl">Task name</label><input class="fc" id="t-name" type="text" placeholder="e.g. Deep clean bathrooms"/></div>
-  <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="t-notes" placeholder="Optional…"></textarea></div>
-  <button class="btn-p" onclick="addTask()">Add task</button>
-  <button class="btn-s" onclick="closeSheet('sh-addtask')">Cancel</button>
-</div></div>
 
-<!-- Add complaint -->
-<div class="ov" id="sh-addcomp"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addcomp')">×</button>
-  <div class="sheet-title">Log complaint</div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="cp-prop"></select></div>
-  <div class="fg"><label class="fl">Guest name</label><input class="fc" id="cp-guest" type="text" placeholder="Guest name"/></div>
-  <div class="fg"><label class="fl">Complaint</label><textarea class="fc" id="cp-text" placeholder="Describe the issue…"></textarea></div>
-  <div class="fg"><label class="fl">Assign to</label><select class="fc" id="cp-assign"></select></div>
-  <button class="btn-p" onclick="addComplaint()">Submit</button>
-  <button class="btn-s" onclick="closeSheet('sh-addcomp')">Cancel</button>
-</div></div>
+  <div class="section-label">Quick Access</div>
 
-<!-- Complaint detail -->
-<div class="ov" id="sh-comp-detail"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-comp-detail')">×</button>
-  <div class="sheet-title" id="cd-name"></div>
-  <div style="font-size:12px;color:var(--muted);margin-bottom:12px" id="cd-meta"></div>
-  <div style="font-size:15px;line-height:1.6;background:var(--bg);border-radius:10px;padding:14px;margin-bottom:18px" id="cd-text"></div>
-  <div class="fg"><label class="fl">Assign to</label><select class="fc" id="cd-assign"></select></div>
-  <div style="display:flex;gap:10px;margin-top:6px">
-    <button class="btn-p" style="margin-top:0" onclick="assignComplaint()">Assign → Add to tasks</button>
-    <button class="btn-s" style="margin-top:0;border-color:var(--g);color:var(--g)" onclick="resolveComplaint()">Resolved</button>
+  <div class="dash-grid">
+
+    <a class="dash-btn" href="/attendance.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Attendance</div>
+        <div class="db-sub">Log daily presence</div>
+      </div>
+    </a>
+
+    <a class="dash-btn" href="/tasks.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Tasks</div>
+        <div class="db-sub">Today's housekeeping</div>
+      </div>
+    </a>
+
+    <a class="dash-btn" href="/salary.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Salary</div>
+        <div class="db-sub">Payslips & history</div>
+      </div>
+    </a>
+
+    <a class="dash-btn" href="/leave.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Leave</div>
+        <div class="db-sub">Request & manage</div>
+      </div>
+    </a>
+
   </div>
-</div></div>
 
-<!-- Add guest profile -->
-<div class="ov" id="sh-addguest"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addguest')">×</button>
-  <div class="sheet-title">Add guest profile</div>
-  <div class="fg"><label class="fl">Guest name</label><input class="fc" id="gp-name" type="text" placeholder="Full name"/></div>
-  <div class="fg"><label class="fl">4-digit PIN (guest uses to login)</label><input class="fc" id="gp-pw" type="text" maxlength="4" placeholder="e.g. 1234"/></div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="gp-prop"></select></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg"><label class="fl">Check-in date</label><input class="fc" id="gp-ci" type="date"/></div>
-    <div class="fg"><label class="fl">Check-out date</label><input class="fc" id="gp-co" type="date"/></div>
-  </div>
-  <button class="btn-p" onclick="addGuestProfile()">Create profile</button>
-  <button class="btn-s" onclick="closeSheet('sh-addguest')">Cancel</button>
-</div></div>
+  <div class="footer">a property by heritance</div>
 
-<!-- Add booking -->
-<div class="ov" id="sh-addbooking"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addbooking')">×</button>
-  <div class="sheet-title">Manual booking</div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="bk-prop"></select></div>
-  <div class="fg"><label class="fl">Guest name</label><input class="fc" id="bk-guest" type="text"/></div>
-  <div class="fg"><label class="fl">Guest phone</label><input class="fc" id="bk-phone" type="tel"/></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg"><label class="fl">Check-in</label><input class="fc" id="bk-ci" type="date"/></div>
-    <div class="fg"><label class="fl">Check-out</label><input class="fc" id="bk-co" type="date"/></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg"><label class="fl">Guests</label><input class="fc" id="bk-num" type="number" value="2" min="1"/></div>
-    <div class="fg"><label class="fl">Rate/night (₹)</label><input class="fc" id="bk-rate" type="number"/></div>
-  </div>
-  <button class="btn-p" onclick="addBooking()">Save booking</button>
-  <button class="btn-s" onclick="closeSheet('sh-addbooking')">Cancel</button>
-</div></div>
-
-<!-- Add attendance -->
-<div class="ov" id="sh-addatt"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addatt')">×</button>
-  <div class="sheet-title">Log attendance</div>
-  <div class="fg"><label class="fl">Staff member</label><select class="fc" id="att-staff"></select></div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="att-prop"></select></div>
-  <div class="fg"><label class="fl">Status</label>
-    <div class="chip-g" id="att-chips">
-      <div class="chip" onclick="chip(this,'att-chips')">Present</div>
-      <div class="chip" onclick="chip(this,'att-chips')">Half day</div>
-      <div class="chip" onclick="chip(this,'att-chips')">Leave</div>
-      <div class="chip" onclick="chip(this,'att-chips')">Sick leave</div>
-      <div class="chip" onclick="chip(this,'att-chips')">Off</div>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg"><label class="fl">Start</label><input class="fc" id="att-start" type="time"/></div>
-    <div class="fg"><label class="fl">End</label><input class="fc" id="att-end" type="time"/></div>
-  </div>
-  <button class="btn-p" onclick="addAtt()">Submit</button>
-  <button class="btn-s" onclick="closeSheet('sh-addatt')">Cancel</button>
-</div></div>
-
-<!-- Add laundry -->
-<div class="ov" id="sh-addlaundry"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addlaundry')">×</button>
-  <div class="sheet-title">Log laundry sent</div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="lnd-prop"></select></div>
-  <div class="fg"><label class="fl">Vendor</label><select class="fc" id="lnd-vendor"><option>Alma Laundry</option><option>Best</option></select></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <div class="fg"><label class="fl">Bedsheets</label><input class="fc" id="lnd-bs" type="number" value="0" min="0"/></div>
-    <div class="fg"><label class="fl">Pillow covers</label><input class="fc" id="lnd-pc" type="number" value="0" min="0"/></div>
-    <div class="fg"><label class="fl">Bath towels</label><input class="fc" id="lnd-bt" type="number" value="0" min="0"/></div>
-    <div class="fg"><label class="fl">Hand towels</label><input class="fc" id="lnd-ht" type="number" value="0" min="0"/></div>
-    <div class="fg"><label class="fl">Duvet covers</label><input class="fc" id="lnd-dc" type="number" value="0" min="0"/></div>
-    <div class="fg"><label class="fl">Kitchen linen</label><input class="fc" id="lnd-kl" type="number" value="0" min="0"/></div>
-  </div>
-  <button class="btn-p" onclick="addLaundry()">Submit</button>
-  <button class="btn-s" onclick="closeSheet('sh-addlaundry')">Cancel</button>
-</div></div>
-
-<!-- Add asset -->
-<div class="ov" id="sh-addasset"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addasset')">×</button>
-  <div class="sheet-title">Add asset</div>
-  <div class="fg"><label class="fl">Name</label><input class="fc" id="ast-name" type="text" placeholder="e.g. Samsung TV"/></div>
-  <div class="fg"><label class="fl">Category</label><select class="fc" id="ast-cat"><option>Furniture</option><option>Electronics</option><option>Kitchen</option><option>Linen</option><option>Other</option></select></div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="ast-prop"></select></div>
-  <button class="btn-p" onclick="addAsset()">Save</button>
-  <button class="btn-s" onclick="closeSheet('sh-addasset')">Cancel</button>
-</div></div>
-
-<!-- Add L&F -->
-<div class="ov" id="sh-addlf"><div class="sheet" style="position:relative">
-  <div class="sheet-handle"></div><button class="sheet-close" onclick="closeSheet('sh-addlf')">×</button>
-  <div class="sheet-title">Log lost &amp; found</div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="lf-prop"></select></div>
-  <div class="fg"><label class="fl">Item description</label><input class="fc" id="lf-item" type="text" placeholder="e.g. Gold watch"/></div>
-  <div class="fg"><label class="fl">Location found</label><input class="fc" id="lf-loc" type="text" placeholder="e.g. Master bedroom"/></div>
-  <div class="fg"><label class="fl">Guest name (if known)</label><input class="fc" id="lf-guest" type="text"/></div>
-  <div class="fg"><label class="fl">Found by</label><select class="fc" id="lf-staff"></select></div>
-  <button class="btn-p" onclick="addLF()">Submit</button>
-  <button class="btn-s" onclick="closeSheet('sh-addlf')">Cancel</button>
-</div></div>
-
-<div class="toast" id="toast"></div>
+</div>
 
 <script>
-// ── Config ──
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
-
-// ── Auth ──
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.href = '/index.html';
-document.getElementById('hdr-av').textContent = (me.name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
 
-// ── Date ──
-const TODAY = new Date();
-const TODAYSTR = TODAY.toISOString().split('T')[0];
-document.getElementById('hdr-date').textContent = TODAY.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
-document.getElementById('att-date').textContent = TODAY.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+document.getElementById('user-name').textContent = me.name || 'Staff';
+const today = new Date();
+document.getElementById('user-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-// ── API helper ──
-async function api(path, method, body) {
-  const h = { apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json' };
-  const r = await fetch(SB+path, { method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined });
-  if (r.status===204||r.headers.get('content-length')==='0') return null;
-  return r.json().catch(()=>null);
-}
-async function upload(bucket, path, file) {
-  return fetch(SB+'/storage/v1/object/'+bucket+'/'+path, { method:'POST', headers:{apikey:KEY,Authorization:'Bearer '+KEY}, body:file });
-}
-
-// ── Cache ──
-let props=[], staff=[], tasks=[], complaints=[], taskFilter='post_checkout', currentCompId=null;
-
-// ── Helpers ──
-const ini = n => (n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
-const fmt = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
-function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
-function chip(el,gId) { document.getElementById(gId).querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
-function openSheet(id) { document.getElementById(id).classList.add('open'); }
-function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
-function signOut() { localStorage.removeItem('bc_me'); location.href='/index.html'; }
-
-// ── Navigation ──
-function goPage(id, btn) {
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tnb').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pg-'+id).classList.add('on');
-  btn.classList.add('on');
-  window.scrollTo(0,0);
-  // Lazy load
-  if (id==='tasks') loadTasks();
-  if (id==='complaints') loadComplaints();
-  if (id==='guests') loadGuestProfiles();
-  if (id==='bookings') loadBookings();
-  if (id==='attendance') loadAttendance();
-  if (id==='laundry') loadLaundry();
-  if (id==='assets') loadAssets();
-  if (id==='lf') loadLF();
-}
-
-// ── Boot ──
-async function boot() {
-  [props, staff] = await Promise.all([
-    api('/rest/v1/properties?select=id,name&order=name'),
-    api('/rest/v1/staff?select=id,name,designation,pin&order=name')
-  ]);
-  props = props||[]; staff = staff||[];
-  // Populate all selects
-  const po = props.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  const so = '<option value="">— None —</option>'+staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  const pn = props.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
-  ['t-prop','cp-prop','bk-prop','lnd-prop','ast-prop','lf-prop'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=po; });
-  ['gp-prop'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=pn; });
-  ['cp-assign','cd-assign','lf-staff'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=so; });
-  ['att-staff'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=staff.map(s=>`<option value="${s.id}">${s.name}</option>`).join(''); });
-  ['att-prop'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=po; });
-  loadDashboard();
-  loadTasks();
-  loadComplaints();
-  buildCal();
-}
-
-// ── DASHBOARD ──
-async function loadDashboard() {
-  const [att, bks, tsk, comps, co] = await Promise.all([
-    api('/rest/v1/attendance?date=eq.'+TODAYSTR+'&select=*'),
-    api('/rest/v1/bookings?check_in=lte.'+TODAYSTR+'&check_out=gte.'+TODAYSTR+'&select=*'),
-    api('/rest/v1/housekeeping_tasks?date=eq.'+TODAYSTR+'&is_completed=eq.false&select=*'),
-    api('/rest/v1/guest_complaints?status=eq.open&select=*,properties(name)'),
-    api('/rest/v1/bookings?check_out=eq.'+TODAYSTR+'&select=*,properties(name)')
-  ]);
-  document.getElementById('d-staff').textContent = (att||[]).filter(a=>a.status==='Present').length+'/'+(staff.length||3);
-  document.getElementById('d-staff-h').textContent = (att||[]).some(a=>['Leave','Sick leave'].includes(a.status))?'Someone on leave':'All present';
-  document.getElementById('d-bk').textContent = (bks||[]).length;
-  document.getElementById('d-tasks').textContent = (tsk||[]).length;
-  document.getElementById('d-comp').textContent = (comps||[]).length;
-  document.getElementById('d-comp-h').textContent = (comps||[]).length ? comps[0].properties?.name : 'All clear';
-
-  const coEl = document.getElementById('d-checkouts');
-  coEl.innerHTML = (co&&co.length) ? co.map(b=>`<div class="row"><div class="rb"><div class="rn">${b.guest_name}</div><div class="rm">${b.properties?.name||''}</div></div><span class="bdg bdg-br">${b.source||'booking'}</span></div>`).join('') : '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No checkouts today</div>';
-
-  const rcEl = document.getElementById('d-recent-comp');
-  rcEl.innerHTML = (comps&&comps.length) ? comps.slice(0,2).map(c=>`<button class="comp-row" onclick="openCompDetail('${c.id}')"><div class="comp-top"><div class="comp-name">${c.guest_name||'Guest'}</div><span class="bdg bdg-r">Open</span></div><div class="comp-txt">${c.complaint}</div></button>`).join('') : '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px">No open complaints</div>';
-}
-
-// ── TASKS ──
-async function loadTasks() {
-  tasks = await api('/rest/v1/housekeeping_tasks?date=eq.'+TODAYSTR+'&task_type=eq.'+taskFilter+'&select=*,properties(name)&order=created_at') || [];
-  renderTasks();
-}
-
-function filterTask(el, type) {
-  taskFilter = type;
-  document.querySelectorAll('.tt').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-  loadTasks();
-}
-
-function renderTasks() {
-  const el = document.getElementById('task-list');
-  if (!tasks.length) { el.innerHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:24px">No tasks. Add one above.</div>'; return; }
-  const byProp = {};
-  tasks.forEach(t => { const p=(t.properties&&t.properties.name)||'Unknown'; if(!byProp[p])byProp[p]=[]; byProp[p].push(t); });
-  el.innerHTML = Object.entries(byProp).map(([prop,ts])=>{
-    const done = ts.filter(t=>t.is_completed).length;
-    return `<div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><div style="font-size:14px;font-weight:500">${prop}</div><span class="bdg ${done===ts.length?'bdg-g':'bdg-a'}">${done}/${ts.length}</span></div>
-      <div class="pbar"><div class="pfill" style="width:${Math.round(done/ts.length*100)}%"></div></div>
-      ${ts.map(t=>`<div class="tc" id="tc-${t.id}">
-        <div class="tc-body">
-          <div class="tc-name" style="${t.is_completed?'text-decoration:line-through;color:var(--muted)':''}">${t.task_name}</div>
-          ${t.notes?`<div class="tc-note">${t.notes}</div>`:''}
-        </div>
-        <div class="tc-actions">
-          <button class="tc-btn ${!t.is_completed?'tc-pending':''}" onclick="markTask('${t.id}',false)">Pending</button>
-          <button class="tc-btn ${t.is_completed?'tc-done':''}" onclick="markTask('${t.id}',true)">Completed</button>
-          <button class="tc-photo ${t.photo_url?'uploaded':''}" onclick="uploadTaskPhoto('${t.id}',this)" title="Upload photo">${t.photo_url?'🖼':'📷'}</button>
-        </div>
-        ${t.photo_url?`<img class="tc-img" src="${t.photo_url}" alt="photo"/>`:''}
-      </div>`).join('')}
-    </div>`;
-  }).join('');
-}
-
-async function markTask(id, done) {
-  await api('/rest/v1/housekeeping_tasks?id=eq.'+id, 'PATCH', { is_completed:done, status:done?'done':'not_started', completed_at:done?new Date().toISOString():null });
-  const t = tasks.find(x=>x.id===id);
-  if (t) { t.is_completed=done; }
-  renderTasks();
-  toast(done?'Marked completed ✓':'Marked pending');
-}
-
-function uploadTaskPhoto(id, btn) {
-  const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
-  inp.onchange = async function() {
-    const file = inp.files[0]; if(!file) return;
-    toast('Uploading…');
-    const path = 'housekeeping/'+id+'/'+Date.now()+'_'+file.name;
-    await upload('housekeeping-photos', path, file);
-    const url = SB+'/storage/v1/object/public/housekeeping-photos/'+path;
-    await api('/rest/v1/housekeeping_tasks?id=eq.'+id, 'PATCH', { photo_url:url });
-    const t = tasks.find(x=>x.id===id); if(t) t.photo_url=url;
-    btn.classList.add('uploaded'); btn.textContent='🖼';
-    const card=document.getElementById('tc-'+id);
-    let img=card.querySelector('.tc-img');
-    if(!img){img=document.createElement('img');img.className='tc-img';card.appendChild(img);}
-    img.src=url;
-    toast('Photo uploaded ✓');
-  };
-  inp.click();
-}
-
-async function addTask() {
-  const type = document.querySelector('#t-type-chips .chip.on')?.textContent;
-  const name = document.getElementById('t-name').value.trim();
-  if (!type||!name) { toast('Select type and enter name'); return; }
-  const typeMap = {'Post-checkout':'post_checkout','Regular':'regular','Pre-checkin':'pre_checkin'};
-  await api('/rest/v1/housekeeping_tasks','POST',{
-    property_id: document.getElementById('t-prop').value,
-    task_type: typeMap[type]||'regular',
-    task_name: name,
-    notes: document.getElementById('t-notes').value||null,
-    date: TODAYSTR, status:'not_started', is_completed:false
-  });
-  toast('Task added ✓'); closeSheet('sh-addtask');
-  document.getElementById('t-name').value=''; document.getElementById('t-notes').value='';
-  loadTasks();
-}
-
-// ── COMPLAINTS ──
-async function loadComplaints() {
-  complaints = await api('/rest/v1/guest_complaints?select=*,properties(name),staff(name)&order=created_at.desc') || [];
-  renderComplaints();
-}
-
-function renderComplaints() {
-  const el = document.getElementById('comp-list');
-  if (!complaints.length) { el.innerHTML='<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No complaints yet</div></div>'; return; }
-  const open   = complaints.filter(c=>c.status==='open');
-  const inprog = complaints.filter(c=>c.status==='in_progress');
-  const done   = complaints.filter(c=>c.status==='resolved');
-  function section(title, items, cls) {
-    if (!items.length) return '';
-    return `<div class="card"><div class="card-ttl">${title} (${items.length})</div>
-      ${items.map(c=>`<button class="comp-row" onclick="openCompDetail('${c.id}')">
-        <div class="comp-top"><div class="comp-name">${c.guest_name||'Guest'}</div><span class="bdg ${cls}">${c.status.replace('_',' ')}</span></div>
-        <div class="comp-txt">${c.complaint}</div>
-        <div class="comp-meta">${c.properties?.name||''} · ${fmt(c.created_at)}${c.staff?' · '+c.staff.name:''}</div>
-      </button>`).join('')}
-    </div>`;
-  }
-  el.innerHTML = section('Open',open,'bdg-r') + section('In progress',inprog,'bdg-a') + section('Resolved',done,'bdg-g');
-}
-
-function openCompDetail(id) {
-  const c = complaints.find(x=>x.id===id);
-  if (!c) return;
-  currentCompId = id;
-  document.getElementById('cd-name').textContent = c.guest_name||'Guest';
-  document.getElementById('cd-meta').textContent = (c.properties?.name||'') + ' · ' + fmt(c.created_at);
-  document.getElementById('cd-text').textContent = c.complaint;
-  const sel = document.getElementById('cd-assign');
-  sel.innerHTML = '<option value="">— Unassigned —</option>'+staff.map(s=>`<option value="${s.id}"${c.assigned_to===s.id?' selected':''}>${s.name}</option>`).join('');
-  openSheet('sh-comp-detail');
-}
-
-async function assignComplaint() {
-  const c = complaints.find(x=>x.id===currentCompId); if(!c) return;
-  const assignedTo = document.getElementById('cd-assign').value||null;
-  await api('/rest/v1/guest_complaints?id=eq.'+currentCompId,'PATCH',{status:'in_progress',assigned_to:assignedTo});
-  await api('/rest/v1/housekeeping_tasks','POST',{
-    property_id: c.property_id,
-    task_type:'regular',
-    task_name:'Guest complaint: '+c.complaint.slice(0,80),
-    notes:'Guest: '+(c.guest_name||'Unknown'),
-    date:TODAYSTR, status:'not_started', is_completed:false
-  });
-  closeSheet('sh-comp-detail'); toast('Assigned & added to tasks ✓');
-  loadComplaints(); loadDashboard(); loadTasks();
-}
-
-async function resolveComplaint() {
-  await api('/rest/v1/guest_complaints?id=eq.'+currentCompId,'PATCH',{status:'resolved',resolved_at:new Date().toISOString()});
-  closeSheet('sh-comp-detail'); toast('Marked resolved ✓');
-  loadComplaints(); loadDashboard();
-}
-
-async function addComplaint() {
-  const text = document.getElementById('cp-text').value.trim(); if(!text){toast('Enter complaint');return;}
-  await api('/rest/v1/guest_complaints','POST',{
-    property_id:document.getElementById('cp-prop').value,
-    guest_name:document.getElementById('cp-guest').value||null,
-    complaint:text,
-    assigned_to:document.getElementById('cp-assign').value||null,
-    status:'open'
-  });
-  toast('Logged ✓'); closeSheet('sh-addcomp'); document.getElementById('cp-text').value='';
-  loadComplaints(); loadDashboard();
-}
-
-// ── GUEST PROFILES ──
-async function loadGuestProfiles() {
-  const data = await api('/rest/v1/guest_profiles?select=*&order=created_at.desc')||[];
-  const el = document.getElementById('guest-prof-list');
-  if (!data.length) { el.innerHTML='<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No guest profiles yet</div></div>'; return; }
-  el.innerHTML = `<div class="card">${data.map(g=>`
-    <div class="gp-row">
-      <div class="gp-name">${g.name}</div>
-      <div class="gp-meta">${g.property_name||''} · Check-in: ${fmt(g.check_in)} · Check-out: ${fmt(g.check_out)}</div>
-      <div class="gp-meta" style="margin-top:2px;color:var(--br)">PIN: ${g.pin||'not set'}</div>
-    </div>`).join('')}</div>`;
-}
-
-async function addGuestProfile() {
-  const name = document.getElementById('gp-name').value.trim();
-  const pw   = document.getElementById('gp-pw').value.trim();
-  const ci   = document.getElementById('gp-ci').value;
-  const co   = document.getElementById('gp-co').value;
-  const prop = document.getElementById('gp-prop').value;
-  if (!name||!pw||!ci||!co) { toast('Fill all fields'); return; }
-  await api('/rest/v1/guest_profiles','POST',{ name, pin:pw, property_name:prop, check_in:ci, check_out:co, created_by:me.name });
-  toast('Guest profile created ✓'); closeSheet('sh-addguest');
-  document.getElementById('gp-name').value=''; document.getElementById('gp-pw').value='';
-  loadGuestProfiles();
-}
-
-// ── BOOKINGS ──
-function buildCal() {
-  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let html='';
-  for(let i=-3;i<=10;i++){const d=new Date(TODAY);d.setDate(TODAY.getDate()+i);html+=`<div class="cd ${i===0?'td':''}"><div class="cw">${days[d.getDay()]}</div><div class="cn">${d.getDate()}</div></div>`;}
-  document.getElementById('bk-cal').innerHTML=html;
-}
-
-async function loadBookings() {
-  const data = await api('/rest/v1/bookings?check_out=gte.'+TODAYSTR+'&select=*,properties(name)&order=check_in')||[];
-  const el = document.getElementById('bk-list');
-  const srcBdg = s => s==='airbnb'?'bdg-br':s==='booking_com'?'bdg-b':'bdg-x';
-  const srcLbl = s => s==='airbnb'?'Airbnb':s==='booking_com'?'Booking.com':'Phone';
-  el.innerHTML = data.length ? data.map(b=>`<div class="bk-card"><div class="bk-hdr"><div class="bk-g">${b.guest_name}</div><span class="bdg ${srcBdg(b.source)}">${srcLbl(b.source)}</span></div><div class="bk-d"><span>In: ${fmt(b.check_in)}</span><span>Out: ${fmt(b.check_out)}</span><span>${b.num_guests} guests</span></div><div style="font-size:11px;color:var(--muted)">${b.properties?.name||''}</div></div>`).join('') : '<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No upcoming bookings</div></div>';
-}
-
-async function addBooking() {
-  const ci=document.getElementById('bk-ci').value, co=document.getElementById('bk-co').value;
-  const rate=parseFloat(document.getElementById('bk-rate').value)||null;
-  const nights=rate&&ci&&co?Math.round((new Date(co)-new Date(ci))/864e5):null;
-  await api('/rest/v1/bookings','POST',{
-    property_id:document.getElementById('bk-prop').value,
-    guest_name:document.getElementById('bk-guest').value,
-    guest_phone:document.getElementById('bk-phone').value||null,
-    check_in:ci, check_out:co,
-    num_guests:parseInt(document.getElementById('bk-num').value)||1,
-    source:'manual', nightly_rate:rate,
-    total_amount:rate&&nights?rate*nights:null
-  });
-  toast('Booking saved ✓'); closeSheet('sh-addbooking'); loadBookings(); loadDashboard();
-}
-
-// ── ATTENDANCE ──
-async function loadAttendance() {
-  const data = await api('/rest/v1/attendance?date=eq.'+TODAYSTR+'&select=*,staff(name,designation),properties(name)&order=created_at.desc')||[];
-  const el = document.getElementById('att-list');
-  const statusBdg = s => ({Present:'bdg-g','Half day':'bdg-a',Leave:'bdg-r','Sick leave':'bdg-r',Off:'bdg-x'}[s]||'bdg-x');
-  el.innerHTML = data.length ? `<div class="card">${data.map(a=>`<div class="row"><div class="av">${ini(a.staff?.name)}</div><div class="rb"><div class="rn">${a.staff?.name||'—'}</div><div class="rm">${a.staff?.designation||''} · ${a.properties?.name||''}</div>${a.duty_start?`<div class="rm">${a.duty_start}${a.duty_end?' – '+a.duty_end:''}</div>`:''}</div><span class="bdg ${statusBdg(a.status)}">${a.status}</span></div>`).join('')}</div>` : '<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No attendance logged yet</div></div>';
-}
-
-async function addAtt() {
-  const status = document.querySelector('#att-chips .chip.on')?.textContent;
-  if (!status) { toast('Select status'); return; }
-  await api('/rest/v1/attendance','POST',{
-    staff_id:document.getElementById('att-staff').value,
-    property_id:document.getElementById('att-prop').value,
-    date:TODAYSTR, status,
-    duty_start:document.getElementById('att-start').value||null,
-    duty_end:document.getElementById('att-end').value||null
-  });
-  toast('Logged ✓'); closeSheet('sh-addatt'); loadAttendance(); loadDashboard();
-}
-
-// ── LAUNDRY ──
-async function loadLaundry() {
-  const data = await api('/rest/v1/laundry_movement?select=*,properties(name)&order=created_at.desc&limit=10')||[];
-  const el = document.getElementById('laundry-list');
-  el.innerHTML = data.length ? data.map(l=>`<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><div style="font-size:14px;font-weight:500">${l.properties?.name||''} — ${l.vendor_name}</div><span class="bdg ${l.status==='sent'?'bdg-a':'bdg-g'}">${l.status==='sent'?'Out':'Returned'}</span></div><div style="font-size:13px;color:var(--muted)">${fmt(l.sent_date)} · ${l.total_items||0} items</div>${l.status==='sent'?`<button class="btn-s" style="margin-top:8px" onclick="logReturn('${l.id}')">Log return</button>`:''}</div>`).join('') : '<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No laundry records</div></div>';
-}
-
-async function addLaundry() {
-  await api('/rest/v1/laundry_movement','POST',{
-    property_id:document.getElementById('lnd-prop').value,
-    vendor_name:document.getElementById('lnd-vendor').value,
-    sent_date:TODAYSTR,
-    bedsheets:+document.getElementById('lnd-bs').value,
-    pillow_covers:+document.getElementById('lnd-pc').value,
-    bath_towels:+document.getElementById('lnd-bt').value,
-    hand_towels:+document.getElementById('lnd-ht').value,
-    duvet_covers:+document.getElementById('lnd-dc').value,
-    kitchen_linen:+document.getElementById('lnd-kl').value
-  });
-  toast('Logged ✓'); closeSheet('sh-addlaundry'); loadLaundry();
-}
-
-async function logReturn(id) {
-  const inv = prompt('Invoice amount (₹)?');
-  const paid = confirm('Mark as paid?');
-  await api('/rest/v1/laundry_return','POST',{movement_id:id,property_id:null,vendor_name:'—',return_date:TODAYSTR,invoice_amount:inv?parseFloat(inv):null,payment_status:paid?'paid':'unpaid'});
-  await api('/rest/v1/laundry_movement?id=eq.'+id,'PATCH',{status:'returned'});
-  toast('Return logged ✓'); loadLaundry();
-}
-
-// ── ASSETS ──
-async function loadAssets() {
-  const data = await api('/rest/v1/assets?select=*,properties(name)&order=name')||[];
-  const el = document.getElementById('asset-list');
-  const byP = {};
-  data.forEach(a=>{const p=a.properties?.name||'Unknown';if(!byP[p])byP[p]=[];byP[p].push(a);});
-  el.innerHTML = Object.keys(byP).length ? Object.entries(byP).map(([prop,items])=>`<div class="card"><div class="card-ttl">${prop}</div>${items.map(a=>`<div class="row"><div class="rb"><div class="rn">${a.name}</div><div class="rm">${a.category||''}</div></div><span class="bdg bdg-g">Here</span></div>`).join('')}</div>`).join('') : '<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No assets yet</div></div>';
-}
-
-async function addAsset() {
-  const name=document.getElementById('ast-name').value.trim(); if(!name){toast('Enter name');return;}
-  await api('/rest/v1/assets','POST',{name,category:document.getElementById('ast-cat').value,current_property_id:document.getElementById('ast-prop').value});
-  toast('Saved ✓'); closeSheet('sh-addasset'); loadAssets();
-}
-
-// ── LOST & FOUND ──
-async function loadLF() {
-  const data = await api('/rest/v1/lost_and_found?select=*,properties(name)&order=created_at.desc')||[];
-  const el = document.getElementById('lf-list');
-  const pending=data.filter(i=>!['returned','disposed'].includes(i.status));
-  const resolved=data.filter(i=>['returned','disposed'].includes(i.status));
-  const render=items=>items.map(i=>`<div class="row"><div class="rb"><div class="rn">${i.item_description}</div><div class="rm">${i.properties?.name||''}${i.location_found?' · '+i.location_found:''} · ${fmt(i.found_date)}</div></div><span class="bdg ${i.status==='returned'?'bdg-g':'bdg-a'}">${(i.status||'pending').replace('_',' ')}</span></div>`).join('');
-  el.innerHTML = `${pending.length?`<div class="card"><div class="card-ttl">Pending (${pending.length})</div>${render(pending)}</div>`:''}${resolved.length?`<div class="card"><div class="card-ttl">Resolved</div>${render(resolved)}</div>`:''}` || '<div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:16px">No items logged</div></div>';
-}
-
-async function addLF() {
-  const item=document.getElementById('lf-item').value.trim(); if(!item){toast('Enter item');return;}
-  await api('/rest/v1/lost_and_found','POST',{
-    property_id:document.getElementById('lf-prop').value,
-    item_description:item,
-    location_found:document.getElementById('lf-loc').value||null,
-    guest_name:document.getElementById('lf-guest').value||null,
-    found_by:document.getElementById('lf-staff').value||null,
-    found_date:TODAYSTR, status:'pending'
-  });
-  toast('Logged ✓'); closeSheet('sh-addlf'); loadLF();
-}
-
-// Close sheets on overlay click
-document.querySelectorAll('.ov').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');}));
-
-boot();
+function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
 </script>
 </body>
 </html>
