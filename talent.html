@@ -313,10 +313,8 @@ function launchApp(){
 }
 
 function signOut(){
-  TALENT = null; pinStr = '';
-  document.getElementById('login-screen').style.display = '';
-  document.getElementById('app-screen').style.display = 'none';
-  updateDots();
+  localStorage.removeItem('bc_me');
+  location.href = '/index.html';
 }
 
 // --- TABS ---
