@@ -171,6 +171,7 @@ function routeFor(role){
   if(role==='owner')    return '/owner.html';
   if(role==='landlord') return '/landlord.html';
   if(role==='guest')    return '/guest.html';
+  if(role==='talent')   return '/talent.html';
   return '/ops.html';
 }
 if (me) { location.href = routeFor(me.role); throw new Error('Already signed in'); }
@@ -189,15 +190,17 @@ const DEFAULTS = [
 function avClass(role){
   if(role==='owner')    return 'pav-owner';
   if(role==='landlord') return 'pav-landlord';
+  if(role==='talent')   return 'pav-owner';
   return 'pav-staff';
 }
 
 async function loadPeople() {
   let people = DEFAULTS;
   try {
-    const [staff, landlords] = await Promise.all([
+    const [staff, landlords, talents] = await Promise.all([
       api('/rest/v1/staff?select=id,name,designation,pin&order=name'),
       api('/rest/v1/landlords?select=id,name,pin,property_name&order=name'),
+      api('/rest/v1/talents?select=id,name,pin,category&order=name'),
     ]);
     const merged = [];
     if (staff && staff.length) {
@@ -211,12 +214,17 @@ async function loadPeople() {
         id: l.id, name: l.name, pin: l.pin, role: 'landlord', prop: l.property_name
       })));
     }
+    if (talents && talents.length) {
+      merged.push(...talents.map(t => ({
+        id: t.id, name: t.name, pin: t.pin, role: 'talent', category: t.category
+      })));
+    }
     if (merged.length) people = merged;
   } catch(e) {}
   document.getElementById('people-list').innerHTML = people.map(p =>
     `<button class="person" onclick='selectPerson(${JSON.stringify(p)})'>
       <div class="pav ${avClass(p.role)}">${ini(p.name)}</div>
-      <div class="pname">${p.name}${p.role==='landlord'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Landlord · ${p.prop||''}</span>`:''}</div>
+      <div class="pname">${p.name}${p.role==='landlord'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Landlord · ${p.prop||''}</span>`:''}${p.role==='talent'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Talent · ${p.category||''}</span>`:''}</div>
     </button>`).join('');
 }
 loadPeople();
@@ -252,8 +260,13 @@ function checkPin() {
   }
   const payload = { id: sel.id, name: sel.name, role: sel.role };
   if (sel.prop) payload.prop = sel.prop;
+  if (sel.category) payload.category = sel.category;
   localStorage.setItem('bc_me', JSON.stringify(payload));
-  location.href = routeFor(sel.role);
+  if (sel.role === 'talent') {
+    location.href = '/talent.html?id=' + encodeURIComponent(sel.id) + '&name=' + encodeURIComponent(sel.name);
+  } else {
+    location.href = routeFor(sel.role);
+  }
 }
 
 // Guest login - name first, then PIN
