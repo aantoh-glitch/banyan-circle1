@@ -31,18 +31,24 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .clock-date{font-size:13px;opacity:.6;margin-top:6px;font-weight:300}
 .clock-name{font-size:12px;opacity:.45;margin-top:14px;letter-spacing:.5px;text-transform:uppercase}
 
-/* Log button */
-.log-section{padding:16px 20px}
+/* Log buttons — two side by side */
+.log-section{padding:16px 20px;display:flex;gap:10px}
 .log-btn{
-  width:100%;padding:16px;border-radius:14px;border:none;
+  flex:1;padding:16px 12px;border-radius:14px;border:none;
   font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
-  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
 }
 .log-btn-in{background:var(--g);color:#fff}
 .log-btn-out{background:var(--br);color:#fff}
 .log-btn:active{transform:scale(.98);opacity:.9}
-.log-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.log-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .log-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* Capture panel label */
+.capture-label{margin:0 20px 8px;font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);display:none}
+.capture-label.show{display:block}
+.capture-label.in-label{color:var(--g)}
+.capture-label.out-label{color:var(--br)}
 
 /* Location + photo panel */
 .capture-panel{background:var(--white);border:1px solid var(--border);border-radius:16px;margin:0 20px 16px;overflow:hidden;display:none}
@@ -59,7 +65,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
 /* Camera */
 .cam-wrap{position:relative;background:#111;overflow:hidden}
-video#cam-preview{width:100%;display:block;max-height:220px;object-fit:cover}
+video#cam-preview{width:100%;display:block;max-height:220px;object-fit:cover;transform:scaleX(-1)}
 canvas#cam-canvas{display:none}
 img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 .cam-controls{padding:12px 16px;display:flex;gap:8px;align-items:center}
@@ -78,14 +84,25 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 /* History */
 .history-section{padding:0 20px}
 .history-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;margin-bottom:14px}
-.log-card{background:var(--white);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden}
-.log-card-hdr{padding:12px 14px;display:flex;align-items:center;gap:10px}
-.log-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.dot-in{background:var(--g)}.dot-out{background:var(--br)}
-.log-type-label{font-size:13px;font-weight:500;flex:1}
-.log-time{font-size:12px;color:var(--muted)}
-.log-loc{font-size:12px;color:var(--muted);padding:0 14px 10px 34px;line-height:1.4}
-.log-photo{width:100%;max-height:140px;object-fit:cover;display:block;border-top:1px solid var(--border)}
+
+/* Day card — single row per day */
+.day-card{background:var(--white);border:1px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden}
+.day-card-hdr{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.day-date{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600}
+.day-hours{font-size:12px;color:var(--g);font-weight:500;background:var(--g-l);padding:3px 10px;border-radius:999px}
+.day-hours.pending{color:var(--muted);background:var(--bg)}
+
+.day-cols{display:grid;grid-template-columns:1fr 1fr}
+.day-col{padding:12px}
+.day-col+.day-col{border-left:1px solid var(--border)}
+.col-label{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.col-label.in{color:var(--g)}
+.col-label.out{color:var(--br)}
+.col-time{font-size:15px;font-weight:500;margin-bottom:4px}
+.col-loc{font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:8px}
+.col-photo{width:100%;height:80px;object-fit:cover;border-radius:8px;display:block}
+.col-empty{font-size:12px;color:var(--muted);font-style:italic}
+
 .empty{text-align:center;padding:32px;font-size:13px;color:var(--muted)}
 
 /* Toast */
@@ -111,13 +128,20 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
     <div class="clock-name" id="clock-name"></div>
   </div>
 
-  <!-- Log button -->
-  <div class="log-section">
-    <button class="log-btn log-btn-in" id="main-log-btn" onclick="startLog('in')">
+  <!-- Log In / Log Out buttons -->
+  <div class="log-section" id="log-section">
+    <button class="log-btn log-btn-in" id="btn-in" onclick="startLog('in')">
       <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
       Log In
     </button>
+    <button class="log-btn log-btn-out" id="btn-out" onclick="startLog('out')">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Log Out
+    </button>
   </div>
+
+  <!-- Capture panel label -->
+  <div class="capture-label" id="capture-label"></div>
 
   <!-- Capture panel (location + camera) -->
   <div class="capture-panel" id="capture-panel">
@@ -135,9 +159,9 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 
     <div class="cap-divider"></div>
 
-    <!-- Camera -->
+    <!-- Camera (front-facing) -->
     <div class="cap-section">
-      <div class="cap-label">Photo</div>
+      <div class="cap-label">Selfie Photo</div>
       <div class="cam-wrap" id="cam-wrap">
         <video id="cam-preview" autoplay playsinline muted></video>
         <canvas id="cam-canvas"></canvas>
@@ -161,7 +185,7 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 
   <!-- Submit -->
   <div class="submit-wrap">
-    <button class="submit-btn" id="submit-btn" onclick="submitLog()">Submit</button>
+    <button class="submit-btn" id="submit-btn" onclick="submitLog()">Submit Log In</button>
   </div>
 
   <!-- History -->
@@ -178,13 +202,11 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-// Support viewing a specific staff member's log from admin (via URL params)
 const params = new URLSearchParams(location.search);
 const adminView = params.has('staff_id');
 
 let me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (adminView) {
-  // Admin viewing a staff member's attendance — use URL params
   me = { id: params.get('staff_id'), name: decodeURIComponent(params.get('staff_name') || 'Staff'), role: 'staff' };
 } else {
   if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.href = '/index.html';
@@ -194,9 +216,8 @@ const name = me.name || 'Staff';
 document.getElementById('hdr-name').textContent = adminView ? name + ' — Attendance Log' : name;
 document.getElementById('clock-name').textContent = name;
 
-// Hide log button if admin is just viewing
 if (adminView) {
-  document.getElementById('main-log-btn').style.display = 'none';
+  document.getElementById('log-section').style.display = 'none';
 }
 
 // ── Clock ──
@@ -216,7 +237,7 @@ async function api(path, method, body) {
 }
 
 // ── State ──
-let currentType = null; // 'in' or 'out'
+let currentType = null;
 let locationText = null;
 let locationCoords = null;
 let snapBlob = null;
@@ -228,18 +249,20 @@ function startLog(type) {
   snapBlob = null;
   locationText = null;
 
-  // Update button appearance
-  const btn = document.getElementById('main-log-btn');
-  btn.disabled = true;
-  btn.innerHTML = type === 'in'
-    ? '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Log In'
-    : '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out';
+  // Disable both buttons while capturing
+  document.getElementById('btn-in').disabled = true;
+  document.getElementById('btn-out').disabled = true;
+
+  // Show label
+  const lbl = document.getElementById('capture-label');
+  lbl.className = 'capture-label show ' + (type === 'in' ? 'in-label' : 'out-label');
+  lbl.textContent = type === 'in' ? '↓ Log In — capture location & selfie' : '↓ Log Out — capture location & selfie';
 
   document.getElementById('capture-panel').classList.add('show');
   document.getElementById('loc-text').textContent = 'Fetching location…';
   document.getElementById('loc-text').classList.add('muted');
 
-  // Reset camera
+  // Reset camera UI
   stopCamera();
   document.getElementById('cam-preview').style.display = 'none';
   document.getElementById('cam-snap').style.display = 'none';
@@ -247,7 +270,10 @@ function startLog(type) {
   document.getElementById('cam-snap-btn').style.display = 'none';
   document.getElementById('cam-retake-btn').style.display = 'none';
   document.getElementById('cam-status').textContent = '';
-  document.getElementById('submit-btn').classList.remove('show');
+
+  const submitBtn = document.getElementById('submit-btn');
+  submitBtn.classList.remove('show');
+  submitBtn.textContent = type === 'in' ? 'Submit Log In' : 'Submit Log Out';
 
   fetchLocation();
 }
@@ -256,12 +282,13 @@ function startLog(type) {
 function fetchLocation() {
   if (!navigator.geolocation) {
     document.getElementById('loc-text').textContent = 'Geolocation not supported';
+    locationText = 'Unknown location';
+    checkReadyToSubmit();
     return;
   }
   navigator.geolocation.getCurrentPosition(async pos => {
     const {latitude:lat, longitude:lng} = pos.coords;
     locationCoords = {lat, lng};
-    // Reverse geocode via nominatim (free, no key needed)
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
       const data = await res.json();
@@ -285,19 +312,32 @@ function fetchLocation() {
   }, {enableHighAccuracy:true, timeout:10000});
 }
 
-// ── Camera ──
+// ── Camera (front-facing) ──
 async function openCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}, audio:false});
-    const vid = document.getElementById('cam-preview');
-    vid.srcObject = stream;
-    vid.style.display = 'block';
-    document.getElementById('cam-open-btn').style.display = 'none';
-    document.getElementById('cam-snap-btn').style.display = 'flex';
-    document.getElementById('cam-status').textContent = '';
+    // Force front-facing camera
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'user' } },
+      audio: false
+    });
   } catch(e) {
-    document.getElementById('cam-status').textContent = 'Camera denied';
+    // Fallback if 'exact' not supported
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+    } catch(e2) {
+      document.getElementById('cam-status').textContent = 'Camera denied';
+      return;
+    }
   }
+  const vid = document.getElementById('cam-preview');
+  vid.srcObject = stream;
+  vid.style.display = 'block';
+  document.getElementById('cam-open-btn').style.display = 'none';
+  document.getElementById('cam-snap-btn').style.display = 'flex';
+  document.getElementById('cam-status').textContent = '';
 }
 
 function takeSnap() {
@@ -305,7 +345,11 @@ function takeSnap() {
   const canvas = document.getElementById('cam-canvas');
   canvas.width = vid.videoWidth;
   canvas.height = vid.videoHeight;
-  canvas.getContext('2d').drawImage(vid, 0, 0);
+  // Mirror horizontally to match selfie preview
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(vid, 0, 0);
   canvas.toBlob(blob => {
     snapBlob = blob;
     const img = document.getElementById('cam-snap');
@@ -334,9 +378,11 @@ function stopCamera() {
 }
 
 function checkReadyToSubmit() {
-  // Ready when location is resolved (photo optional but encouraged)
-  if (locationText) {
+  // Require both location AND photo before allowing submit
+  if (locationText && snapBlob) {
     document.getElementById('submit-btn').classList.add('show');
+  } else {
+    document.getElementById('submit-btn').classList.remove('show');
   }
 }
 
@@ -348,7 +394,6 @@ async function submitLog() {
 
   let photoUrl = null;
 
-  // Upload photo if taken
   if (snapBlob) {
     const fname = `attendance/${me.id}_${Date.now()}.jpg`;
     const up = await fetch(SB+'/storage/v1/object/attendance-photos/'+fname, {
@@ -362,7 +407,7 @@ async function submitLog() {
   const record = {
     staff_id: me.id,
     staff_name: me.name,
-    type: currentType,          // 'in' or 'out'
+    type: currentType,
     logged_at: new Date().toISOString(),
     location_text: locationText,
     location_lat: locationCoords?.lat || null,
@@ -381,83 +426,87 @@ async function submitLog() {
   // Reset UI
   stopCamera();
   document.getElementById('capture-panel').classList.remove('show');
-  document.getElementById('submit-btn').classList.remove('show');
-  const mainBtn = document.getElementById('main-log-btn');
-  mainBtn.disabled = false;
-  // Toggle button for next action
-  if (currentType === 'in') {
-    mainBtn.className = 'log-btn log-btn-out';
-    mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out';
-    mainBtn.onclick = () => startLog('out');
-  } else {
-    mainBtn.className = 'log-btn log-btn-in';
-    mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Log In';
-    mainBtn.onclick = () => startLog('in');
-  }
+  document.getElementById('capture-label').classList.remove('show');
+  btn.classList.remove('show');
+  document.getElementById('btn-in').disabled = false;
+  document.getElementById('btn-out').disabled = false;
 
   btn.disabled = false;
-  btn.textContent = 'Submit';
   currentType = null; snapBlob = null; locationText = null; locationCoords = null;
 
   loadHistory();
 }
 
-// ── History ──
+// ── History (combined day view) ──
 async function loadHistory() {
   const today = new Date().toISOString().split('T')[0];
   const el = document.getElementById('history-list');
-  // Load last 30 days
   const from = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
-  const data = await api(`/rest/v1/attendance_log?staff_id=eq.${me.id}&date=gte.${from}&order=logged_at.desc`) || [];
+  const data = await api(`/rest/v1/attendance_log?staff_id=eq.${me.id}&date=gte.${from}&order=logged_at.asc`) || [];
 
   if (!data.length) { el.innerHTML = '<div class="empty">No attendance logged yet</div>'; return; }
 
   // Group by date
   const byDate = {};
   data.forEach(r => {
-    if (!byDate[r.date]) byDate[r.date] = [];
-    byDate[r.date].push(r);
+    if (!byDate[r.date]) byDate[r.date] = { ins: [], outs: [] };
+    if (r.type === 'in') byDate[r.date].ins.push(r);
+    else byDate[r.date].outs.push(r);
   });
 
-  el.innerHTML = Object.entries(byDate).map(([date, logs]) => {
-    const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  // Sort dates descending
+  const sortedDates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+
+  el.innerHTML = sortedDates.map(date => {
+    const { ins, outs } = byDate[date];
+    const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
     const isToday = date === today;
-    return `<div style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px">
-        ${dateLabel}${isToday?'<span style="background:var(--g-l);color:var(--g);font-size:10px;padding:2px 8px;border-radius:999px">Today</span>':''}
+
+    // First in and last out of the day
+    const inRecord  = ins[0]  || null;
+    const outRecord = outs[outs.length - 1] || null;
+
+    // Calculate hours if both exist
+    let hoursLabel = '';
+    if (inRecord && outRecord) {
+      const ms = new Date(outRecord.logged_at) - new Date(inRecord.logged_at);
+      if (ms > 0) {
+        const h = Math.floor(ms / 3600000);
+        const m = Math.floor((ms % 3600000) / 60000);
+        hoursLabel = `${h}h ${m}m`;
+      }
+    }
+
+    function colHtml(record, type) {
+      if (!record) return `<div class="col-empty">Not recorded</div>`;
+      const t = new Date(record.logged_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+      return `
+        <div class="col-time">${t}</div>
+        ${record.location_text ? `<div class="col-loc">📍 ${record.location_text}</div>` : ''}
+        ${record.photo_url ? `<img class="col-photo" src="${record.photo_url}" alt="${type} photo"/>` : '<div class="col-empty" style="font-size:11px">No photo</div>'}
+      `;
+    }
+
+    return `<div class="day-card">
+      <div class="day-card-hdr">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="day-date">${dateLabel}</div>
+          ${isToday?'<span style="background:var(--g-l);color:var(--g);font-size:10px;padding:2px 8px;border-radius:999px;font-weight:500">Today</span>':''}
+        </div>
+        <div class="day-hours ${hoursLabel?'':'pending'}">${hoursLabel || (inRecord && !outRecord ? 'In progress' : '—')}</div>
       </div>
-      ${logs.map(r => {
-        const t = new Date(r.logged_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
-        const isIn = r.type === 'in';
-        return `<div class="log-card">
-          <div class="log-card-hdr">
-            <div class="log-type-dot ${isIn?'dot-in':'dot-out'}"></div>
-            <div class="log-type-label">${isIn ? 'Logged In' : 'Logged Out'}</div>
-            <div class="log-time">${t}</div>
-          </div>
-          ${r.location_text ? `<div class="log-loc">📍 ${r.location_text}</div>` : ''}
-          ${r.photo_url ? `<img class="log-photo" src="${r.photo_url}" alt="photo"/>` : ''}
-        </div>`;
-      }).join('')}
+      <div class="day-cols">
+        <div class="day-col">
+          <div class="col-label in">Log In</div>
+          ${colHtml(inRecord, 'in')}
+        </div>
+        <div class="day-col">
+          <div class="col-label out">Log Out</div>
+          ${colHtml(outRecord, 'out')}
+        </div>
+      </div>
     </div>`;
   }).join('');
-
-  // Set button state based on last log today
-  const todayLogs = byDate[today];
-  if (todayLogs && todayLogs.length) {
-    const last = todayLogs[0]; // already desc order
-    const mainBtn = document.getElementById('main-log-btn');
-    mainBtn.disabled = false;
-    if (last.type === 'in') {
-      mainBtn.className = 'log-btn log-btn-out';
-      mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out';
-      mainBtn.onclick = () => startLog('out');
-    } else {
-      mainBtn.className = 'log-btn log-btn-in';
-      mainBtn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Log In';
-      mainBtn.onclick = () => startLog('in');
-    }
-  }
 }
 
 function toast(msg) {
