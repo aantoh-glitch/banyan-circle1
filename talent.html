@@ -236,29 +236,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   <button class="btn-p" onclick="openBookingRequestModal()" style="margin-top:4px">+ Request a Booking</button>
 </div>
 
-<!-- PANEL: MESSAGES -->
-<div class="panel" id="panel-messages">
-  <div class="msgs-header">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span style="font-size:14px;font-weight:500;flex:1">Office Messages</span>
-    <button onclick="loadTalentMessages()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻ Refresh</button>
-  </div>
-  <div class="msgs-list" id="talent-msgs-list">
-    <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading messages…</div>
-  </div>
-  <div class="msgs-input-row">
-    <textarea id="talent-msg-input" class="msg-ta" placeholder="Write to the office…"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTalentMsg()}"
-      oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-    <button class="send-btn" onclick="sendTalentMsg()">Send</button>
-  </div>
-</div>
 
-<!-- PANEL: BOOKING REQUESTS -->
-<div class="panel" id="panel-booking">
-  <div class="section-hdg">Booking Requests</div>
-  <div id="booking-requests-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-</div>
 
 <!-- PANEL: RATINGS -->
 <div class="panel" id="panel-ratings">
@@ -283,13 +261,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   </button>
   <button class="nav-btn" id="nav-schedule" onclick="showPanel('schedule')">
     <span class="nav-icon">📅</span><span>Schedule</span>
-  </button>
-  <button class="nav-btn" id="nav-messages" onclick="showPanel('messages')">
-    <span class="nav-icon">💬</span><span>Messages</span>
-    <span class="nav-badge" id="msg-badge">!</span>
-  </button>
-  <button class="nav-btn" id="nav-booking" onclick="showPanel('booking')">
-    <span class="nav-icon">📋</span><span>Requests</span>
   </button>
   <button class="nav-btn" id="nav-ratings" onclick="showPanel('ratings')">
     <span class="nav-icon">⭐</span><span>Ratings</span>
@@ -375,8 +346,7 @@ function signOut(){localStorage.removeItem('bc_me');location.href='/index.html';
 let currentPanel=null;
 const loaders={
   schedule:()=>renderSchedule(),
-  messages:()=>{loadTalentMessages();document.getElementById('msg-badge').style.display='none';},
-  booking:()=>loadBookingRequests(),
+
   ratings:()=>loadRatings(),
   earnings:()=>{},
   profile:()=>{}
@@ -528,13 +498,6 @@ async function loadTalentMessages(){
 }
 async function sendTalentMsg(){const inp=document.getElementById('talent-msg-input');const txt=inp.value.trim();if(!txt)return;try{await api('/rest/v1/internal_messages','POST',{talent_id:talentId,talent_name:talentNameParam,from_role:'talent',from_name:talentNameParam,message:txt,created_at:new Date().toISOString()});inp.value='';inp.style.height='44px';await loadTalentMessages();}catch(e){toast('Send failed: '+e.message);}}
 
-// Badge polling
-setInterval(()=>{
-  if(currentPanel!=='messages'){
-    api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&from_role=eq.office&order=created_at.desc&limit=1&select=created_at')
-      .then(r=>{if(r&&r.length)document.getElementById('msg-badge').style.display='';}).catch(()=>{});
-  }
-},30000);
 
 // Background preloads
 loadProfile();
