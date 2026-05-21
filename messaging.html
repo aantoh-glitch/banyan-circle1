@@ -620,9 +620,9 @@ async function selectRecipType(type, btn) {
   try {
     var rows = [];
     if (type === 'talent') {
-      rows = await api('GET', 'staff?select=id,name,designation&order=name');
+      rows = await api('GET', 'talents?select=id,name,category&order=name');
     } else if (type === 'landlord') {
-      rows = await api('GET', 'community_members?select=id,name&order=name');
+      rows = await api('GET', 'landlords?select=id,name,property_name&order=name');
     } else if (type === 'guest') {
       rows = await api('GET', 'guest_profiles?select=id,name,property_name&order=name');
     }
@@ -633,7 +633,7 @@ async function selectRecipType(type, btn) {
     }
 
     list.innerHTML = rows.map(function(r) {
-      var sub = r.designation || r.property_name || '';
+      var sub = r.category || r.property_name || r.designation || '';
       return (
         '<div class="name-item" data-name="' + esc(r.name) + '" onclick="selectRecipName(this)">' +
         '<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>' +
