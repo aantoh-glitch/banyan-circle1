@@ -86,13 +86,14 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .nav-btn.on{color:var(--br)}
 .nav-btn.on svg{stroke:var(--br)}
 .nav-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;display:block}
+a.nav-btn{text-decoration:none;color:var(--faint)}
 
-/* nav pages: 8 tabs → split into 2 rows of 4 */
-.bottom-nav.eight{
+/* nav pages: 7 tabs → split into rows */
+.bottom-nav.seven{
   flex-wrap:wrap;
   padding-top:6px;
 }
-.bottom-nav.eight .nav-btn{
+.bottom-nav.seven .nav-btn{
   flex:0 0 25%;
   padding:4px 0;
   font-size:9px;
@@ -437,7 +438,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div><!-- /content -->
 
 <!-- BOTTOM NAV — 8 tabs in 2 rows of 4 -->
-<nav class="bottom-nav eight">
+<nav class="bottom-nav seven">
   <button class="nav-btn on" id="nb-description" onclick="goPage('description',this)">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
     <span>Description</span>
@@ -450,14 +451,10 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.39 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.12 4.18 2 2 0 0 1 5.09 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
     <span>Contacts</span>
   </button>
-  <button class="nav-btn" id="nb-earnings" onclick="goPage('earnings',this)">
+  <a class="nav-btn" id="nb-earnings" href="earnings.html">
     <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>
     <span>Earnings</span>
-  </button>
-  <button class="nav-btn" id="nb-messages" onclick="goPage('messages',this)">
-    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span>Messages</span>
-  </button>
+  </a>
   <button class="nav-btn" id="nb-payments" onclick="goPage('payments',this)">
     <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     <span>Payments</span>
