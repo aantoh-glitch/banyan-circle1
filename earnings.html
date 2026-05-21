@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Heritance — Earnings</title>
+<meta name="theme-color" content="#1a1a18"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F9F8F6;
+  --text:#1a1a18;
+  --muted:#7a7870;
+  --border:rgba(0,0,0,0.08);
+  --white:#fff;
+  --br:#993C1D;
+  --br-l:#FAECE7;
+  --green:#2E7D32;
+  --green-l:#E8F5E9;
+  --red:#C62828;
+  --red-l:#FFEBEE;
+  --nav-h:60px;
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding-bottom:80px}
+
+/* HEADER */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--border);
+  background:var(--white);
+  position:sticky;top:0;z-index:40;
+}
+.back-btn{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--muted);
+  background:none;border:none;cursor:pointer;font-family:inherit;
+  padding:6px 4px;
+}
+.back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.hdr-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:600;
+  color:var(--text);
+}
+.hdr-right{width:60px;display:flex;justify-content:flex-end}
+
+/* USER STRIP */
+.user-strip{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:var(--muted);margin-top:1px}
+.sign-out{
+  font-size:11px;color:var(--muted);
+  background:none;border:1px solid var(--border);
+  border-radius:999px;padding:4px 12px;
+  cursor:pointer;font-family:inherit;
+}
+
+/* MONTH NAV */
+.month-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;margin-bottom:16px;
+}
+.month-nav button{
+  width:36px;height:36px;border:1px solid var(--border);
+  border-radius:8px;background:var(--white);cursor:pointer;
+  font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text);
+}
+.month-nav button:active{border-color:var(--br);color:var(--br)}
+.month-label{font-size:14px;font-weight:500}
+
+/* KPI CARDS */
+.kpi-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:10px;padding:0 20px;margin-bottom:20px;
+}
+.kpi-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:12px 10px;text-align:center;
+}
+.kpi-card.positive{border-top:3px solid var(--green)}
+.kpi-card.negative{border-top:3px solid var(--red)}
+.kpi-card.net{border-top:3px solid var(--br)}
+.kpi-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;font-weight:600;
+  line-height:1.2;margin-bottom:3px;
+}
+.kpi-card.positive .kpi-val{color:var(--green)}
+.kpi-card.negative .kpi-val{color:var(--red)}
+.kpi-card.net .kpi-val{color:var(--br)}
+.kpi-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+
+/* FILTER ROW */
+.filter-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;margin-bottom:14px;gap:8px;
+}
+.filter-tabs{display:flex;gap:6px}
+.ftab{
+  font-size:12px;padding:6px 12px;border-radius:999px;
+  border:1px solid var(--border);background:var(--white);
+  cursor:pointer;font-family:inherit;color:var(--muted);
+  transition:all .15s;
+}
+.ftab.active{background:var(--text);color:var(--white);border-color:var(--text)}
+.add-btn{
+  display:flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:500;
+  background:var(--br);color:var(--white);
+  border:none;border-radius:999px;
+  padding:7px 14px;cursor:pointer;font-family:inherit;
+  white-space:nowrap;flex-shrink:0;
+}
+.add-btn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
+
+/* LOG ENTRIES */
+.log-wrap{padding:0 20px}
+.log-empty{
+  text-align:center;padding:40px 0;
+  font-size:13px;color:var(--muted);
+}
+.entry-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;margin-bottom:10px;
+  position:relative;
+}
+.entry-card.positive{border-left:3px solid var(--green)}
+.entry-card.negative{border-left:3px solid var(--red)}
+.entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.entry-head-chip{
+  display:inline-flex;align-items:center;
+  font-size:11px;font-weight:500;letter-spacing:.3px;
+  padding:3px 9px;border-radius:999px;
+}
+.positive .entry-head-chip{background:var(--green-l);color:var(--green)}
+.negative .entry-head-chip{background:var(--red-l);color:var(--red)}
+.entry-amount{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:600;line-height:1;
+}
+.positive .entry-amount{color:var(--green)}
+.negative .entry-amount{color:var(--red)}
+.entry-meta{
+  display:flex;align-items:center;gap:10px;
+  margin-top:8px;flex-wrap:wrap;
+}
+.entry-date{font-size:11px;color:var(--muted)}
+.entry-by{font-size:11px;color:var(--muted)}
+.entry-entity{
+  font-size:11px;color:var(--br);
+  background:var(--br-l);padding:2px 7px;border-radius:999px;
+}
+.entry-notes{
+  font-size:12px;color:var(--muted);
+  margin-top:6px;line-height:1.4;
+  border-top:1px solid var(--border);padding-top:6px;
+}
+.entry-pct{
+  font-size:12px;color:var(--muted);margin-top:4px;
+}
+
+/* SECTION LABEL */
+.section-lbl{
+  font-size:10px;font-weight:500;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);
+  padding:0 20px;margin-bottom:10px;
+}
+
+/* MODAL */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.4);z-index:100;
+}
+.overlay.open{display:block}
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;
+  max-width:430px;margin:0 auto;
+  background:var(--white);border-radius:20px 20px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,0);
+  z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.3,1);
+  max-height:92vh;overflow-y:auto;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{
+  width:36px;height:4px;background:var(--border);
+  border-radius:2px;margin:12px auto 0;
+}
+.sheet-hdr{
+  padding:16px 20px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sheet-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:600;
+}
+.sheet-close{
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;color:var(--muted);
+  flex-shrink:0;
+}
+.sheet-body{padding:20px 20px 24px}
+
+/* TYPE TOGGLE */
+.type-toggle{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;
+  margin-bottom:20px;
+}
+.type-btn{
+  padding:11px;text-align:center;font-size:13px;font-weight:500;
+  cursor:pointer;background:var(--white);border:none;
+  font-family:inherit;color:var(--muted);transition:all .15s;
+}
+.type-btn.active.pos{background:var(--green-l);color:var(--green)}
+.type-btn.active.neg{background:var(--red-l);color:var(--red)}
+
+/* FORM */
+.form-field{margin-bottom:16px}
+.form-label{
+  font-size:11px;font-weight:500;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--muted);
+  display:block;margin-bottom:6px;
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:11px 13px;
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--bg);font-family:inherit;font-size:14px;
+  color:var(--text);outline:none;
+  transition:border-color .15s;
+  appearance:none;-webkit-appearance:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--br);background:var(--white);
+}
+.form-textarea{resize:vertical;min-height:72px;line-height:1.5}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pct-field{display:none}
+.pct-field.show{display:block}
+.submit-btn{
+  width:100%;padding:13px;
+  background:var(--br);color:var(--white);
+  border:none;border-radius:12px;
+  font-size:14px;font-weight:500;
+  cursor:pointer;font-family:inherit;
+  margin-top:4px;
+}
+.submit-btn:active{opacity:.88}
+.submit-btn:disabled{opacity:.5;cursor:default}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:calc(var(--nav-h) + 16px);
+  left:50%;transform:translateX(-50%);
+  background:#222;color:#fff;
+  padding:9px 20px;border-radius:999px;
+  font-size:13px;z-index:200;
+  display:none;pointer-events:none;white-space:nowrap;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <button class="back-btn" onclick="goBack()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <div class="hdr-title">Earnings</div>
+    <div class="hdr-right"></div>
+  </div>
+
+  <!-- USER STRIP -->
+  <div class="user-strip">
+    <div>
+      <div class="user-name" id="u-name">—</div>
+      <div class="user-role" id="u-role">—</div>
+    </div>
+    <button class="sign-out" onclick="signOut()">Sign out</button>
+  </div>
+
+  <!-- MONTH NAV -->
+  <div class="month-nav">
+    <button onclick="shiftMonth(-1)">‹</button>
+    <div class="month-label" id="month-label">—</div>
+    <button onclick="shiftMonth(1)">›</button>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card positive">
+      <div class="kpi-val" id="kpi-pos">₹0</div>
+      <div class="kpi-lbl">Positive</div>
+    </div>
+    <div class="kpi-card negative">
+      <div class="kpi-val" id="kpi-neg">₹0</div>
+      <div class="kpi-lbl">Negative</div>
+    </div>
+    <div class="kpi-card net">
+      <div class="kpi-val" id="kpi-net">₹0</div>
+      <div class="kpi-lbl">Net</div>
+    </div>
+  </div>
+
+  <!-- FILTER + ADD -->
+  <div class="filter-row">
+    <div class="filter-tabs">
+      <button class="ftab active" id="ftab-all" onclick="setFilter('all')">All</button>
+      <button class="ftab" id="ftab-positive" onclick="setFilter('positive')">Positive</button>
+      <button class="ftab" id="ftab-negative" onclick="setFilter('negative')">Negative</button>
+    </div>
+    <button class="add-btn" id="add-entry-btn" onclick="openSheet()" style="display:none">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Entry
+    </button>
+  </div>
+
+  <!-- LOG -->
+  <div class="section-lbl" id="log-lbl">Earnings Log</div>
+  <div class="log-wrap" id="log-wrap">
+    <div class="log-empty">Loading…</div>
+  </div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+
+<!-- ADD ENTRY SHEET -->
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hdr">
+    <div class="sheet-title">Add Entry</div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sheet-body">
+
+    <!-- TYPE TOGGLE -->
+    <div class="type-toggle">
+      <button class="type-btn pos active" id="tbtn-pos" onclick="selectType('positive')">+ Positive</button>
+      <button class="type-btn neg" id="tbtn-neg" onclick="selectType('negative')">− Negative</button>
+    </div>
+
+    <!-- HEAD -->
+    <div class="form-field">
+      <label class="form-label">Head</label>
+      <select class="form-select" id="f-head" onchange="onHeadChange()">
+        <option value="">Select head…</option>
+      </select>
+    </div>
+
+    <!-- AMOUNT + PERCENTAGE ROW -->
+    <div class="form-row">
+      <div class="form-field" id="amount-field">
+        <label class="form-label">Amount (₹)</label>
+        <input class="form-input" id="f-amount" type="number" min="0" placeholder="0.00"/>
+      </div>
+      <div class="form-field pct-field" id="pct-field">
+        <label class="form-label">Percentage (%)</label>
+        <input class="form-input" id="f-pct" type="number" min="0" max="100" step="0.01" placeholder="0.00"/>
+      </div>
+    </div>
+
+    <!-- ENTITY (owner sees this; others pre-filled) -->
+    <div class="form-field" id="entity-field" style="display:none">
+      <label class="form-label">For (Property / Person)</label>
+      <input class="form-input" id="f-entity" type="text" placeholder="e.g. Villa 21 or Staff Name"/>
+    </div>
+
+    <!-- DATE -->
+    <div class="form-field">
+      <label class="form-label">Date</label>
+      <input class="form-input" id="f-date" type="date"/>
+    </div>
+
+    <!-- NOTES -->
+    <div class="form-field">
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-textarea" id="f-notes" placeholder="Any additional context…"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitEntry()">Add Entry</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+const POSITIVE_HEADS = [
+  'Revenue',
+  'Profit',
+  'PAT',
+  'Salary',
+  'Pay',
+  'Expenses Borne',
+  'Percentage of Revenue'
+];
+const NEGATIVE_HEADS = [
+  'Deduction',
+  'Loss'
+];
+
+const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!me) { location.href = '/index.html'; throw new Error('No auth'); }
+
+let currentFilter = 'all';
+let currentType = 'positive';
+let viewYear = new Date().getFullYear();
+let viewMonth = new Date().getMonth(); // 0-indexed
+let allEntries = [];
+
+// --- ROLE DISPLAY ---
+const roleLabels = {owner:'Manager',staff:'Staff',landlord:'Landlord'};
+document.getElementById('u-name').textContent = me.name || '—';
+document.getElementById('u-role').textContent = roleLabels[me.role] || me.role || '—';
+
+// Owner can add entries
+if (me.role === 'owner') {
+  document.getElementById('add-entry-btn').style.display = 'flex';
+  document.getElementById('entity-field').style.display = 'block';
+}
+
+function signOut() {
+  localStorage.removeItem('bc_me');
+  location.href = '/index.html';
+}
+
+function goBack() {
+  const r = me.role;
+  if (r === 'landlord') location.href = '/landlord.html';
+  else if (r === 'staff') location.href = '/talent.html';
+  else location.href = '/ops.html';
+}
+
+// --- MONTH ---
+function shiftMonth(d) {
+  viewMonth += d;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+  renderMonthLabel();
+  renderLog();
+  renderKPIs();
+}
+function renderMonthLabel() {
+  const d = new Date(viewYear, viewMonth, 1);
+  document.getElementById('month-label').textContent =
+    d.toLocaleDateString('en-IN', {month:'long', year:'numeric'});
+}
+renderMonthLabel();
+
+// --- API ---
+async function api(path) {
+  const r = await fetch(SUPA_URL + path, {
+    headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function apiPost(path, body) {
+  const r = await fetch(SUPA_URL + path, {
+    method: 'POST',
+    headers: {
+      apikey: SUPA_KEY,
+      Authorization: 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// --- LOAD ---
+async function loadEntries() {
+  let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
+  if (me.role === 'staff') {
+    path += '&entity_name=eq.' + encodeURIComponent(me.name);
+  } else if (me.role === 'landlord') {
+    // Landlord: filter by their property
+    const prop = me.property_name || me.name;
+    path += '&entity_name=eq.' + encodeURIComponent(prop);
+  }
+  // owner sees all
+  try {
+    allEntries = await api(path);
+  } catch(e) {
+    allEntries = [];
+    document.getElementById('log-wrap').innerHTML =
+      '<div class="log-empty">Could not load entries. Run earnings-tables.sql in Supabase first.</div>';
+    return;
+  }
+  renderLog();
+  renderKPIs();
+}
+
+// --- FILTER ENTRIES FOR CURRENT MONTH ---
+function filteredEntries() {
+  return allEntries.filter(e => {
+    if (!e.entry_date) return false;
+    const d = new Date(e.entry_date);
+    if (d.getFullYear() !== viewYear || d.getMonth() !== viewMonth) return false;
+    if (currentFilter === 'all') return true;
+    return e.type === currentFilter;
+  });
+}
+
+// --- RENDER KPIs ---
+function renderKPIs() {
+  const entries = allEntries.filter(e => {
+    if (!e.entry_date) return false;
+    const d = new Date(e.entry_date);
+    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+  });
+  let pos = 0, neg = 0;
+  entries.forEach(e => {
+    const amt = parseFloat(e.amount) || 0;
+    if (e.type === 'positive') pos += amt;
+    else neg += amt;
+  });
+  const net = pos - neg;
+  document.getElementById('kpi-pos').textContent = fmtAmt(pos);
+  document.getElementById('kpi-neg').textContent = fmtAmt(neg);
+  const netEl = document.getElementById('kpi-net');
+  netEl.textContent = fmtAmt(Math.abs(net));
+  netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+function fmtAmt(n) {
+  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
+  if (n >= 1000) return '₹' + (n/1000).toFixed(1) + 'k';
+  return '₹' + n.toLocaleString('en-IN');
+}
+
+function fmtFull(n) {
+  if (!n && n !== 0) return '—';
+  return '₹' + parseFloat(n).toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:2});
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// --- RENDER LOG ---
+function renderLog() {
+  const entries = filteredEntries();
+  const wrap = document.getElementById('log-wrap');
+  const lbl = document.getElementById('log-lbl');
+
+  const fName = currentFilter === 'all' ? 'All Entries' :
+                currentFilter === 'positive' ? 'Positive Entries' : 'Negative Entries';
+  lbl.textContent = fName + ' — ' + new Date(viewYear, viewMonth, 1)
+    .toLocaleDateString('en-IN', {month:'long', year:'numeric'});
+
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="log-empty">No entries for this period.</div>';
+    return;
+  }
+
+  wrap.innerHTML = entries.map(e => {
+    const isPos = e.type === 'positive';
+    const isPct = e.head === 'Percentage of Revenue';
+    const amtDisplay = isPct && e.percentage
+      ? `<span class="entry-amount">${parseFloat(e.percentage).toFixed(2)}%</span>`
+      : `<span class="entry-amount">${fmtFull(e.amount)}</span>`;
+    const pctNote = isPct && e.percentage && e.amount
+      ? `<div class="entry-pct">= ${fmtFull(e.amount)} (calculated amount)</div>` : '';
+    const entityTag = e.entity_name
+      ? `<span class="entry-entity">${esc(e.entity_name)}</span>` : '';
+    const byTag = e.recorded_by
+      ? `<span class="entry-by">by ${esc(e.recorded_by)}</span>` : '';
+    const notesHtml = e.notes
+      ? `<div class="entry-notes">${esc(e.notes)}</div>` : '';
+
+    return `
+      <div class="entry-card ${isPos?'positive':'negative'}">
+        <div class="entry-top">
+          <span class="entry-head-chip">${esc(e.head)}</span>
+          ${amtDisplay}
+        </div>
+        ${pctNote}
+        <div class="entry-meta">
+          <span class="entry-date">${fmtDate(e.entry_date)}</span>
+          ${entityTag}
+          ${byTag}
+        </div>
+        ${notesHtml}
+      </div>`;
+  }).join('');
+}
+
+// --- FILTER ---
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  document.getElementById('ftab-' + f).classList.add('active');
+  renderLog();
+}
+
+// --- SHEET ---
+function openSheet() {
+  selectType('positive');
+  document.getElementById('f-amount').value = '';
+  document.getElementById('f-pct').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-entity').value = '';
+  document.getElementById('f-date').value = todayStr();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+// --- TYPE SELECT ---
+function selectType(t) {
+  currentType = t;
+  document.getElementById('tbtn-pos').classList.toggle('active', t==='positive');
+  document.getElementById('tbtn-neg').classList.toggle('active', t==='negative');
+  populateHeads();
+}
+
+function populateHeads() {
+  const sel = document.getElementById('f-head');
+  const heads = currentType === 'positive' ? POSITIVE_HEADS : NEGATIVE_HEADS;
+  sel.innerHTML = '<option value="">Select head…</option>' +
+    heads.map(h => `<option value="${esc(h)}">${esc(h)}</option>`).join('');
+  onHeadChange();
+}
+
+function onHeadChange() {
+  const head = document.getElementById('f-head').value;
+  const isPctHead = head === 'Percentage of Revenue';
+  document.getElementById('pct-field').classList.toggle('show', isPctHead);
+  // If pct head: amount field becomes optional "calculated ₹ value"
+  const amtLabel = document.querySelector('#amount-field .form-label');
+  if (amtLabel) amtLabel.textContent = isPctHead ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
+  document.getElementById('f-amount').placeholder = isPctHead ? '0.00 (leave blank if unknown)' : '0.00';
+}
+
+// --- SUBMIT ---
+async function submitEntry() {
+  const head = document.getElementById('f-head').value;
+  const amount = document.getElementById('f-amount').value;
+  const pct = document.getElementById('f-pct').value;
+  const notes = document.getElementById('f-notes').value.trim();
+  const date = document.getElementById('f-date').value;
+  const entityInput = document.getElementById('f-entity').value.trim();
+  const isPctHead = head === 'Percentage of Revenue';
+
+  if (!head) { showToast('Please select a head'); return; }
+  if (!isPctHead && !amount) { showToast('Please enter an amount'); return; }
+  if (isPctHead && !pct) { showToast('Please enter a percentage'); return; }
+  if (!date) { showToast('Please select a date'); return; }
+
+  // Determine entity
+  let entityType = 'general';
+  let entityName = '';
+  if (me.role === 'owner') {
+    entityName = entityInput;
+    entityType = entityInput ? 'general' : 'general';
+  } else if (me.role === 'landlord') {
+    entityName = me.property_name || me.name;
+    entityType = 'property';
+  } else {
+    entityName = me.name;
+    entityType = 'staff';
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const payload = {
+      type: currentType,
+      head: head,
+      amount: amount ? parseFloat(amount) : null,
+      percentage: pct ? parseFloat(pct) : null,
+      notes: notes || null,
+      entity_type: entityType,
+      entity_name: entityName || null,
+      recorded_by: me.name,
+      entry_date: date
+    };
+    await apiPost('/rest/v1/earnings_log', payload);
+    closeSheet();
+    showToast('Entry added');
+    await loadEntries();
+  } catch(e) {
+    showToast('Error saving — check console');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add Entry';
+  }
+}
+
+// --- TOAST ---
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = 'none'; }, 2400);
+}
+
+// --- INIT ---
+populateHeads();
+loadEntries();
+</script>
+</body>
+</html>
