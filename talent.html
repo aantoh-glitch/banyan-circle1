@@ -2,341 +2,326 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Banyan Circle — Talent Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
-  --b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
-  --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
-  --nav-h:64px;--top-h:56px;
-}
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
-
-/* ── TOP BAR ── */
-.top-bar{
-  position:fixed;top:0;left:0;right:0;height:var(--top-h);z-index:50;
-  background:var(--white);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:10px;
-}
-.top-logo{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);flex:1}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--br);flex-shrink:0}
-.top-name{font-size:13px;font-weight:500;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.btn-signout{font-size:11px;padding:5px 10px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-family:inherit}
-
-/* ── BOTTOM NAV ── */
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:50;
-  background:var(--white);border-top:1px solid var(--border);
-  display:flex;align-items:stretch;
-}
-.nav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;cursor:pointer;border:none;background:none;font-family:inherit;
-  color:var(--muted);font-size:10px;font-weight:500;letter-spacing:.2px;
-  padding:4px 2px;position:relative;transition:color .15s;
-  -webkit-tap-highlight-color:transparent;
-}
-.nav-item.active{color:var(--br)}
-.nav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--br);border-radius:0 0 3px 3px}
-.nav-icon{font-size:20px;line-height:1;transition:transform .15s}
-.nav-item.active .nav-icon{transform:scale(1.1)}
-.nav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--br);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;display:none}
-
-/* ── PANELS ── */
-.panel{
-  position:fixed;top:var(--top-h);left:0;right:0;
-  bottom:var(--nav-h);overflow-y:auto;
-  background:var(--bg);padding:16px;
-  display:none;
-  animation:slideUp .22s ease;
-}
-.panel.active{display:block}
-@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── SHARED ── */
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
 .fc:focus{border-color:var(--br)}
 textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fg{margin-bottom:14px}
-.btn-p{padding:12px 20px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;width:100%}
-.btn-p:active{background:#712B13}
-.btn-sec{padding:11px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit}
-.btn-sec:active{border-color:var(--br);color:var(--br)}
-.btn-g{padding:12px 20px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
-.section-hdg{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;margin:0 0 14px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.btn-p{padding:10px 20px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-p:hover{background:#712B13}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-g{padding:10px 20px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-g:hover{background:#2A5009}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:16px}
+.section-hdg{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin:28px 0 14px;padding-bottom:10px;border-bottom:2px solid var(--border)}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
 .bdg-g{background:var(--g-l);color:#27500A}
 .bdg-a{background:var(--a-l);color:#633806}
-.toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none}
 .opt-label{display:flex;align-items:center;gap:7px;font-size:13px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;user-select:none}
+.opt-label:hover{border-color:var(--br);background:var(--br-l)}
 .opt-label input{accent-color:var(--br)}
 
-/* ── PROFILE PANEL ── */
-.profile-avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:20px}
-.profile-big-avatar{width:60px;height:60px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--br);flex-shrink:0}
+/* Top bar */
+.top-bar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.top-logo{font-family:'Playfair Display',serif;font-size:18px;color:var(--text)}
+.top-user{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br)}
 
-/* ── SCHEDULE ── */
-.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.sched-day{border:1.5px solid var(--border);border-radius:8px;padding:4px 2px;text-align:center;cursor:pointer;transition:all .15s;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--white)}
+/* Main layout: sidebar + content */
+#app-screen{display:none;min-height:100vh;flex-direction:column}
+.app-body{display:flex;flex:1;min-height:0}
+
+/* Profile sidebar */
+.profile-sidebar{width:300px;min-width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:width .3s ease,min-width .3s ease,padding .3s ease;overflow:hidden}
+.profile-sidebar.collapsed{width:56px;min-width:56px}
+.sidebar-inner{padding:20px;flex:1;overflow-y:auto}
+.profile-sidebar.collapsed .sidebar-inner{display:none}
+.sidebar-toggle{display:flex;align-items:center;justify-content:center;padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;background:var(--bg);flex-shrink:0}
+.sidebar-toggle:hover{background:var(--br-l)}
+.toggle-icon{font-size:16px;color:var(--muted);transition:transform .3s}
+.profile-sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
+
+/* Sidebar collapsed tab */
+.collapsed-tab{display:none;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;cursor:pointer;height:100%}
+.profile-sidebar.collapsed .collapsed-tab{display:flex}
+.collapsed-tab-label{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;writing-mode:vertical-lr;transform:rotate(180deg)}
+
+/* Schedule main area */
+.schedule-main{flex:1;padding:28px;overflow-y:auto}
+
+/* Schedule calendar */
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.sched-day{border:1.5px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--white)}
 .sched-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
 .sched-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
+.sched-day:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
 .sched-day.today-ring{box-shadow:0 0 0 2px var(--br)}
-.day-num{font-size:15px;font-weight:600;font-family:'Playfair Display',serif}
-.day-status{font-size:8px;font-weight:500;margin-top:1px}
-.sched-legend{display:flex;gap:10px;font-size:11px;color:var(--muted);margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.day-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;opacity:.7}
+.day-num{font-size:18px;font-weight:600;font-family:'Playfair Display',serif}
+.day-status{font-size:9px;font-weight:500;margin-top:1px}
+.sched-legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:14px;align-items:center;flex-wrap:wrap}
 .leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.month-nav button{width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.month-nav button:active{border-color:var(--br);color:var(--br)}
-.day-label-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
-.day-label-cell{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:3px 0}
+.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.month-nav button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.month-nav button:hover{border-color:var(--br);color:var(--br)}
 
-/* ── BOOKING REQUESTS ── */
+/* Day modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px}
+.modal-date{font-size:13px;color:var(--muted);margin-bottom:20px}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.btn-danger{padding:9px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin-right:auto}
+.btn-danger:hover{background:var(--r);color:#fff}
+
+/* Toggle switch for busy/available */
+.status-toggle{display:flex;gap:8px;margin-bottom:16px}
+.stgl-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
+
+/* Booking requests panel */
+.booking-panel{margin-top:18px}
 .booking-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
 .booking-card.pending{border-left:4px solid var(--a)}
 .booking-card.confirmed{border-left:4px solid var(--g)}
 .booking-card.declined{border-left:4px solid var(--r)}
 
-/* ── STARS ── */
+/* Main tabs */
+.main-tab{padding:10px 20px;background:none;border:none;border-bottom:2px solid transparent;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer;font-weight:400;transition:all .15s;margin-bottom:-2px}
+.main-tab.on{color:var(--br);font-weight:500;border-bottom-color:var(--br)}
+.main-tab:hover{color:var(--text)}
+
+/* Rating display */
 .stars{display:flex;gap:2px}
-.star{font-size:16px;color:#C8A84B}
+.star{font-size:18px;color:#C8A84B}
 .star.empty{color:var(--border)}
 
-/* ── EARNINGS ── */
-.earnings-stat{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px;display:flex;flex-direction:column;gap:4px}
-.earnings-amount{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--text)}
-.earnings-label{font-size:12px;color:var(--muted)}
-
-/* ── MODAL ── */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0}
-.modal{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;box-shadow:0 -8px 30px rgba(0,0,0,.15);max-height:85vh;overflow-y:auto}
-.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 18px}
-.modal-title{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:4px}
-.modal-date{font-size:13px;color:var(--muted);margin-bottom:18px}
-.time-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-.modal-actions{display:flex;gap:8px;flex-direction:column}
-.btn-danger{padding:11px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;width:100%}
-.btn-danger:active{background:var(--r);color:#fff}
-.status-toggle{display:flex;gap:8px;margin-bottom:16px}
-.stgl-btn{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
-.stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
-.stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
-
-/* ── MESSAGES ── */
-.msg-panel-inner{display:flex;flex-direction:column;height:100%}
-.msgs-list{flex:1;overflow-y:auto;padding:4px 0 12px;display:flex;flex-direction:column;gap:10px}
-.msg-input-row{display:flex;gap:8px;align-items:flex-end;padding-top:10px;border-top:1px solid var(--border);margin-top:auto}
-.msg-textarea{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;resize:none;min-height:44px;max-height:100px;overflow-y:auto;line-height:1.5}
-.msg-textarea:focus{border-color:var(--br)}
-.send-btn{padding:10px 16px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0}
-
-/* panel for messages is taller to allow flex col */
-#panel-messages{display:flex;flex-direction:column;padding-bottom:0}
+/* Booking request modal */
+.bk-modal{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="top-bar">
-  <div class="top-logo">Banyan Circle</div>
-  <span class="top-name" id="top-name"></span>
-  <div class="avatar" id="top-avatar">?</div>
-  <button class="btn-signout" onclick="signOut()">Sign out</button>
-</div>
-
-<!-- PANEL: PROFILE -->
-<div class="panel" id="panel-profile">
-  <div class="profile-avatar-row">
-    <div class="profile-big-avatar" id="prof-big-avatar">?</div>
-    <div>
-      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500" id="prof-heading">My Profile</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">Talent ID: <span id="prof-id-display"></span></div>
-    </div>
-    <span id="save-status" style="font-size:12px;color:var(--g);display:none;margin-left:auto">✓ Saved</span>
-  </div>
-
-  <div class="fg"><label class="fl">Name <span style="color:var(--r)">*</span></label><input class="fc" id="p-name" placeholder="Your full name"/></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
-    <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
-  </div>
-  <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
-  <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
-  <div class="fg">
-    <label class="fl">Category</label>
-    <select class="fc" id="p-cat">
-      <option value="">Select a category</option>
-      <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
-      <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
-      <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
-      <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
-    </select>
-  </div>
-  <div id="cat-others-fg" class="fg" style="display:none"><label class="fl">Please specify</label><input class="fc" id="p-cat-other" placeholder="Your talent category"/></div>
-  <div class="fg"><label class="fl">Name your talent</label><input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/></div>
-  <div class="fg"><label class="fl">Tagline</label><input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/></div>
-  <div class="fg"><label class="fl">Describe your talent</label><textarea class="fc" id="p-desc" placeholder="Describe the experience you create…"></textarea></div>
-  <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
-  <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
-  <div class="fg"><label class="fl">Your photo</label><input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/><div id="p-photo-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div></div>
-  <div class="fg"><label class="fl">Biodata / CV (PDF or Word)</label><input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/><div id="p-bio-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div></div>
-  <div class="fg">
-    <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
-    <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-  </div>
-  <div style="padding-bottom:8px">
-    <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
-  </div>
-</div>
-
-<!-- PANEL: SCHEDULE -->
-<div class="panel" id="panel-schedule">
-  <div class="section-hdg">Schedule</div>
-  <div class="card" style="padding:16px">
-    <div class="month-nav">
-      <button onclick="changeMonth(-1)">‹</button>
-      <div style="font-family:'Playfair Display',serif;font-size:17px;flex:1" id="month-label"></div>
-      <button onclick="changeMonth(1)">›</button>
-    </div>
-    <div class="sched-legend">
-      <span><span class="leg-dot" style="background:#FCEBEB;border:1.5px solid #E57373"></span> Busy</span>
-      <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Available</span>
-      <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
-    </div>
-    <div class="day-label-row">
-      <div class="day-label-cell">Su</div><div class="day-label-cell">Mo</div><div class="day-label-cell">Tu</div>
-      <div class="day-label-cell">We</div><div class="day-label-cell">Th</div><div class="day-label-cell">Fr</div><div class="day-label-cell">Sa</div>
-    </div>
-    <div class="sched-grid" id="sched-grid"></div>
-  </div>
-  <div style="margin-top:4px">
-    <button class="btn-p" onclick="openBookingRequestModal()" style="display:flex;align-items:center;justify-content:center;gap:6px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Request a Booking
-    </button>
-  </div>
-</div>
-
-<!-- PANEL: MESSAGES -->
-<div class="panel" id="panel-messages">
-  <div class="section-hdg" style="display:flex;align-items:center;gap:8px">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    Messages
-    <button onclick="loadTalentMessages()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻</button>
-  </div>
-  <div id="talent-msgs-list" style="flex:1;overflow-y:auto;padding:4px 0 12px;display:flex;flex-direction:column;gap:10px;min-height:200px">
-    <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading messages…</div>
-  </div>
-  <div class="msg-input-row">
-    <textarea id="talent-msg-input" class="msg-textarea" placeholder="Write a message to the office…"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTalentMsg()}"
-      oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-    <button class="send-btn" onclick="sendTalentMsg()">Send</button>
-  </div>
-</div>
-
-<!-- PANEL: BOOKING REQUESTS -->
-<div class="panel" id="panel-booking">
-  <div class="section-hdg">Booking Requests</div>
-  <div id="booking-requests-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-</div>
-
-<!-- PANEL: RATINGS -->
-<div class="panel" id="panel-ratings">
-  <div class="section-hdg">My Ratings</div>
-  <div id="ratings-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-</div>
-
-<!-- PANEL: EARNINGS -->
-<div class="panel" id="panel-earnings">
-  <div class="section-hdg">Earnings</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-    <div class="earnings-stat">
-      <div class="earnings-amount" id="earn-total">—</div>
-      <div class="earnings-label">Total Earned</div>
-    </div>
-    <div class="earnings-stat">
-      <div class="earnings-amount" id="earn-month">—</div>
-      <div class="earnings-label">This Month</div>
+<!-- MAIN APP (shown immediately, no login) -->
+<div id="app-screen" style="display:flex;flex-direction:column;min-height:100vh">
+  <div class="top-bar">
+    <div class="top-logo">Banyan Circle · Talent</div>
+    <div class="top-user">
+      <div class="avatar" id="top-avatar">?</div>
+      <span id="top-name" style="font-size:14px;font-weight:500"></span>
+      <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="signOut()">Sign out</button>
     </div>
   </div>
-  <div class="card">
-    <div style="font-size:13px;color:var(--muted);text-align:center;padding:24px 0">Earnings details will appear here once booking payouts are processed by the office.</div>
+
+  <div class="app-body">
+    <!-- PROFILE SIDEBAR (collapsible) -->
+    <div class="profile-sidebar" id="profile-sidebar">
+      <div class="sidebar-toggle" onclick="toggleSidebar()" title="Collapse profile">
+        <span class="toggle-icon">◀</span>
+      </div>
+      <div class="sidebar-inner" id="sidebar-inner">
+        <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:500;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+          <span id="prof-heading">My Profile</span>
+          <span id="save-status" style="font-size:12px;color:var(--g);display:none">✓ Saved</span>
+        </div>
+        <div class="fg">
+          <label class="fl">Name <span style="color:var(--r)">*</span></label>
+          <input class="fc" id="p-name" placeholder="Your full name"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
+          <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
+        </div>
+        <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
+        <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
+        <div class="fg">
+          <label class="fl">Category</label>
+          <select class="fc" id="p-cat">
+            <option value="">Select a category</option>
+            <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
+            <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
+            <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
+            <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
+          </select>
+        </div>
+        <div id="cat-others-fg" class="fg" style="display:none">
+          <label class="fl">Please specify</label>
+          <input class="fc" id="p-cat-other" placeholder="Your talent category"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Name your talent</label>
+          <input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Tagline</label>
+          <input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Describe your talent</label>
+          <textarea class="fc" id="p-desc" style="min-height:80px" placeholder="Describe the experience you create…"></textarea>
+        </div>
+        <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
+        <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
+        <div class="fg">
+          <label class="fl">Your photo</label>
+          <input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/>
+          <div id="p-photo-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Biodata / CV (PDF or Word)</label>
+          <input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/>
+          <div id="p-bio-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div class="fg">
+          <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
+          <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+        <div style="margin-top:4px;display:flex;gap:10px;align-items:center;padding-bottom:20px">
+          <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
+        </div>
+      </div>
+      <!-- Collapsed state icon -->
+      <div class="collapsed-tab" onclick="toggleSidebar()" title="Expand profile">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="collapsed-tab-label">Profile</span>
+      </div>
+    </div>
+
+    <!-- MAIN AREA with tabs -->
+    <div class="schedule-main">
+
+      <!-- Tab row -->
+      <div style="display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:24px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:0">
+          <button class="main-tab on" id="mtab-schedule" onclick="setMainTab('schedule',this)">Schedule</button>
+          <button class="main-tab" id="mtab-messages" onclick="setMainTab('messages',this)">
+            Messages
+            <span id="msg-badge" style="display:none;background:var(--br);color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:5px;font-weight:600">!</span>
+          </button>
+        </div>
+        <button class="btn-p" id="booking-btn" onclick="openBookingRequestModal()" style="display:flex;align-items:center;gap:6px;font-size:13px;padding:8px 14px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Request a Booking
+        </button>
+      </div>
+
+      <!-- SCHEDULE PANEL -->
+      <div id="panel-schedule">
+        <!-- Calendar -->
+        <div class="card" style="padding:20px">
+          <div class="month-nav">
+            <button onclick="changeMonth(-1)">‹</button>
+            <div style="font-family:'Playfair Display',serif;font-size:18px;flex:1" id="month-label"></div>
+            <button onclick="changeMonth(1)">›</button>
+          </div>
+          <div class="sched-legend">
+            <span><span class="leg-dot" style="background:#FCEBEB;border:1.5px solid #E57373"></span> Busy</span>
+            <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Available</span>
+            <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
+            <span style="font-size:11px;opacity:.7;margin-left:auto">Click a date to set status</span>
+          </div>
+          <div class="sched-grid" id="sched-day-labels" style="margin-bottom:6px">
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sun</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Mon</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Tue</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Wed</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Thu</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Fri</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sat</div>
+          </div>
+          <div class="sched-grid" id="sched-grid"></div>
+        </div>
+
+        <!-- Booking Requests Section -->
+        <div style="font-family:'Playfair Display',serif;font-size:20px;margin:28px 0 14px">Booking Requests</div>
+        <div id="booking-requests-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+
+        <!-- Ratings Section -->
+        <div style="font-family:'Playfair Display',serif;font-size:20px;margin:28px 0 14px">My Ratings</div>
+        <div id="ratings-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+      </div>
+
+      <!-- MESSAGES PANEL -->
+      <div id="panel-messages" style="display:none">
+        <div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 200px);min-height:400px">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span style="font-size:14px;font-weight:500;color:var(--text)">Office · <span id="msgs-talent-name" style="color:var(--muted)"></span></span>
+            <button onclick="loadTalentMessages()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻ Refresh</button>
+          </div>
+          <div id="talent-msgs-list" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading messages…</div>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end">
+            <textarea id="talent-msg-input" placeholder="Write a message to the office…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;resize:none;min-height:42px;max-height:120px;overflow-y:auto;transition:border-color .15s;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTalentMsg()}" oninput="this.style.height='42px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+            <button class="btn-p" onclick="sendTalentMsg()" style="padding:10px 16px;flex-shrink:0;align-self:flex-end">Send</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="nav-item" id="nav-profile" onclick="showPanel('profile')">
-    <span class="nav-icon">👤</span>
-    <span>Profile</span>
-  </button>
-  <button class="nav-item" id="nav-schedule" onclick="showPanel('schedule')">
-    <span class="nav-icon">📅</span>
-    <span>Schedule</span>
-  </button>
-  <button class="nav-item" id="nav-messages" onclick="showPanel('messages')">
-    <span class="nav-icon">💬</span>
-    <span>Messages</span>
-    <span class="nav-badge" id="msg-badge">!</span>
-  </button>
-  <button class="nav-item" id="nav-booking" onclick="showPanel('booking')">
-    <span class="nav-icon">📋</span>
-    <span>Requests</span>
-  </button>
-  <button class="nav-item" id="nav-ratings" onclick="showPanel('ratings')">
-    <span class="nav-icon">⭐</span>
-    <span>Ratings</span>
-  </button>
-  <button class="nav-item" id="nav-earnings" onclick="showPanel('earnings')">
-    <span class="nav-icon">💰</span>
-    <span>Earnings</span>
-  </button>
-</nav>
 
 <!-- DAY MODAL -->
 <div class="modal-backdrop" id="day-modal" style="display:none" onclick="closeDayModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
     <div class="modal-title" id="modal-title">Set day status</div>
     <div class="modal-date" id="modal-date"></div>
-    <div class="status-toggle">
+    <div class="status-toggle" id="status-toggle">
       <button class="stgl-btn" id="btn-busy" onclick="setModalStatus('busy')">🔴 Busy</button>
       <button class="stgl-btn" id="btn-avail" onclick="setModalStatus('available')">🟢 Available</button>
     </div>
     <div id="time-fields">
       <div class="time-row">
-        <div class="fg" style="margin:0"><label class="fl">From</label><input class="fc" type="time" id="modal-start" value="09:00"/></div>
-        <div class="fg" style="margin:0"><label class="fl">To</label><input class="fc" type="time" id="modal-end" value="17:00"/></div>
+        <div class="fg" style="margin:0">
+          <label class="fl">From</label>
+          <input class="fc" type="time" id="modal-start" value="09:00"/>
+        </div>
+        <div class="fg" style="margin:0">
+          <label class="fl">To</label>
+          <input class="fc" type="time" id="modal-end" value="17:00"/>
+        </div>
       </div>
     </div>
-    <div class="modal-actions" style="margin-top:8px">
+    <div class="modal-actions">
+      <button class="btn-danger" id="modal-remove-btn" onclick="removeDay()">Remove</button>
+      <button class="btn-sec" onclick="closeDayModal()">Cancel</button>
       <button class="btn-p" onclick="saveDaySlot()">Save</button>
-      <button class="btn-danger" id="modal-remove-btn" onclick="removeDay()" style="display:none">Remove status</button>
-      <button class="btn-sec" onclick="closeDayModal()" style="width:100%;text-align:center">Cancel</button>
     </div>
   </div>
 </div>
 
 <!-- BOOKING REQUEST MODAL -->
 <div class="modal-backdrop" id="bk-modal" style="display:none" onclick="closeBkModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
+  <div class="bk-modal" onclick="event.stopPropagation()">
     <div class="modal-title" style="margin-bottom:18px">Request a Booking</div>
-    <div class="fg"><label class="fl">Property / Event</label><input class="fc" id="bk-property" placeholder="e.g. Banyan Circle — Morjim"/></div>
+    <div class="fg">
+      <label class="fl">Property / Event</label>
+      <input class="fc" id="bk-property" placeholder="e.g. Banyan Circle — Morjim"/>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="fg"><label class="fl">Date</label><input class="fc" id="bk-date" type="date"/></div>
       <div class="fg"><label class="fl">Time</label><input class="fc" id="bk-time" type="time" value="10:00"/></div>
     </div>
-    <div class="fg"><label class="fl">Message (optional)</label><textarea class="fc" id="bk-message" placeholder="Any details, duration, group size…"></textarea></div>
+    <div class="fg">
+      <label class="fl">Message (optional)</label>
+      <textarea class="fc" id="bk-message" placeholder="Any details, duration, group size…"></textarea>
+    </div>
     <div class="modal-actions">
+      <button class="btn-sec" onclick="closeBkModal()">Cancel</button>
       <button class="btn-p" onclick="submitBookingRequest()">Send Request</button>
-      <button class="btn-sec" onclick="closeBkModal()" style="width:100%;text-align:center">Cancel</button>
     </div>
   </div>
 </div>
@@ -355,57 +340,47 @@ async function api(path, method, body) {
   if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
   return json;
 }
-
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
-// BOOT
+// --- BOOT ---
 const params = new URLSearchParams(location.search);
 const talentId = params.get('id') || '';
 const talentNameParam = params.get('name') || 'Talent';
-if(!talentId){ location.href='/index.html'; throw new Error('No talent ID'); }
+
+// Check auth from localStorage OR URL params
+const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+if (!talentId) { location.href='/index.html'; throw new Error('No talent ID'); }
 
 let TALENT = { id: talentId, name: talentNameParam };
+
 document.getElementById('top-name').textContent = talentNameParam;
 document.getElementById('top-avatar').textContent = ini(talentNameParam);
-document.getElementById('prof-big-avatar').textContent = ini(talentNameParam);
-document.getElementById('prof-id-display').textContent = talentId;
-document.getElementById('msgs-talent-name') && (document.getElementById('msgs-talent-name').textContent = talentNameParam);
+document.getElementById('app-screen').style.display = 'flex';
 
-function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
+// Load profile and schedule
+loadProfile();
+loadProperties();
+renderSchedule();
+loadBookingRequests();
+loadRatings();
 
-// ── PANEL NAVIGATION ──
-let currentPanel = null;
-const panelLoaders = {
-  schedule: ()=>{ renderSchedule(); },
-  messages: ()=>{ loadTalentMessages(); document.getElementById('msg-badge').style.display='none'; },
-  booking: ()=>{ loadBookingRequests(); },
-  ratings: ()=>{ loadRatings(); },
-  earnings: ()=>{ loadEarnings(); },
-  profile: ()=>{}
-};
-
-function showPanel(id){
-  // hide all
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  // show selected
-  const panel = document.getElementById('panel-'+id);
-  if(panel){ panel.classList.add('active'); }
-  const nav = document.getElementById('nav-'+id);
-  if(nav){ nav.classList.add('active'); }
-  currentPanel = id;
-  if(panelLoaders[id]) panelLoaders[id]();
+function signOut(){
+  localStorage.removeItem('bc_me');
+  location.href = '/index.html';
 }
 
-// Start with all collapsed — no panel active
-// (user taps a nav item to open)
+// --- SIDEBAR TOGGLE ---
+let sidebarOpen = true;
+function toggleSidebar(){
+  sidebarOpen = !sidebarOpen;
+  const sb = document.getElementById('profile-sidebar');
+  if(sidebarOpen){ sb.classList.remove('collapsed'); }
+  else { sb.classList.add('collapsed'); }
+}
 
-// ── PROFILE ──
+// --- PROFILE ---
 let profileExists = false;
-document.getElementById('p-cat').addEventListener('change', function(){
-  document.getElementById('cat-others-fg').style.display = this.value==='Others' ? '' : 'none';
-});
 function fillForm(data){
   document.getElementById('p-name').value = data.name || '';
   document.getElementById('p-age').value = data.age || '';
@@ -424,141 +399,389 @@ function fillForm(data){
   if(data.bio_url) document.getElementById('p-bio-current').innerHTML = `Current: <a href="${data.bio_url}" target="_blank" style="color:var(--br)">Download ${data.bio_name||'file'}</a>`;
   if(data.venues) setVenueChecks(data.venues);
 }
+
 async function loadProfile(){
   try{
     const rows = await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*') || [];
-    if(rows.length){ profileExists=true; fillForm(rows[0]); document.getElementById('prof-heading').textContent='Edit Profile'; document.getElementById('save-btn').textContent='Update profile'; }
-    else { document.getElementById('p-name').value = TALENT.name || ''; }
+    if(rows.length){
+      profileExists = true;
+      fillForm(rows[0]);
+      document.getElementById('prof-heading').textContent = 'Edit Profile';
+      document.getElementById('save-btn').textContent = 'Update profile';
+    } else {
+      document.getElementById('p-name').value = TALENT.name || '';
+    }
   } catch(e){ console.error(e); }
 }
+
 let ALL_PROPS = [];
 async function loadProperties(){
   ALL_PROPS = await api('/rest/v1/properties?select=name&order=name') || [];
   const el = document.getElementById('p-venues');
-  el.innerHTML = ALL_PROPS.map(p=>`<label class="opt-label"><input type="checkbox" name="venue" value="${p.name}"/> ${p.name}</label>`).join('');
+  el.innerHTML = ALL_PROPS.map(p => `
+    <label class="opt-label">
+      <input type="checkbox" name="venue" value="${p.name}"/> ${p.name}
+    </label>`).join('');
 }
-function setVenueChecks(venuesArr){ document.querySelectorAll('[name="venue"]').forEach(cb=>{ cb.checked=venuesArr.includes(cb.value); }); }
-function getVenueChecks(){ return [...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value); }
+function setVenueChecks(venuesArr){
+  document.querySelectorAll('[name="venue"]').forEach(cb => { cb.checked = venuesArr.includes(cb.value); });
+}
+function getVenueChecks(){
+  return [...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value);
+}
+
+document.getElementById('p-cat').addEventListener('change', function(){
+  document.getElementById('cat-others-fg').style.display = this.value==='Others' ? '' : 'none';
+});
+
 async function saveProfile(){
   const name = document.getElementById('p-name').value.trim();
   if(!name){ alert('Name is required'); return; }
-  const body={talent_id:talentId,name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,category:document.getElementById('p-cat').value||null,category_other:document.getElementById('p-cat').value==='Others'?document.getElementById('p-cat-other').value.trim()||null:null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
-  const btn=document.getElementById('save-btn'); btn.disabled=true; btn.textContent='Saving…';
-  async function uploadToStorage(bucket,file,folder){ const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_'); const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file}); if(!res.ok){const e=await res.json().catch(()=>{}); throw new Error(e?.message||e?.error||('Upload failed: '+res.status));} return SB+'/storage/v1/object/public/'+bucket+'/'+path; }
+  const body = {
+    talent_id: talentId, name,
+    age: parseInt(document.getElementById('p-age').value)||null,
+    phone: document.getElementById('p-phone').value.trim()||null,
+    email: document.getElementById('p-email').value.trim()||null,
+    location: document.getElementById('p-location').value.trim()||null,
+    category: document.getElementById('p-cat').value||null,
+    category_other: document.getElementById('p-cat').value==='Others' ? document.getElementById('p-cat-other').value.trim()||null : null,
+    talent_name: document.getElementById('p-talent-name').value.trim()||null,
+    tagline: document.getElementById('p-tagline').value.trim()||null,
+    description: document.getElementById('p-desc').value.trim()||null,
+    instagram: document.getElementById('p-instagram').value.trim()||null,
+    performance_link: document.getElementById('p-performance').value.trim()||null,
+    venues: getVenueChecks()
+  };
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  async function uploadToStorage(bucket, file, folder){
+    const path = folder + '/' + Date.now() + '_' + file.name.replace(/\s+/g,'_');
+    const res = await fetch(SB+'/storage/v1/object/'+bucket+'/'+path, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': file.type||'application/octet-stream', 'x-upsert': 'true' },
+      body: file
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>{}); throw new Error(e?.message||e?.error||('Upload failed: '+res.status)); }
+    return SB+'/storage/v1/object/public/'+bucket+'/'+path;
+  }
   try{
-    const photoFile=document.getElementById('p-photo').files[0]; const bioFile=document.getElementById('p-bio').files[0];
-    if(photoFile){ if(photoFile.size>5*1024*1024){alert('Photo must be under 5 MB');btn.disabled=false;btn.textContent='Save profile';return;} btn.textContent='Uploading photo…'; body.photo_url=await uploadToStorage('talent-photos',photoFile,talentId); body.photo_name=photoFile.name; }
-    if(bioFile){ if(bioFile.size>10*1024*1024){alert('CV must be under 10 MB');btn.disabled=false;btn.textContent='Save profile';return;} btn.textContent='Uploading CV…'; body.bio_url=await uploadToStorage('talent-bios',bioFile,talentId); body.bio_name=bioFile.name; }
-    btn.textContent='Saving…';
-    if(profileExists){ await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body); }
-    else { await api('/rest/v1/talent_profiles','POST',body); profileExists=true; }
+    const photoFile = document.getElementById('p-photo').files[0];
+    const bioFile   = document.getElementById('p-bio').files[0];
+    if(photoFile){
+      if(photoFile.size > 5*1024*1024){ alert('Photo must be under 5 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
+      btn.textContent = 'Uploading photo…';
+      body.photo_url = await uploadToStorage('talent-photos', photoFile, talentId);
+      body.photo_name = photoFile.name;
+    }
+    if(bioFile){
+      if(bioFile.size > 10*1024*1024){ alert('CV must be under 10 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
+      btn.textContent = 'Uploading CV…';
+      body.bio_url = await uploadToStorage('talent-bios', bioFile, talentId);
+      body.bio_name = bioFile.name;
+    }
+    btn.textContent = 'Saving…';
+    if(profileExists){
+      await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);
+    } else {
+      await api('/rest/v1/talent_profiles','POST',body);
+      profileExists = true;
+    }
     await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
-    document.getElementById('prof-heading').textContent='Edit Profile';
-    if(photoFile) document.getElementById('p-photo-current').innerHTML=`Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
-    if(bioFile) document.getElementById('p-bio-current').innerHTML=`Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
-    const s=document.getElementById('save-status'); s.style.display=''; setTimeout(()=>s.style.display='none',2500);
-    toast('Profile saved ✓'); btn.textContent='Update profile';
-  } catch(e){ alert('Error: '+e.message); btn.textContent='Save profile'; } finally { btn.disabled=false; }
+    document.getElementById('prof-heading').textContent = 'Edit Profile';
+    if(photoFile) document.getElementById('p-photo-current').innerHTML = `Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+    if(bioFile)   document.getElementById('p-bio-current').innerHTML   = `Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
+    const s = document.getElementById('save-status');
+    s.style.display=''; setTimeout(()=>s.style.display='none', 2500);
+    toast('Profile saved ✓');
+    btn.textContent = 'Update profile';
+  } catch(e){
+    alert('Error: '+e.message);
+    btn.textContent = 'Save profile';
+  } finally {
+    btn.disabled = false;
+  }
 }
 
-// ── SCHEDULE ──
-let scheduleData={}, schedYear, schedMonth, modalDateStr=null, modalStatus='available';
-const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+// --- SCHEDULE ---
+let scheduleData = {};
+let schedYear, schedMonth;
+let modalDateStr = null;
+let modalStatus = 'available';
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function changeMonth(d){
+  schedMonth += d;
+  if(schedMonth > 11){ schedMonth=0; schedYear++; }
+  if(schedMonth < 0){ schedMonth=11; schedYear--; }
+  renderSchedule();
+}
+
 function fmt12(t){ if(!t) return ''; const [h,m]=t.split(':'); const hr=+h; return (hr%12||12)+':'+(m||'00')+' '+(hr<12?'AM':'PM'); }
-function changeMonth(d){ schedMonth+=d; if(schedMonth>11){schedMonth=0;schedYear++;} if(schedMonth<0){schedMonth=11;schedYear--;} renderSchedule(); }
+
 async function renderSchedule(){
-  const now=new Date();
-  if(schedYear===undefined){schedYear=now.getFullYear();schedMonth=now.getMonth();}
-  document.getElementById('month-label').textContent=MONTHS[schedMonth]+' '+schedYear;
-  const monthStr=schedYear+'-'+String(schedMonth+1).padStart(2,'0');
-  try{ const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status,time_start,time_end')||[]; scheduleData={}; rows.forEach(r=>scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end}); } catch(e){ console.error(e); }
-  const grid=document.getElementById('sched-grid');
-  const firstDay=new Date(schedYear,schedMonth,1).getDay();
-  const daysInMonth=new Date(schedYear,schedMonth+1,0).getDate();
-  const today=new Date().toISOString().slice(0,10);
-  let html='';
-  for(let i=0;i<firstDay;i++) html+='<div></div>';
+  const now = new Date();
+  if(schedYear===undefined){ schedYear=now.getFullYear(); schedMonth=now.getMonth(); }
+  document.getElementById('month-label').textContent = MONTHS[schedMonth] + ' ' + schedYear;
+  const monthStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0');
+  try{
+    const rows = await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status,time_start,time_end') || [];
+    scheduleData = {};
+    rows.forEach(r => scheduleData[r.date] = {status:r.status, time_start:r.time_start, time_end:r.time_end});
+  } catch(e){ console.error(e); }
+
+  const grid = document.getElementById('sched-grid');
+  const firstDay = new Date(schedYear, schedMonth, 1).getDay();
+  const daysInMonth = new Date(schedYear, schedMonth+1, 0).getDate();
+  const today = new Date().toISOString().slice(0,10);
+  let html = '';
+  for(let i=0;i<firstDay;i++) html += '<div></div>';
   for(let d=1;d<=daysInMonth;d++){
-    const dateStr=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const entry=scheduleData[dateStr]; const status=entry?.status||'';
-    const cls=status==='busy'?'sched-day busy':status==='available'?'sched-day available':'sched-day';
-    const isToday=dateStr===today;
-    let timeLabel='';
-    if(status==='busy') timeLabel=`<div class="day-status">Busy</div>`;
-    else if(status==='available') timeLabel=`<div class="day-status">Avail</div>`;
-    html+=`<div class="${cls}${isToday?' today-ring':''}" onclick="openDayModal('${dateStr}')"><div class="day-num" style="${isToday?'color:var(--br)':''}">${d}</div>${timeLabel}</div>`;
+    const dateStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const entry = scheduleData[dateStr];
+    const status = entry?.status || '';
+    const cls = status==='busy' ? 'sched-day busy' : status==='available' ? 'sched-day available' : 'sched-day';
+    const isToday = dateStr===today;
+    let timeLabel = '';
+    if(status==='available' && entry?.time_start && entry?.time_end)
+      timeLabel = `<div class="day-status" style="font-size:8px">${fmt12(entry.time_start)}–${fmt12(entry.time_end)}</div>`;
+    else if(status==='busy')
+      timeLabel = `<div class="day-status">Busy</div>`;
+    else if(status==='available')
+      timeLabel = `<div class="day-status">Available</div>`;
+    html += `<div class="${cls}${isToday?' today-ring':''}" onclick="openDayModal('${dateStr}')">
+      <div class="day-num" style="${isToday?'color:var(--br)':''}">${d}</div>
+      ${timeLabel}
+    </div>`;
   }
-  grid.innerHTML=html;
+  grid.innerHTML = html;
 }
-function setModalStatus(s){ modalStatus=s; document.getElementById('btn-busy').className='stgl-btn'+(s==='busy'?' busy-on':''); document.getElementById('btn-avail').className='stgl-btn'+(s==='available'?' avail-on':''); document.getElementById('time-fields').style.display=s==='available'?'':'none'; }
-function openDayModal(dateStr){ modalDateStr=dateStr; const entry=scheduleData[dateStr]; const d=new Date(dateStr+'T00:00:00'); document.getElementById('modal-date').textContent=DAY_NAMES[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); document.getElementById('modal-title').textContent=entry?'Edit day status':'Set day status'; const curStatus=entry?.status||'available'; document.getElementById('modal-start').value=entry?.time_start?.slice(0,5)||'09:00'; document.getElementById('modal-end').value=entry?.time_end?.slice(0,5)||'17:00'; document.getElementById('modal-remove-btn').style.display=entry?'':'none'; setModalStatus(curStatus); document.getElementById('day-modal').style.display='flex'; }
-function closeDayModal(e){ if(e&&e.target!==document.getElementById('day-modal')) return; document.getElementById('day-modal').style.display='none'; modalDateStr=null; }
+
+function setModalStatus(s){
+  modalStatus = s;
+  document.getElementById('btn-busy').className = 'stgl-btn'+(s==='busy'?' busy-on':'');
+  document.getElementById('btn-avail').className = 'stgl-btn'+(s==='available'?' avail-on':'');
+  document.getElementById('time-fields').style.display = s==='available' ? '' : 'none';
+}
+
+function openDayModal(dateStr){
+  modalDateStr = dateStr;
+  const entry = scheduleData[dateStr];
+  const d = new Date(dateStr+'T00:00:00');
+  document.getElementById('modal-date').textContent = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  document.getElementById('modal-title').textContent = entry ? 'Edit day status' : 'Set day status';
+  const curStatus = entry?.status || 'available';
+  document.getElementById('modal-start').value = entry?.time_start?.slice(0,5) || '09:00';
+  document.getElementById('modal-end').value = entry?.time_end?.slice(0,5) || '17:00';
+  document.getElementById('modal-remove-btn').style.display = entry ? '' : 'none';
+  setModalStatus(curStatus);
+  document.getElementById('day-modal').style.display = 'flex';
+}
+
+function closeDayModal(e){
+  if(e && e.target !== document.getElementById('day-modal')) return;
+  document.getElementById('day-modal').style.display = 'none';
+  modalDateStr = null;
+}
+
 async function saveDaySlot(){
-  if(modalStatus==='available'){ const start=document.getElementById('modal-start').value; const end=document.getElementById('modal-end').value; if(!start||!end){toast('Please set both times');return;} if(end<=start){toast('End time must be after start time');return;} const entry=scheduleData[modalDateStr]; const payload={talent_id:talentId,date:modalDateStr,status:'available',time_start:start,time_end:end}; try{ if(entry){await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:start,time_end:end});}else{await api('/rest/v1/talent_schedule','POST',payload);} }catch(e){toast('Error: '+e.message);return;} }
-  else { const entry=scheduleData[modalDateStr]; const payload={talent_id:talentId,date:modalDateStr,status:'busy',time_start:null,time_end:null}; try{ if(entry){await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'busy',time_start:null,time_end:null});}else{await api('/rest/v1/talent_schedule','POST',payload);} }catch(e){toast('Error: '+e.message);return;} }
-  document.getElementById('day-modal').style.display='none'; modalDateStr=null; await renderSchedule(); toast('Saved ✓');
-}
-async function removeDay(){ try{ await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE'); document.getElementById('day-modal').style.display='none'; modalDateStr=null; await renderSchedule(); toast('Removed'); }catch(e){toast('Error: '+e.message);} }
-
-// ── BOOKING REQUESTS ──
-async function loadBookingRequests(){
-  const el=document.getElementById('booking-requests-list');
-  try{
-    const rows=await api('/rest/v1/talent_booking_requests?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20')||[];
-    if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No booking requests yet</div>';return;}
-    el.innerHTML=rows.map(r=>{
-      const statusColor=r.status==='confirmed'?'var(--g)':r.status==='declined'?'var(--r)':'var(--a)';
-      const statusLabel=r.status==='confirmed'?'✓ Confirmed':r.status==='declined'?'✕ Declined':'⏳ Pending';
-      return `<div class="booking-card ${r.status||'pending'}"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px"><div><div style="font-size:14px;font-weight:500">${r.property_name||'—'}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">${r.requested_date||''} ${r.requested_time?'· '+fmt12(r.requested_time):''}</div>${r.message?`<div style="font-size:13px;margin-top:6px;color:var(--text)">${r.message}</div>`:''}<div style="font-size:11px;color:var(--muted);margin-top:6px">Requested by: ${r.requested_by||'Office'}</div></div><span style="font-size:12px;font-weight:500;color:${statusColor};white-space:nowrap;flex-shrink:0">${statusLabel}</span></div></div>`;
-    }).join('');
-  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Booking requests unavailable</div>';}
-}
-function openBookingRequestModal(){ document.getElementById('bk-property').value=''; document.getElementById('bk-date').value=new Date().toISOString().slice(0,10); document.getElementById('bk-time').value='10:00'; document.getElementById('bk-message').value=''; document.getElementById('bk-modal').style.display='flex'; }
-function closeBkModal(e){ if(e&&e.target!==document.getElementById('bk-modal'))return; document.getElementById('bk-modal').style.display='none'; }
-async function submitBookingRequest(){ const property_name=document.getElementById('bk-property').value.trim(); const requested_date=document.getElementById('bk-date').value; const requested_time=document.getElementById('bk-time').value; const message=document.getElementById('bk-message').value.trim(); if(!property_name||!requested_date){toast('Please fill property and date');return;} try{ await api('/rest/v1/talent_booking_requests','POST',{talent_id:talentId,talent_name:talentNameParam,property_name,requested_date,requested_time:requested_time||null,message:message||null,requested_by:talentNameParam,status:'pending',created_at:new Date().toISOString()}); document.getElementById('bk-modal').style.display='none'; toast('Booking request sent ✓'); loadBookingRequests(); }catch(e){toast('Error: '+e.message);} }
-
-// ── RATINGS ──
-async function loadRatings(){
-  const el=document.getElementById('ratings-list');
-  try{
-    const rows=await api('/rest/v1/talent_ratings?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20')||[];
-    if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No ratings yet</div>';return;}
-    const avg=rows.reduce((s,r)=>s+(r.rating||0),0)/rows.length;
-    el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><div class="stars">${[1,2,3,4,5].map(i=>`<span class="star${i<=Math.round(avg)?'':' empty'}">★</span>`).join('')}</div><span style="font-size:16px;font-weight:500">${avg.toFixed(1)}</span><span style="font-size:13px;color:var(--muted)">${rows.length} review${rows.length!==1?'s':''}</span></div>`+rows.map(r=>`<div class="card" style="padding:14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="stars">${[1,2,3,4,5].map(i=>`<span class="star" style="font-size:14px${i<=r.rating?'':';color:var(--border)'}">${i<=r.rating?'★':'☆'}</span>`).join('')}</div><span style="font-size:12px;font-weight:500">${r.guest_name||'Guest'}</span><span style="font-size:11px;color:var(--muted);margin-left:auto">${r.created_at?new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span></div>${r.review?`<div style="font-size:13px;color:var(--text);line-height:1.5">${r.review}</div>`:''}</div>`).join('');
-  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Ratings unavailable</div>';}
-}
-
-// ── EARNINGS (placeholder) ──
-async function loadEarnings(){
-  // Placeholder — update with real API when available
-  document.getElementById('earn-total').textContent = '—';
-  document.getElementById('earn-month').textContent = '—';
-}
-
-// ── MESSAGES ──
-async function loadTalentMessages(){
-  const el=document.getElementById('talent-msgs-list');
-  try{
-    const rows=await api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.asc')||[];
-    if(!rows.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No messages yet — say hello to the office!</div>';return;}
-    el.innerHTML=rows.map(m=>{const isMe=m.from_role==='talent';return `<div style="display:flex;justify-content:${isMe?'flex-end':'flex-start'}"><div style="max-width:78%;background:${isMe?'var(--br)':'var(--white)'};color:${isMe?'#fff':'var(--text)'};border:1px solid ${isMe?'var(--br)':'var(--border)'};border-radius:12px;padding:10px 14px"><div style="font-size:10px;opacity:.65;margin-bottom:4px">${isMe?'You':'Office'} · ${m.created_at?new Date(m.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div><div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div></div></div>`;}).join('');
-    el.scrollTop=el.scrollHeight;
-  }catch(e){el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Could not load messages.</div>`;}
-}
-async function sendTalentMsg(){ const input=document.getElementById('talent-msg-input'); const txt=input.value.trim(); if(!txt)return; try{ await api('/rest/v1/internal_messages','POST',{talent_id:talentId,talent_name:talentNameParam,from_role:'talent',from_name:talentNameParam,message:txt,created_at:new Date().toISOString()}); input.value=''; input.style.height='44px'; await loadTalentMessages(); }catch(e){toast('Send failed: '+e.message);} }
-
-// Poll badge when not on messages
-setInterval(()=>{
-  if(currentPanel!=='messages'){
-    api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&from_role=eq.office&order=created_at.desc&limit=1&select=created_at')
-      .then(rows=>{ if(rows&&rows.length) document.getElementById('msg-badge').style.display=''; }).catch(()=>{});
+  if(modalStatus === 'available'){
+    const start = document.getElementById('modal-start').value;
+    const end = document.getElementById('modal-end').value;
+    if(!start || !end){ toast('Please set both times'); return; }
+    if(end <= start){ toast('End time must be after start time'); return; }
+    const entry = scheduleData[modalDateStr];
+    const payload = { talent_id: talentId, date: modalDateStr, status: 'available', time_start: start, time_end: end };
+    try{
+      if(entry){ await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:start,time_end:end}); }
+      else { await api('/rest/v1/talent_schedule','POST',payload); }
+    } catch(e){ toast('Error: '+e.message); return; }
+  } else {
+    // Busy — no times
+    const entry = scheduleData[modalDateStr];
+    const payload = { talent_id: talentId, date: modalDateStr, status: 'busy', time_start: null, time_end: null };
+    try{
+      if(entry){ await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'busy',time_start:null,time_end:null}); }
+      else { await api('/rest/v1/talent_schedule','POST',payload); }
+    } catch(e){ toast('Error: '+e.message); return; }
   }
-},30000);
+  document.getElementById('day-modal').style.display = 'none';
+  modalDateStr = null;
+  await renderSchedule();
+  toast('Saved ✓');
+}
 
-// Init data loads (silent background)
-loadProfile();
-loadProperties();
+async function removeDay(){
+  try{
+    await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE');
+    document.getElementById('day-modal').style.display = 'none';
+    modalDateStr = null;
+    await renderSchedule();
+    toast('Removed');
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// --- BOOKING REQUESTS ---
+async function loadBookingRequests(){
+  const el = document.getElementById('booking-requests-list');
+  try{
+    const rows = await api('/rest/v1/talent_booking_requests?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20') || [];
+    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No booking requests yet</div>'; return; }
+    el.innerHTML = rows.map(r => {
+      const statusColor = r.status==='confirmed' ? 'var(--g)' : r.status==='declined' ? 'var(--r)' : 'var(--a)';
+      const statusLabel = r.status==='confirmed' ? '✓ Confirmed' : r.status==='declined' ? '✕ Declined' : '⏳ Pending';
+      return `<div class="booking-card ${r.status||'pending'}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-size:14px;font-weight:500">${r.property_name||'—'}</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">${r.requested_date||''} ${r.requested_time ? '· ' + fmt12(r.requested_time) : ''}</div>
+            ${r.message ? `<div style="font-size:13px;margin-top:6px;color:var(--text)">${r.message}</div>` : ''}
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">Requested by: ${r.requested_by||'Office'}</div>
+          </div>
+          <span style="font-size:12px;font-weight:500;color:${statusColor};white-space:nowrap;flex-shrink:0">${statusLabel}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    el.innerHTML='<div style="font-size:13px;color:var(--muted)">Booking requests unavailable</div>';
+  }
+}
+
+function openBookingRequestModal(){
+  document.getElementById('bk-property').value='';
+  document.getElementById('bk-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('bk-time').value='10:00';
+  document.getElementById('bk-message').value='';
+  document.getElementById('bk-modal').style.display='flex';
+}
+function closeBkModal(e){
+  if(e && e.target !== document.getElementById('bk-modal')) return;
+  document.getElementById('bk-modal').style.display='none';
+}
+async function submitBookingRequest(){
+  const property_name = document.getElementById('bk-property').value.trim();
+  const requested_date = document.getElementById('bk-date').value;
+  const requested_time = document.getElementById('bk-time').value;
+  const message = document.getElementById('bk-message').value.trim();
+  if(!property_name || !requested_date){ toast('Please fill property and date'); return; }
+  try{
+    await api('/rest/v1/talent_booking_requests','POST',{
+      talent_id: talentId,
+      talent_name: talentNameParam,
+      property_name,
+      requested_date,
+      requested_time: requested_time||null,
+      message: message||null,
+      requested_by: talentNameParam,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    });
+    document.getElementById('bk-modal').style.display='none';
+    toast('Booking request sent ✓');
+    loadBookingRequests();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// --- RATINGS ---
+async function loadRatings(){
+  const el = document.getElementById('ratings-list');
+  try{
+    const rows = await api('/rest/v1/talent_ratings?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20') || [];
+    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No ratings yet</div>'; return; }
+    const avg = rows.reduce((s,r)=>s+(r.rating||0),0)/rows.length;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div class="stars">${[1,2,3,4,5].map(i=>`<span class="star${i<=Math.round(avg)?'':' empty'}">★</span>`).join('')}</div>
+      <span style="font-size:16px;font-weight:500">${avg.toFixed(1)}</span>
+      <span style="font-size:13px;color:var(--muted)">${rows.length} review${rows.length!==1?'s':''}</span>
+    </div>` +
+    rows.map(r=>`<div class="card" style="padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div class="stars">${[1,2,3,4,5].map(i=>`<span class="star" style="font-size:14px${i<=r.rating?'':';color:var(--border)'}">${i<=r.rating?'★':'☆'}</span>`).join('')}</div>
+        <span style="font-size:12px;font-weight:500">${r.guest_name||'Guest'}</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:auto">${r.created_at?new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span>
+      </div>
+      ${r.review ? `<div style="font-size:13px;color:var(--text);line-height:1.5">${r.review}</div>` : ''}
+    </div>`).join('');
+  } catch(e){
+    el.innerHTML='<div style="font-size:13px;color:var(--muted)">Ratings unavailable</div>';
+  }
+}
+// --- MAIN TAB SWITCHING ---
+function setMainTab(id, btn){
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('panel-schedule').style.display = id==='schedule' ? '' : 'none';
+  document.getElementById('panel-messages').style.display = id==='messages' ? '' : 'none';
+  document.getElementById('booking-btn').style.display = id==='schedule' ? '' : 'none';
+  if(id==='messages'){
+    document.getElementById('msg-badge').style.display='none';
+    loadTalentMessages();
+  }
+}
+
+// --- TALENT MESSAGES (linked to internal_messages via talent_id) ---
+document.getElementById('msgs-talent-name').textContent = talentNameParam;
+
+async function loadTalentMessages(){
+  const el = document.getElementById('talent-msgs-list');
+  try{
+    const rows = await api(
+      '/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.asc'
+    ) || [];
+    if(!rows.length){
+      el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No messages yet — say hello to the office!</div>';
+      return;
+    }
+    el.innerHTML = rows.map(m => {
+      const isMe = m.from_role === 'talent';
+      return `<div style="display:flex;justify-content:${isMe?'flex-end':'flex-start'}">
+        <div style="max-width:75%;background:${isMe?'var(--br)':'var(--white)'};color:${isMe?'#fff':'var(--text)'};border:1px solid ${isMe?'var(--br)':'var(--border)'};border-radius:12px;padding:10px 14px">
+          <div style="font-size:10px;opacity:.65;margin-bottom:4px">${isMe?'You':'Office'} · ${m.created_at ? new Date(m.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</div>
+          <div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div>
+        </div>
+      </div>`;
+    }).join('');
+    // Scroll to bottom
+    el.scrollTop = el.scrollHeight;
+  } catch(e){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">
+      Could not load messages.<br><span style="font-size:11px">Make sure <code>talent_id</code> column exists on <code>internal_messages</code></span></div>`;
+  }
+}
+
+async function sendTalentMsg(){
+  const input = document.getElementById('talent-msg-input');
+  const txt = input.value.trim();
+  if(!txt) return;
+  try{
+    await api('/rest/v1/internal_messages','POST',{
+      talent_id: talentId,
+      talent_name: talentNameParam,
+      from_role: 'talent',
+      from_name: talentNameParam,
+      message: txt,
+      created_at: new Date().toISOString()
+    });
+    input.value='';
+    input.style.height='42px';
+    await loadTalentMessages();
+  } catch(e){ toast('Send failed: '+e.message); }
+}
+
+// Poll for new messages every 30s when messages tab active
+setInterval(()=>{
+  if(document.getElementById('panel-messages').style.display !== 'none') loadTalentMessages();
+  // Badge check when on schedule tab
+  else {
+    api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&from_role=eq.office&order=created_at.desc&limit=1&select=created_at')
+      .then(rows=>{
+        if(rows && rows.length){
+          const badge = document.getElementById('msg-badge');
+          badge.style.display='';
+        }
+      }).catch(()=>{});
+  }
+}, 30000);
 </script>
 </body>
 </html>
