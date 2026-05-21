@@ -2,305 +2,184 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Banyan Circle — Talent Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
 <style>
-/* ── OUTER SHELL (phone frame) ── */
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:#1a1a1a;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px 16px;
-  font-family:'DM Sans',sans-serif;
-}
-.phone-shell{
-  width:390px;
-  height:844px;
-  border-radius:48px;
-  background:#000;
-  box-shadow:
-    0 0 0 1px #3a3a3a,
-    0 0 0 3px #1a1a1a,
-    0 30px 80px rgba(0,0,0,.7),
-    inset 0 0 0 2px #2a2a2a;
-  position:relative;
-  overflow:hidden;
-  flex-shrink:0;
-}
-/* notch */
-.phone-notch{
-  position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:120px;height:34px;
-  background:#000;border-radius:0 0 20px 20px;
-  z-index:9999;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  padding-top:4px;
-}
-.notch-cam{width:10px;height:10px;border-radius:50%;background:#1a1a1a;border:1.5px solid #333}
-.notch-speaker{width:48px;height:5px;border-radius:3px;background:#1a1a1a}
-/* status bar */
-.status-bar{
-  position:absolute;top:0;left:0;right:0;height:44px;
-  z-index:9998;
-  display:flex;align-items:flex-end;justify-content:space-between;
-  padding:0 28px 6px;
-  background:var(--white);
-  border-bottom:none;
-}
-.status-time{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px}
-.status-icons{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text)}
-/* side buttons */
-.phone-btn-vol{position:absolute;left:-3px;top:120px;width:3px;height:32px;background:#333;border-radius:2px 0 0 2px}
-.phone-btn-vol2{position:absolute;left:-3px;top:162px;width:3px;height:32px;background:#333;border-radius:2px 0 0 2px}
-.phone-btn-pwr{position:absolute;right:-3px;top:140px;width:3px;height:56px;background:#333;border-radius:0 2px 2px 0}
-/* home indicator */
-.home-indicator{
-  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
-  width:120px;height:5px;background:rgba(0,0,0,.3);border-radius:3px;
-  z-index:9999;
-}
-
-/* ── APP FRAME ── */
-.app-frame{
-  position:absolute;
-  top:0;left:0;right:0;bottom:0;
-  border-radius:47px;
-  overflow:hidden;
-}
-iframe{
-  width:100%;
-  height:100%;
-  border:none;
-  display:block;
-}
-
-/* ── RESPONSIVE: on small screens, fill viewport ── */
-@media(max-width:440px){
-  body{padding:0;background:#F9F8F6;align-items:stretch}
-  .phone-shell{width:100%;height:100vh;border-radius:0;box-shadow:none}
-  .phone-notch,.phone-btn-vol,.phone-btn-vol2,.phone-btn-pwr{display:none}
-  .home-indicator{display:none}
-  .app-frame{border-radius:0}
-}
-</style>
-</head>
-<body>
-
-<div class="phone-shell">
-  <!-- Physical details -->
-  <div class="phone-btn-vol"></div>
-  <div class="phone-btn-vol2"></div>
-  <div class="phone-btn-pwr"></div>
-  <div class="home-indicator"></div>
-
-  <div class="app-frame">
-    <iframe id="app" srcdoc="" title="Banyan Circle Talent Portal"></iframe>
-  </div>
-  <div class="phone-notch">
-    <div class="notch-cam"></div>
-    <div class="notch-speaker"></div>
-  </div>
-</div>
-
-<script>
-// Inject the app HTML into the iframe via srcdoc
-const appHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Talent Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
-  --b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
+  --text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
   --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
-  --nav-h:64px;--top-h:88px;
+  --nav-h:60px;--top-h:52px;
 }
-html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+html{height:100%}
+body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;position:fixed;width:100%}
 
-/* ── STATUS BAR SPACER ── */
-.status-spacer{
-  position:fixed;top:0;left:0;right:0;height:44px;z-index:60;
-  background:var(--white);
-  display:flex;align-items:flex-end;justify-content:space-between;
-  padding:0 20px 6px;
-  border-bottom:none;
-}
-.status-time{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px}
-.status-icons{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text)}
-.status-signal{display:flex;gap:1.5px;align-items:flex-end;height:12px}
-.bar{width:3px;background:var(--text);border-radius:1px}
-
-/* ── TOP BAR ── */
+/* TOP BAR */
 .top-bar{
-  position:fixed;top:44px;left:0;right:0;height:44px;z-index:50;
+  position:fixed;top:0;left:0;right:0;height:var(--top-h);z-index:50;
   background:var(--white);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:10px;
+  display:flex;align-items:center;padding:0 14px;gap:8px;
 }
-.top-logo{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);flex:1}
-.avatar{width:30px;height:30px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--br);flex-shrink:0}
-.top-name{font-size:12px;font-weight:500;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.btn-signout{font-size:10px;padding:4px 9px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-family:inherit}
+.top-logo{font-family:'Playfair Display',serif;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--br)}
+.btn-signout{font-size:11px;padding:4px 10px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:inherit}
 
-/* ── BOTTOM NAV ── */
+/* BOTTOM NAV */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:50;
   background:var(--white);border-top:1px solid var(--border);
-  display:flex;align-items:stretch;
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  display:flex;
 }
-.nav-item{
+.nav-btn{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;cursor:pointer;border:none;background:none;font-family:inherit;
-  color:var(--muted);font-size:9.5px;font-weight:500;letter-spacing:.2px;
-  padding:4px 2px;position:relative;transition:color .15s;
-  -webkit-tap-highlight-color:transparent;
+  gap:2px;cursor:pointer;border:none;background:none;font-family:inherit;
+  color:var(--muted);font-size:9px;font-weight:500;letter-spacing:.2px;
+  padding:6px 2px;position:relative;transition:color .15s;
 }
-.nav-item.active{color:var(--br)}
-.nav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--br);border-radius:0 0 3px 3px}
-.nav-icon{font-size:19px;line-height:1;transition:transform .15s}
-.nav-item.active .nav-icon{transform:scale(1.1)}
-.nav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--br);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;display:none}
+.nav-btn.active{color:var(--br)}
+.nav-btn.active::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;background:var(--br);border-radius:0 0 2px 2px}
+.nav-icon{font-size:22px;line-height:1}
+.nav-badge{
+  position:absolute;top:5px;right:calc(50% - 20px);
+  background:var(--br);color:#fff;font-size:9px;font-weight:700;
+  padding:1px 4px;border-radius:999px;display:none;min-width:14px;text-align:center;
+}
 
-/* ── PANELS ── */
+/* SCROLL PANELS */
 .panel{
-  position:fixed;top:var(--top-h);left:0;right:0;
-  bottom:var(--nav-h);overflow-y:auto;
-  background:var(--bg);padding:14px;
-  display:none;
-  animation:slideUp .22s ease;
+  position:fixed;
+  top:var(--top-h);
+  left:0;right:0;
+  bottom:var(--nav-h);
+  overflow-y:auto;
   -webkit-overflow-scrolling:touch;
+  background:var(--bg);
+  padding:16px 14px;
+  display:none;
 }
 .panel.active{display:block}
-@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── SHARED ── */
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
+/* Messages panel is flex column */
+#panel-messages{
+  display:none;
+  flex-direction:column;
+  padding:0;
+}
+#panel-messages.active{display:flex}
+
+/* FORM ELEMENTS */
+.fc{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;-webkit-appearance:none}
+.fc:focus{border-color:var(--br);outline:none}
+textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fg{margin-bottom:14px}
-.btn-p{padding:12px 20px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;width:100%}
-.btn-p:active{background:#712B13}
-.btn-sec{padding:11px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit}
+
+/* BUTTONS */
+.btn-p{display:block;width:100%;padding:13px 20px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center}
+.btn-p:active{opacity:.85}
+.btn-sec{display:block;width:100%;padding:12px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;text-align:center}
 .btn-sec:active{border-color:var(--br);color:var(--br)}
-.btn-g{padding:12px 20px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-danger{display:block;width:100%;padding:12px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;text-align:center}
+.btn-danger:active{background:var(--r);color:#fff}
+
+/* CARDS */
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
-.section-hdg{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;margin:0 0 14px;padding-bottom:10px;border-bottom:2px solid var(--border)}
-.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:var(--g-l);color:#27500A}
-.bdg-a{background:var(--a-l);color:#633806}
-.toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none;white-space:nowrap}
-.opt-label{display:flex;align-items:center;gap:7px;font-size:13px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;user-select:none}
-.opt-label input{accent-color:var(--br)}
+.section-hdg{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;margin:0 0 14px;padding-bottom:10px;border-bottom:1.5px solid var(--border)}
 
-/* ── PROFILE PANEL ── */
-.profile-avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:20px}
-.profile-big-avatar{width:60px;height:60px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--br);flex-shrink:0}
+/* BOOKING STATUS CARDS */
+.booking-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.booking-card.pending{border-left:3px solid var(--a)}
+.booking-card.confirmed{border-left:3px solid var(--g)}
+.booking-card.declined{border-left:3px solid var(--r)}
 
-/* ── SCHEDULE ── */
-.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.sched-day{border:1.5px solid var(--border);border-radius:7px;padding:3px 2px;text-align:center;cursor:pointer;transition:all .15s;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--white)}
-.sched-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
-.sched-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
-.sched-day.today-ring{box-shadow:0 0 0 2px var(--br)}
-.day-num{font-size:14px;font-weight:600;font-family:'Playfair Display',serif}
-.day-status{font-size:7.5px;font-weight:500;margin-top:1px}
-.sched-legend{display:flex;gap:10px;font-size:11px;color:var(--muted);margin-bottom:12px;align-items:center;flex-wrap:wrap}
-.leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.month-nav button{width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.month-nav button:active{border-color:var(--br);color:var(--br)}
-.day-label-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
-.day-label-cell{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:3px 0}
-
-/* ── BOOKING REQUESTS ── */
-.booking-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
-.booking-card.pending{border-left:4px solid var(--a)}
-.booking-card.confirmed{border-left:4px solid var(--g)}
-.booking-card.declined{border-left:4px solid var(--r)}
-
-/* ── STARS ── */
-.stars{display:flex;gap:2px}
-.star{font-size:16px;color:#C8A84B}
+/* STARS */
+.star{font-size:15px;color:#C8A84B}
 .star.empty{color:var(--border)}
 
-/* ── EARNINGS ── */
-.earnings-stat{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px;display:flex;flex-direction:column;gap:4px}
-.earnings-amount{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--text)}
-.earnings-label{font-size:12px;color:var(--muted)}
+/* SCHEDULE CALENDAR */
+.month-nav{display:flex;align-items:center;margin-bottom:12px}
+.month-nav button{width:38px;height:38px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text)}
+.month-nav button:active{border-color:var(--br);color:var(--br)}
+.month-label{font-family:'Playfair Display',serif;font-size:17px;flex:1;text-align:center}
+.sched-legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:3px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-hdr{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:4px 0}
+.cal-day{border:1px solid var(--border);border-radius:7px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;background:var(--white);transition:opacity .1s}
+.cal-day:active{opacity:.7}
+.cal-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.cal-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
+.cal-day.today-ring{box-shadow:0 0 0 2px var(--br)}
+.cal-day-num{font-size:14px;font-weight:600;font-family:'Playfair Display',serif}
+.cal-day-status{font-size:8px;font-weight:500}
 
-/* ── MODAL ── */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;padding:0}
-.modal{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;box-shadow:0 -8px 30px rgba(0,0,0,.15);max-height:85vh;overflow-y:auto}
-.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 18px}
+/* MODAL SHEET */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal-sheet{background:var(--white);border-radius:18px 18px 0 0;padding:12px 18px 32px;width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 16px}
 .modal-title{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:4px}
-.modal-date{font-size:13px;color:var(--muted);margin-bottom:18px}
-.time-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-.modal-actions{display:flex;gap:8px;flex-direction:column}
-.btn-danger{padding:11px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;width:100%}
-.btn-danger:active{background:var(--r);color:#fff}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .status-toggle{display:flex;gap:8px;margin-bottom:16px}
-.stgl-btn{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.stgl-btn{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
 .stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
+.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 
-/* ── MESSAGES ── */
-.msg-panel-inner{display:flex;flex-direction:column;height:100%}
-.msgs-list{flex:1;overflow-y:auto;padding:4px 0 12px;display:flex;flex-direction:column;gap:10px}
-.msg-input-row{display:flex;gap:8px;align-items:flex-end;padding-top:10px;border-top:1px solid var(--border);margin-top:auto}
-.msg-textarea{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;resize:none;min-height:44px;max-height:100px;overflow-y:auto;line-height:1.5}
-.msg-textarea:focus{border-color:var(--br)}
-.send-btn{padding:10px 16px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0}
+/* MESSAGES */
+.msgs-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--white);flex-shrink:0}
+.msgs-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msgs-input-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;background:var(--white);flex-shrink:0;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.msg-ta{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;resize:none;min-height:44px;max-height:100px;line-height:1.5}
+.msg-ta:focus{border-color:var(--br)}
+.send-btn{padding:10px 16px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;align-self:flex-end}
+.send-btn:active{opacity:.85}
 
-/* panel for messages is taller to allow flex col */
-#panel-messages{display:flex;flex-direction:column;padding-bottom:0}
+/* PROFILE HEADER */
+.prof-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.prof-avatar-lg{width:54px;height:54px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--br);flex-shrink:0}
+
+/* OPT LABELS */
+.opt-label{display:flex;align-items:center;gap:7px;font-size:13px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;user-select:none}
+.opt-label input{accent-color:var(--br)}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 10px);left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none;white-space:nowrap}
+
+/* EARNINGS */
+.earn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.earn-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:14px}
+.earn-amount{font-family:'Playfair Display',serif;font-size:24px;font-weight:500}
+.earn-label{font-size:11px;color:var(--muted);margin-top:2px}
 </style>
 </head>
 <body>
 
-<!-- STATUS BAR -->
-<div class="status-spacer">
-  <div class="status-time" id="status-clock">9:41</div>
-  <div class="status-icons">
-    <div class="status-signal">
-      <div class="bar" style="height:4px"></div>
-      <div class="bar" style="height:7px"></div>
-      <div class="bar" style="height:10px"></div>
-      <div class="bar" style="height:12px"></div>
-    </div>
-    <span>WiFi</span>
-    <span>🔋</span>
-  </div>
-</div>
-
 <!-- TOP BAR -->
 <div class="top-bar">
-  <div class="top-logo">Banyan Circle</div>
-  <span class="top-name" id="top-name"></span>
-  <div class="avatar" id="top-avatar">?</div>
-  <button class="btn-signout" onclick="signOut()">Sign out</button>
+  <div class="top-logo">Banyan Circle · Talent</div>
+  <div class="top-right">
+    <span style="font-size:13px;font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="top-name"></span>
+    <div class="avatar" id="top-avatar">?</div>
+    <button class="btn-signout" onclick="signOut()">Sign out</button>
+  </div>
 </div>
 
 <!-- PANEL: PROFILE -->
 <div class="panel" id="panel-profile">
-  <div class="profile-avatar-row">
-    <div class="profile-big-avatar" id="prof-big-avatar">?</div>
-    <div>
-      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500" id="prof-heading">My Profile</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">Talent ID: <span id="prof-id-display"></span></div>
+  <div class="prof-header">
+    <div class="prof-avatar-lg" id="prof-avatar-lg">?</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-family:'Playfair Display',serif;font-size:17px" id="prof-heading">My Profile</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">ID: <span id="prof-id-display"></span></div>
     </div>
-    <span id="save-status" style="font-size:12px;color:var(--g);display:none;margin-left:auto">✓ Saved</span>
+    <span id="save-status" style="font-size:12px;color:var(--g);display:none;flex-shrink:0">✓ Saved</span>
   </div>
 
-  <div class="fg"><label class="fl">Name <span style="color:var(--r)">*</span></label><input class="fc" id="p-name" placeholder="Your full name"/></div>
+  <div class="fg"><label class="fl">Name *</label><input class="fc" id="p-name" placeholder="Your full name"/></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
     <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
@@ -323,13 +202,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">Describe your talent</label><textarea class="fc" id="p-desc" placeholder="Describe the experience you create…"></textarea></div>
   <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
   <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
-  <div class="fg"><label class="fl">Your photo</label><input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/><div id="p-photo-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div></div>
-  <div class="fg"><label class="fl">Biodata / CV (PDF or Word)</label><input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/><div id="p-bio-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div></div>
+  <div class="fg"><label class="fl">Your photo</label><input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/><div id="p-photo-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
+  <div class="fg"><label class="fl">Biodata / CV (PDF or Word)</label><input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/><div id="p-bio-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
   <div class="fg">
     <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
     <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
   </div>
-  <div style="padding-bottom:8px">
+  <div style="padding-bottom:10px">
     <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
   </div>
 </div>
@@ -337,43 +216,38 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <!-- PANEL: SCHEDULE -->
 <div class="panel" id="panel-schedule">
   <div class="section-hdg">Schedule</div>
-  <div class="card" style="padding:14px">
+  <div class="card">
     <div class="month-nav">
       <button onclick="changeMonth(-1)">‹</button>
-      <div style="font-family:'Playfair Display',serif;font-size:17px;flex:1" id="month-label"></div>
+      <div class="month-label" id="month-label"></div>
       <button onclick="changeMonth(1)">›</button>
     </div>
     <div class="sched-legend">
-      <span><span class="leg-dot" style="background:#FCEBEB;border:1.5px solid #E57373"></span> Busy</span>
-      <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Available</span>
-      <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
+      <span><span class="leg-dot" style="background:#FCEBEB;border:1px solid #E57373"></span>Busy</span>
+      <span><span class="leg-dot" style="background:var(--g-l);border:1px solid #86C860"></span>Available</span>
+      <span><span class="leg-dot" style="background:var(--white);border:1px solid var(--border)"></span>Unmarked</span>
     </div>
-    <div class="day-label-row">
-      <div class="day-label-cell">Su</div><div class="day-label-cell">Mo</div><div class="day-label-cell">Tu</div>
-      <div class="day-label-cell">We</div><div class="day-label-cell">Th</div><div class="day-label-cell">Fr</div><div class="day-label-cell">Sa</div>
+    <div class="cal-grid" style="margin-bottom:3px">
+      <div class="cal-day-hdr">Su</div><div class="cal-day-hdr">Mo</div><div class="cal-day-hdr">Tu</div>
+      <div class="cal-day-hdr">We</div><div class="cal-day-hdr">Th</div><div class="cal-day-hdr">Fr</div><div class="cal-day-hdr">Sa</div>
     </div>
-    <div class="sched-grid" id="sched-grid"></div>
+    <div class="cal-grid" id="sched-grid"></div>
   </div>
-  <div style="margin-top:4px">
-    <button class="btn-p" onclick="openBookingRequestModal()" style="display:flex;align-items:center;justify-content:center;gap:6px">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Request a Booking
-    </button>
-  </div>
+  <button class="btn-p" onclick="openBookingRequestModal()" style="margin-top:4px">+ Request a Booking</button>
 </div>
 
 <!-- PANEL: MESSAGES -->
 <div class="panel" id="panel-messages">
-  <div class="section-hdg" style="display:flex;align-items:center;gap:8px">
+  <div class="msgs-header">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    Messages
-    <button onclick="loadTalentMessages()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻</button>
+    <span style="font-size:14px;font-weight:500;flex:1">Office Messages</span>
+    <button onclick="loadTalentMessages()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻ Refresh</button>
   </div>
-  <div id="talent-msgs-list" style="flex:1;overflow-y:auto;padding:4px 0 12px;display:flex;flex-direction:column;gap:10px;min-height:200px">
+  <div class="msgs-list" id="talent-msgs-list">
     <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading messages…</div>
   </div>
-  <div class="msg-input-row">
-    <textarea id="talent-msg-input" class="msg-textarea" placeholder="Write a message to the office…"
+  <div class="msgs-input-row">
+    <textarea id="talent-msg-input" class="msg-ta" placeholder="Write to the office…"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTalentMsg()}"
       oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
     <button class="send-btn" onclick="sendTalentMsg()">Send</button>
@@ -395,56 +269,42 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <!-- PANEL: EARNINGS -->
 <div class="panel" id="panel-earnings">
   <div class="section-hdg">Earnings</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-    <div class="earnings-stat">
-      <div class="earnings-amount" id="earn-total">—</div>
-      <div class="earnings-label">Total Earned</div>
-    </div>
-    <div class="earnings-stat">
-      <div class="earnings-amount" id="earn-month">—</div>
-      <div class="earnings-label">This Month</div>
-    </div>
+  <div class="earn-grid">
+    <div class="earn-card"><div class="earn-amount" id="earn-total">—</div><div class="earn-label">Total Earned</div></div>
+    <div class="earn-card"><div class="earn-amount" id="earn-month">—</div><div class="earn-label">This Month</div></div>
   </div>
-  <div class="card">
-    <div style="font-size:13px;color:var(--muted);text-align:center;padding:24px 0">Earnings details will appear here once booking payouts are processed by the office.</div>
-  </div>
+  <div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">Earnings appear once bookings are confirmed and processed by the office.</div></div>
 </div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="nav-item" id="nav-profile" onclick="showPanel('profile')">
-    <span class="nav-icon">👤</span>
-    <span>Profile</span>
+  <button class="nav-btn" id="nav-profile" onclick="showPanel('profile')">
+    <span class="nav-icon">👤</span><span>Profile</span>
   </button>
-  <button class="nav-item" id="nav-schedule" onclick="showPanel('schedule')">
-    <span class="nav-icon">📅</span>
-    <span>Schedule</span>
+  <button class="nav-btn" id="nav-schedule" onclick="showPanel('schedule')">
+    <span class="nav-icon">📅</span><span>Schedule</span>
   </button>
-  <button class="nav-item" id="nav-messages" onclick="showPanel('messages')">
-    <span class="nav-icon">💬</span>
-    <span>Messages</span>
+  <button class="nav-btn" id="nav-messages" onclick="showPanel('messages')">
+    <span class="nav-icon">💬</span><span>Messages</span>
     <span class="nav-badge" id="msg-badge">!</span>
   </button>
-  <button class="nav-item" id="nav-booking" onclick="showPanel('booking')">
-    <span class="nav-icon">📋</span>
-    <span>Requests</span>
+  <button class="nav-btn" id="nav-booking" onclick="showPanel('booking')">
+    <span class="nav-icon">📋</span><span>Requests</span>
   </button>
-  <button class="nav-item" id="nav-ratings" onclick="showPanel('ratings')">
-    <span class="nav-icon">⭐</span>
-    <span>Ratings</span>
+  <button class="nav-btn" id="nav-ratings" onclick="showPanel('ratings')">
+    <span class="nav-icon">⭐</span><span>Ratings</span>
   </button>
-  <button class="nav-item" id="nav-earnings" onclick="showPanel('earnings')">
-    <span class="nav-icon">💰</span>
-    <span>Earnings</span>
+  <button class="nav-btn" id="nav-earnings" onclick="showPanel('earnings')">
+    <span class="nav-icon">💰</span><span>Earnings</span>
   </button>
 </nav>
 
 <!-- DAY MODAL -->
-<div class="modal-backdrop" id="day-modal" style="display:none" onclick="closeDayModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
+<div class="modal-backdrop" id="day-modal" style="display:none" onclick="if(event.target===this)closeDayModal()">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
     <div class="modal-title" id="modal-title">Set day status</div>
-    <div class="modal-date" id="modal-date"></div>
+    <div class="modal-sub" id="modal-date"></div>
     <div class="status-toggle">
       <button class="stgl-btn" id="btn-busy" onclick="setModalStatus('busy')">🔴 Busy</button>
       <button class="stgl-btn" id="btn-avail" onclick="setModalStatus('available')">🟢 Available</button>
@@ -455,28 +315,28 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <div class="fg" style="margin:0"><label class="fl">To</label><input class="fc" type="time" id="modal-end" value="17:00"/></div>
       </div>
     </div>
-    <div class="modal-actions" style="margin-top:8px">
+    <div class="modal-btns">
       <button class="btn-p" onclick="saveDaySlot()">Save</button>
-      <button class="btn-danger" id="modal-remove-btn" onclick="removeDay()" style="display:none">Remove status</button>
-      <button class="btn-sec" onclick="closeDayModal()" style="width:100%;text-align:center">Cancel</button>
+      <button class="btn-danger" id="modal-remove-btn" style="display:none" onclick="removeDay()">Remove status</button>
+      <button class="btn-sec" onclick="closeDayModal()">Cancel</button>
     </div>
   </div>
 </div>
 
 <!-- BOOKING REQUEST MODAL -->
-<div class="modal-backdrop" id="bk-modal" style="display:none" onclick="closeBkModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-title" style="margin-bottom:18px">Request a Booking</div>
+<div class="modal-backdrop" id="bk-modal" style="display:none" onclick="if(event.target===this)closeBkModal()">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="modal-title" style="margin-bottom:16px">Request a Booking</div>
     <div class="fg"><label class="fl">Property / Event</label><input class="fc" id="bk-property" placeholder="e.g. Banyan Circle — Morjim"/></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label class="fl">Date</label><input class="fc" id="bk-date" type="date"/></div>
       <div class="fg"><label class="fl">Time</label><input class="fc" id="bk-time" type="time" value="10:00"/></div>
     </div>
-    <div class="fg"><label class="fl">Message (optional)</label><textarea class="fc" id="bk-message" placeholder="Any details, duration, group size…"></textarea></div>
-    <div class="modal-actions">
+    <div class="fg"><label class="fl">Message (optional)</label><textarea class="fc" id="bk-message" placeholder="Duration, group size, notes…"></textarea></div>
+    <div class="modal-btns">
       <button class="btn-p" onclick="submitBookingRequest()">Send Request</button>
-      <button class="btn-sec" onclick="closeBkModal()" style="width:100%;text-align:center">Cancel</button>
+      <button class="btn-sec" onclick="closeBkModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -484,14 +344,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
-// Live clock
-function updateClock(){ const n=new Date(); const h=n.getHours()%12||12; const m=String(n.getMinutes()).padStart(2,'0'); document.getElementById('status-clock').textContent=h+':'+m; }
-updateClock(); setInterval(updateClock,10000);
-
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-async function api(path, method, body) {
+async function api(path, method, body){
   const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204) return null;
@@ -499,208 +355,190 @@ async function api(path, method, body) {
   if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
   return json;
 }
-
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2400);}
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
 // BOOT
-const params = new URLSearchParams(location.search);
-const talentId = params.get('id') || '';
-const talentNameParam = params.get('name') || 'Talent';
-if(!talentId){ location.href='/index.html'; throw new Error('No talent ID'); }
+const params=new URLSearchParams(location.search);
+const talentId=params.get('id')||'';
+const talentNameParam=params.get('name')||'Talent';
+if(!talentId){location.href='/index.html';throw new Error('No talent ID');}
 
-let TALENT = { id: talentId, name: talentNameParam };
-document.getElementById('top-name').textContent = talentNameParam;
-document.getElementById('top-avatar').textContent = ini(talentNameParam);
-document.getElementById('prof-big-avatar').textContent = ini(talentNameParam);
-document.getElementById('prof-id-display').textContent = talentId;
-document.getElementById('msgs-talent-name') && (document.getElementById('msgs-talent-name').textContent = talentNameParam);
+document.getElementById('top-name').textContent=talentNameParam;
+document.getElementById('top-avatar').textContent=ini(talentNameParam);
+document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
+document.getElementById('prof-id-display').textContent=talentId;
 
-function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
+function signOut(){localStorage.removeItem('bc_me');location.href='/index.html';}
 
-// ── PANEL NAVIGATION ──
-let currentPanel = null;
-const panelLoaders = {
-  schedule: ()=>{ renderSchedule(); },
-  messages: ()=>{ loadTalentMessages(); document.getElementById('msg-badge').style.display='none'; },
-  booking: ()=>{ loadBookingRequests(); },
-  ratings: ()=>{ loadRatings(); },
-  earnings: ()=>{ loadEarnings(); },
-  profile: ()=>{}
+// PANEL NAVIGATION — all collapsed on load
+let currentPanel=null;
+const loaders={
+  schedule:()=>renderSchedule(),
+  messages:()=>{loadTalentMessages();document.getElementById('msg-badge').style.display='none';},
+  booking:()=>loadBookingRequests(),
+  ratings:()=>loadRatings(),
+  earnings:()=>{},
+  profile:()=>{}
 };
-
 function showPanel(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const panel = document.getElementById('panel-'+id);
-  if(panel){ panel.classList.add('active'); }
-  const nav = document.getElementById('nav-'+id);
-  if(nav){ nav.classList.add('active'); }
-  currentPanel = id;
-  if(panelLoaders[id]) panelLoaders[id]();
+  document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  currentPanel=id;
+  if(loaders[id]) loaders[id]();
 }
 
-// ── PROFILE ──
-let profileExists = false;
-document.getElementById('p-cat').addEventListener('change', function(){
-  document.getElementById('cat-others-fg').style.display = this.value==='Others' ? '' : 'none';
+// PROFILE
+let profileExists=false;
+document.getElementById('p-cat').addEventListener('change',function(){
+  document.getElementById('cat-others-fg').style.display=this.value==='Others'?'':'none';
 });
-function fillForm(data){
-  document.getElementById('p-name').value = data.name || '';
-  document.getElementById('p-age').value = data.age || '';
-  document.getElementById('p-phone').value = data.phone || '';
-  document.getElementById('p-email').value = data.email || '';
-  document.getElementById('p-location').value = data.location || '';
-  document.getElementById('p-talent-name').value = data.talent_name || '';
-  document.getElementById('p-tagline').value = data.tagline || '';
-  document.getElementById('p-desc').value = data.description || '';
-  document.getElementById('p-instagram').value = data.instagram || '';
-  document.getElementById('p-performance').value = data.performance_link || '';
-  const cats = ['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
-  if(cats.includes(data.category)) document.getElementById('p-cat').value = data.category;
-  if(data.category==='Others' && data.category_other){ document.getElementById('cat-others-fg').style.display=''; document.getElementById('p-cat-other').value=data.category_other||''; }
-  if(data.photo_url) document.getElementById('p-photo-current').innerHTML = \`Current: <a href="\${data.photo_url}" target="_blank" style="color:var(--br)">View photo</a>\`;
-  if(data.bio_url) document.getElementById('p-bio-current').innerHTML = \`Current: <a href="\${data.bio_url}" target="_blank" style="color:var(--br)">Download \${data.bio_name||'file'}</a>\`;
-  if(data.venues) setVenueChecks(data.venues);
+function fillForm(d){
+  document.getElementById('p-name').value=d.name||'';
+  document.getElementById('p-age').value=d.age||'';
+  document.getElementById('p-phone').value=d.phone||'';
+  document.getElementById('p-email').value=d.email||'';
+  document.getElementById('p-location').value=d.location||'';
+  document.getElementById('p-talent-name').value=d.talent_name||'';
+  document.getElementById('p-tagline').value=d.tagline||'';
+  document.getElementById('p-desc').value=d.description||'';
+  document.getElementById('p-instagram').value=d.instagram||'';
+  document.getElementById('p-performance').value=d.performance_link||'';
+  const cats=['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
+  if(cats.includes(d.category)) document.getElementById('p-cat').value=d.category;
+  if(d.category==='Others'&&d.category_other){document.getElementById('cat-others-fg').style.display='';document.getElementById('p-cat-other').value=d.category_other||'';}
+  if(d.photo_url) document.getElementById('p-photo-current').innerHTML=`Current: <a href="${d.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+  if(d.bio_url) document.getElementById('p-bio-current').innerHTML=`Current: <a href="${d.bio_url}" target="_blank" style="color:var(--br)">Download ${d.bio_name||'file'}</a>`;
+  if(d.venues) setVenueChecks(d.venues);
 }
 async function loadProfile(){
   try{
-    const rows = await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*') || [];
-    if(rows.length){ profileExists=true; fillForm(rows[0]); document.getElementById('prof-heading').textContent='Edit Profile'; document.getElementById('save-btn').textContent='Update profile'; }
-    else { document.getElementById('p-name').value = TALENT.name || ''; }
-  } catch(e){ console.error(e); }
+    const rows=await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*')||[];
+    if(rows.length){profileExists=true;fillForm(rows[0]);document.getElementById('prof-heading').textContent='Edit Profile';document.getElementById('save-btn').textContent='Update profile';}
+    else{document.getElementById('p-name').value=talentNameParam;}
+  }catch(e){console.error(e);}
 }
-let ALL_PROPS = [];
+let ALL_PROPS=[];
 async function loadProperties(){
-  ALL_PROPS = await api('/rest/v1/properties?select=name&order=name') || [];
-  const el = document.getElementById('p-venues');
-  el.innerHTML = ALL_PROPS.map(p=>\`<label class="opt-label"><input type="checkbox" name="venue" value="\${p.name}"/> \${p.name}</label>\`).join('');
+  ALL_PROPS=await api('/rest/v1/properties?select=name&order=name')||[];
+  document.getElementById('p-venues').innerHTML=ALL_PROPS.map(p=>`<label class="opt-label"><input type="checkbox" name="venue" value="${p.name}"/> ${p.name}</label>`).join('');
 }
-function setVenueChecks(venuesArr){ document.querySelectorAll('[name="venue"]').forEach(cb=>{ cb.checked=venuesArr.includes(cb.value); }); }
-function getVenueChecks(){ return [...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value); }
+function setVenueChecks(arr){document.querySelectorAll('[name="venue"]').forEach(cb=>{cb.checked=arr.includes(cb.value);});}
+function getVenueChecks(){return[...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value);}
 async function saveProfile(){
-  const name = document.getElementById('p-name').value.trim();
-  if(!name){ alert('Name is required'); return; }
+  const name=document.getElementById('p-name').value.trim();
+  if(!name){alert('Name is required');return;}
   const body={talent_id:talentId,name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,category:document.getElementById('p-cat').value||null,category_other:document.getElementById('p-cat').value==='Others'?document.getElementById('p-cat-other').value.trim()||null:null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
-  const btn=document.getElementById('save-btn'); btn.disabled=true; btn.textContent='Saving…';
-  async function uploadToStorage(bucket,file,folder){ const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_'); const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file}); if(!res.ok){const e=await res.json().catch(()=>{}); throw new Error(e?.message||e?.error||('Upload failed: '+res.status));} return SB+'/storage/v1/object/public/'+bucket+'/'+path; }
+  const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving…';
+  async function uploadToStorage(bucket,file,folder){const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_');const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file});if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.message||e?.error||'Upload failed: '+res.status);}return SB+'/storage/v1/object/public/'+bucket+'/'+path;}
   try{
-    const photoFile=document.getElementById('p-photo').files[0]; const bioFile=document.getElementById('p-bio').files[0];
-    if(photoFile){ if(photoFile.size>5*1024*1024){alert('Photo must be under 5 MB');btn.disabled=false;btn.textContent='Save profile';return;} btn.textContent='Uploading photo…'; body.photo_url=await uploadToStorage('talent-photos',photoFile,talentId); body.photo_name=photoFile.name; }
-    if(bioFile){ if(bioFile.size>10*1024*1024){alert('CV must be under 10 MB');btn.disabled=false;btn.textContent='Save profile';return;} btn.textContent='Uploading CV…'; body.bio_url=await uploadToStorage('talent-bios',bioFile,talentId); body.bio_name=bioFile.name; }
+    const pf=document.getElementById('p-photo').files[0],bf=document.getElementById('p-bio').files[0];
+    if(pf){if(pf.size>5*1024*1024){alert('Photo must be under 5 MB');btn.disabled=false;btn.textContent='Save profile';return;}btn.textContent='Uploading photo…';body.photo_url=await uploadToStorage('talent-photos',pf,talentId);body.photo_name=pf.name;}
+    if(bf){if(bf.size>10*1024*1024){alert('CV must be under 10 MB');btn.disabled=false;btn.textContent='Save profile';return;}btn.textContent='Uploading CV…';body.bio_url=await uploadToStorage('talent-bios',bf,talentId);body.bio_name=bf.name;}
     btn.textContent='Saving…';
-    if(profileExists){ await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body); }
-    else { await api('/rest/v1/talent_profiles','POST',body); profileExists=true; }
+    if(profileExists){await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);}
+    else{await api('/rest/v1/talent_profiles','POST',body);profileExists=true;}
     await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
     document.getElementById('prof-heading').textContent='Edit Profile';
-    if(photoFile) document.getElementById('p-photo-current').innerHTML=\`Current: <a href="\${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>\`;
-    if(bioFile) document.getElementById('p-bio-current').innerHTML=\`Current: <a href="\${body.bio_url}" target="_blank" style="color:var(--br)">Download \${body.bio_name}</a>\`;
-    const s=document.getElementById('save-status'); s.style.display=''; setTimeout(()=>s.style.display='none',2500);
-    toast('Profile saved ✓'); btn.textContent='Update profile';
-  } catch(e){ alert('Error: '+e.message); btn.textContent='Save profile'; } finally { btn.disabled=false; }
+    if(pf) document.getElementById('p-photo-current').innerHTML=`Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+    if(bf) document.getElementById('p-bio-current').innerHTML=`Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
+    const s=document.getElementById('save-status');s.style.display='';setTimeout(()=>s.style.display='none',2500);
+    toast('Profile saved ✓');btn.textContent='Update profile';
+  }catch(e){alert('Error: '+e.message);btn.textContent='Save profile';}
+  finally{btn.disabled=false;}
 }
 
-// ── SCHEDULE ──
-let scheduleData={}, schedYear, schedMonth, modalDateStr=null, modalStatus='available';
+// SCHEDULE
+let scheduleData={},schedYear,schedMonth,modalDateStr=null,modalStatus='available';
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-function fmt12(t){ if(!t) return ''; const [h,m]=t.split(':'); const hr=+h; return (hr%12||12)+':'+(m||'00')+' '+(hr<12?'AM':'PM'); }
-function changeMonth(d){ schedMonth+=d; if(schedMonth>11){schedMonth=0;schedYear++;} if(schedMonth<0){schedMonth=11;schedYear--;} renderSchedule(); }
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function fmt12(t){if(!t)return'';const[h,m]=t.split(':');const hr=+h;return(hr%12||12)+':'+(m||'00')+' '+(hr<12?'AM':'PM');}
+function changeMonth(d){schedMonth+=d;if(schedMonth>11){schedMonth=0;schedYear++;}if(schedMonth<0){schedMonth=11;schedYear--;}renderSchedule();}
 async function renderSchedule(){
   const now=new Date();
   if(schedYear===undefined){schedYear=now.getFullYear();schedMonth=now.getMonth();}
   document.getElementById('month-label').textContent=MONTHS[schedMonth]+' '+schedYear;
-  const monthStr=schedYear+'-'+String(schedMonth+1).padStart(2,'0');
-  try{ const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status,time_start,time_end')||[]; scheduleData={}; rows.forEach(r=>scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end}); } catch(e){ console.error(e); }
+  const ms=schedYear+'-'+String(schedMonth+1).padStart(2,'0');
+  try{const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+ms+'-01&date=lte.'+ms+'-31&select=date,status,time_start,time_end')||[];scheduleData={};rows.forEach(r=>scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end});}catch(e){console.error(e);}
   const grid=document.getElementById('sched-grid');
   const firstDay=new Date(schedYear,schedMonth,1).getDay();
-  const daysInMonth=new Date(schedYear,schedMonth+1,0).getDate();
+  const dim=new Date(schedYear,schedMonth+1,0).getDate();
   const today=new Date().toISOString().slice(0,10);
-  let html='';
-  for(let i=0;i<firstDay;i++) html+='<div></div>';
-  for(let d=1;d<=daysInMonth;d++){
-    const dateStr=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const entry=scheduleData[dateStr]; const status=entry?.status||'';
-    const cls=status==='busy'?'sched-day busy':status==='available'?'sched-day available':'sched-day';
-    const isToday=dateStr===today;
-    let timeLabel='';
-    if(status==='busy') timeLabel=\`<div class="day-status">Busy</div>\`;
-    else if(status==='available') timeLabel=\`<div class="day-status">Avail</div>\`;
-    html+=\`<div class="\${cls}\${isToday?' today-ring':''}" onclick="openDayModal('\${dateStr}')"><div class="day-num" style="\${isToday?'color:var(--br)':''}">\${d}</div>\${timeLabel}</div>\`;
+  let h='';
+  for(let i=0;i<firstDay;i++) h+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const ds=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const e=scheduleData[ds];const st=e?.status||'';
+    const cls=st==='busy'?'cal-day busy':st==='available'?'cal-day available':'cal-day';
+    const isT=ds===today;
+    let lbl=st==='busy'?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
+    h+=`<div class="${cls}${isT?' today-ring':''}" onclick="openDayModal('${ds}')"><div class="cal-day-num" style="${isT?'color:var(--br)':''}">${d}</div>${lbl}</div>`;
   }
-  grid.innerHTML=html;
+  grid.innerHTML=h;
 }
-function setModalStatus(s){ modalStatus=s; document.getElementById('btn-busy').className='stgl-btn'+(s==='busy'?' busy-on':''); document.getElementById('btn-avail').className='stgl-btn'+(s==='available'?' avail-on':''); document.getElementById('time-fields').style.display=s==='available'?'':'none'; }
-function openDayModal(dateStr){ modalDateStr=dateStr; const entry=scheduleData[dateStr]; const d=new Date(dateStr+'T00:00:00'); document.getElementById('modal-date').textContent=DAY_NAMES[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); document.getElementById('modal-title').textContent=entry?'Edit day status':'Set day status'; const curStatus=entry?.status||'available'; document.getElementById('modal-start').value=entry?.time_start?.slice(0,5)||'09:00'; document.getElementById('modal-end').value=entry?.time_end?.slice(0,5)||'17:00'; document.getElementById('modal-remove-btn').style.display=entry?'':'none'; setModalStatus(curStatus); document.getElementById('day-modal').style.display='flex'; }
-function closeDayModal(e){ if(e&&e.target!==document.getElementById('day-modal')) return; document.getElementById('day-modal').style.display='none'; modalDateStr=null; }
+function setModalStatus(s){modalStatus=s;document.getElementById('btn-busy').className='stgl-btn'+(s==='busy'?' busy-on':'');document.getElementById('btn-avail').className='stgl-btn'+(s==='available'?' avail-on':'');document.getElementById('time-fields').style.display=s==='available'?'':'none';}
+function openDayModal(ds){modalDateStr=ds;const e=scheduleData[ds];const d=new Date(ds+'T00:00:00');document.getElementById('modal-date').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();document.getElementById('modal-title').textContent=e?'Edit day status':'Set day status';document.getElementById('modal-start').value=e?.time_start?.slice(0,5)||'09:00';document.getElementById('modal-end').value=e?.time_end?.slice(0,5)||'17:00';document.getElementById('modal-remove-btn').style.display=e?'':'none';setModalStatus(e?.status||'available');document.getElementById('day-modal').style.display='flex';}
+function closeDayModal(){document.getElementById('day-modal').style.display='none';modalDateStr=null;}
 async function saveDaySlot(){
-  if(modalStatus==='available'){ const start=document.getElementById('modal-start').value; const end=document.getElementById('modal-end').value; if(!start||!end){toast('Please set both times');return;} if(end<=start){toast('End time must be after start time');return;} const entry=scheduleData[modalDateStr]; const payload={talent_id:talentId,date:modalDateStr,status:'available',time_start:start,time_end:end}; try{ if(entry){await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:start,time_end:end});}else{await api('/rest/v1/talent_schedule','POST',payload);} }catch(e){toast('Error: '+e.message);return;} }
-  else { const entry=scheduleData[modalDateStr]; const payload={talent_id:talentId,date:modalDateStr,status:'busy',time_start:null,time_end:null}; try{ if(entry){await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'busy',time_start:null,time_end:null});}else{await api('/rest/v1/talent_schedule','POST',payload);} }catch(e){toast('Error: '+e.message);return;} }
-  document.getElementById('day-modal').style.display='none'; modalDateStr=null; await renderSchedule(); toast('Saved ✓');
+  if(modalStatus==='available'){const s=document.getElementById('modal-start').value,en=document.getElementById('modal-end').value;if(!s||!en){toast('Set both times');return;}if(en<=s){toast('End must be after start');return;}const e=scheduleData[modalDateStr];const p={talent_id:talentId,date:modalDateStr,status:'available',time_start:s,time_end:en};try{if(e)await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:s,time_end:en});else await api('/rest/v1/talent_schedule','POST',p);}catch(e){toast('Error: '+e.message);return;}}
+  else{const e=scheduleData[modalDateStr];try{if(e)await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'busy',time_start:null,time_end:null});else await api('/rest/v1/talent_schedule','POST',{talent_id:talentId,date:modalDateStr,status:'busy',time_start:null,time_end:null});}catch(e){toast('Error: '+e.message);return;}}
+  closeDayModal();await renderSchedule();toast('Saved ✓');
 }
-async function removeDay(){ try{ await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE'); document.getElementById('day-modal').style.display='none'; modalDateStr=null; await renderSchedule(); toast('Removed'); }catch(e){toast('Error: '+e.message);} }
+async function removeDay(){try{await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE');closeDayModal();await renderSchedule();toast('Removed');}catch(e){toast('Error: '+e.message);}}
 
-// ── BOOKING REQUESTS ──
+// BOOKING REQUESTS
 async function loadBookingRequests(){
   const el=document.getElementById('booking-requests-list');
   try{
     const rows=await api('/rest/v1/talent_booking_requests?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20')||[];
     if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No booking requests yet</div>';return;}
     el.innerHTML=rows.map(r=>{
-      const statusColor=r.status==='confirmed'?'var(--g)':r.status==='declined'?'var(--r)':'var(--a)';
-      const statusLabel=r.status==='confirmed'?'✓ Confirmed':r.status==='declined'?'✕ Declined':'⏳ Pending';
-      return \`<div class="booking-card \${r.status||'pending'}"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px"><div><div style="font-size:14px;font-weight:500">\${r.property_name||'—'}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">\${r.requested_date||''} \${r.requested_time?'· '+fmt12(r.requested_time):''}</div>\${r.message?\`<div style="font-size:13px;margin-top:6px;color:var(--text)">\${r.message}</div>\`:''}<div style="font-size:11px;color:var(--muted);margin-top:6px">Requested by: \${r.requested_by||'Office'}</div></div><span style="font-size:12px;font-weight:500;color:\${statusColor};white-space:nowrap;flex-shrink:0">\${statusLabel}</span></div></div>\`;
+      const sc=r.status==='confirmed'?'var(--g)':r.status==='declined'?'var(--r)':'var(--a)';
+      const sl=r.status==='confirmed'?'✓ Confirmed':r.status==='declined'?'✕ Declined':'⏳ Pending';
+      return`<div class="booking-card ${r.status||'pending'}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div style="font-size:14px;font-weight:500">${r.property_name||'—'}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${r.requested_date||''} ${r.requested_time?'· '+fmt12(r.requested_time):''}</div>${r.message?`<div style="font-size:13px;margin-top:6px">${r.message}</div>`:''}<div style="font-size:11px;color:var(--muted);margin-top:5px">By: ${r.requested_by||'Office'}</div></div><span style="font-size:12px;font-weight:500;color:${sc};white-space:nowrap">${sl}</span></div></div>`;
     }).join('');
-  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Booking requests unavailable</div>';}
+  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Unavailable</div>';}
 }
-function openBookingRequestModal(){ document.getElementById('bk-property').value=''; document.getElementById('bk-date').value=new Date().toISOString().slice(0,10); document.getElementById('bk-time').value='10:00'; document.getElementById('bk-message').value=''; document.getElementById('bk-modal').style.display='flex'; }
-function closeBkModal(e){ if(e&&e.target!==document.getElementById('bk-modal'))return; document.getElementById('bk-modal').style.display='none'; }
-async function submitBookingRequest(){ const property_name=document.getElementById('bk-property').value.trim(); const requested_date=document.getElementById('bk-date').value; const requested_time=document.getElementById('bk-time').value; const message=document.getElementById('bk-message').value.trim(); if(!property_name||!requested_date){toast('Please fill property and date');return;} try{ await api('/rest/v1/talent_booking_requests','POST',{talent_id:talentId,talent_name:talentNameParam,property_name,requested_date,requested_time:requested_time||null,message:message||null,requested_by:talentNameParam,status:'pending',created_at:new Date().toISOString()}); document.getElementById('bk-modal').style.display='none'; toast('Booking request sent ✓'); loadBookingRequests(); }catch(e){toast('Error: '+e.message);} }
+function openBookingRequestModal(){document.getElementById('bk-property').value='';document.getElementById('bk-date').value=new Date().toISOString().slice(0,10);document.getElementById('bk-time').value='10:00';document.getElementById('bk-message').value='';document.getElementById('bk-modal').style.display='flex';}
+function closeBkModal(){document.getElementById('bk-modal').style.display='none';}
+async function submitBookingRequest(){const pn=document.getElementById('bk-property').value.trim(),rd=document.getElementById('bk-date').value,rt=document.getElementById('bk-time').value,msg=document.getElementById('bk-message').value.trim();if(!pn||!rd){toast('Fill property and date');return;}try{await api('/rest/v1/talent_booking_requests','POST',{talent_id:talentId,talent_name:talentNameParam,property_name:pn,requested_date:rd,requested_time:rt||null,message:msg||null,requested_by:talentNameParam,status:'pending',created_at:new Date().toISOString()});closeBkModal();toast('Request sent ✓');loadBookingRequests();}catch(e){toast('Error: '+e.message);}}
 
-// ── RATINGS ──
+// RATINGS
 async function loadRatings(){
   const el=document.getElementById('ratings-list');
   try{
     const rows=await api('/rest/v1/talent_ratings?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20')||[];
     if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No ratings yet</div>';return;}
     const avg=rows.reduce((s,r)=>s+(r.rating||0),0)/rows.length;
-    el.innerHTML=\`<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><div class="stars">\${[1,2,3,4,5].map(i=>\`<span class="star\${i<=Math.round(avg)?'':' empty'}">★</span>\`).join('')}</div><span style="font-size:16px;font-weight:500">\${avg.toFixed(1)}</span><span style="font-size:13px;color:var(--muted)">\${rows.length} review\${rows.length!==1?'s':''}</span></div>\`+rows.map(r=>\`<div class="card" style="padding:14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div class="stars">\${[1,2,3,4,5].map(i=>\`<span class="star" style="font-size:14px\${i<=r.rating?'':';color:var(--border)'}">&#9733;</span>\`).join('')}</div><span style="font-size:12px;font-weight:500">\${r.guest_name||'Guest'}</span><span style="font-size:11px;color:var(--muted);margin-left:auto">\${r.created_at?new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span></div>\${r.review?\`<div style="font-size:13px;color:var(--text);line-height:1.5">\${r.review}</div>\`:''}</div>\`).join('');
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">${[1,2,3,4,5].map(i=>`<span class="star${i<=Math.round(avg)?'':' empty'}">★</span>`).join('')}<span style="font-size:16px;font-weight:500">${avg.toFixed(1)}</span><span style="font-size:13px;color:var(--muted)">${rows.length} review${rows.length!==1?'s':''}</span></div>`+rows.map(r=>`<div class="card" style="padding:12px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">${[1,2,3,4,5].map(i=>`<span class="star${i<=r.rating?'':' empty'}" style="font-size:13px">★</span>`).join('')}<span style="font-size:12px;font-weight:500;margin-left:2px">${r.guest_name||'Guest'}</span><span style="font-size:11px;color:var(--muted);margin-left:auto">${r.created_at?new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span></div>${r.review?`<div style="font-size:13px;line-height:1.5;color:var(--text)">${r.review}</div>`:''}</div>`).join('');
   }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Ratings unavailable</div>';}
 }
 
-// ── EARNINGS ──
-async function loadEarnings(){
-  document.getElementById('earn-total').textContent = '—';
-  document.getElementById('earn-month').textContent = '—';
-}
-
-// ── MESSAGES ──
+// MESSAGES
 async function loadTalentMessages(){
   const el=document.getElementById('talent-msgs-list');
   try{
     const rows=await api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.asc')||[];
-    if(!rows.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No messages yet — say hello to the office!</div>';return;}
-    el.innerHTML=rows.map(m=>{const isMe=m.from_role==='talent';return \`<div style="display:flex;justify-content:\${isMe?'flex-end':'flex-start'}"><div style="max-width:78%;background:\${isMe?'var(--br)':'var(--white)'};color:\${isMe?'#fff':'var(--text)'};border:1px solid \${isMe?'var(--br)':'var(--border)'};border-radius:12px;padding:10px 14px"><div style="font-size:10px;opacity:.65;margin-bottom:4px">\${isMe?'You':'Office'} · \${m.created_at?new Date(m.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div><div style="font-size:14px;line-height:1.5;white-space:pre-wrap">\${m.message}</div></div></div>\`;}).join('');
+    if(!rows.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No messages yet</div>';return;}
+    el.innerHTML=rows.map(m=>{const me=m.from_role==='talent';return`<div style="display:flex;justify-content:${me?'flex-end':'flex-start'}"><div style="max-width:80%;background:${me?'var(--br)':'var(--white)'};color:${me?'#fff':'var(--text)'};border:1px solid ${me?'var(--br)':'var(--border)'};border-radius:12px;padding:9px 13px"><div style="font-size:10px;opacity:.6;margin-bottom:3px">${me?'You':'Office'} · ${m.created_at?new Date(m.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div><div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div></div></div>`;}).join('');
     el.scrollTop=el.scrollHeight;
-  }catch(e){el.innerHTML=\`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Could not load messages.</div>\`;}
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Could not load messages</div>';}
 }
-async function sendTalentMsg(){ const input=document.getElementById('talent-msg-input'); const txt=input.value.trim(); if(!txt)return; try{ await api('/rest/v1/internal_messages','POST',{talent_id:talentId,talent_name:talentNameParam,from_role:'talent',from_name:talentNameParam,message:txt,created_at:new Date().toISOString()}); input.value=''; input.style.height='44px'; await loadTalentMessages(); }catch(e){toast('Send failed: '+e.message);} }
+async function sendTalentMsg(){const inp=document.getElementById('talent-msg-input');const txt=inp.value.trim();if(!txt)return;try{await api('/rest/v1/internal_messages','POST',{talent_id:talentId,talent_name:talentNameParam,from_role:'talent',from_name:talentNameParam,message:txt,created_at:new Date().toISOString()});inp.value='';inp.style.height='44px';await loadTalentMessages();}catch(e){toast('Send failed: '+e.message);}}
 
+// Badge polling
 setInterval(()=>{
   if(currentPanel!=='messages'){
     api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&from_role=eq.office&order=created_at.desc&limit=1&select=created_at')
-      .then(rows=>{ if(rows&&rows.length) document.getElementById('msg-badge').style.display=''; }).catch(()=>{});
+      .then(r=>{if(r&&r.length)document.getElementById('msg-badge').style.display='';}).catch(()=>{});
   }
 },30000);
 
+// Background preloads
 loadProfile();
 loadProperties();
-<\/script>
-</body>
-</html>`;
-
-document.getElementById('app').srcdoc = appHTML;
 </script>
-
 </body>
 </html>
