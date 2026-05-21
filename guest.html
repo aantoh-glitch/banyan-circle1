@@ -99,6 +99,16 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .bill-line:last-child{border-bottom:none}
 .bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
 .bill-section-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* ── Info buttons ── */
+.info-btn{width:100%;padding:14px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:14px;font-family:inherit;transition:all .18s;text-align:left}
+.info-btn:hover{border-color:var(--br);box-shadow:0 3px 14px rgba(153,60,29,.08)}
+.info-btn-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.info-btn-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.info-btn-text{flex:1}
+.info-btn-title{font-size:15px;font-weight:500;color:var(--text)}
+.info-btn-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.info-btn-arrow{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -238,6 +248,41 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     </label>
 
     <div class="sub-bar"><button class="btn-sub btn-br" id="ci-btn" onclick="submitCheckin()">Submit registration</button></div>
+  </div>
+
+  <!-- INFO BUTTONS -->
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
+    <div class="sec-hdr" style="margin-top:0">Property Information</div>
+    <button class="info-btn" onclick="">
+      <span class="info-btn-icon" style="background:var(--br-l);color:var(--br)">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </span>
+      <div class="info-btn-text">
+        <div class="info-btn-title">Property Rules</div>
+        <div class="info-btn-sub">House guidelines &amp; policies</div>
+      </div>
+      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+    <button class="info-btn" onclick="">
+      <span class="info-btn-icon" style="background:var(--g-l);color:var(--g)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </span>
+      <div class="info-btn-text">
+        <div class="info-btn-title">Notes</div>
+        <div class="info-btn-sub">Important notes for your stay</div>
+      </div>
+      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+    <button class="info-btn" onclick="">
+      <span class="info-btn-icon" style="background:#FCEBEB;color:#791F1F">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91A16 16 0 0 0 16 17l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </span>
+      <div class="info-btn-text">
+        <div class="info-btn-title">Emergency Contact</div>
+        <div class="info-btn-sub">Numbers you may need during your stay</div>
+      </div>
+      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
   </div>
 </div>
 
@@ -468,11 +513,23 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   </div>
 </div>
 
+<!-- MESSAGES -->
+<div class="pg" id="pg-messages">
+  <div class="pg-title">Messages</div>
+  <div class="pg-sub">Chat with the property team</div>
+  <div id="msg-thread" style="display:flex;flex-direction:column;gap:10px;margin-bottom:80px;min-height:200px">
+    <div style="font-size:13px;color:var(--muted);text-align:center;padding:40px 0">No messages yet</div>
+  </div>
+  <div style="position:sticky;bottom:62px;background:var(--bg);padding:12px 0 0;display:flex;gap:8px">
+    <input class="fc" id="msg-input" type="text" placeholder="Type a message…" style="flex:1;padding:12px 14px" onkeydown="if(event.key==='Enter')sendMessage()"/>
+    <button onclick="sendMessage()" style="padding:12px 18px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;flex-shrink:0">Send</button>
+  </div>
+</div>
+
 <nav class="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
-  <button class="bnt" onclick="goPage('requests',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Requests</button>
+  <button class="bnt" onclick="goPage('messages',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</button>
   <button class="bnt" onclick="goPage('talent',this);loadGuestTalents();loadGuestBookingHistory()"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.5 1.5 4.5 3 6l4 5 4-5c1.5-1.5 3-3.5 3-6 0-3.87-3.13-7-7-7z" fill="none"/><circle cx="12" cy="9" r="2.5" fill="none"/></svg>Banyan Circle</button>
-  <button class="bnt" onclick="goPage('complaint',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Complaint</button>
   <button class="bnt" onclick="goPage('tips',this)"><svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Explore</button>
   <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
