@@ -240,14 +240,47 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <div class="pg" id="pg-msgs">
   <div class="pg-title">Internal messages</div>
-  <div class="pg-sub">Threads between Office, Manager and Landlords</div>
-  <div class="prop-tabs" id="msgs-prop-tabs"></div>
-  <div class="card">
-    <div class="card-ttl" id="msgs-prop-label">Thread</div>
-    <div id="msgs-list" style="max-height:420px;overflow-y:auto;margin-bottom:14px">Loading…</div>
-    <div style="display:flex;gap:8px">
-      <input class="fc" id="msg-input" type="text" placeholder="Write a message…" style="flex:1"/>
-      <button class="btn-p" onclick="sendMsg()">Send</button>
+  <div class="pg-sub">Threads between Office, Manager, Landlords and Talents</div>
+
+  <!-- Sub-tabs: Property threads | Talent threads -->
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="ptab on" id="msgtab-property" onclick="setMsgTab('property',this)">Property Threads</button>
+    <button class="ptab" id="msgtab-talent" onclick="setMsgTab('talent',this)">Talent Threads</button>
+  </div>
+
+  <!-- PROPERTY THREAD PANEL -->
+  <div id="msg-panel-property">
+    <div class="prop-tabs" id="msgs-prop-tabs"></div>
+    <div class="card">
+      <div class="card-ttl" id="msgs-prop-label">Thread</div>
+      <div id="msgs-list" style="max-height:420px;overflow-y:auto;margin-bottom:14px">Loading…</div>
+      <div style="display:flex;gap:8px">
+        <input class="fc" id="msg-input" type="text" placeholder="Write a message…" style="flex:1"/>
+        <button class="btn-p" onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TALENT THREAD PANEL -->
+  <div id="msg-panel-talent" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <select class="fc" id="admin-talent-select" onchange="loadAdminTalentThread()" style="max-width:280px">
+        <option value="">Select a talent…</option>
+      </select>
+    </div>
+    <div class="card" style="padding:0;display:flex;flex-direction:column;height:520px">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span style="font-size:13px;font-weight:500" id="admin-talent-thread-label">Select a talent to view thread</span>
+        <button onclick="loadAdminTalentThread()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻ Refresh</button>
+      </div>
+      <div id="admin-talent-msgs-list" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div class="empty">Select a talent above to start messaging</div>
+      </div>
+      <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">
+        <input class="fc" id="admin-talent-msg-input" type="text" placeholder="Write to talent…" style="flex:1" onkeydown="if(event.key==='Enter')sendAdminTalentMsg()"/>
+        <button class="btn-p" onclick="sendAdminTalentMsg()">Send</button>
+      </div>
     </div>
   </div>
 </div>
@@ -264,9 +297,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="pg-title">Talents</div>
   <div class="pg-sub">Performers and facilitators — click a talent to open their portal</div>
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px">
       <div class="card-ttl" style="margin:0">All talents</div>
-      <button class="btn-p" onclick="openTalentModal()">+ Add talent</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sec" onclick="openAdminBookingModal()" style="font-size:13px;display:flex;align-items:center;gap:6px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Request Booking
+        </button>
+        <button class="btn-p" onclick="openTalentModal()">+ Add talent</button>
+      </div>
     </div>
     <div id="talents-list">Loading…</div>
   </div>
@@ -391,6 +430,19 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ADMIN BOOKING REQUEST MODAL -->
+<div class="modal" id="modal-admin-booking"><div class="modal-card">
+  <div class="modal-ttl">Request a Booking</div>
+  <div class="fg"><label class="fl">Talent</label><select class="fc" id="abk-talent"><option value="">Select talent…</option></select></div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">Date</label><input class="fc" id="abk-date" type="date"/></div>
+    <div class="fg"><label class="fl">Time</label><input class="fc" id="abk-time" type="time" value="10:00"/></div>
+  </div>
+  <div class="fg"><label class="fl">Property / Venue</label><select class="fc" id="abk-prop"></select></div>
+  <div class="fg"><label class="fl">Message (optional)</label><textarea class="fc" id="abk-message" style="min-height:80px" placeholder="Session details, group size, requirements…"></textarea></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-admin-booking')">Cancel</button><button class="btn-p" onclick="submitAdminBooking()">Send Request</button></div>
+</div></div>
 
 <!-- ADD/EDIT TALENT MODAL -->
 <div class="modal" id="modal-talent"><div class="modal-card">
@@ -887,7 +939,128 @@ async function deleteTalent(id,name){
   toast(name+' removed'); loadTalentsPage();
 }
 function openTalentPortal(id,name,pin){
-  window.open('talent.html?id='+encodeURIComponent(id)+'&name='+encodeURIComponent(name),'_blank');
+  // Admin goes directly to talent schedule — no PIN prompt
+  window.open('talent.html?id='+encodeURIComponent(id)+'&name='+encodeURIComponent(name)+'&admin=1','_blank');
+}
+
+// MESSAGES SUB-TABS
+function setMsgTab(tab, btn){
+  document.querySelectorAll('#pg-msgs .ptab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('msg-panel-property').style.display = tab==='property' ? '' : 'none';
+  document.getElementById('msg-panel-talent').style.display   = tab==='talent'   ? '' : 'none';
+  if(tab==='property') loadMsgsPage();
+  if(tab==='talent')   loadAdminTalentSelect();
+}
+
+let ADMIN_TALENT_ID = null;
+
+async function loadAdminTalentSelect(){
+  try{
+    const talents = await api('/rest/v1/talents?select=id,name,category&order=name') || [];
+    const sel = document.getElementById('admin-talent-select');
+    sel.innerHTML = '<option value="">Select a talent…</option>' +
+      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
+    // Auto-select first if only one
+    if(talents.length === 1){ sel.value=talents[0].id; loadAdminTalentThread(); }
+  } catch(e){ toast('Could not load talents'); }
+}
+
+async function loadAdminTalentThread(){
+  const sel = document.getElementById('admin-talent-select');
+  ADMIN_TALENT_ID = sel.value;
+  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || '';
+  const el = document.getElementById('admin-talent-msgs-list');
+  const label = document.getElementById('admin-talent-thread-label');
+
+  if(!ADMIN_TALENT_ID){
+    el.innerHTML='<div class="empty">Select a talent above to start messaging</div>';
+    label.textContent='Select a talent to view thread';
+    return;
+  }
+  label.textContent = 'Thread with ' + talentName;
+  el.innerHTML='<div class="empty" style="padding:20px">Loading…</div>';
+  try{
+    const rows = await api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(ADMIN_TALENT_ID)+'&select=*&order=created_at.asc') || [];
+    if(!rows.length){
+      el.innerHTML='<div class="empty">No messages yet — say hello to '+talentName+'!</div>';
+      return;
+    }
+    el.innerHTML = rows.map(m=>{
+      const isMe = m.from_role==='office';
+      return `<div style="display:flex;justify-content:${isMe?'flex-end':'flex-start'}">
+        <div style="max-width:75%;background:${isMe?'#222':'var(--white)'};color:${isMe?'#fff':'var(--text)'};border:1px solid var(--border);border-radius:12px;padding:10px 14px">
+          <div style="font-size:11px;opacity:.65;margin-bottom:3px">${m.from_role==='office'?'Office':'Talent · '+(m.from_name||'')} · ${fmtDate(m.created_at)}</div>
+          <div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div>
+        </div>
+      </div>`;
+    }).join('');
+    el.scrollTop = el.scrollHeight;
+  } catch(e){
+    el.innerHTML=`<div class="empty" style="color:var(--r)">Could not load messages.<br><span style="font-size:11px">Ensure <code>talent_id</code> column exists on <code>internal_messages</code></span></div>`;
+  }
+}
+
+async function sendAdminTalentMsg(){
+  const input = document.getElementById('admin-talent-msg-input');
+  const txt = input.value.trim();
+  if(!txt || !ADMIN_TALENT_ID){ toast('Select a talent and write a message'); return; }
+  const sel = document.getElementById('admin-talent-select');
+  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || '';
+  try{
+    await api('/rest/v1/internal_messages','POST',{
+      talent_id: ADMIN_TALENT_ID,
+      talent_name: talentName,
+      from_role: 'office',
+      from_name: 'OFFICE',
+      message: txt,
+      created_at: new Date().toISOString()
+    });
+    input.value='';
+    await loadAdminTalentThread();
+  } catch(e){ toast('Send failed: '+e.message); }
+}
+
+// ADMIN BOOKING REQUESTS
+async function openAdminBookingModal(){
+  // Load talents into select
+  try{
+    const talents = await api('/rest/v1/talents?select=id,name,category&order=name') || [];
+    document.getElementById('abk-talent').innerHTML = '<option value="">Select talent…</option>' +
+      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
+  } catch(e){ document.getElementById('abk-talent').innerHTML='<option>Could not load</option>'; }
+  // Load properties
+  if(!PROPS.length) await loadAllProperties();
+  document.getElementById('abk-prop').innerHTML = PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  document.getElementById('abk-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('abk-time').value = '10:00';
+  document.getElementById('abk-message').value = '';
+  openModal('modal-admin-booking');
+}
+async function submitAdminBooking(){
+  const sel = document.getElementById('abk-talent');
+  const talentId = sel.value;
+  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || '';
+  const requested_date = document.getElementById('abk-date').value;
+  const requested_time = document.getElementById('abk-time').value;
+  const property_name = document.getElementById('abk-prop').value;
+  const message = document.getElementById('abk-message').value.trim();
+  if(!talentId || !requested_date){ alert('Please select a talent and date'); return; }
+  try{
+    await api('/rest/v1/talent_booking_requests','POST',{
+      talent_id: talentId,
+      talent_name: talentName,
+      property_name: property_name||null,
+      requested_date,
+      requested_time: requested_time||null,
+      message: message||null,
+      requested_by: 'OFFICE',
+      status: 'pending',
+      created_at: new Date().toISOString()
+    });
+    closeModal('modal-admin-booking');
+    toast('Booking request sent to '+talentName+' ✓');
+  } catch(e){ alert('Error: '+e.message); }
 }
 
 // Boot

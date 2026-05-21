@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Banyan Circle — Rate Your Experience</title>
+<meta name="theme-color" content="#993C1D"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;--star:#C8A84B}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr-logo{width:36px;height:36px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:15px;flex-shrink:0}
+.hdr-info{flex:1}
+.hdr-name{font-size:15px;font-weight:500}
+.hdr-prop{font-size:12px;color:var(--muted)}
+.pg{padding:20px 16px 80px;flex:1}
+.pg-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:18px;margin-bottom:14px}
+.fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px}
+.fc{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;transition:border-color .15s}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:none;min-height:90px;line-height:1.6}
+.fg{margin-bottom:16px}
+
+/* Talent selector */
+.talent-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--white);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;margin-bottom:8px}
+.talent-card:hover{border-color:var(--br);background:var(--br-l)}
+.talent-card.selected{border-color:var(--br);background:var(--br-l)}
+.talent-av{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
+.talent-info{flex:1}
+.talent-name{font-size:14px;font-weight:500}
+.talent-cat{font-size:12px;color:var(--muted)}
+
+/* Star rating */
+.stars-input{display:flex;gap:6px;margin:4px 0 8px}
+.star-btn{font-size:34px;background:none;border:none;cursor:pointer;color:var(--border);transition:color .1s,transform .1s;line-height:1;padding:2px}
+.star-btn.lit{color:var(--star)}
+.star-btn:hover{transform:scale(1.15)}
+.star-label{font-size:13px;color:var(--muted);margin-top:4px;min-height:18px}
+
+/* Submit */
+.btn-sub{width:100%;padding:15px;background:var(--br);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-sub:disabled{opacity:.6;cursor:not-allowed}
+.btn-sub:hover:not(:disabled){background:#712B13}
+
+/* Success */
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center}
+.s-icon{width:72px;height:72px;border-radius:50%;background:var(--g-l);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.s-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
+.s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
+.btn-again{padding:11px 26px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="hdr">
+  <div class="hdr-logo" id="hdr-av">G</div>
+  <div class="hdr-info">
+    <div class="hdr-name" id="hdr-name">Guest</div>
+    <div class="hdr-prop" id="hdr-prop">Banyan Circle</div>
+  </div>
+</div>
+
+<div class="pg" id="pg-rate">
+  <div class="pg-title">Rate Your Experience</div>
+  <div class="pg-sub">Share how your session went — your feedback goes directly to the talent</div>
+
+  <!-- Step 1: Select talent -->
+  <div class="fg">
+    <label class="fl">Who did you work with?</label>
+    <div id="talent-list"><div style="font-size:13px;color:var(--muted)">Loading talents…</div></div>
+  </div>
+
+  <!-- Step 2: Star rating (shown after selection) -->
+  <div id="rating-section" style="display:none">
+    <div class="card">
+      <div style="font-size:14px;font-weight:500;margin-bottom:14px" id="rating-talent-name">Rate your session</div>
+      <div class="fg">
+        <label class="fl">Overall rating</label>
+        <div class="stars-input" id="stars-input">
+          <button class="star-btn" data-v="1" onclick="setStar(1)">★</button>
+          <button class="star-btn" data-v="2" onclick="setStar(2)">★</button>
+          <button class="star-btn" data-v="3" onclick="setStar(3)">★</button>
+          <button class="star-btn" data-v="4" onclick="setStar(4)">★</button>
+          <button class="star-btn" data-v="5" onclick="setStar(5)">★</button>
+        </div>
+        <div class="star-label" id="star-label">Tap a star to rate</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Your review <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <textarea class="fc" id="review-text" placeholder="How was the experience? What stood out?"></textarea>
+      </div>
+      <button class="btn-sub" id="submit-btn" onclick="submitRating()" disabled>Submit Rating</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS STATE -->
+<div class="pg success" id="pg-success" style="display:none">
+  <div class="s-icon">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+  </div>
+  <div class="s-title">Thank you!</div>
+  <div class="s-sub" id="success-msg">Your rating has been submitted. It helps us celebrate our talent.</div>
+  <button class="btn-again" onclick="resetForm()">Rate another talent</button>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+async function api(path, method, body) {
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  const json=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
+const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+
+// Auth
+const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+if(!me || me.role !== 'guest'){ location.href='/index.html'; throw new Error('No auth'); }
+document.getElementById('hdr-name').textContent = me.name || 'Guest';
+document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
+document.getElementById('hdr-av').textContent = ini(me.name||'G');
+
+let selectedTalent = null;
+let starValue = 0;
+
+// Load talents
+async function loadTalents(){
+  try{
+    const rows = await api('/rest/v1/talents?select=id,name,category&order=name') || [];
+    const el = document.getElementById('talent-list');
+    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents found</div>'; return; }
+    el.innerHTML = rows.map(t => `
+      <div class="talent-card" id="tc-${t.id}" onclick="selectTalent(${JSON.stringify(t).replace(/"/g,'&quot;')})">
+        <div class="talent-av">${ini(t.name)}</div>
+        <div class="talent-info">
+          <div class="talent-name">${t.name}</div>
+          <div class="talent-cat">${t.category||''}</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="check-${t.id}"><polyline points="20,6 9,17 4,12"/></svg>
+      </div>`).join('');
+  } catch(e){ document.getElementById('talent-list').innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>'; }
+}
+
+function selectTalent(t){
+  // Deselect all
+  document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('[id^="check-"]').forEach(c=>c.style.stroke='var(--border)');
+  // Select this
+  document.getElementById('tc-'+t.id)?.classList.add('selected');
+  const chk = document.getElementById('check-'+t.id);
+  if(chk) chk.style.stroke='var(--br)';
+  selectedTalent = t;
+  document.getElementById('rating-talent-name').textContent = 'Rate your session with ' + t.name;
+  document.getElementById('rating-section').style.display = '';
+  // Reset stars
+  starValue = 0;
+  renderStars();
+  document.getElementById('review-text').value='';
+  document.getElementById('submit-btn').disabled = true;
+}
+
+const STAR_LABELS = ['','Poor','Fair','Good','Very Good','Excellent'];
+function setStar(v){
+  starValue = v;
+  renderStars();
+  document.getElementById('star-label').textContent = STAR_LABELS[v]||'';
+  document.getElementById('submit-btn').disabled = false;
+}
+function renderStars(){
+  document.querySelectorAll('.star-btn').forEach(btn=>{
+    btn.classList.toggle('lit', +btn.dataset.v <= starValue);
+  });
+}
+
+async function submitRating(){
+  if(!selectedTalent || !starValue){ toast('Please select a talent and rating'); return; }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='Submitting…';
+  try{
+    await api('/rest/v1/talent_ratings','POST',{
+      talent_id: selectedTalent.id,
+      talent_name: selectedTalent.name,
+      guest_name: me.name,
+      guest_id: me.id||null,
+      property_name: me.prop||null,
+      rating: starValue,
+      review: document.getElementById('review-text').value.trim()||null,
+      created_at: new Date().toISOString()
+    });
+    document.getElementById('success-msg').textContent = `Your ${starValue}-star rating for ${selectedTalent.name} has been saved. Thank you!`;
+    document.getElementById('pg-rate').style.display='none';
+    document.getElementById('pg-success').style.display='flex';
+  } catch(e){
+    toast('Error: '+e.message);
+    btn.disabled=false; btn.textContent='Submit Rating';
+  }
+}
+
+function resetForm(){
+  selectedTalent=null; starValue=0;
+  document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('[id^="check-"]').forEach(c=>c.style.stroke='var(--border)');
+  document.getElementById('rating-section').style.display='none';
+  renderStars();
+  document.getElementById('star-label').textContent='Tap a star to rate';
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').textContent='Submit Rating';
+  document.getElementById('pg-rate').style.display='block';
+  document.getElementById('pg-success').style.display='none';
+}
+
+loadTalents();
+</script>
+</body>
+</html>

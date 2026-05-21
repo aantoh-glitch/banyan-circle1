@@ -297,11 +297,44 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   </div>
 </div>
 
+<!-- TALENT BOOKING & RATINGS PAGE -->
+<div class="pg" id="pg-talent">
+  <div class="pg-title">Talent Experiences</div>
+  <div class="pg-sub">Book a session or rate a talent you've experienced</div>
+
+  <div style="display:flex;gap:8px;margin-bottom:20px">
+    <button onclick="location.href='rating.html'" style="flex:1;padding:14px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      Rate a Talent
+    </button>
+  </div>
+
+  <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:14px">Request a Booking</div>
+  <div class="card" style="padding:16px">
+    <div class="fg">
+      <label class="fl">Choose a talent</label>
+      <select class="fc" id="g-bk-talent" style="margin-bottom:0"><option value="">Select talent…</option></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Date</label><input class="fc" id="g-bk-date" type="date"/></div>
+      <div class="fg"><label class="fl">Time</label><input class="fc" id="g-bk-time" type="time" value="10:00"/></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Message (optional)</label>
+      <textarea class="fc" id="g-bk-message" placeholder="Session details, group size, preferences…" style="min-height:70px"></textarea>
+    </div>
+    <button class="btn-sub btn-br" onclick="submitGuestBooking()">Send Booking Request</button>
+  </div>
+
+  <div style="font-family:'Playfair Display',serif;font-size:17px;margin:24px 0 14px">Available Talents</div>
+  <div id="g-talent-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+</div>
+
 <nav class="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
   <button class="bnt" onclick="goPage('requests',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Requests</button>
+  <button class="bnt" onclick="goPage('talent',this);loadGuestTalents()"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Talents</button>
   <button class="bnt" onclick="goPage('complaint',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Complaint</button>
-  <button class="bnt" onclick="goPage('feedback',this)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Feedback</button>
   <button class="bnt" onclick="goPage('tips',this)"><svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Explore</button>
 </nav>
 </div>
@@ -332,6 +365,7 @@ function goPage(id, btn) {
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
   if(id==='tips')      loadTips();
+  if(id==='talent')    loadGuestTalents();
   if(id==='requests')  { loadReqHistory(); }
   if(id==='complaint') loadCompHistory();
 }
@@ -631,6 +665,57 @@ async function loadTips(){
   renderSection('tips-in-list','In');
   renderSection('tips-around-list','Around');
   renderSection('tips-beyond-list','Beyond');
+}
+
+// --- GUEST TALENT BOOKING ---
+const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+
+async function loadGuestTalents(){
+  try{
+    const rows = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name') || [];
+    // Populate select
+    const sel = document.getElementById('g-bk-talent');
+    sel.innerHTML = '<option value="">Select talent…</option>' + rows.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
+    // Render cards
+    const el = document.getElementById('g-talent-list');
+    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available</div>'; return; }
+    el.innerHTML = rows.map(t=>`
+      <div class="card" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0">${ini(t.name)}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:500">${t.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${t.category||''}</div>
+          ${t.short_desc ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${t.short_desc}</div>` : ''}
+        </div>
+      </div>`).join('');
+  } catch(e){ document.getElementById('g-talent-list').innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>'; }
+}
+
+async function submitGuestBooking(){
+  const sel = document.getElementById('g-bk-talent');
+  const talentId = sel.value;
+  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || '';
+  const requested_date = document.getElementById('g-bk-date').value;
+  const requested_time = document.getElementById('g-bk-time').value;
+  const message = document.getElementById('g-bk-message').value.trim();
+  if(!talentId || !requested_date){ toast('Please select a talent and date'); return; }
+  try{
+    await api('/rest/v1/talent_booking_requests','POST',{
+      talent_id: talentId,
+      talent_name: talentName,
+      property_name: me.prop||null,
+      requested_date,
+      requested_time: requested_time||null,
+      message: message||null,
+      requested_by: me.name,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    });
+    document.getElementById('g-bk-date').value='';
+    document.getElementById('g-bk-message').value='';
+    sel.value='';
+    toast('Booking request sent ✓');
+  } catch(e){ toast('Error: '+e.message); }
 }
 </script>
 </body>

@@ -18,87 +18,103 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .btn-p:hover{background:#712B13}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-g{padding:10px 20px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-g:hover{background:#2A5009}
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:16px}
 .section-hdg{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin:28px 0 14px;padding-bottom:10px;border-bottom:2px solid var(--border)}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
 .bdg-g{background:var(--g-l);color:#27500A}
 .bdg-a{background:var(--a-l);color:#633806}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none}
-.tab-row{display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:22px}
-.tab{padding:10px 18px;background:none;border:none;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:400;transition:all .15s}
-.tab.on{color:var(--br);font-weight:500;border-bottom-color:var(--br)}
 .opt-label{display:flex;align-items:center;gap:7px;font-size:13px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;user-select:none}
 .opt-label:hover{border-color:var(--br);background:var(--br-l)}
 .opt-label input{accent-color:var(--br)}
-/* Login screen */
-#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:0}
-.login-box{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:36px 32px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.07)}
-.login-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;margin-bottom:6px;color:var(--text)}
-.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
-.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:20px}
-.dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all .15s;display:inline-block}
-.dot.on{background:var(--br);border-color:var(--br)}
-.dot.err{background:var(--r);border-color:var(--r)}
-.key{height:56px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:22px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;width:100%}
-.key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
-.pin-err{font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:8px}
-/* Main app */
-#app-screen{display:none;min-height:100vh}
+
+/* Top bar */
 .top-bar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .top-logo{font-family:'Playfair Display',serif;font-size:18px;color:var(--text)}
 .top-user{display:flex;align-items:center;gap:10px}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br)}
-.main-content{max-width:820px;margin:0 auto;padding:28px 20px}
-/* Schedule */
+
+/* Main layout: sidebar + content */
+#app-screen{display:none;min-height:100vh;flex-direction:column}
+.app-body{display:flex;flex:1;min-height:0}
+
+/* Profile sidebar */
+.profile-sidebar{width:300px;min-width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:width .3s ease,min-width .3s ease,padding .3s ease;overflow:hidden}
+.profile-sidebar.collapsed{width:56px;min-width:56px}
+.sidebar-inner{padding:20px;flex:1;overflow-y:auto}
+.profile-sidebar.collapsed .sidebar-inner{display:none}
+.sidebar-toggle{display:flex;align-items:center;justify-content:center;padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;background:var(--bg);flex-shrink:0}
+.sidebar-toggle:hover{background:var(--br-l)}
+.toggle-icon{font-size:16px;color:var(--muted);transition:transform .3s}
+.profile-sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
+
+/* Sidebar collapsed tab */
+.collapsed-tab{display:none;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;cursor:pointer;height:100%}
+.profile-sidebar.collapsed .collapsed-tab{display:flex}
+.collapsed-tab-label{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;writing-mode:vertical-lr;transform:rotate(180deg)}
+
+/* Schedule main area */
+.schedule-main{flex:1;padding:28px;overflow-y:auto}
+
+/* Schedule calendar */
 .sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.sched-day{border:1.5px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.sched-day.free{background:var(--g-l);border-color:#86C860;color:#27500A}
-.sched-day.available{background:var(--a-l);border-color:#C88A40;color:#633806}
+.sched-day{border:1.5px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;min-height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--white)}
+.sched-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.sched-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
 .sched-day:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.day-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;opacity:.7}
+.sched-day.today-ring{box-shadow:0 0 0 2px var(--br)}
+.day-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;opacity:.7}
 .day-num{font-size:18px;font-weight:600;font-family:'Playfair Display',serif}
-.day-status{font-size:10px;font-weight:500;margin-top:2px}
-.sched-legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:14px;align-items:center}
+.day-status{font-size:9px;font-weight:500;margin-top:1px}
+.sched-legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:14px;align-items:center;flex-wrap:wrap}
 .leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-/* Month nav */
 .month-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .month-nav button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .month-nav button:hover{border-color:var(--br);color:var(--br)}
-/* Time modal */
+
+/* Day modal */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-.modal{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.modal{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
 .modal-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px}
 .modal-date{font-size:13px;color:var(--muted);margin-bottom:20px}
 .time-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 .btn-danger{padding:9px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin-right:auto}
 .btn-danger:hover{background:var(--r);color:#fff}
+
+/* Toggle switch for busy/available */
+.status-toggle{display:flex;gap:8px;margin-bottom:16px}
+.stgl-btn{flex:1;padding:10px;border-radius:8px;border:2px solid var(--border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
+
+/* Booking requests panel */
+.booking-panel{margin-top:18px}
+.booking-card{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.booking-card.pending{border-left:4px solid var(--a)}
+.booking-card.confirmed{border-left:4px solid var(--g)}
+.booking-card.declined{border-left:4px solid var(--r)}
+
+/* Main tabs */
+.main-tab{padding:10px 20px;background:none;border:none;border-bottom:2px solid transparent;font-family:inherit;font-size:14px;color:var(--muted);cursor:pointer;font-weight:400;transition:all .15s;margin-bottom:-2px}
+.main-tab.on{color:var(--br);font-weight:500;border-bottom-color:var(--br)}
+.main-tab:hover{color:var(--text)}
+
+/* Rating display */
+.stars{display:flex;gap:2px}
+.star{font-size:18px;color:#C8A84B}
+.star.empty{color:var(--border)}
+
+/* Booking request modal */
+.bk-modal{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-title">Talent Portal</div>
-    <div class="login-sub" id="login-sub">Enter your 4-digit PIN to continue</div>
-    <div class="pin-dots" id="pin-dots">
-      <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
-      <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
-    </div>
-    <div class="pin-err" id="pin-err"></div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <button class="key" onclick="addKey('1')">1</button><button class="key" onclick="addKey('2')">2</button><button class="key" onclick="addKey('3')">3</button>
-      <button class="key" onclick="addKey('4')">4</button><button class="key" onclick="addKey('5')">5</button><button class="key" onclick="addKey('6')">6</button>
-      <button class="key" onclick="addKey('7')">7</button><button class="key" onclick="addKey('8')">8</button><button class="key" onclick="addKey('9')">9</button>
-      <div></div><button class="key" onclick="addKey('0')">0</button>
-      <button class="key" onclick="delKey()" style="font-size:16px;color:var(--muted)">⌫</button>
-    </div>
-  </div>
-</div>
-
-<!-- MAIN APP -->
-<div id="app-screen">
+<!-- MAIN APP (shown immediately, no login) -->
+<div id="app-screen" style="display:flex;flex-direction:column;min-height:100vh">
   <div class="top-bar">
     <div class="top-logo">Banyan Circle · Talent</div>
     <div class="top-user">
@@ -107,23 +123,25 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="signOut()">Sign out</button>
     </div>
   </div>
-  <div class="main-content">
-    <div class="tab-row">
-      <button class="tab on" onclick="setTab('profile',this)">My Profile</button>
-      <button class="tab" onclick="setTab('schedule',this)">My Schedule</button>
-    </div>
 
-    <!-- PROFILE TAB -->
-    <div id="tab-profile">
-      <div class="card">
-        <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px" id="prof-heading">My Profile</div>
+  <div class="app-body">
+    <!-- PROFILE SIDEBAR (collapsible) -->
+    <div class="profile-sidebar" id="profile-sidebar">
+      <div class="sidebar-toggle" onclick="toggleSidebar()" title="Collapse profile">
+        <span class="toggle-icon">◀</span>
+      </div>
+      <div class="sidebar-inner" id="sidebar-inner">
+        <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:500;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+          <span id="prof-heading">My Profile</span>
+          <span id="save-status" style="font-size:12px;color:var(--g);display:none">✓ Saved</span>
+        </div>
         <div class="fg">
           <label class="fl">Name <span style="color:var(--r)">*</span></label>
           <input class="fc" id="p-name" placeholder="Your full name"/>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="e.g. 28"/></div>
-          <div class="fg"><label class="fl">Phone number</label><input class="fc" id="p-phone" placeholder="e.g. +91 98765 43210"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
+          <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
         </div>
         <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
         <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
@@ -138,7 +156,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
           </select>
         </div>
         <div id="cat-others-fg" class="fg" style="display:none">
-          <label class="fl">Please specify your category</label>
+          <label class="fl">Please specify</label>
           <input class="fc" id="p-cat-other" placeholder="Your talent category"/>
         </div>
         <div class="fg">
@@ -146,23 +164,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
           <input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/>
         </div>
         <div class="fg">
-          <label class="fl">A beautiful short line about your talent</label>
+          <label class="fl">Tagline</label>
           <input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/>
         </div>
         <div class="fg">
-          <label class="fl">Describe your talent — how it gives a transformational experience to intimate groups</label>
-          <textarea class="fc" id="p-desc" style="min-height:100px" placeholder="Describe what you do and the experience you create…"></textarea>
+          <label class="fl">Describe your talent</label>
+          <textarea class="fc" id="p-desc" style="min-height:80px" placeholder="Describe the experience you create…"></textarea>
         </div>
-
-        <div class="section-hdg" style="margin-top:6px">Links & Media</div>
-        <div class="fg">
-          <label class="fl">Instagram profile link</label>
-          <input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/yourhandle"/>
-        </div>
-        <div class="fg">
-          <label class="fl">Link to a performance or demo video</label>
-          <input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/..."/>
-        </div>
+        <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
+        <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
         <div class="fg">
           <label class="fl">Your photo</label>
           <input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/>
@@ -170,73 +180,148 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </div>
         <div class="fg">
           <label class="fl">Biodata / CV (PDF or Word)</label>
-          <input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="padding:8px"/>
+          <input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/>
           <div id="p-bio-current" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
         </div>
-
-        <div class="section-hdg">Venues</div>
         <div class="fg">
           <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
-          <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px">
-            <!-- loaded dynamically -->
-          </div>
+          <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
         </div>
-
-        <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+        <div style="margin-top:4px;display:flex;gap:10px;align-items:center;padding-bottom:20px">
           <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
-          <span id="save-status" style="font-size:13px;color:var(--g);display:none">✓ Saved</span>
         </div>
+      </div>
+      <!-- Collapsed state icon -->
+      <div class="collapsed-tab" onclick="toggleSidebar()" title="Expand profile">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="collapsed-tab-label">Profile</span>
       </div>
     </div>
 
-    <!-- SCHEDULE TAB -->
-    <div id="tab-schedule" style="display:none">
-      <div class="card">
-        <div class="month-nav">
-          <button onclick="changeMonth(-1)">‹</button>
-          <div style="font-family:'Playfair Display',serif;font-size:18px;flex:1" id="month-label"></div>
-          <button onclick="changeMonth(1)">›</button>
+    <!-- MAIN AREA with tabs -->
+    <div class="schedule-main">
+
+      <!-- Tab row -->
+      <div style="display:flex;gap:6px;border-bottom:2px solid var(--border);margin-bottom:24px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;gap:0">
+          <button class="main-tab on" id="mtab-schedule" onclick="setMainTab('schedule',this)">Schedule</button>
+          <button class="main-tab" id="mtab-messages" onclick="setMainTab('messages',this)">
+            Messages
+            <span id="msg-badge" style="display:none;background:var(--br);color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:5px;font-weight:600">!</span>
+          </button>
         </div>
-        <div class="sched-legend">
-          <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Free</span>
-          <span><span class="leg-dot" style="background:var(--a-l);border:1.5px solid #C88A40"></span> Available</span>
-          <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
-          <span style="font-size:11px;opacity:.7;margin-left:auto">Click a date to set availability</span>
-        </div>
-        <div class="sched-grid" id="sched-day-labels" style="margin-bottom:6px">
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sun</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Mon</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Tue</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Wed</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Thu</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Fri</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sat</div>
-        </div>
-        <div class="sched-grid" id="sched-grid"></div>
+        <button class="btn-p" id="booking-btn" onclick="openBookingRequestModal()" style="display:flex;align-items:center;gap:6px;font-size:13px;padding:8px 14px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Request a Booking
+        </button>
       </div>
+
+      <!-- SCHEDULE PANEL -->
+      <div id="panel-schedule">
+        <!-- Calendar -->
+        <div class="card" style="padding:20px">
+          <div class="month-nav">
+            <button onclick="changeMonth(-1)">‹</button>
+            <div style="font-family:'Playfair Display',serif;font-size:18px;flex:1" id="month-label"></div>
+            <button onclick="changeMonth(1)">›</button>
+          </div>
+          <div class="sched-legend">
+            <span><span class="leg-dot" style="background:#FCEBEB;border:1.5px solid #E57373"></span> Busy</span>
+            <span><span class="leg-dot" style="background:var(--g-l);border:1.5px solid #86C860"></span> Available</span>
+            <span><span class="leg-dot" style="background:var(--white);border:1.5px solid var(--border)"></span> Unmarked</span>
+            <span style="font-size:11px;opacity:.7;margin-left:auto">Click a date to set status</span>
+          </div>
+          <div class="sched-grid" id="sched-day-labels" style="margin-bottom:6px">
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sun</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Mon</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Tue</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Wed</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Thu</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Fri</div>
+            <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:4px">Sat</div>
+          </div>
+          <div class="sched-grid" id="sched-grid"></div>
+        </div>
+
+        <!-- Booking Requests Section -->
+        <div style="font-family:'Playfair Display',serif;font-size:20px;margin:28px 0 14px">Booking Requests</div>
+        <div id="booking-requests-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+
+        <!-- Ratings Section -->
+        <div style="font-family:'Playfair Display',serif;font-size:20px;margin:28px 0 14px">My Ratings</div>
+        <div id="ratings-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+      </div>
+
+      <!-- MESSAGES PANEL -->
+      <div id="panel-messages" style="display:none">
+        <div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 200px);min-height:400px">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span style="font-size:14px;font-weight:500;color:var(--text)">Office · <span id="msgs-talent-name" style="color:var(--muted)"></span></span>
+            <button onclick="loadTalentMessages()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻ Refresh</button>
+          </div>
+          <div id="talent-msgs-list" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading messages…</div>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end">
+            <textarea id="talent-msg-input" placeholder="Write a message to the office…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;resize:none;min-height:42px;max-height:120px;overflow-y:auto;transition:border-color .15s;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTalentMsg()}" oninput="this.style.height='42px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+            <button class="btn-p" onclick="sendTalentMsg()" style="padding:10px 16px;flex-shrink:0;align-self:flex-end">Send</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- TIME SLOT MODAL -->
-<div class="modal-backdrop" id="time-modal" style="display:none" onclick="closeTimeModal(event)">
+<!-- DAY MODAL -->
+<div class="modal-backdrop" id="day-modal" style="display:none" onclick="closeDayModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="modal-title">Set availability</div>
+    <div class="modal-title" id="modal-title">Set day status</div>
     <div class="modal-date" id="modal-date"></div>
-    <div class="time-row">
-      <div class="fg" style="margin:0">
-        <label class="fl">From</label>
-        <input class="fc" type="time" id="modal-start" value="09:00"/>
-      </div>
-      <div class="fg" style="margin:0">
-        <label class="fl">To</label>
-        <input class="fc" type="time" id="modal-end" value="17:00"/>
+    <div class="status-toggle" id="status-toggle">
+      <button class="stgl-btn" id="btn-busy" onclick="setModalStatus('busy')">🔴 Busy</button>
+      <button class="stgl-btn" id="btn-avail" onclick="setModalStatus('available')">🟢 Available</button>
+    </div>
+    <div id="time-fields">
+      <div class="time-row">
+        <div class="fg" style="margin:0">
+          <label class="fl">From</label>
+          <input class="fc" type="time" id="modal-start" value="09:00"/>
+        </div>
+        <div class="fg" style="margin:0">
+          <label class="fl">To</label>
+          <input class="fc" type="time" id="modal-end" value="17:00"/>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
       <button class="btn-danger" id="modal-remove-btn" onclick="removeDay()">Remove</button>
-      <button class="btn-sec" onclick="closeTimeModal()">Cancel</button>
-      <button class="btn-p" onclick="saveTimeSlot()">Save</button>
+      <button class="btn-sec" onclick="closeDayModal()">Cancel</button>
+      <button class="btn-p" onclick="saveDaySlot()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING REQUEST MODAL -->
+<div class="modal-backdrop" id="bk-modal" style="display:none" onclick="closeBkModal(event)">
+  <div class="bk-modal" onclick="event.stopPropagation()">
+    <div class="modal-title" style="margin-bottom:18px">Request a Booking</div>
+    <div class="fg">
+      <label class="fl">Property / Event</label>
+      <input class="fc" id="bk-property" placeholder="e.g. Banyan Circle — Morjim"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label class="fl">Date</label><input class="fc" id="bk-date" type="date"/></div>
+      <div class="fg"><label class="fl">Time</label><input class="fc" id="bk-time" type="time" value="10:00"/></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Message (optional)</label>
+      <textarea class="fc" id="bk-message" placeholder="Any details, duration, group size…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeBkModal()">Cancel</button>
+      <button class="btn-p" onclick="submitBookingRequest()">Send Request</button>
     </div>
   </div>
 </div>
@@ -247,7 +332,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-// Helpers
 async function api(path, method, body) {
   const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
@@ -259,76 +343,44 @@ async function api(path, method, body) {
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
-// --- PIN LOGIN ---
-let pinStr = '';
+// --- BOOT ---
 const params = new URLSearchParams(location.search);
 const talentId = params.get('id') || '';
 const talentNameParam = params.get('name') || 'Talent';
-let TALENT = null;
 
-// Update login sub
-document.getElementById('login-sub').textContent = talentNameParam
-  ? 'Welcome, ' + talentNameParam + '. Enter your 4-digit PIN.'
-  : 'Enter your 4-digit PIN to continue.';
+// Check auth from localStorage OR URL params
+const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+if (!talentId) { location.href='/index.html'; throw new Error('No talent ID'); }
 
-function addKey(d){
-  if(pinStr.length>=4) return;
-  pinStr += d;
-  updateDots();
-  if(pinStr.length===4) setTimeout(checkPin,150);
-}
-function delKey(){ pinStr=pinStr.slice(0,-1); updateDots(); }
-function updateDots(state){
-  for(let i=0;i<4;i++){
-    const el=document.getElementById('d'+i);
-    el.className='dot'+(state==='err'?' err':i<pinStr.length?' on':'');
-  }
-}
+let TALENT = { id: talentId, name: talentNameParam };
 
-async function checkPin(){
-  try{
-    const rows = await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId)+'&select=*') || [];
-    if(!rows.length){ showPinErr('Talent not found'); return; }
-    const row = rows[0];
-    if(String(row.pin) !== pinStr){ showPinErr('Wrong PIN'); return; }
-    TALENT = row;
-    launchApp();
-  } catch(e){ showPinErr('Error: '+e.message); }
-}
+document.getElementById('top-name').textContent = talentNameParam;
+document.getElementById('top-avatar').textContent = ini(talentNameParam);
+document.getElementById('app-screen').style.display = 'flex';
 
-function showPinErr(msg){
-  updateDots('err');
-  document.getElementById('pin-err').textContent = msg;
-  setTimeout(()=>{ pinStr=''; updateDots(); document.getElementById('pin-err').textContent=''; }, 1400);
-}
-
-function launchApp(){
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
-  const n = TALENT.name || talentNameParam;
-  document.getElementById('top-name').textContent = n;
-  document.getElementById('top-avatar').textContent = ini(n);
-  loadProfile();
-  loadProperties();
-}
+// Load profile and schedule
+loadProfile();
+loadProperties();
+renderSchedule();
+loadBookingRequests();
+loadRatings();
 
 function signOut(){
   localStorage.removeItem('bc_me');
   location.href = '/index.html';
 }
 
-// --- TABS ---
-function setTab(id, btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('tab-profile').style.display = id==='profile' ? '' : 'none';
-  document.getElementById('tab-schedule').style.display = id==='schedule' ? '' : 'none';
-  if(id==='schedule') renderSchedule();
+// --- SIDEBAR TOGGLE ---
+let sidebarOpen = true;
+function toggleSidebar(){
+  sidebarOpen = !sidebarOpen;
+  const sb = document.getElementById('profile-sidebar');
+  if(sidebarOpen){ sb.classList.remove('collapsed'); }
+  else { sb.classList.add('collapsed'); }
 }
 
 // --- PROFILE ---
 let profileExists = false;
-
 function fillForm(data){
   document.getElementById('p-name').value = data.name || '';
   document.getElementById('p-age').value = data.age || '';
@@ -340,7 +392,6 @@ function fillForm(data){
   document.getElementById('p-desc').value = data.description || '';
   document.getElementById('p-instagram').value = data.instagram || '';
   document.getElementById('p-performance').value = data.performance_link || '';
-  // Category
   const cats = ['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
   if(cats.includes(data.category)) document.getElementById('p-cat').value = data.category;
   if(data.category==='Others' && data.category_other){ document.getElementById('cat-others-fg').style.display=''; document.getElementById('p-cat-other').value=data.category_other||''; }
@@ -358,7 +409,6 @@ async function loadProfile(){
       document.getElementById('prof-heading').textContent = 'Edit Profile';
       document.getElementById('save-btn').textContent = 'Update profile';
     } else {
-      // Pre-fill name from TALENT
       document.getElementById('p-name').value = TALENT.name || '';
     }
   } catch(e){ console.error(e); }
@@ -374,9 +424,7 @@ async function loadProperties(){
     </label>`).join('');
 }
 function setVenueChecks(venuesArr){
-  document.querySelectorAll('[name="venue"]').forEach(cb => {
-    cb.checked = venuesArr.includes(cb.value);
-  });
+  document.querySelectorAll('[name="venue"]').forEach(cb => { cb.checked = venuesArr.includes(cb.value); });
 }
 function getVenueChecks(){
   return [...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value);
@@ -390,8 +438,7 @@ async function saveProfile(){
   const name = document.getElementById('p-name').value.trim();
   if(!name){ alert('Name is required'); return; }
   const body = {
-    talent_id: talentId,
-    name,
+    talent_id: talentId, name,
     age: parseInt(document.getElementById('p-age').value)||null,
     phone: document.getElementById('p-phone').value.trim()||null,
     email: document.getElementById('p-email').value.trim()||null,
@@ -405,13 +452,9 @@ async function saveProfile(){
     performance_link: document.getElementById('p-performance').value.trim()||null,
     venues: getVenueChecks()
   };
-
   const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
+  btn.disabled = true; btn.textContent = 'Saving…';
   async function uploadToStorage(bucket, file, folder){
-    const ext = file.name.split('.').pop();
     const path = folder + '/' + Date.now() + '_' + file.name.replace(/\s+/g,'_');
     const res = await fetch(SB+'/storage/v1/object/'+bucket+'/'+path, {
       method: 'POST',
@@ -421,24 +464,21 @@ async function saveProfile(){
     if(!res.ok){ const e=await res.json().catch(()=>{}); throw new Error(e?.message||e?.error||('Upload failed: '+res.status)); }
     return SB+'/storage/v1/object/public/'+bucket+'/'+path;
   }
-
   try{
     const photoFile = document.getElementById('p-photo').files[0];
     const bioFile   = document.getElementById('p-bio').files[0];
-
     if(photoFile){
-      if(photoFile.size > 5 * 1024 * 1024){ alert('Photo must be under 5 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
+      if(photoFile.size > 5*1024*1024){ alert('Photo must be under 5 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
       btn.textContent = 'Uploading photo…';
-      body.photo_url  = await uploadToStorage('talent-photos', photoFile, talentId);
+      body.photo_url = await uploadToStorage('talent-photos', photoFile, talentId);
       body.photo_name = photoFile.name;
     }
     if(bioFile){
-      if(bioFile.size > 10 * 1024 * 1024){ alert('CV/Biodata must be under 10 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
+      if(bioFile.size > 10*1024*1024){ alert('CV must be under 10 MB'); btn.disabled=false; btn.textContent='Save profile'; return; }
       btn.textContent = 'Uploading CV…';
-      body.bio_url  = await uploadToStorage('talent-bios', bioFile, talentId);
+      body.bio_url = await uploadToStorage('talent-bios', bioFile, talentId);
       body.bio_name = bioFile.name;
     }
-
     btn.textContent = 'Saving…';
     if(profileExists){
       await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);
@@ -446,29 +486,27 @@ async function saveProfile(){
       await api('/rest/v1/talent_profiles','POST',body);
       profileExists = true;
     }
-    // Also update name in talents table
     await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
     document.getElementById('prof-heading').textContent = 'Edit Profile';
-
-    // Refresh current file links
     if(photoFile) document.getElementById('p-photo-current').innerHTML = `Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
     if(bioFile)   document.getElementById('p-bio-current').innerHTML   = `Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
-
     const s = document.getElementById('save-status');
-    s.style.display=''; setTimeout(()=>s.style.display='none', 2000);
+    s.style.display=''; setTimeout(()=>s.style.display='none', 2500);
     toast('Profile saved ✓');
+    btn.textContent = 'Update profile';
   } catch(e){
     alert('Error: '+e.message);
+    btn.textContent = 'Save profile';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Update profile';
   }
 }
 
 // --- SCHEDULE ---
-let scheduleData = {}; // { 'YYYY-MM-DD': {status, time_start, time_end} }
+let scheduleData = {};
 let schedYear, schedMonth;
 let modalDateStr = null;
+let modalStatus = 'available';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
@@ -485,7 +523,6 @@ async function renderSchedule(){
   const now = new Date();
   if(schedYear===undefined){ schedYear=now.getFullYear(); schedMonth=now.getMonth(); }
   document.getElementById('month-label').textContent = MONTHS[schedMonth] + ' ' + schedYear;
-
   const monthStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0');
   try{
     const rows = await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+monthStr+'-01&date=lte.'+monthStr+'-31&select=date,status,time_start,time_end') || [];
@@ -497,19 +534,22 @@ async function renderSchedule(){
   const firstDay = new Date(schedYear, schedMonth, 1).getDay();
   const daysInMonth = new Date(schedYear, schedMonth+1, 0).getDate();
   const today = new Date().toISOString().slice(0,10);
-
   let html = '';
   for(let i=0;i<firstDay;i++) html += '<div></div>';
   for(let d=1;d<=daysInMonth;d++){
     const dateStr = schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const entry = scheduleData[dateStr];
     const status = entry?.status || '';
-    const cls = status==='free' ? 'sched-day free' : status==='available' ? 'sched-day available' : 'sched-day';
+    const cls = status==='busy' ? 'sched-day busy' : status==='available' ? 'sched-day available' : 'sched-day';
     const isToday = dateStr===today;
     let timeLabel = '';
-    if(entry?.time_start && entry?.time_end) timeLabel = `<div class="day-status" style="font-size:9px">${fmt12(entry.time_start)}–${fmt12(entry.time_end)}</div>`;
-    else if(status) timeLabel = `<div class="day-status">${status==='free'?'Free':'Available'}</div>`;
-    html += `<div class="${cls}" onclick="openTimeModal('${dateStr}')" style="${isToday?'box-shadow:0 0 0 2px var(--br);':''}">
+    if(status==='available' && entry?.time_start && entry?.time_end)
+      timeLabel = `<div class="day-status" style="font-size:8px">${fmt12(entry.time_start)}–${fmt12(entry.time_end)}</div>`;
+    else if(status==='busy')
+      timeLabel = `<div class="day-status">Busy</div>`;
+    else if(status==='available')
+      timeLabel = `<div class="day-status">Available</div>`;
+    html += `<div class="${cls}${isToday?' today-ring':''}" onclick="openDayModal('${dateStr}')">
       <div class="day-num" style="${isToday?'color:var(--br)':''}">${d}</div>
       ${timeLabel}
     </div>`;
@@ -517,53 +557,231 @@ async function renderSchedule(){
   grid.innerHTML = html;
 }
 
-function openTimeModal(dateStr){
+function setModalStatus(s){
+  modalStatus = s;
+  document.getElementById('btn-busy').className = 'stgl-btn'+(s==='busy'?' busy-on':'');
+  document.getElementById('btn-avail').className = 'stgl-btn'+(s==='available'?' avail-on':'');
+  document.getElementById('time-fields').style.display = s==='available' ? '' : 'none';
+}
+
+function openDayModal(dateStr){
   modalDateStr = dateStr;
   const entry = scheduleData[dateStr];
   const d = new Date(dateStr+'T00:00:00');
   document.getElementById('modal-date').textContent = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-  document.getElementById('modal-title').textContent = entry ? 'Edit availability' : 'Mark as available';
+  document.getElementById('modal-title').textContent = entry ? 'Edit day status' : 'Set day status';
+  const curStatus = entry?.status || 'available';
   document.getElementById('modal-start').value = entry?.time_start?.slice(0,5) || '09:00';
   document.getElementById('modal-end').value = entry?.time_end?.slice(0,5) || '17:00';
   document.getElementById('modal-remove-btn').style.display = entry ? '' : 'none';
-  document.getElementById('time-modal').style.display = 'flex';
+  setModalStatus(curStatus);
+  document.getElementById('day-modal').style.display = 'flex';
 }
 
-function closeTimeModal(e){
-  if(e && e.target !== document.getElementById('time-modal')) return;
-  document.getElementById('time-modal').style.display = 'none';
+function closeDayModal(e){
+  if(e && e.target !== document.getElementById('day-modal')) return;
+  document.getElementById('day-modal').style.display = 'none';
   modalDateStr = null;
 }
 
-async function saveTimeSlot(){
-  const start = document.getElementById('modal-start').value;
-  const end = document.getElementById('modal-end').value;
-  if(!start || !end){ toast('Please set both times'); return; }
-  if(end <= start){ toast('End time must be after start time'); return; }
-  const entry = scheduleData[modalDateStr];
-  const payload = { talent_id: talentId, date: modalDateStr, status: 'available', time_start: start, time_end: end };
-  try{
-    if(entry){
-      await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:start,time_end:end});
-    } else {
-      await api('/rest/v1/talent_schedule','POST',payload);
-    }
-    document.getElementById('time-modal').style.display = 'none';
-    modalDateStr = null;
-    await renderSchedule();
-    toast('Saved ✓');
-  } catch(e){ toast('Error: '+e.message); }
+async function saveDaySlot(){
+  if(modalStatus === 'available'){
+    const start = document.getElementById('modal-start').value;
+    const end = document.getElementById('modal-end').value;
+    if(!start || !end){ toast('Please set both times'); return; }
+    if(end <= start){ toast('End time must be after start time'); return; }
+    const entry = scheduleData[modalDateStr];
+    const payload = { talent_id: talentId, date: modalDateStr, status: 'available', time_start: start, time_end: end };
+    try{
+      if(entry){ await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'available',time_start:start,time_end:end}); }
+      else { await api('/rest/v1/talent_schedule','POST',payload); }
+    } catch(e){ toast('Error: '+e.message); return; }
+  } else {
+    // Busy — no times
+    const entry = scheduleData[modalDateStr];
+    const payload = { talent_id: talentId, date: modalDateStr, status: 'busy', time_start: null, time_end: null };
+    try{
+      if(entry){ await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'PATCH',{status:'busy',time_start:null,time_end:null}); }
+      else { await api('/rest/v1/talent_schedule','POST',payload); }
+    } catch(e){ toast('Error: '+e.message); return; }
+  }
+  document.getElementById('day-modal').style.display = 'none';
+  modalDateStr = null;
+  await renderSchedule();
+  toast('Saved ✓');
 }
 
 async function removeDay(){
   try{
     await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE');
-    document.getElementById('time-modal').style.display = 'none';
+    document.getElementById('day-modal').style.display = 'none';
     modalDateStr = null;
     await renderSchedule();
     toast('Removed');
   } catch(e){ toast('Error: '+e.message); }
 }
+
+// --- BOOKING REQUESTS ---
+async function loadBookingRequests(){
+  const el = document.getElementById('booking-requests-list');
+  try{
+    const rows = await api('/rest/v1/talent_booking_requests?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20') || [];
+    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No booking requests yet</div>'; return; }
+    el.innerHTML = rows.map(r => {
+      const statusColor = r.status==='confirmed' ? 'var(--g)' : r.status==='declined' ? 'var(--r)' : 'var(--a)';
+      const statusLabel = r.status==='confirmed' ? '✓ Confirmed' : r.status==='declined' ? '✕ Declined' : '⏳ Pending';
+      return `<div class="booking-card ${r.status||'pending'}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-size:14px;font-weight:500">${r.property_name||'—'}</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">${r.requested_date||''} ${r.requested_time ? '· ' + fmt12(r.requested_time) : ''}</div>
+            ${r.message ? `<div style="font-size:13px;margin-top:6px;color:var(--text)">${r.message}</div>` : ''}
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">Requested by: ${r.requested_by||'Office'}</div>
+          </div>
+          <span style="font-size:12px;font-weight:500;color:${statusColor};white-space:nowrap;flex-shrink:0">${statusLabel}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    el.innerHTML='<div style="font-size:13px;color:var(--muted)">Booking requests unavailable</div>';
+  }
+}
+
+function openBookingRequestModal(){
+  document.getElementById('bk-property').value='';
+  document.getElementById('bk-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('bk-time').value='10:00';
+  document.getElementById('bk-message').value='';
+  document.getElementById('bk-modal').style.display='flex';
+}
+function closeBkModal(e){
+  if(e && e.target !== document.getElementById('bk-modal')) return;
+  document.getElementById('bk-modal').style.display='none';
+}
+async function submitBookingRequest(){
+  const property_name = document.getElementById('bk-property').value.trim();
+  const requested_date = document.getElementById('bk-date').value;
+  const requested_time = document.getElementById('bk-time').value;
+  const message = document.getElementById('bk-message').value.trim();
+  if(!property_name || !requested_date){ toast('Please fill property and date'); return; }
+  try{
+    await api('/rest/v1/talent_booking_requests','POST',{
+      talent_id: talentId,
+      talent_name: talentNameParam,
+      property_name,
+      requested_date,
+      requested_time: requested_time||null,
+      message: message||null,
+      requested_by: talentNameParam,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    });
+    document.getElementById('bk-modal').style.display='none';
+    toast('Booking request sent ✓');
+    loadBookingRequests();
+  } catch(e){ toast('Error: '+e.message); }
+}
+
+// --- RATINGS ---
+async function loadRatings(){
+  const el = document.getElementById('ratings-list');
+  try{
+    const rows = await api('/rest/v1/talent_ratings?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20') || [];
+    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No ratings yet</div>'; return; }
+    const avg = rows.reduce((s,r)=>s+(r.rating||0),0)/rows.length;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div class="stars">${[1,2,3,4,5].map(i=>`<span class="star${i<=Math.round(avg)?'':' empty'}">★</span>`).join('')}</div>
+      <span style="font-size:16px;font-weight:500">${avg.toFixed(1)}</span>
+      <span style="font-size:13px;color:var(--muted)">${rows.length} review${rows.length!==1?'s':''}</span>
+    </div>` +
+    rows.map(r=>`<div class="card" style="padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div class="stars">${[1,2,3,4,5].map(i=>`<span class="star" style="font-size:14px${i<=r.rating?'':';color:var(--border)'}">${i<=r.rating?'★':'☆'}</span>`).join('')}</div>
+        <span style="font-size:12px;font-weight:500">${r.guest_name||'Guest'}</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:auto">${r.created_at?new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span>
+      </div>
+      ${r.review ? `<div style="font-size:13px;color:var(--text);line-height:1.5">${r.review}</div>` : ''}
+    </div>`).join('');
+  } catch(e){
+    el.innerHTML='<div style="font-size:13px;color:var(--muted)">Ratings unavailable</div>';
+  }
+}
+// --- MAIN TAB SWITCHING ---
+function setMainTab(id, btn){
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('panel-schedule').style.display = id==='schedule' ? '' : 'none';
+  document.getElementById('panel-messages').style.display = id==='messages' ? '' : 'none';
+  document.getElementById('booking-btn').style.display = id==='schedule' ? '' : 'none';
+  if(id==='messages'){
+    document.getElementById('msg-badge').style.display='none';
+    loadTalentMessages();
+  }
+}
+
+// --- TALENT MESSAGES (linked to internal_messages via talent_id) ---
+document.getElementById('msgs-talent-name').textContent = talentNameParam;
+
+async function loadTalentMessages(){
+  const el = document.getElementById('talent-msgs-list');
+  try{
+    const rows = await api(
+      '/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.asc'
+    ) || [];
+    if(!rows.length){
+      el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No messages yet — say hello to the office!</div>';
+      return;
+    }
+    el.innerHTML = rows.map(m => {
+      const isMe = m.from_role === 'talent';
+      return `<div style="display:flex;justify-content:${isMe?'flex-end':'flex-start'}">
+        <div style="max-width:75%;background:${isMe?'var(--br)':'var(--white)'};color:${isMe?'#fff':'var(--text)'};border:1px solid ${isMe?'var(--br)':'var(--border)'};border-radius:12px;padding:10px 14px">
+          <div style="font-size:10px;opacity:.65;margin-bottom:4px">${isMe?'You':'Office'} · ${m.created_at ? new Date(m.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</div>
+          <div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div>
+        </div>
+      </div>`;
+    }).join('');
+    // Scroll to bottom
+    el.scrollTop = el.scrollHeight;
+  } catch(e){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">
+      Could not load messages.<br><span style="font-size:11px">Make sure <code>talent_id</code> column exists on <code>internal_messages</code></span></div>`;
+  }
+}
+
+async function sendTalentMsg(){
+  const input = document.getElementById('talent-msg-input');
+  const txt = input.value.trim();
+  if(!txt) return;
+  try{
+    await api('/rest/v1/internal_messages','POST',{
+      talent_id: talentId,
+      talent_name: talentNameParam,
+      from_role: 'talent',
+      from_name: talentNameParam,
+      message: txt,
+      created_at: new Date().toISOString()
+    });
+    input.value='';
+    input.style.height='42px';
+    await loadTalentMessages();
+  } catch(e){ toast('Send failed: '+e.message); }
+}
+
+// Poll for new messages every 30s when messages tab active
+setInterval(()=>{
+  if(document.getElementById('panel-messages').style.display !== 'none') loadTalentMessages();
+  // Badge check when on schedule tab
+  else {
+    api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&from_role=eq.office&order=created_at.desc&limit=1&select=created_at')
+      .then(rows=>{
+        if(rows && rows.length){
+          const badge = document.getElementById('msg-badge');
+          badge.style.display='';
+        }
+      }).catch(()=>{});
+  }
+}, 30000);
 </script>
 </body>
 </html>
