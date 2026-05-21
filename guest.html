@@ -84,10 +84,37 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .bk-log-row:last-child{border-bottom:none}
 .bk-edit-btn{font-size:12px;font-weight:500;color:var(--br);background:var(--br-l);border:1px solid rgba(153,60,29,.2);border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:opacity .15s}
 .bk-edit-btn:hover{opacity:.8}
+
+/* Welcome banner */
+.welcome-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);cursor:pointer;padding:24px}
+.welcome-banner-inner{background:var(--white);border-radius:18px;padding:32px 28px;text-align:center;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.18);pointer-events:none}
+.welcome-banner-logo{width:56px;height:56px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.welcome-banner-logo svg{width:28px;height:28px;fill:white}
+.welcome-banner-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:10px}
+.welcome-banner-sub{font-size:13px;color:var(--muted);line-height:1.6}
+.welcome-banner-hint{margin-top:18px;font-size:11px;color:var(--muted);opacity:.7}
+
+/* Final bill page */
+.bill-line{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px}
+.bill-line:last-child{border-bottom:none}
+.bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
+.bill-section-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 </style>
 </head>
 <body>
 <div class="shell">
+
+<!-- WELCOME BANNER -->
+<div class="welcome-banner" id="welcome-banner" onclick="dismissBanner()">
+  <div class="welcome-banner-inner">
+    <div class="welcome-banner-logo">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="none" stroke="white" stroke-width="1.5"/></svg>
+    </div>
+    <div class="welcome-banner-title">Welcome to Properties by Heritance</div>
+    <div class="welcome-banner-sub">We hope you have a pleasant experience.</div>
+    <div class="welcome-banner-hint">Tap anywhere to continue</div>
+  </div>
+</div>
 <div class="hdr">
   <div class="hdr-logo"><img src="/herit.jpg" onerror="this.style.display='none';this.parentNode.innerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;white&quot; width=&quot;18&quot; height=&quot;18&quot;><path d=&quot;M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z&quot;/></svg>'"/></div>
   <div class="hdr-info"><div class="hdr-name" id="hdr-name">Guest</div><div class="hdr-prop" id="hdr-prop">Banyan Circle</div></div>
@@ -393,12 +420,61 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   </div>
 </div>
 
+<!-- FINAL BILL -->
+<div class="pg" id="pg-finalbill">
+  <div class="pg-title">Final Bill</div>
+  <div class="pg-sub">Your stay summary &amp; charges</div>
+
+  <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
+
+  <div id="bill-content" style="display:none">
+    <!-- Stay summary card -->
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Stay Summary</div>
+      <div class="bill-line"><span style="color:var(--muted)">Guest</span><span id="bill-guest-name" style="font-weight:500">—</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Property</span><span id="bill-property" style="font-weight:500">—</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Check-in</span><span id="bill-checkin">—</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Check-out</span><span id="bill-checkout">—</span></div>
+      <div class="bill-line" style="border:none"><span style="color:var(--muted)">Nights</span><span id="bill-nights">—</span></div>
+    </div>
+
+    <!-- Charges -->
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Charges</div>
+      <div id="bill-items"><div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges available yet.</div></div>
+      <div class="bill-total"><span>Total</span><span id="bill-total">—</span></div>
+    </div>
+
+    <!-- Status -->
+    <div class="card" style="padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:2px">Payment Status</div>
+        <span class="bdg" id="bill-status-badge">Pending</span>
+      </div>
+      <div style="margin-left:auto;font-size:12px;color:var(--muted)" id="bill-remarks"></div>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0 4px">For queries, please contact the front desk.</div>
+  </div>
+
+  <div id="bill-none" style="display:none">
+    <div class="success">
+      <div class="s-icon" style="background:var(--br-l)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      </div>
+      <div class="s-title">No bill yet</div>
+      <div class="s-sub">Your final bill will appear here once it has been prepared by the property.</div>
+    </div>
+  </div>
+</div>
+
 <nav class="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
   <button class="bnt" onclick="goPage('requests',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Requests</button>
-  <button class="bnt" onclick="goPage('talent',this);loadGuestTalents();loadGuestBookingHistory()"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Talents</button>
+  <button class="bnt" onclick="goPage('talent',this);loadGuestTalents();loadGuestBookingHistory()"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.5 1.5 4.5 3 6l4 5 4-5c1.5-1.5 3-3.5 3-6 0-3.87-3.13-7-7-7z" fill="none"/><circle cx="12" cy="9" r="2.5" fill="none"/></svg>Banyan Circle</button>
   <button class="bnt" onclick="goPage('complaint',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Complaint</button>
   <button class="bnt" onclick="goPage('tips',this)"><svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>Explore</button>
+  <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
 </nav>
 </div>
@@ -428,10 +504,11 @@ function goPage(id, btn) {
   document.querySelectorAll('.bnt').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='tips')      loadTips();
-  if(id==='talent')    { loadGuestTalents(); loadGuestBookingHistory(); }
-  if(id==='requests')  { loadReqHistory(); }
-  if(id==='complaint') loadCompHistory();
+  if(id==='tips')       loadTips();
+  if(id==='talent')     { loadGuestTalents(); loadGuestBookingHistory(); }
+  if(id==='requests')   { loadReqHistory(); }
+  if(id==='complaint')  loadCompHistory();
+  if(id==='finalbill')  loadFinalBill();
 }
 
 async function api(path, method, body) {
@@ -858,6 +935,57 @@ async function saveBookingEdit(){
   } catch(e){ toast('Error: '+e.message); }
   btn.disabled=false; btn.textContent='Save changes';
 }
+// ── Welcome banner ──
+function dismissBanner(){
+  const b = document.getElementById('welcome-banner');
+  b.style.transition = 'opacity .4s';
+  b.style.opacity = '0';
+  setTimeout(() => b.style.display = 'none', 400);
+}
+
+// ── Final Bill ──
+async function loadFinalBill(){
+  document.getElementById('bill-loading').style.display='block';
+  document.getElementById('bill-content').style.display='none';
+  document.getElementById('bill-none').style.display='none';
+  try {
+    const data = await api('/rest/v1/guest_final_bills?guest_profile_id=eq.'+me.id+'&select=*&order=created_at.desc&limit=1');
+    document.getElementById('bill-loading').style.display='none';
+    if(!data || !data.length){ document.getElementById('bill-none').style.display='block'; return; }
+    const bill = data[0];
+    document.getElementById('bill-content').style.display='block';
+    document.getElementById('bill-guest-name').textContent = bill.guest_name || me.name || '—';
+    document.getElementById('bill-property').textContent = bill.property_name || me.prop || '—';
+    const fmt = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    document.getElementById('bill-checkin').textContent  = fmt(bill.check_in_date);
+    document.getElementById('bill-checkout').textContent = fmt(bill.check_out_date);
+    // nights
+    if(bill.check_in_date && bill.check_out_date){
+      const diff = Math.round((new Date(bill.check_out_date)-new Date(bill.check_in_date))/(1000*60*60*24));
+      document.getElementById('bill-nights').textContent = diff > 0 ? diff+' night'+(diff!==1?'s':'') : '—';
+    }
+    // items
+    const items = bill.line_items || [];
+    if(items.length){
+      document.getElementById('bill-items').innerHTML = items.map(i=>`
+        <div class="bill-line">
+          <span>${i.description||'Item'}</span>
+          <span style="font-weight:500">${bill.currency||'₹'} ${Number(i.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2})}</span>
+        </div>`).join('');
+    }
+    const total = bill.total_amount != null ? bill.total_amount : (items.reduce((s,i)=>s+Number(i.amount||0),0)||null);
+    document.getElementById('bill-total').textContent = total != null ? (bill.currency||'₹')+' '+Number(total).toLocaleString('en-IN',{minimumFractionDigits:2}) : '—';
+    // status badge
+    const statusMap = {paid:'bdg-g', pending:'bdg-a', overdue:'bdg-r', waived:'bdg-g'};
+    const st = (bill.payment_status||'pending').toLowerCase();
+    const badge = document.getElementById('bill-status-badge');
+    badge.textContent = bill.payment_status || 'Pending';
+    badge.className = 'bdg ' + (statusMap[st]||'bdg-a');
+    document.getElementById('bill-remarks').textContent = bill.remarks || '';
+  } catch(e){
+    document.getElementById('bill-loading').style.display='none';
+    document.getElementById('bill-none').style.display='block';
+  }
+}
 </script>
-</body>
 </html>
