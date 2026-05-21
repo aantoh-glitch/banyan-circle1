@@ -45,7 +45,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 /* ── FILTER TABS ── */
 .filter-bar{
   display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);
-  background:var(--white);position:sticky;top:53px;z-index:40;
+  background:var(--white);
 }
 .ftab{
   padding:5px 14px;border-radius:999px;border:1px solid var(--border);
@@ -57,7 +57,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 /* ── INBOX ── */
 .inbox{flex:1;overflow-y:auto}
 .inbox-empty{text-align:center;padding:60px 24px;color:var(--muted);font-size:14px}
-.inbox-empty svg{width:40px;height:40px;stroke:var(--faint);fill:none;stroke-width:1.5;margin:0 auto 12px;display:block}
+.inbox-empty svg{width:40px;height:40px;stroke:var(--faint);fill:none;stroke-width:1.5;margin:0 auto 14px;display:block}
 
 .msg-row{
   display:flex;align-items:flex-start;gap:12px;
@@ -65,55 +65,47 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   cursor:pointer;transition:background .1s;
 }
 .msg-row:hover{background:var(--bg)}
-.msg-row.unread .msg-topic{font-weight:600;color:var(--text)}
-.unread-dot{
-  width:8px;height:8px;border-radius:50%;background:var(--br);
-  flex-shrink:0;margin-top:6px;
-}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--br);flex-shrink:0;margin-top:6px}
 .unread-dot.read{background:transparent}
 .msg-body{flex:1;min-width:0}
-.msg-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.msg-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px}
 .msg-topic{font-size:14px;font-weight:500;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.msg-date{font-size:11px;color:var(--faint);flex-shrink:0}
-.msg-from{font-size:12px;color:var(--muted);margin-bottom:4px}
+.msg-topic.bold{font-weight:700}
+.msg-date{font-size:11px;color:var(--faint);flex-shrink:0;white-space:nowrap}
+.msg-from{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .msg-preview{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.role-badge{
-  display:inline-block;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:500;
-  flex-shrink:0;margin-left:4px;
-}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.2px}
 .rb-admin{background:var(--br-l);color:var(--br)}
+.rb-office{background:var(--br-l);color:var(--br)}
 .rb-talent{background:var(--b-l);color:#0C447C}
 .rb-landlord{background:var(--g-l);color:#27500A}
 .rb-guest{background:var(--a-l);color:#633806}
 
 /* ── THREAD VIEW ── */
-.thread-view{
-  display:none;flex-direction:column;height:100%;
-}
-.thread-view.on{display:flex}
+.thread-view{display:none;flex-direction:column;height:100%;overflow:hidden}
+.thread-view.on{display:flex;flex:1}
 .thread-hdr{
   background:var(--white);border-bottom:1px solid var(--border);
-  padding:12px 16px;display:flex;align-items:center;gap:10px;
-  position:sticky;top:0;z-index:40;flex-shrink:0;
+  padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;
 }
-.thread-topic{font-family:'Playfair Display',serif;font-size:16px;flex:1;line-height:1.3}
-.thread-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
-
-.bubble-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
-.bubble-wrap.mine{align-items:flex-end}
-.bubble{
-  max-width:78%;background:var(--bg);border-radius:14px 14px 14px 4px;
-  padding:10px 14px;font-size:14px;line-height:1.6;
-}
-.bubble-wrap.mine .bubble{
-  background:var(--br);color:#fff;border-radius:14px 14px 4px 14px;
-}
+.thread-meta{flex:1;min-width:0}
+.thread-topic{font-family:'Playfair Display',serif;font-size:16px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thread-parties{font-size:11px;color:var(--faint);margin-top:2px}
+.thread-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bubble-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:85%}
+.bubble-wrap.mine{align-items:flex-end;align-self:flex-end}
 .bubble-label{font-size:11px;color:var(--faint)}
-.bubble-booking{
-  margin-top:6px;font-size:12px;padding:6px 10px;
-  background:var(--a-l);border-radius:8px;color:var(--a);font-weight:500;
+.bubble{
+  background:var(--bg);border-radius:14px 14px 14px 4px;
+  padding:10px 14px;font-size:14px;line-height:1.6;word-break:break-word;
 }
-.bubble-wrap.mine .bubble-booking{background:rgba(255,255,255,.2);color:#fff}
+.bubble-wrap.mine .bubble{background:var(--br);color:#fff;border-radius:14px 14px 4px 14px}
+.bubble-booking{
+  margin-top:6px;font-size:12px;padding:5px 10px;
+  background:var(--a-l);border-radius:8px;color:var(--a);font-weight:500;
+  display:inline-block;
+}
+.bubble-wrap.mine .bubble-booking{background:rgba(255,255,255,.22);color:#fff}
 
 .reply-bar{
   border-top:1px solid var(--border);background:var(--white);
@@ -127,55 +119,83 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .reply-input:focus{border-color:var(--br)}
 .send-btn{
   background:var(--br);color:#fff;border:none;border-radius:10px;
-  padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;
-  font-family:inherit;flex-shrink:0;
+  padding:10px 18px;cursor:pointer;font-size:13px;font-weight:500;
+  font-family:inherit;flex-shrink:0;white-space:nowrap;
 }
 .send-btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* ── COMPOSE MODAL ── */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
 .overlay.on{display:flex}
-@media(min-width:480px){.overlay{align-items:center}}
+@media(min-width:520px){.overlay{align-items:center}}
 .modal-sheet{
   background:var(--white);border-radius:20px 20px 0 0;
-  padding:20px 20px 32px;width:100%;max-width:600px;
-  max-height:90vh;overflow-y:auto;
-  animation:slideUp .22s ease;
+  padding:22px 20px 36px;width:100%;max-width:580px;
+  max-height:92vh;overflow-y:auto;
+  animation:slideUp .2s ease;
 }
-@media(min-width:480px){.modal-sheet{border-radius:16px;padding:24px}}
-@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-ttl{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px}
+@media(min-width:520px){.modal-sheet{border-radius:16px;padding:26px}}
+@keyframes slideUp{from{transform:translateY(32px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px}
 .fg{margin-bottom:14px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;letter-spacing:.2px;text-transform:uppercase}
 .fc{
-  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+  width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;
   font-size:15px;font-family:inherit;color:var(--text);background:var(--white);
   outline:none;appearance:none;-webkit-appearance:none;transition:border-color .15s;
 }
 .fc:focus{border-color:var(--br)}
 textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
-.btn-p{padding:10px 20px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.btn-p{padding:10px 22px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:hover{background:var(--br-d)}
 .btn-p:disabled{opacity:.5;cursor:not-allowed}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .booking-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
+/* ── RECIPIENT TOGGLE PILLS (admin compose) ── */
+.recip-toggle{display:flex;gap:8px;flex-wrap:wrap}
+.recip-pill{
+  padding:8px 18px;border-radius:999px;border:1.5px solid var(--border);
+  font-size:13px;font-weight:500;cursor:pointer;background:var(--white);
+  font-family:inherit;color:var(--muted);transition:all .15s;
+}
+.recip-pill:hover{border-color:var(--br);color:var(--br)}
+.recip-pill.on{background:var(--br);border-color:var(--br);color:#fff}
+.recip-pill.on-talent{background:var(--b);border-color:var(--b);color:#fff}
+.recip-pill.on-landlord{background:var(--g);border-color:var(--g);color:#fff}
+.recip-pill.on-guest{background:var(--a);border-color:var(--a);color:#fff}
+
+/* Name list for admin recipient */
+.name-list{
+  margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;
+}
+.name-item{
+  padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;
+  font-size:14px;background:var(--white);transition:all .15s;display:flex;align-items:center;gap:8px;
+}
+.name-item:hover{border-color:var(--br);background:var(--br-l)}
+.name-item.selected{border-color:var(--br);background:var(--br-l);font-weight:500}
+.name-item svg{width:15px;height:15px;stroke:var(--br);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;display:none;flex-shrink:0}
+.name-item.selected svg{display:block}
+.name-loading{font-size:13px;color:var(--muted);padding:10px;text-align:center}
+
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
   background:#222;color:#fff;padding:10px 22px;border-radius:999px;
-  font-size:13px;z-index:200;display:none;white-space:nowrap;
+  font-size:13px;z-index:500;display:none;white-space:nowrap;
+  animation:fadeIn .2s;
 }
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
-/* ── LOADING ── */
-.loader{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.loader{text-align:center;padding:40px;color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
 <div class="app" id="app">
 
-  <!-- INBOX VIEW -->
+  <!-- ── INBOX VIEW ── -->
   <div id="view-inbox" style="display:flex;flex-direction:column;flex:1">
     <div class="top-bar">
       <button class="back-btn" onclick="goBack()">
@@ -198,76 +218,77 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     </div>
   </div>
 
-  <!-- THREAD VIEW -->
-  <div id="view-thread" class="thread-view" style="flex:1">
+  <!-- ── THREAD VIEW ── -->
+  <div id="view-thread" class="thread-view">
     <div class="thread-hdr">
       <button class="back-btn" onclick="closeThread()">
         <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
       </button>
-      <div class="thread-topic" id="thread-topic-title">—</div>
+      <div class="thread-meta">
+        <div class="thread-topic" id="thread-topic-title">—</div>
+        <div class="thread-parties" id="thread-parties"></div>
+      </div>
     </div>
     <div class="thread-msgs" id="thread-msgs"></div>
     <div class="reply-bar">
       <textarea class="reply-input" id="reply-input" rows="1" placeholder="Type a reply…" oninput="autoGrow(this)"></textarea>
-      <button class="send-btn" onclick="sendReply()">Send</button>
+      <button class="send-btn" id="reply-btn" onclick="sendReply()">Send</button>
     </div>
   </div>
 
 </div>
 
-<!-- COMPOSE MODAL -->
+<!-- ── COMPOSE MODAL ── -->
 <div class="overlay" id="compose-overlay">
   <div class="modal-sheet">
-    <div class="modal-ttl">New Message</div>
+    <div class="modal-ttl" id="compose-title">New Message</div>
 
-    <!-- Admin: pick recipient type then name -->
-    <div class="fg" id="fg-recip-type" style="display:none">
-      <label class="fl">Send to</label>
-      <select class="fc" id="recip-type" onchange="onRecipTypeChange()">
-        <option value="">— Select —</option>
-        <option value="talent">Talent</option>
-        <option value="landlord">Landlord</option>
-        <option value="guest">Guest</option>
-      </select>
-    </div>
-    <div class="fg" id="fg-recip-name" style="display:none">
-      <label class="fl">Recipient</label>
-      <select class="fc" id="recip-name">
-        <option value="">— Select —</option>
-      </select>
+    <!-- ADMIN: recipient type toggle -->
+    <div class="fg" id="fg-recip-toggle" style="display:none">
+      <div class="fl">To</div>
+      <div class="recip-toggle">
+        <button class="recip-pill" data-type="talent"   onclick="selectRecipType('talent',this)">Talent</button>
+        <button class="recip-pill" data-type="landlord" onclick="selectRecipType('landlord',this)">Landlord</button>
+        <button class="recip-pill" data-type="guest"    onclick="selectRecipType('guest',this)">Guest</button>
+      </div>
+      <div id="name-list-wrap" style="display:none;margin-top:12px">
+        <div id="name-list" class="name-list"></div>
+      </div>
     </div>
 
-    <!-- Non-admin: fixed recipient label -->
+    <!-- NON-ADMIN: fixed "To: Admin" -->
     <div class="fg" id="fg-recip-fixed" style="display:none">
-      <label class="fl">To</label>
-      <div style="padding:10px 12px;background:var(--bg);border-radius:10px;font-size:14px;color:var(--muted)">
+      <div class="fl">To</div>
+      <div style="padding:11px 13px;background:var(--bg);border-radius:10px;font-size:14px;color:var(--muted);font-weight:500">
         Admin — Banyan Circle
       </div>
     </div>
 
-    <div class="fg">
-      <label class="fl">Topic</label>
+    <!-- TOPIC -->
+    <div class="fg" id="fg-topic">
+      <label class="fl" for="compose-topic">Topic</label>
       <select class="fc" id="compose-topic" onchange="onTopicChange()">
         <option value="">— Select topic —</option>
       </select>
     </div>
 
-    <!-- Booking request date/time fields -->
-    <div id="booking-fields" style="display:none">
-      <div class="booking-fields fg">
+    <!-- BOOKING DATE/TIME (shown only for Booking Request topic) -->
+    <div id="booking-fields" style="display:none" class="fg">
+      <div class="booking-fields">
         <div>
-          <label class="fl">Requested Date</label>
+          <label class="fl">Date</label>
           <input type="date" class="fc" id="booking-date"/>
         </div>
         <div>
-          <label class="fl">Requested Time</label>
+          <label class="fl">Time</label>
           <input type="time" class="fc" id="booking-time"/>
         </div>
       </div>
     </div>
 
+    <!-- MESSAGE BODY -->
     <div class="fg">
-      <label class="fl">Message</label>
+      <label class="fl" for="compose-body">Message</label>
       <textarea class="fc" id="compose-body" placeholder="Write your message…" rows="4"></textarea>
     </div>
 
@@ -281,60 +302,78 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ────────────────────────────────────────────
+   CONFIG
+──────────────────────────────────────────── */
 var SUPA = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-var me = null;
-var allMessages = [];
-var currentFilter = 'all';
-var currentThread = null; // {root, messages[]}
-
-/* ── TOPICS BY ROLE ── */
+/* ────────────────────────────────────────────
+   TOPICS — keyed by normalised sender-recipient pair
+──────────────────────────────────────────── */
 var TOPICS = {
-  'admin-talent':    ['Booking Request', 'Payment Related', 'Other'],
-  'talent-admin':    ['Payment Related', 'Event Related', 'Others'],
-  'admin-landlord':  ['General'],
-  'landlord-admin':  ['General'],
-  'admin-guest':     ['General'],
-  'guest-admin':     ['Complaint', 'Request', 'Feedback'],
+  'admin-talent':   ['Booking Request', 'Payment Related', 'Other'],
+  'talent-admin':   ['Payment Related', 'Event Related', 'Others'],
+  'admin-landlord': ['General'],
+  'landlord-admin': ['General'],
+  'admin-guest':    ['General'],
+  'guest-admin':    ['Complaint', 'Request', 'Feedback'],
 };
 
-function getTopics(senderRole, recipientRole) {
-  var key = senderRole + '-' + recipientRole;
-  return TOPICS[key] || ['General'];
-}
+/* ────────────────────────────────────────────
+   STATE
+──────────────────────────────────────────── */
+var me            = null;
+var allMessages   = [];
+var currentFilter = 'all';
+var currentThread = null;
+var selectedRecipType = null;
+var selectedRecipName = null;
 
-/* ── API ── */
+/* Role normalisation — admin.html stores role as 'office' */
+function isAdmin() { return me && (me.role === 'admin' || me.role === 'office'); }
+function myAdminRole() { return 'admin'; }  // always store as 'admin' in messages table
+
+/* ────────────────────────────────────────────
+   API
+──────────────────────────────────────────── */
 async function api(method, path, body) {
+  var headers = {
+    'apikey': KEY,
+    'Authorization': 'Bearer ' + KEY,
+    'Content-Type': 'application/json'
+  };
+  if (method === 'POST') headers['Prefer'] = 'return=representation';
+  if (method === 'PATCH') headers['Prefer'] = 'return=minimal';
   var r = await fetch(SUPA + '/rest/v1/' + path, {
     method: method,
-    headers: {
-      'apikey': KEY,
-      'Authorization': 'Bearer ' + KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : ''
-    },
+    headers: headers,
     body: body ? JSON.stringify(body) : undefined
   });
-  if (!r.ok) throw new Error(await r.text());
-  if (method === 'GET') return r.json();
-  if (method === 'POST') return r.json();
+  if (!r.ok) { var t = await r.text(); throw new Error(t); }
+  if (method === 'GET' || method === 'POST') return r.json();
   return null;
 }
 
-/* ── INIT ── */
+/* ────────────────────────────────────────────
+   INIT
+──────────────────────────────────────────── */
 window.onload = function() {
   me = JSON.parse(localStorage.getItem('bc_me') || 'null');
   if (!me) { window.location.href = 'index.html'; return; }
   loadInbox();
 };
 
-/* ── INBOX ── */
+/* ────────────────────────────────────────────
+   INBOX
+──────────────────────────────────────────── */
 async function loadInbox() {
   try {
     var q;
-    if (me.role === 'admin') {
-      q = 'messages?or=(sender_role.eq.admin,recipient_role.eq.admin)&order=created_at.desc';
+    if (isAdmin()) {
+      /* Admin sees ALL messages that involve admin role.
+         Because sender might have stored 'office' or 'admin', match both. */
+      q = 'messages?or=(sender_role.eq.admin,recipient_role.eq.admin,sender_role.eq.office,recipient_role.eq.office)&order=created_at.desc';
     } else {
       var n = encodeURIComponent(me.name);
       q = 'messages?or=(sender_name.eq.' + n + ',recipient_name.eq.' + n + ')&order=created_at.desc';
@@ -342,38 +381,47 @@ async function loadInbox() {
     allMessages = await api('GET', q);
     renderInbox();
   } catch(e) {
-    document.getElementById('inbox-list').innerHTML = '<div class="inbox-empty">Could not load messages.<br><small>' + e.message + '</small></div>';
+    document.getElementById('inbox-list').innerHTML =
+      '<div class="inbox-empty">Could not load messages.<br><small style="color:var(--r)">' + esc(e.message) + '</small></div>';
   }
 }
 
 function setFilter(f, btn) {
   currentFilter = f;
-  document.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('on')});
+  document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('on'); });
   btn.classList.add('on');
   renderInbox();
 }
 
-/* Group messages into threads, keyed by thread_id or id */
+/* Group messages into threads by thread_id or their own id (root messages) */
 function getThreads(msgs) {
   var map = {};
   msgs.forEach(function(m) {
     var key = m.thread_id || m.id;
-    if (!map[key]) map[key] = {key: key, msgs: [], latest: m};
+    if (!map[key]) map[key] = { key: key, msgs: [], latest: m };
     map[key].msgs.push(m);
     if (new Date(m.created_at) > new Date(map[key].latest.created_at)) map[key].latest = m;
   });
   var threads = Object.values(map);
-  threads.sort(function(a,b){ return new Date(b.latest.created_at) - new Date(a.latest.created_at); });
+  threads.sort(function(a, b) { return new Date(b.latest.created_at) - new Date(a.latest.created_at); });
   return threads;
+}
+
+function amIRecipient(m) {
+  if (isAdmin()) return m.recipient_role === 'admin' || m.recipient_role === 'office';
+  return m.recipient_name === me.name;
 }
 
 function renderInbox() {
   var msgs = allMessages;
 
   if (currentFilter === 'unread') {
-    msgs = msgs.filter(function(m){ return !m.read_by_recipient && m.recipient_name === me.name; });
+    msgs = msgs.filter(function(m) { return !m.read_by_recipient && amIRecipient(m); });
   } else if (currentFilter === 'sent') {
-    msgs = msgs.filter(function(m){ return m.sender_name === me.name; });
+    msgs = msgs.filter(function(m) {
+      if (isAdmin()) return m.sender_role === 'admin' || m.sender_role === 'office';
+      return m.sender_name === me.name;
+    });
   }
 
   var threads = getThreads(msgs);
@@ -386,66 +434,84 @@ function renderInbox() {
 
   var html = '';
   threads.forEach(function(t) {
-    var m = t.latest;
-    var isUnread = !m.read_by_recipient && m.recipient_name === me.name;
-    var isMine = m.sender_name === me.name;
-    var fromLabel = isMine ? 'You → ' + m.recipient_name : m.sender_name;
-    var preview = m.body.replace(/\n/g,' ');
-    var date = fmtDate(m.created_at);
-    var roleKey = isMine ? m.recipient_role : m.sender_role;
+    var m  = t.latest;
+    var myMsg = isAdmin()
+      ? (m.sender_role === 'admin' || m.sender_role === 'office')
+      : (m.sender_name === me.name);
+    var isUnread = !m.read_by_recipient && amIRecipient(m);
+    var fromLabel = myMsg
+      ? ('You → ' + m.recipient_name)
+      : (m.sender_name + ' → ' + (isAdmin() ? 'Admin' : 'Admin'));
+    var otherRole = myMsg ? m.recipient_role : m.sender_role;
+    var preview   = (m.body || '').replace(/\n/g, ' ');
 
-    html += '<div class="msg-row' + (isUnread ? ' unread' : '') + '" onclick="openThread(\'' + t.key + '\')">';
+    html += '<div class="msg-row" onclick="openThread(\'' + t.key + '\')">';
     html += '<div class="unread-dot' + (isUnread ? '' : ' read') + '"></div>';
     html += '<div class="msg-body">';
     html += '<div class="msg-meta">';
-    html += '<div class="msg-topic">' + esc(m.topic) + '</div>';
-    html += '<div class="msg-date">' + date + '</div>';
+    html += '<div class="msg-topic' + (isUnread ? ' bold' : '') + '">' + esc(m.topic) + '</div>';
+    html += '<div class="msg-date">' + fmtDate(m.created_at) + '</div>';
     html += '</div>';
-    html += '<div class="msg-from">' + esc(fromLabel) + '<span class="role-badge rb-' + roleKey + '">' + roleKey + '</span></div>';
+    html += '<div class="msg-from">' + esc(fromLabel);
+    html += '<span class="role-badge rb-' + esc(otherRole) + '">' + esc(otherRole) + '</span>';
+    if (isUnread) html += '<span style="color:var(--br);font-size:11px;font-weight:600">● New</span>';
+    html += '</div>';
     html += '<div class="msg-preview">' + esc(preview.substring(0, 80)) + '</div>';
     html += '</div></div>';
   });
   el.innerHTML = html;
 }
 
-/* ── THREAD ── */
+/* ────────────────────────────────────────────
+   THREAD
+──────────────────────────────────────────── */
 async function openThread(threadKey) {
   try {
-    // Mark as read
-    var toMark = allMessages.filter(function(m){ return (m.thread_id === threadKey || m.id === threadKey) && m.recipient_name === me.name && !m.read_by_recipient; });
-    toMark.forEach(function(m) {
-      api('PATCH', 'messages?id=eq.' + m.id, {read_by_recipient: true});
-      m.read_by_recipient = true;
+    /* Mark unread messages in this thread as read */
+    allMessages.forEach(function(m) {
+      if ((m.thread_id === threadKey || m.id === threadKey) && amIRecipient(m) && !m.read_by_recipient) {
+        m.read_by_recipient = true;
+        api('PATCH', 'messages?id=eq.' + m.id, { read_by_recipient: true });
+      }
     });
 
-    var threadMsgs = allMessages.filter(function(m){ return m.thread_id === threadKey || m.id === threadKey; });
-    threadMsgs.sort(function(a,b){ return new Date(a.created_at) - new Date(b.created_at); });
+    var threadMsgs = allMessages.filter(function(m) {
+      return m.thread_id === threadKey || m.id === threadKey;
+    });
+    threadMsgs.sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
 
-    currentThread = {key: threadKey, msgs: threadMsgs};
+    currentThread = { key: threadKey, msgs: threadMsgs };
 
     var root = threadMsgs[0];
     document.getElementById('thread-topic-title').textContent = root.topic;
+    document.getElementById('thread-parties').textContent =
+      root.sender_name + ' → ' + root.recipient_name;
 
     renderThread(threadMsgs);
 
     document.getElementById('view-inbox').style.display = 'none';
     document.getElementById('view-thread').classList.add('on');
-    document.getElementById('view-thread').style.flex = '1';
 
-    // scroll to bottom
-    setTimeout(function(){ var el = document.getElementById('thread-msgs'); el.scrollTop = el.scrollHeight; }, 50);
-  } catch(e) { showToast('Error loading thread'); }
+    setTimeout(function() {
+      var el = document.getElementById('thread-msgs');
+      el.scrollTop = el.scrollHeight;
+    }, 50);
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 function renderThread(msgs) {
   var el = document.getElementById('thread-msgs');
   var html = '';
   msgs.forEach(function(m) {
-    var mine = m.sender_name === me.name;
+    var mine = isAdmin()
+      ? (m.sender_role === 'admin' || m.sender_role === 'office')
+      : (m.sender_name === me.name);
     html += '<div class="bubble-wrap' + (mine ? ' mine' : '') + '">';
     html += '<div class="bubble-label">' + (mine ? 'You' : esc(m.sender_name)) + ' · ' + fmtDate(m.created_at) + '</div>';
-    html += '<div class="bubble">' + esc(m.body).replace(/\n/g,'<br>');
-    if (m.booking_datetime) html += '<div class="bubble-booking">📅 ' + esc(m.booking_datetime) + '</div>';
+    html += '<div class="bubble">' + esc(m.body).replace(/\n/g, '<br>');
+    if (m.booking_datetime) {
+      html += '<div class="bubble-booking">📅 ' + esc(m.booking_datetime) + '</div>';
+    }
     html += '</div></div>';
   });
   el.innerHTML = html;
@@ -454,7 +520,6 @@ function renderThread(msgs) {
 function closeThread() {
   currentThread = null;
   document.getElementById('view-thread').classList.remove('on');
-  document.getElementById('view-thread').style.flex = '';
   document.getElementById('view-inbox').style.display = 'flex';
   renderInbox();
 }
@@ -464,99 +529,146 @@ async function sendReply() {
   if (!body || !currentThread) return;
 
   var root = currentThread.msgs[0];
-  var recipientName  = root.sender_name === me.name ? root.recipient_name : root.sender_name;
-  var recipientRole  = root.sender_name === me.name ? root.recipient_role : root.sender_role;
+  /* Determine reply-to party */
+  var iSentRoot = isAdmin()
+    ? (root.sender_role === 'admin' || root.sender_role === 'office')
+    : (root.sender_name === me.name);
+
+  var recipientName = iSentRoot ? root.recipient_name : root.sender_name;
+  var recipientRole = iSentRoot ? root.recipient_role : root.sender_role;
   var topic = root.topic.startsWith('Re:') ? root.topic : 'Re: ' + root.topic;
 
+  var senderRole = isAdmin() ? myAdminRole() : me.role;
+
   var payload = {
-    sender_name: me.name,
-    sender_role: me.role,
-    recipient_name: recipientName,
-    recipient_role: recipientRole,
-    topic: topic,
-    body: body,
-    thread_id: currentThread.key,
-    parent_id: root.id,
+    sender_name:     me.name,
+    sender_role:     senderRole,
+    recipient_name:  recipientName,
+    recipient_role:  recipientRole,
+    topic:           topic,
+    body:            body,
+    thread_id:       currentThread.key,
+    parent_id:       root.id,
     read_by_recipient: false
   };
 
   try {
-    document.querySelector('.send-btn').disabled = true;
-    var saved = await api('POST', 'messages', payload);
+    document.getElementById('reply-btn').disabled = true;
+    var saved  = await api('POST', 'messages', payload);
     var newMsg = Array.isArray(saved) ? saved[0] : saved;
     allMessages.unshift(newMsg);
     currentThread.msgs.push(newMsg);
     document.getElementById('reply-input').value = '';
+    document.getElementById('reply-input').style.height = 'auto';
     renderThread(currentThread.msgs);
-    var el = document.getElementById('thread-msgs');
-    el.scrollTop = el.scrollHeight;
-  } catch(e) { showToast('Failed to send: ' + e.message); }
-  finally { document.querySelector('.send-btn').disabled = false; }
+    var msgEl = document.getElementById('thread-msgs');
+    msgEl.scrollTop = msgEl.scrollHeight;
+  } catch(e) { showToast('Failed: ' + e.message); }
+  finally { document.getElementById('reply-btn').disabled = false; }
 }
 
-/* ── COMPOSE ── */
+/* ────────────────────────────────────────────
+   COMPOSE
+──────────────────────────────────────────── */
 function openCompose() {
-  // Reset form
+  /* Reset */
+  selectedRecipType = null;
+  selectedRecipName = null;
   document.getElementById('compose-topic').innerHTML = '<option value="">— Select topic —</option>';
   document.getElementById('compose-body').value = '';
   document.getElementById('booking-fields').style.display = 'none';
-  document.getElementById('recip-type').value = '';
-  document.getElementById('recip-name').innerHTML = '<option value="">— Select —</option>';
+  document.getElementById('name-list-wrap').style.display = 'none';
+  document.querySelectorAll('.recip-pill').forEach(function(p) {
+    p.className = 'recip-pill';
+  });
 
-  if (me.role === 'admin') {
-    document.getElementById('fg-recip-type').style.display = 'block';
-    document.getElementById('fg-recip-name').style.display = 'block';
+  if (isAdmin()) {
+    document.getElementById('fg-recip-toggle').style.display = 'block';
     document.getElementById('fg-recip-fixed').style.display = 'none';
-    // topics will load after recipient type selected
+    document.getElementById('compose-title').textContent = 'New Message';
   } else {
-    document.getElementById('fg-recip-type').style.display = 'none';
-    document.getElementById('fg-recip-name').style.display = 'none';
+    document.getElementById('fg-recip-toggle').style.display = 'none';
     document.getElementById('fg-recip-fixed').style.display = 'block';
-    // load topics for this role → admin
-    var topics = getTopics(me.role, 'admin');
-    var sel = document.getElementById('compose-topic');
-    sel.innerHTML = '<option value="">— Select topic —</option>';
-    topics.forEach(function(t){ sel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
+    /* Pre-load topics for this role → admin */
+    populateTopics(me.role, 'admin');
+    document.getElementById('compose-title').textContent = 'Message Admin';
   }
 
   document.getElementById('compose-overlay').classList.add('on');
 }
 
-async function onRecipTypeChange() {
-  var type = document.getElementById('recip-type').value;
-  var nameEl = document.getElementById('recip-name');
-  nameEl.innerHTML = '<option value="">Loading…</option>';
+/* Admin clicks Talent / Landlord / Guest pill */
+async function selectRecipType(type, btn) {
+  selectedRecipType = type;
+  selectedRecipName = null;
 
-  // Load topics for admin → type
-  var topics = getTopics('admin', type);
-  var sel = document.getElementById('compose-topic');
-  sel.innerHTML = '<option value="">— Select topic —</option>';
-  topics.forEach(function(t){ sel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
-  document.getElementById('booking-fields').style.display = 'none';
+  /* Update pill styles */
+  document.querySelectorAll('.recip-pill').forEach(function(p) {
+    p.className = 'recip-pill';
+  });
+  btn.className = 'recip-pill on-' + type;
 
-  // Fetch recipient names
+  /* Load topics */
+  populateTopics('admin', type);
+
+  /* Load name list */
+  var wrap = document.getElementById('name-list-wrap');
+  var list = document.getElementById('name-list');
+  wrap.style.display = 'block';
+  list.innerHTML = '<div class="name-loading">Loading…</div>';
+
   try {
-    var names = [];
+    var rows = [];
     if (type === 'talent') {
-      var rows = await api('GET', 'staff?select=name,role&order=name');
-      names = rows.map(function(r){ return r.name; });
+      rows = await api('GET', 'staff?select=id,name,designation&order=name');
     } else if (type === 'landlord') {
-      var rows = await api('GET', 'community_members?select=name&order=name');
-      names = rows.map(function(r){ return r.name; });
+      rows = await api('GET', 'community_members?select=id,name&order=name');
     } else if (type === 'guest') {
-      var rows = await api('GET', 'guest_profiles?select=name&order=name');
-      names = rows.map(function(r){ return r.name; });
+      rows = await api('GET', 'guest_profiles?select=id,name,property_name&order=name');
     }
-    nameEl.innerHTML = '<option value="">— Select —</option>';
-    names.forEach(function(n){ nameEl.innerHTML += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="name-loading">No ' + type + 's found</div>';
+      return;
+    }
+
+    list.innerHTML = rows.map(function(r) {
+      var sub = r.designation || r.property_name || '';
+      return (
+        '<div class="name-item" data-name="' + esc(r.name) + '" onclick="selectRecipName(this)">' +
+        '<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>' +
+        '<div>' +
+        '<div style="font-size:14px">' + esc(r.name) + '</div>' +
+        (sub ? '<div style="font-size:11px;color:var(--muted)">' + esc(sub) + '</div>' : '') +
+        '</div>' +
+        '</div>'
+      );
+    }).join('');
   } catch(e) {
-    nameEl.innerHTML = '<option value="">Could not load</option>';
+    list.innerHTML = '<div class="name-loading" style="color:var(--r)">Could not load: ' + esc(e.message) + '</div>';
   }
 }
 
+function selectRecipName(el) {
+  selectedRecipName = el.dataset.name;
+  document.querySelectorAll('.name-item').forEach(function(i) { i.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function populateTopics(senderRole, recipientRole) {
+  var key    = senderRole + '-' + recipientRole;
+  var topics = TOPICS[key] || ['General'];
+  var sel    = document.getElementById('compose-topic');
+  sel.innerHTML = '<option value="">— Select topic —</option>';
+  topics.forEach(function(t) {
+    sel.innerHTML += '<option value="' + esc(t) + '">' + esc(t) + '</option>';
+  });
+  document.getElementById('booking-fields').style.display = 'none';
+}
+
 function onTopicChange() {
-  var topic = document.getElementById('compose-topic').value;
-  document.getElementById('booking-fields').style.display = topic === 'Booking Request' ? 'block' : 'none';
+  var v = document.getElementById('compose-topic').value;
+  document.getElementById('booking-fields').style.display = v === 'Booking Request' ? 'block' : 'none';
 }
 
 function closeCompose() {
@@ -564,18 +676,24 @@ function closeCompose() {
 }
 
 async function sendMessage() {
-  var body = document.getElementById('compose-body').value.trim();
+  var body  = document.getElementById('compose-body').value.trim();
   var topic = document.getElementById('compose-topic').value;
-  if (!topic || !body) { showToast('Please fill in topic and message'); return; }
 
-  var recipientName, recipientRole;
-  if (me.role === 'admin') {
-    recipientRole = document.getElementById('recip-type').value;
-    recipientName = document.getElementById('recip-name').value;
-    if (!recipientRole || !recipientName) { showToast('Please select a recipient'); return; }
+  if (!topic)  { showToast('Please select a topic'); return; }
+  if (!body)   { showToast('Please write a message'); return; }
+
+  var recipientName, recipientRole, senderRole;
+
+  if (isAdmin()) {
+    if (!selectedRecipType) { showToast('Please select a recipient type'); return; }
+    if (!selectedRecipName) { showToast('Please select a recipient');      return; }
+    recipientRole = selectedRecipType;
+    recipientName = selectedRecipName;
+    senderRole    = myAdminRole();
   } else {
     recipientName = 'Admin';
     recipientRole = 'admin';
+    senderRole    = me.role;
   }
 
   var bookingDt = null;
@@ -587,19 +705,19 @@ async function sendMessage() {
   }
 
   var payload = {
-    sender_name: me.name,
-    sender_role: me.role,
-    recipient_name: recipientName,
-    recipient_role: recipientRole,
-    topic: topic,
-    body: body,
+    sender_name:      me.name,
+    sender_role:      senderRole,
+    recipient_name:   recipientName,
+    recipient_role:   recipientRole,
+    topic:            topic,
+    body:             body,
     booking_datetime: bookingDt,
     read_by_recipient: false
   };
 
   try {
     document.getElementById('send-btn').disabled = true;
-    var saved = await api('POST', 'messages', payload);
+    var saved  = await api('POST', 'messages', payload);
     var newMsg = Array.isArray(saved) ? saved[0] : saved;
     allMessages.unshift(newMsg);
     closeCompose();
@@ -609,12 +727,14 @@ async function sendMessage() {
   finally { document.getElementById('send-btn').disabled = false; }
 }
 
-/* ── HELPERS ── */
+/* ────────────────────────────────────────────
+   HELPERS
+──────────────────────────────────────────── */
 function goBack() {
   if (document.referrer && document.referrer !== window.location.href) {
     history.back();
   } else {
-    var map = {admin:'admin.html', talent:'talent.html', landlord:'landlord.html', guest:'guest.html'};
+    var map = { admin: 'admin.html', office: 'admin.html', talent: 'talent.html', landlord: 'landlord.html', guest: 'guest.html' };
     window.location.href = me ? (map[me.role] || 'index.html') : 'index.html';
   }
 }
@@ -625,19 +745,21 @@ function autoGrow(el) {
 }
 
 function fmtDate(iso) {
-  var d = new Date(iso);
-  var now = new Date();
+  var d    = new Date(iso);
+  var now  = new Date();
   var diff = now - d;
-  if (diff < 60000) return 'Just now';
-  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-  if (diff < 604800000) return d.toLocaleDateString('en-IN',{weekday:'short'});
-  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  if (diff < 60000)    return 'Just now';
+  if (diff < 3600000)  return Math.floor(diff / 60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+  if (diff < 604800000) return d.toLocaleDateString('en-IN', { weekday: 'short' });
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
 function fmtBookingDate(d, t) {
-  var date = new Date(d + 'T' + t);
-  return date.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) + ' at ' + date.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  var dt = new Date(d + 'T' + t);
+  return dt.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+         + ' at '
+         + dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
 
 function esc(s) {
@@ -649,10 +771,10 @@ function showToast(msg) {
   t.textContent = msg;
   t.style.display = 'block';
   clearTimeout(t._to);
-  t._to = setTimeout(function(){ t.style.display = 'none'; }, 3000);
+  t._to = setTimeout(function() { t.style.display = 'none'; }, 3000);
 }
 
-// Close modal on overlay click
+/* Close compose when clicking the dark overlay */
 document.getElementById('compose-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeCompose();
 });
