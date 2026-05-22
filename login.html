@@ -166,15 +166,16 @@ async function api(path, opts) {
 
 // Already logged in?
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-function routeFor(role){
+function routeFor(role, user){
+  const u = user || me || {};
   if(role==='office')   return '/admin.html';
   if(role==='owner')    return '/owner.html';
   if(role==='landlord') return '/landlord.html';
   if(role==='guest')    return '/guest.html';
-  if(role==='talent')   return '/talent.html';
+  if(role==='talent')   return '/talent.html?id='+encodeURIComponent(u.id||'')+'&name='+encodeURIComponent(u.name||'');
   return '/ops.html';
 }
-if (me) { location.href = routeFor(me.role); throw new Error('Already signed in'); }
+if (me) { location.replace(routeFor(me.role, me)); throw new Error('Already signed in'); }
 
 function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
 const ini = n => (n || '').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase() || '?';
