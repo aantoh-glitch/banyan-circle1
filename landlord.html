@@ -420,10 +420,69 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- ── PNE ── -->
-<div class="pg" id="pg-pne" style="padding:0">
-  <iframe id="iframe-pne" src=""
-    style="width:100%;min-height:700px;height:700px;border:none;display:block;"
-    scrolling="no"></iframe>
+<div class="pg" id="pg-pne">
+  <div class="pg-head">
+    <div class="pg-title">PNE</div>
+    <div class="pg-sub">Property Rules, Notes &amp; Emergency Numbers</div>
+  </div>
+
+  <!-- Property Rules -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div>
+      <div style="font-size:15px;font-weight:600;color:var(--text)">Property Rules</div>
+      <div style="font-size:11px;color:var(--faint)">House rules &amp; guest guidelines</div>
+    </div>
+    <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="showAddRule()">+ Add Rule</button>
+  </div>
+  <div class="card" style="margin-bottom:18px">
+    <div id="pne-rules-list">
+      <div class="empty" style="padding:16px">Loading…</div>
+    </div>
+    <div id="pne-add-rule-form" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+      <div class="fg">
+        <input class="fc" id="pne-new-rule" type="text" placeholder="Describe the rule…"/>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-p" style="font-size:13px" onclick="saveNewRule()">Add Rule</button>
+        <button class="btn-sec" style="font-size:13px" onclick="cancelAddRule()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div>
+      <div style="font-size:15px;font-weight:600;color:var(--text)">Notes</div>
+      <div style="font-size:11px;color:var(--faint)">Private notes for this property</div>
+    </div>
+    <span id="pne-notes-saved" style="font-size:11px;color:var(--g);display:none">✓ Saved</span>
+  </div>
+  <div class="card" style="margin-bottom:18px">
+    <textarea class="fc" id="pne-notes-textarea" placeholder="Add private notes about this property…" style="min-height:110px" oninput="pneNotesDirty()"></textarea>
+    <button class="btn-p" id="pne-notes-save-btn" onclick="savePneNotes()" style="margin-top:10px;display:none">Save Notes</button>
+  </div>
+
+  <!-- Emergency Numbers -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div>
+      <div style="font-size:15px;font-weight:600;color:var(--text)">Emergency Numbers</div>
+      <div style="font-size:11px;color:var(--faint)">Key contacts for urgent situations</div>
+    </div>
+    <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="showAddEmergency()">+ Add</button>
+  </div>
+  <div class="card" style="margin-bottom:8px">
+    <div id="pne-emergency-list">
+      <div class="empty"><div class="empty-icon">📞</div>No emergency contacts added yet.</div>
+    </div>
+    <div id="pne-add-emergency-form" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+      <div class="fg"><label class="fl">Contact Name</label><input class="fc" id="pne-emg-name" type="text" placeholder="e.g. Plumber, Security…"/></div>
+      <div class="fg"><label class="fl">Phone Number</label><input class="fc" id="pne-emg-phone" type="tel" placeholder="+91 …"/></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-p" style="font-size:13px" onclick="saveNewEmergency()">Save Contact</button>
+        <button class="btn-sec" style="font-size:13px" onclick="cancelAddEmergency()">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 </div><!-- /content -->
@@ -523,7 +582,7 @@ function goPage(id, btn) {
   if (id==='assets')      loadLandlordAssets('active');
   if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html';
   if (id==='pbb')         document.getElementById('iframe-pbb').src = 'pbb.html';
-  if (id==='pne')         document.getElementById('iframe-pne').src = 'pne.html';
+  if (id==='pne')         loadPne();
 }
 
 // ── DESCRIPTION ──
@@ -845,6 +904,128 @@ window.addEventListener('message', function(e) {
     try { if (f.contentWindow === e.source) f.style.height = (h + 24) + 'px'; } catch(err){}
   });
 });
+
+// ── PNE ──
+async function loadPne() {
+  loadPneRules();
+  loadPneNotes();
+  loadPneEmergency();
+}
+
+// ── RULES ──
+async function loadPneRules() {
+  const el = document.getElementById('pne-rules-list');
+  el.innerHTML = '<div class="empty" style="padding:12px">Loading…</div>';
+  const data = await api('/rest/v1/property_rules?property_name=eq.'+encodeURIComponent(PROP)+'&order=created_at.asc') || [];
+  if (!data.length) {
+    el.innerHTML = '<div class="empty" style="padding:12px;font-size:13px;color:var(--faint)">No rules added yet.</div>';
+    return;
+  }
+  el.innerHTML = data.map((r, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)" id="rule-row-${r.id}">
+      <span style="width:22px;height:22px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+      <span style="flex:1;font-size:14px;color:var(--text)">${esc(r.rule||r.text||r.description||'')}</span>
+      <button onclick="deleteRule(${r.id})" style="background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--r-l);color:var(--r);font-size:11px;font-weight:600;flex-shrink:0">✕</button>
+    </div>
+  `).join('');
+}
+
+function showAddRule() {
+  document.getElementById('pne-add-rule-form').style.display = 'block';
+  document.getElementById('pne-new-rule').focus();
+}
+function cancelAddRule() {
+  document.getElementById('pne-add-rule-form').style.display = 'none';
+  document.getElementById('pne-new-rule').value = '';
+}
+async function saveNewRule() {
+  const val = document.getElementById('pne-new-rule').value.trim();
+  if (!val) { toast('Enter a rule first', true); return; }
+  await api('/rest/v1/property_rules', 'POST', { property_name: PROP, rule: val });
+  cancelAddRule();
+  loadPneRules();
+  toast('Rule added ✓');
+}
+async function deleteRule(id) {
+  await api('/rest/v1/property_rules?id=eq.'+id, 'DELETE');
+  loadPneRules();
+  toast('Rule removed');
+}
+
+// ── NOTES ──
+let pneNotesOriginal = '';
+async function loadPneNotes() {
+  const data = (await api('/rest/v1/property_notes?property_name=eq.'+encodeURIComponent(PROP)+'&limit=1')) || [];
+  const note = data[0] ? (data[0].notes || data[0].content || '') : '';
+  pneNotesOriginal = note;
+  document.getElementById('pne-notes-textarea').value = note;
+  document.getElementById('pne-notes-save-btn').style.display = 'none';
+}
+function pneNotesDirty() {
+  document.getElementById('pne-notes-save-btn').style.display = 'block';
+  document.getElementById('pne-notes-saved').style.display = 'none';
+}
+async function savePneNotes() {
+  const notes = document.getElementById('pne-notes-textarea').value;
+  // Upsert: try patch first, then post
+  const existing = (await api('/rest/v1/property_notes?property_name=eq.'+encodeURIComponent(PROP)+'&limit=1')) || [];
+  if (existing.length) {
+    await api('/rest/v1/property_notes?property_name=eq.'+encodeURIComponent(PROP), 'PATCH', { notes });
+  } else {
+    await api('/rest/v1/property_notes', 'POST', { property_name: PROP, notes });
+  }
+  document.getElementById('pne-notes-save-btn').style.display = 'none';
+  document.getElementById('pne-notes-saved').style.display = 'inline';
+  setTimeout(() => document.getElementById('pne-notes-saved').style.display = 'none', 2500);
+}
+
+// ── EMERGENCY ──
+async function loadPneEmergency() {
+  const el = document.getElementById('pne-emergency-list');
+  el.innerHTML = '<div class="empty" style="padding:12px">Loading…</div>';
+  const data = await api('/rest/v1/emergency_contacts?property_name=eq.'+encodeURIComponent(PROP)+'&order=created_at.asc') || [];
+  if (!data.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📞</div>No emergency contacts added yet.</div>';
+    return;
+  }
+  el.innerHTML = data.map(c => `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
+      <div style="width:38px;height:38px;border-radius:10px;background:var(--r-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.5 19.79 19.79 0 0 1 1.74 4.34 2 2 0 0 1 3.7 2H6.72a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.69a16 16 0 0 0 6.29 6.29l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-bottom:1px">${esc(c.label||c.name||'Contact')}</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text)">${esc(c.phone||c.number||'—')}</div>
+      </div>
+      <a href="tel:${esc(c.phone||c.number||'')}" style="background:var(--bg);border:none;cursor:pointer;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--br);font-family:inherit;text-decoration:none;flex-shrink:0">Call</a>
+      <button onclick="deleteEmergency(${c.id})" style="background:var(--r-l);border:none;cursor:pointer;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:600;color:var(--r);font-family:inherit">✕</button>
+    </div>
+  `).join('');
+}
+
+function showAddEmergency() {
+  document.getElementById('pne-add-emergency-form').style.display = 'block';
+  document.getElementById('pne-emg-name').focus();
+}
+function cancelAddEmergency() {
+  document.getElementById('pne-add-emergency-form').style.display = 'none';
+  document.getElementById('pne-emg-name').value = '';
+  document.getElementById('pne-emg-phone').value = '';
+}
+async function saveNewEmergency() {
+  const label = document.getElementById('pne-emg-name').value.trim();
+  const phone = document.getElementById('pne-emg-phone').value.trim();
+  if (!label || !phone) { toast('Enter name and phone', true); return; }
+  await api('/rest/v1/emergency_contacts', 'POST', { property_name: PROP, label, phone });
+  cancelAddEmergency();
+  loadPneEmergency();
+  toast('Contact saved ✓');
+}
+async function deleteEmergency(id) {
+  await api('/rest/v1/emergency_contacts?id=eq.'+id, 'DELETE');
+  loadPneEmergency();
+  toast('Contact removed');
+}
 
 // ── BOOT ──
 loadDescription();
