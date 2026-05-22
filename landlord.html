@@ -410,9 +410,25 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <div class="pg-title">Documents</div>
     <div class="pg-sub">Lease, licenses &amp; certificates</div>
   </div>
-  <div class="card">
-    <div id="docs-list"><div class="empty"><div class="empty-icon">📁</div>Loading…</div></div>
+  <!-- connected to external documents HTML -->
+</div>
+
+<!-- ── PBB ── -->
+<div class="pg" id="pg-pbb">
+  <div class="pg-head">
+    <div class="pg-title">PBB</div>
+    <div class="pg-sub">&nbsp;</div>
   </div>
+  <!-- PBB content to be added -->
+</div>
+
+<!-- ── PNE ── -->
+<div class="pg" id="pg-pne">
+  <div class="pg-head">
+    <div class="pg-title">PNE</div>
+    <div class="pg-sub">&nbsp;</div>
+  </div>
+  <!-- PNE content to be added -->
 </div>
 
 </div><!-- /content -->
@@ -442,6 +458,14 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   <button class="nav-btn" id="nb-documents" onclick="goPage('documents',this)">
     <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
     <span>Documents</span>
+  </button>
+  <button class="nav-btn" id="nb-pbb" onclick="goPage('pbb',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>PBB</span>
+  </button>
+  <button class="nav-btn" id="nb-pne" onclick="goPage('pne',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>PNE</span>
   </button>
 </nav>
 
@@ -497,7 +521,7 @@ function goPage(id, btn) {
   if (id==='messages')    loadMsgs();
   if (id==='payments')    loadPayments();
   if (id==='assets')      loadLandlordAssets('active');
-  if (id==='documents')   loadDocs();
+
 }
 
 // ── DESCRIPTION ──
@@ -761,26 +785,7 @@ function closeAssetLightbox() {
   document.getElementById('asset-lightbox').style.display = 'none';
 }
 
-// ── DOCUMENTS ──
-async function loadDocs() {
-  const data = await api('/rest/v1/property_documents?property_name=eq.'+encodeURIComponent(PROP)+'&order=uploaded_at.desc') || [];
-  const el = document.getElementById('docs-list');
-  if (!data.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📁</div>No documents uploaded yet.<br><span style="font-size:11px">Office will upload lease, licenses &amp; certificates here.</span></div>';
-    return;
-  }
-  el.innerHTML = data.map(d=>`
-    <div style="padding:13px 0;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:500;font-size:14px;margin-bottom:2px">${esc(d.title)}</div>
-          <div style="font-size:11px;color:var(--muted)">${d.doc_type||'Document'} · ${fmtDate(d.uploaded_at)}</div>
-        </div>
-        <a href="${d.file_url}" target="_blank" style="flex-shrink:0;padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--br);font-weight:500;text-decoration:none">View</a>
-      </div>
-    </div>
-  `).join('').replace(/<div style="padding:13px 0;border-bottom:1px solid var\(--border\)">([^]*?)<\/div>\s*$/, '<div style="padding:13px 0">$1</div>');
-}
+// ── DOCUMENTS ── (connected to external HTML)
 
 // ── SAVE CREDENTIALS ──
 async function saveCredentials() {
