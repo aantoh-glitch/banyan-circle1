@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Documents</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#8B3520;--br-d:#6A2818;--br-l:#FAF0EB;--br-mid:#F2D9D0;
+  --g:#2E5C0F;--g-l:#EBF3E2;
+  --b:#1A4F8A;--b-l:#E8F1FA;
+  --a:#7A4408;--a-l:#FBF0E0;
+  --r:#9B2626;--r-l:#FBEBEB;
+  --text:#1E1C18;--muted:#6B6860;--faint:#9E9C97;
+  --border:#E8E4DC;
+  --bg:#F7F5F1;--surface:#FEFCF9;--white:#fff;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+}
+html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
+.wrap{padding:16px 16px 32px}
+
+/* fields */
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
+.fc:focus{border-color:var(--br);background:var(--white)}
+textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
+select.fc{cursor:pointer}
+
+/* cards */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-ttl{font-size:10px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+
+/* buttons */
+.btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.2px}
+.btn-p:active{background:var(--br-d)}
+.btn-sec{padding:10px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.btn-row .btn-p,.btn-row .btn-sec{flex:1}
+
+/* badges */
+.bdg{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.3px}
+.bdg-b{background:var(--b-l);color:#133A6A}
+.bdg-g{background:var(--g-l);color:#224509}
+.bdg-a{background:var(--a-l);color:#5A3006}
+
+/* empty */
+.empty{text-align:center;padding:32px 16px;color:var(--faint);font-size:13px;line-height:1.6}
+.empty-icon{font-size:32px;margin-bottom:8px}
+
+/* toast */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;
+  font-size:13px;z-index:200;display:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ADD BUTTON -->
+  <button class="btn-p" id="doc-add-btn" onclick="showForm()" style="margin-bottom:14px">+ Add Document</button>
+
+  <!-- ADD / EDIT FORM -->
+  <div id="doc-form" style="display:none" class="card">
+    <div class="card-ttl" id="form-title">New Document</div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fg"><label class="fl">Document Name</label><input class="fc" id="doc-name" type="text" placeholder="e.g. Lease Agreement 2025"/></div>
+    <div class="fg">
+      <label class="fl">Type</label>
+      <select class="fc" id="doc-type">
+        <option value="Lease">Lease</option>
+        <option value="License">License</option>
+        <option value="Certificate">Certificate</option>
+        <option value="Insurance">Insurance</option>
+        <option value="Permit">Permit</option>
+        <option value="NOC">NOC</option>
+        <option value="Agreement">Agreement</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Link / URL</label><input class="fc" id="doc-url" type="url" placeholder="https://drive.google.com/…"/></div>
+    <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="doc-notes" placeholder="Optional notes…"></textarea></div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="hideForm()">Cancel</button>
+      <button class="btn-p" onclick="saveDoc()">Save</button>
+    </div>
+  </div>
+
+  <!-- DOCUMENT LIST -->
+  <div id="doc-list">
+    <div class="empty"><div class="empty-icon">📄</div>No documents added yet.<br/>Tap <strong>+ Add Document</strong> to get started.</div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const me   = JSON.parse(localStorage.getItem('bc_me')||'null');
+const PROP = me ? (me.prop || me.property_name || 'default') : 'default';
+
+function storageKey() { return 'bc_docs_' + PROP; }
+function load() { try { return JSON.parse(localStorage.getItem(storageKey())||'[]'); } catch(e){return [];} }
+function save(arr) { localStorage.setItem(storageKey(), JSON.stringify(arr)); }
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 2200);
+}
+
+function showForm(doc) {
+  document.getElementById('edit-id').value      = doc ? doc.id : '';
+  document.getElementById('form-title').textContent = doc ? 'Edit Document' : 'New Document';
+  document.getElementById('doc-name').value     = doc ? doc.name  : '';
+  document.getElementById('doc-type').value     = doc ? (doc.type||'Lease') : 'Lease';
+  document.getElementById('doc-url').value      = doc ? (doc.url||'')  : '';
+  document.getElementById('doc-notes').value    = doc ? (doc.notes||'') : '';
+  document.getElementById('doc-form').style.display = 'block';
+  document.getElementById('doc-add-btn').style.display = 'none';
+  if (doc) document.getElementById('doc-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function hideForm() {
+  document.getElementById('doc-form').style.display = 'none';
+  document.getElementById('doc-add-btn').style.display = 'block';
+}
+
+function saveDoc() {
+  const name = document.getElementById('doc-name').value.trim();
+  if (!name) { toast('Document name is required', true); return; }
+  const editId = document.getElementById('edit-id').value;
+  const docs   = load();
+  const entry  = {
+    id:    editId || String(Date.now()),
+    name,
+    type:  document.getElementById('doc-type').value,
+    url:   document.getElementById('doc-url').value.trim(),
+    notes: document.getElementById('doc-notes').value.trim(),
+    saved: new Date().toISOString()
+  };
+  if (editId) {
+    const idx = docs.findIndex(d=>d.id===editId);
+    if (idx>=0) docs[idx] = entry; else docs.unshift(entry);
+  } else {
+    docs.unshift(entry);
+  }
+  save(docs);
+  render();
+  hideForm();
+  toast('Document saved ✓');
+  notifyResize();
+}
+
+function deleteDoc(id) {
+  if (!confirm('Remove this document?')) return;
+  save(load().filter(d=>d.id!==id));
+  render();
+  toast('Removed');
+  notifyResize();
+}
+
+const TYPE_BADGES = {
+  Lease:'bdg-b', License:'bdg-g', Certificate:'bdg-g',
+  Insurance:'bdg-a', Permit:'bdg-a', NOC:'bdg-b',
+  Agreement:'bdg-b', Other:'bdg-a'
+};
+
+function render() {
+  const docs = load();
+  const el   = document.getElementById('doc-list');
+  if (!docs.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>No documents added yet.<br/>Tap <strong>+ Add Document</strong> to get started.</div>';
+    notifyResize();
+    return;
+  }
+  el.innerHTML = docs.map(d => `
+    <div class="card" style="padding:14px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="width:38px;height:38px;background:var(--b-l);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">📄</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;font-size:14px;margin-bottom:3px">${esc(d.name)}</div>
+          <div style="font-size:11px;color:var(--faint);margin-bottom:6px">
+            <span class="bdg ${TYPE_BADGES[d.type]||'bdg-b'}">${esc(d.type||'Other')}</span>
+            &ensp;${fmtDate(d.saved)}
+          </div>
+          ${d.notes ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px">${esc(d.notes)}</div>` : ''}
+          ${d.url   ? `<a href="${esc(d.url)}" target="_blank" style="font-size:12px;color:var(--br);font-weight:500;text-decoration:none">View Document →</a>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button onclick='showForm(${JSON.stringify(d).replace(/'/g,"&#39;")})' style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit">Edit</button>
+          <button onclick="deleteDoc('${d.id}')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  notifyResize();
+}
+
+// Tell parent iframe to resize
+function notifyResize() {
+  try {
+    const h = document.body.scrollHeight;
+    window.parent.postMessage({type:'bc_resize', height: h}, '*');
+  } catch(e){}
+}
+
+render();
+window.addEventListener('load', notifyResize);
+</script>
+</body>
+</html>

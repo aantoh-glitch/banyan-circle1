@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>PBB</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#8B3520;--br-d:#6A2818;--br-l:#FAF0EB;--br-mid:#F2D9D0;
+  --g:#2E5C0F;--g-l:#EBF3E2;
+  --b:#1A4F8A;--b-l:#E8F1FA;
+  --a:#7A4408;--a-l:#FBF0E0;
+  --r:#9B2626;--r-l:#FBEBEB;
+  --text:#1E1C18;--muted:#6B6860;--faint:#9E9C97;
+  --border:#E8E4DC;
+  --bg:#F7F5F1;--surface:#FEFCF9;--white:#fff;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+}
+html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
+.wrap{padding:16px 16px 40px}
+
+/* section heading */
+.sec-hdg{
+  font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;
+  color:var(--text);margin:4px 0 10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-hdg:not(:first-child){margin-top:24px}
+.sec-divider{width:100%;height:1px;background:var(--border);margin-bottom:14px}
+
+/* entry card */
+.entry{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);
+}
+
+/* fields */
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
+.fc:focus{border-color:var(--br);background:var(--white)}
+textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
+
+/* cards */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-ttl{font-size:10px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+
+/* buttons */
+.btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.2px}
+.btn-p:active{background:var(--br-d)}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit;width:100%}
+.btn-sm{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.btn-row .btn-p,.btn-row .btn-sec{flex:1}
+
+/* empty */
+.empty{padding:12px 0 6px;color:var(--faint);font-size:12px;text-align:center}
+
+/* toast */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;
+  font-size:13px;z-index:200;display:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ─ PROPERTY ─ -->
+  <div class="sec-hdg">
+    <span>Property</span>
+    <button class="btn-sm" onclick="openForm('property')">+ Add</button>
+  </div>
+  <div class="sec-divider"></div>
+  <div id="list-property"></div>
+
+  <!-- ─ BEYOND ─ -->
+  <div class="sec-hdg">
+    <span>Beyond</span>
+    <button class="btn-sm" onclick="openForm('beyond')">+ Add</button>
+  </div>
+  <div class="sec-divider"></div>
+  <div id="list-beyond"></div>
+
+  <!-- ─ BANYAN CIRCLE ─ -->
+  <div class="sec-hdg">
+    <span>Banyan Circle</span>
+    <button class="btn-sm" onclick="openForm('banyan')">+ Add</button>
+  </div>
+  <div class="sec-divider"></div>
+  <div id="list-banyan"></div>
+
+  <!-- ─ SHARED FORM ─ -->
+  <div id="pbb-form" style="display:none" class="card">
+    <div class="card-ttl" id="form-label">New Entry</div>
+    <input type="hidden" id="form-section"/>
+    <input type="hidden" id="form-edit-id"/>
+    <div class="fg"><label class="fl">Title</label><input class="fc" id="entry-title" type="text" placeholder="Title…"/></div>
+    <div class="fg"><label class="fl">Content</label><textarea class="fc" id="entry-content" placeholder="Notes, details, anything to remember…"></textarea></div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="closeForm()">Cancel</button>
+      <button class="btn-p" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const me   = JSON.parse(localStorage.getItem('bc_me')||'null');
+const PROP = me ? (me.prop || me.property_name || 'default') : 'default';
+
+const LABELS = {property:'Property', beyond:'Beyond', banyan:'Banyan Circle'};
+
+function key(section) { return 'bc_pbb_' + PROP + '_' + section; }
+function load(section) { try { return JSON.parse(localStorage.getItem(key(section))||'[]'); } catch(e){return [];} }
+function save(section, arr) { localStorage.setItem(key(section), JSON.stringify(arr)); }
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 2200);
+}
+
+function openForm(section, entry) {
+  document.getElementById('form-section').value  = section;
+  document.getElementById('form-edit-id').value  = entry ? entry.id : '';
+  document.getElementById('form-label').textContent = entry ? ('Edit · '+LABELS[section]) : ('Add to '+LABELS[section]);
+  document.getElementById('entry-title').value   = entry ? (entry.title||'')   : '';
+  document.getElementById('entry-content').value = entry ? (entry.content||'') : '';
+  document.getElementById('pbb-form').style.display = 'block';
+  document.getElementById('pbb-form').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function closeForm() {
+  document.getElementById('pbb-form').style.display = 'none';
+}
+
+function saveEntry() {
+  const section = document.getElementById('form-section').value;
+  const title   = document.getElementById('entry-title').value.trim();
+  const content = document.getElementById('entry-content').value.trim();
+  if (!title && !content) { toast('Enter a title or some content', true); return; }
+  const editId  = document.getElementById('form-edit-id').value;
+  const entries = load(section);
+  const entry   = { id: editId||String(Date.now()), title, content, saved: new Date().toISOString() };
+  if (editId) {
+    const idx = entries.findIndex(e=>e.id===editId);
+    if (idx>=0) entries[idx]=entry; else entries.unshift(entry);
+  } else {
+    entries.unshift(entry);
+  }
+  save(section, entries);
+  renderSection(section);
+  closeForm();
+  toast('Saved ✓');
+  notifyResize();
+}
+
+function deleteEntry(section, id) {
+  if (!confirm('Delete this entry?')) return;
+  save(section, load(section).filter(e=>e.id!==id));
+  renderSection(section);
+  toast('Deleted');
+  notifyResize();
+}
+
+function renderSection(section) {
+  const entries = load(section);
+  const el = document.getElementById('list-' + section);
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty">No entries yet.</div>';
+    notifyResize();
+    return;
+  }
+  el.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1;min-width:0">
+          ${e.title   ? `<div style="font-weight:500;font-size:14px;margin-bottom:4px">${esc(e.title)}</div>` : ''}
+          ${e.content ? `<div style="font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6">${esc(e.content)}</div>` : ''}
+          <div style="font-size:10px;color:var(--faint);margin-top:8px">${fmtDate(e.saved)}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">
+          <button class="btn-sm" onclick='openForm("${section}",${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
+          <button onclick="deleteEntry('${section}','${e.id}')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  notifyResize();
+}
+
+function renderAll() {
+  renderSection('property');
+  renderSection('beyond');
+  renderSection('banyan');
+}
+
+function notifyResize() {
+  try {
+    const h = document.body.scrollHeight;
+    window.parent.postMessage({type:'bc_resize', height: h}, '*');
+  } catch(e){}
+}
+
+renderAll();
+window.addEventListener('load', notifyResize);
+</script>
+</body>
+</html>
