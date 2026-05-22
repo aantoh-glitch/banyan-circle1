@@ -276,8 +276,21 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <div class="pg-sub">Overview &amp; details</div>
   </div>
   <div id="desc-hero">
-    <div class="card"><div class="empty"><div class="empty-icon">🏡</div>Loading property…</div></div>
+    <div class="card"><div class="empty"><div class="empty-icon">&#127969;</div>Loading property&hellip;</div></div>
   </div>
+  <div id="desc-edit-section" style="display:none">
+    <div class="sec-hdg">Edit Property Details</div>
+    <div class="card">
+      <div class="fg"><label class="fl">Property Name</label><input class="fc" id="edit-prop-name" type="text" placeholder="Property name"/></div>
+      <div class="fg"><label class="fl">Address</label><input class="fc" id="edit-prop-addr" type="text" placeholder="Address"/></div>
+      <div class="fg"><label class="fl">Property Type</label><input class="fc" id="edit-prop-type" type="text" placeholder="e.g. Residential"/></div>
+      <div class="fg"><label class="fl">Bedrooms</label><input class="fc" id="edit-prop-beds" type="number" placeholder="Number of bedrooms"/></div>
+      <div class="fg"><label class="fl">Rent Amount</label><input class="fc" id="edit-prop-rent" type="number" placeholder="Monthly rent"/></div>
+      <div class="fg"><label class="fl">Description</label><textarea class="fc" id="edit-prop-desc" placeholder="Property description&hellip;"></textarea></div>
+      <button class="btn-p" onclick="saveDescription()">Save Changes</button>
+    </div>
+  </div>
+  <button class="btn-sec" id="desc-edit-toggle" onclick="toggleDescEdit()" style="width:100%;margin-top:4px">&#9998; Edit Details</button>
 </div>
 
 <!-- ── LOGIN CREDENTIALS ── -->
@@ -288,45 +301,12 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   </div>
   <div class="card">
     <div class="card-ttl">Account Information</div>
-    <div class="card-row">
-      <span class="card-label">Full name</span>
-      <span class="card-value" id="cred-name">—</span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">Role</span>
-      <span class="card-value"><span class="bdg bdg-b">Landlord</span></span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">Property</span>
-      <span class="card-value" id="cred-prop">—</span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">Username / Email</span>
-      <span class="card-value" id="cred-email">—</span>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-ttl">Session</div>
-    <div class="card-row">
-      <span class="card-label">Last login</span>
-      <span class="card-value">This session</span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">Portal</span>
-      <span class="card-value">Banyan Circle</span>
-    </div>
-  </div>
-</div>
-
-<!-- ── CONTACT DETAILS ── -->
-<div class="pg" id="pg-contact">
-  <div class="pg-head">
-    <div class="pg-title">Contact Details</div>
-    <div class="pg-sub">Your office &amp; manager contacts</div>
-  </div>
-  <div class="card" id="contact-card">
-    <div class="card-ttl">Property Contacts</div>
-    <div id="contact-list"><div class="empty"><div class="empty-icon">📞</div>Loading contacts…</div></div>
+    <div class="fg"><label class="fl">Name</label><input class="fc" id="cred-name" type="text" placeholder="Full name"/></div>
+    <div class="fg"><label class="fl">PIN</label><input class="fc" id="cred-pin" type="password" placeholder="PIN" inputmode="numeric" maxlength="10"/></div>
+    <div class="fg"><label class="fl">Email</label><input class="fc" id="cred-email" type="email" placeholder="Email address"/></div>
+    <div class="fg"><label class="fl">Phone Number 1</label><input class="fc" id="cred-phone1" type="tel" placeholder="Phone number 1"/></div>
+    <div class="fg"><label class="fl">Phone Number 2</label><input class="fc" id="cred-phone2" type="tel" placeholder="Phone number 2"/></div>
+    <button class="btn-p" onclick="saveCredentials()" style="margin-top:4px">Save Changes</button>
   </div>
 </div>
 
@@ -447,10 +427,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     <span>Login</span>
   </button>
-  <button class="nav-btn" id="nb-contact" onclick="goPage('contact',this)">
-    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.39 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.12 4.18 2 2 0 0 1 5.09 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-    <span>Contacts</span>
-  </button>
   <a class="nav-btn" id="nb-earnings" href="earnings.html">
     <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>
     <span>Earnings</span>
@@ -489,9 +465,11 @@ const PROP = me.prop || me.property_name;
 document.getElementById('sb-prop').textContent = PROP || '—';
 
 // Credentials page — populate from session
-document.getElementById('cred-name').textContent  = me.name || '—';
-document.getElementById('cred-prop').textContent  = PROP || '—';
-document.getElementById('cred-email').textContent = me.email || me.username || '—';
+document.getElementById('cred-name').value  = me.name || '';
+document.getElementById('cred-email').value = me.email || me.username || '';
+document.getElementById('cred-pin').value   = me.pin || '';
+document.getElementById('cred-phone1').value = me.phone1 || me.phone || '';
+document.getElementById('cred-phone2').value = me.phone2 || '';
 
 async function api(path, method, body) {
   const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
@@ -515,7 +493,6 @@ function goPage(id, btn) {
   // scroll content to top
   document.querySelector('.content').scrollTop = 0;
   if (id==='description') loadDescription();
-  if (id==='contact')     loadContacts();
   if (id==='earnings')    loadEarnings();
   if (id==='messages')    loadMsgs();
   if (id==='payments')    loadPayments();
@@ -547,61 +524,12 @@ async function loadDescription() {
       ${p.rent_amount?`<div class="card-row"><span class="card-label">Rent</span><span class="card-value">${fmt(p.rent_amount)}</span></div>`:''}
     </div>
   `;
-}
-
-// ── CONTACTS ──
-async function loadContacts() {
-  const p = (await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP)+'&select=*'))?.[0];
-  const el = document.getElementById('contact-list');
-  
-  // Build contacts from property data or fallback to static
-  const contacts = [];
-  
-  // Email
-  const email = p?.contact_email || p?.email || me?.office_email;
-  contacts.push({
-    label:'Email', value: email||'Not set',
-    type:'email', icon:'email',
-    action: email ? ()=>location.href='mailto:'+email : null
-  });
-  
-  // Phone 1
-  const phone1 = p?.contact_phone || p?.phone_number || p?.phone1;
-  contacts.push({
-    label:'Phone Number 1', value: phone1||'Not set',
-    type:'phone', icon:'phone',
-    action: phone1 ? ()=>location.href='tel:'+phone1 : null
-  });
-  
-  // Phone 2
-  const phone2 = p?.phone2 || p?.alternate_phone;
-  contacts.push({
-    label:'Phone Number 2', value: phone2||'Not set',
-    type:'phone', icon:'phone',
-    action: phone2 ? ()=>location.href='tel:'+phone2 : null
-  });
-  
-  // Phone 3
-  const phone3 = p?.phone3 || p?.manager_phone;
-  contacts.push({
-    label:'Phone Number 3', value: phone3||'Not set',
-    type:'phone', icon:'phone',
-    action: phone3 ? ()=>location.href='tel:'+phone3 : null
-  });
-  
-  const emailIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`;
-  const phoneIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.39 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.12 4.18 2 2 0 0 1 5.09 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`;
-  
-  el.innerHTML = contacts.map(c => `
-    <div class="contact-item">
-      <div class="contact-icon">${c.icon==='email'?emailIconSvg:phoneIconSvg}</div>
-      <div class="contact-info">
-        <div class="contact-lbl">${c.label}</div>
-        <div class="contact-val">${esc(c.value)}</div>
-      </div>
-      ${c.action ? `<button class="contact-action" onclick="this.nextSibling;${c.type==='email'?`location.href='mailto:${c.value}'`:`location.href='tel:${c.value}'`}">${c.type==='email'?'Email':'Call'}</button>` : ''}
-    </div>
-  `).join('');
+  document.getElementById('edit-prop-name').value = p.name||'';
+  document.getElementById('edit-prop-addr').value = p.address||'';
+  document.getElementById('edit-prop-type').value = p.property_type||'';
+  document.getElementById('edit-prop-beds').value = p.bedrooms||'';
+  document.getElementById('edit-prop-rent').value = p.rent_amount||'';
+  document.getElementById('edit-prop-desc').value = p.description||'';
 }
 
 // ── EARNINGS ──
@@ -852,6 +780,50 @@ async function loadDocs() {
       </div>
     </div>
   `).join('').replace(/<div style="padding:13px 0;border-bottom:1px solid var\(--border\)">([^]*?)<\/div>\s*$/, '<div style="padding:13px 0">$1</div>');
+}
+
+// ── SAVE CREDENTIALS ──
+async function saveCredentials() {
+  const name   = document.getElementById('cred-name').value.trim();
+  const pin    = document.getElementById('cred-pin').value.trim();
+  const email  = document.getElementById('cred-email').value.trim();
+  const phone1 = document.getElementById('cred-phone1').value.trim();
+  const phone2 = document.getElementById('cred-phone2').value.trim();
+  if (!name) { toast('Name is required'); return; }
+  const update = {};
+  if (name)   update.name   = name;
+  if (pin)    update.pin    = pin;
+  if (email)  update.email  = email;
+  if (phone1) update.phone1 = phone1;
+  if (phone2) update.phone2 = phone2;
+  await api('/rest/v1/landlords?name=eq.'+encodeURIComponent(me.name), 'PATCH', update);
+  me.name = name; me.email = email; me.pin = pin; me.phone1 = phone1; me.phone2 = phone2;
+  localStorage.setItem('bc_me', JSON.stringify(me));
+  toast('Login details saved ✓');
+}
+
+// ── DESCRIPTION EDIT ──
+function toggleDescEdit() {
+  const s   = document.getElementById('desc-edit-section');
+  const btn = document.getElementById('desc-edit-toggle');
+  const vis = s.style.display !== 'none';
+  s.style.display = vis ? 'none' : 'block';
+  btn.textContent = vis ? '✎ Edit Details' : '✕ Cancel Edit';
+}
+
+async function saveDescription() {
+  const update = {};
+  const n = document.getElementById('edit-prop-name').value.trim(); if (n) update.name = n;
+  const a = document.getElementById('edit-prop-addr').value.trim(); if (a) update.address = a;
+  const t = document.getElementById('edit-prop-type').value.trim(); if (t) update.property_type = t;
+  const b = document.getElementById('edit-prop-beds').value;        if (b) update.bedrooms = parseInt(b);
+  const r = document.getElementById('edit-prop-rent').value;        if (r) update.rent_amount = parseFloat(r);
+  const d = document.getElementById('edit-prop-desc').value.trim(); if (d) update.description = d;
+  await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP), 'PATCH', update);
+  toast('Property details saved ✓');
+  document.getElementById('desc-edit-section').style.display = 'none';
+  document.getElementById('desc-edit-toggle').textContent = '✎ Edit Details';
+  loadDescription();
 }
 
 // ── BOOT ──
