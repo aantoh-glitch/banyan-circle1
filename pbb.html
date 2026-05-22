@@ -21,8 +21,6 @@
 }
 html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
 .wrap{padding:16px 16px 40px}
-
-/* section heading */
 .sec-hdg{
   font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;
   color:var(--text);margin:4px 0 10px;
@@ -30,36 +28,24 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
 }
 .sec-hdg:not(:first-child){margin-top:24px}
 .sec-divider{width:100%;height:1px;background:var(--border);margin-bottom:14px}
-
-/* entry card */
 .entry{
   background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
   padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);
 }
-
-/* fields */
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
 .fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
 .fc:focus{border-color:var(--br);background:var(--white)}
 textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
-
-/* cards */
 .card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .card-ttl{font-size:10px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
-
-/* buttons */
 .btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.2px}
 .btn-p:active{background:var(--br-d)}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit;width:100%}
 .btn-sm{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit}
 .btn-row{display:flex;gap:8px;margin-top:4px}
 .btn-row .btn-p,.btn-row .btn-sec{flex:1}
-
-/* empty */
 .empty{padding:12px 0 6px;color:var(--faint);font-size:12px;text-align:center}
-
-/* toast */
 .toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
   background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;
@@ -71,7 +57,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 <body>
 <div class="wrap">
 
-  <!-- ─ PROPERTY ─ -->
+  <!-- PROPERTY -->
   <div class="sec-hdg">
     <span>Property</span>
     <button class="btn-sm" onclick="openForm('property')">+ Add</button>
@@ -79,7 +65,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
   <div class="sec-divider"></div>
   <div id="list-property"></div>
 
-  <!-- ─ BEYOND ─ -->
+  <!-- BEYOND -->
   <div class="sec-hdg">
     <span>Beyond</span>
     <button class="btn-sm" onclick="openForm('beyond')">+ Add</button>
@@ -87,7 +73,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
   <div class="sec-divider"></div>
   <div id="list-beyond"></div>
 
-  <!-- ─ BANYAN CIRCLE ─ -->
+  <!-- BANYAN CIRCLE -->
   <div class="sec-hdg">
     <span>Banyan Circle</span>
     <button class="btn-sm" onclick="openBanyanForm()">+ Add</button>
@@ -95,7 +81,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
   <div class="sec-divider"></div>
   <div id="list-banyan"></div>
 
-  <!-- ─ SHARED FORM ─ -->
+  <!-- SHARED FORM -->
   <div id="pbb-form" style="display:none" class="card">
     <div class="card-ttl" id="form-label">New Entry</div>
     <input type="hidden" id="form-section"/>
@@ -108,7 +94,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     </div>
   </div>
 
-  <!-- ─ BANYAN CIRCLE FORM ─ -->
+  <!-- BANYAN CIRCLE FORM -->
   <div id="banyan-form" style="display:none" class="card">
     <div class="card-ttl" id="banyan-form-label">Add to Banyan Circle</div>
     <input type="hidden" id="banyan-edit-id"/>
@@ -131,15 +117,14 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 <script>
 const me   = JSON.parse(localStorage.getItem('bc_me')||'null');
 const PROP = me ? (me.prop || me.property_name || 'default') : 'default';
-
 const LABELS = {property:'Property', beyond:'Beyond', banyan:'Banyan Circle'};
 
 function key(section) { return 'bc_pbb_' + PROP + '_' + section; }
 function load(section) { try { return JSON.parse(localStorage.getItem(key(section))||'[]'); } catch(e){return [];} }
 function save(section, arr) { localStorage.setItem(key(section), JSON.stringify(arr)); }
-
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function toast(msg, err) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -157,10 +142,7 @@ function openForm(section, entry) {
   document.getElementById('pbb-form').style.display = 'block';
   document.getElementById('pbb-form').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
-
-function closeForm() {
-  document.getElementById('pbb-form').style.display = 'none';
-}
+function closeForm() { document.getElementById('pbb-form').style.display = 'none'; }
 
 function saveEntry() {
   const section = document.getElementById('form-section').value;
@@ -191,13 +173,12 @@ function deleteEntry(section, id) {
   notifyResize();
 }
 
-/* ── BANYAN CIRCLE ── */
+/* BANYAN CIRCLE */
 function openBanyanForm(entry) {
   document.getElementById('banyan-edit-id').value = entry ? entry.id : '';
   document.getElementById('banyan-form-label').textContent = entry ? 'Edit · Banyan Circle' : 'Add to Banyan Circle';
   document.getElementById('banyan-name').value = entry ? (entry.name || '') : '';
   document.getElementById('banyan-description').value = entry ? (entry.description || '') : '';
-  // Rebuild URL fields
   const urlList = document.getElementById('url-list');
   urlList.innerHTML = '';
   const urls = (entry && entry.urls && entry.urls.length) ? entry.urls : [''];
@@ -205,17 +186,14 @@ function openBanyanForm(entry) {
   document.getElementById('banyan-form').style.display = 'block';
   document.getElementById('banyan-form').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
-
-function closeBanyanForm() {
-  document.getElementById('banyan-form').style.display = 'none';
-}
+function closeBanyanForm() { document.getElementById('banyan-form').style.display = 'none'; }
 
 function addUrlField(val) {
   const urlList = document.getElementById('url-list');
   const row = document.createElement('div');
   row.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center';
-  row.innerHTML = `<input class="fc" type="url" placeholder="https://…" value="${esc(val||'')}" style="flex:1;margin-bottom:0"/>
-    <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--faint);font-size:18px;line-height:1;padding:0 4px;flex-shrink:0">✕</button>`;
+  row.innerHTML = '<input class="fc" type="url" placeholder="https://…" value="'+esc(val||'')+'" style="flex:1;margin-bottom:0"/>'
+    + '<button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--faint);font-size:18px;line-height:1;padding:0 4px;flex-shrink:0">✕</button>';
   urlList.appendChild(row);
 }
 
@@ -258,52 +236,37 @@ function renderSection(section) {
     return;
   }
   if (section === 'banyan') {
-    el.innerHTML = entries.map(e => `
-      <div class="entry">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-          <div style="flex:1;min-width:0">
-            ${e.name ? `<div style="font-weight:500;font-size:14px;margin-bottom:4px">${esc(e.name)}</div>` : ''}
-            ${e.description ? `<div style="font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6;margin-bottom:6px">${esc(e.description)}</div>` : ''}
-            ${e.urls && e.urls.length ? `
-              <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
-                ${e.urls.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener"
-                  style="font-size:12px;color:var(--b);word-break:break-all;text-decoration:none;display:flex;align-items:center;gap:4px">
-                  <span style="font-size:11px;opacity:.6">🔗</span>${esc(u)}</a>`).join('')}
-              </div>` : ''}
-            <div style="font-size:10px;color:var(--faint);margin-top:8px">${fmtDate(e.saved)}</div>
-          </div>
-          <div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">
-            <button class="btn-sm" onclick='openBanyanForm(${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
-            <button onclick="deleteBanyanEntry('${e.id}')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    el.innerHTML = entries.map(function(e) {
+      return '<div class="entry"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        + '<div style="flex:1;min-width:0">'
+        + (e.name ? '<div style="font-weight:500;font-size:14px;margin-bottom:4px">'+esc(e.name)+'</div>' : '')
+        + (e.description ? '<div style="font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6;margin-bottom:6px">'+esc(e.description)+'</div>' : '')
+        + (e.urls && e.urls.length ? '<div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">'
+            + e.urls.map(function(u){ return '<a href="'+esc(u)+'" target="_blank" rel="noopener" style="font-size:12px;color:var(--b);word-break:break-all;text-decoration:none;display:flex;align-items:center;gap:4px"><span style="font-size:11px;opacity:.6">🔗</span>'+esc(u)+'</a>'; }).join('')
+            + '</div>' : '')
+        + '<div style="font-size:10px;color:var(--faint);margin-top:8px">'+fmtDate(e.saved)+'</div>'
+        + '</div>'
+        + '<div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">'
+        + '<button class="btn-sm" onclick=\'openBanyanForm('+JSON.stringify(e).replace(/'/g,"&#39;")+')\'>Edit</button>'
+        + '<button onclick="deleteBanyanEntry(\''+e.id+'\')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>'
+        + '</div></div></div>';
+    }).join('');
     notifyResize();
     return;
   }
-  const entries = load(section);
-  const el = document.getElementById('list-' + section);
-  if (!entries.length) {
-    el.innerHTML = '<div class="empty">No entries yet.</div>';
-    notifyResize();
-    return;
-  }
-  el.innerHTML = entries.map(e => `
-    <div class="entry">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div style="flex:1;min-width:0">
-          ${e.title   ? `<div style="font-weight:500;font-size:14px;margin-bottom:4px">${esc(e.title)}</div>` : ''}
-          ${e.content ? `<div style="font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6">${esc(e.content)}</div>` : ''}
-          <div style="font-size:10px;color:var(--faint);margin-top:8px">${fmtDate(e.saved)}</div>
-        </div>
-        <div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">
-          <button class="btn-sm" onclick='openForm("${section}",${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
-          <button onclick="deleteEntry('${section}','${e.id}')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  // property / beyond
+  el.innerHTML = entries.map(function(e) {
+    return '<div class="entry"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+      + '<div style="flex:1;min-width:0">'
+      + (e.title   ? '<div style="font-weight:500;font-size:14px;margin-bottom:4px">'+esc(e.title)+'</div>' : '')
+      + (e.content ? '<div style="font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6">'+esc(e.content)+'</div>' : '')
+      + '<div style="font-size:10px;color:var(--faint);margin-top:8px">'+fmtDate(e.saved)+'</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">'
+      + '<button class="btn-sm" onclick=\'openForm("'+section+'",'+JSON.stringify(e).replace(/'/g,"&#39;")+')\'>Edit</button>'
+      + '<button onclick="deleteEntry(\''+section+'\',\''+e.id+'\')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>'
+      + '</div></div></div>';
+  }).join('');
   notifyResize();
 }
 
