@@ -506,9 +506,8 @@ async function loadEntries() {
     // Staff / talent: only their own entries
     path += '&entity_name=eq.' + encodeURIComponent(me.name);
   } else if (me.role === 'landlord') {
-    // Landlord: entries for their property
-    const prop = me.property_name || me.name;
-    path += '&entity_name=eq.' + encodeURIComponent(prop);
+    // Filter by landlord's personal name — matches how admin saves entries
+    path += '&entity_name=eq.' + encodeURIComponent(me.name);
   }
   // office / owner: sees all — no filter
   try {
@@ -693,19 +692,9 @@ async function submitEntry() {
   if (isPctHead && !pct) { showToast('Please enter a percentage'); return; }
   if (!date) { showToast('Please select a date'); return; }
 
-  // Determine entity
+  // Determine entity — only 'office' role can reach this function
   let entityType = 'general';
-  let entityName = '';
-  if (me.role === 'owner') {
-    entityName = entityInput;
-    entityType = entityInput ? 'general' : 'general';
-  } else if (me.role === 'landlord') {
-    entityName = me.property_name || me.name;
-    entityType = 'property';
-  } else {
-    entityName = me.name;
-    entityType = 'staff';
-  }
+  let entityName = entityInput || '';
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;

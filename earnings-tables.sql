@@ -8,7 +8,7 @@ create table if not exists earnings_log (
   amount       numeric(14,2),
   percentage   numeric(7,4),
   notes        text,
-  entity_type  text check (entity_type in ('property', 'staff', 'general')),
+  entity_type  text check (entity_type in ('property', 'staff', 'talent', 'general')),
   entity_name  text,
   recorded_by  text,
   entry_date   date not null default current_date,
@@ -24,6 +24,11 @@ create policy "earnings_log_open"
   to anon, authenticated
   using (true)
   with check (true);
+
+-- If the table already exists, run this to fix the constraint:
+alter table earnings_log drop constraint if exists earnings_log_entity_type_check;
+alter table earnings_log add constraint earnings_log_entity_type_check
+  check (entity_type in ('property', 'staff', 'talent', 'general'));
 
 -- Useful indexes
 create index if not exists earnings_log_date_idx on earnings_log (entry_date desc);

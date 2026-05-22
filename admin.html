@@ -1086,7 +1086,7 @@ async function loadEarningsPage() {
   }
   if (_earnPeople.landlord.length) {
     const og = document.createElement('optgroup'); og.label = 'Landlords';
-    _earnPeople.landlord.forEach(l => { const o=document.createElement('option'); o.value='landlord:'+(l.property_name||l.name); o.textContent=l.name+(l.property_name?' ('+l.property_name+')':''); og.appendChild(o); });
+    _earnPeople.landlord.forEach(l => { const o=document.createElement('option'); o.value='landlord:'+l.name; o.textContent=l.name+(l.property_name?' ('+l.property_name+')':''); og.appendChild(o); });
     sel.appendChild(og);
   }
   if (cur) sel.value = cur;
@@ -1183,7 +1183,7 @@ function populateMePersons() {
   const sel = document.getElementById('me-person');
   const list = _earnPeople[type] || [];
   sel.innerHTML = list.length
-    ? list.map(p => `<option value="${esc(type==='landlord' ? (p.property_name||p.name) : p.name)}">${esc(p.name)}${type==='landlord'&&p.property_name?' ('+esc(p.property_name)+')':''}</option>`).join('')
+    ? list.map(p => `<option value="${esc(p.name)}">${esc(p.name)}${type==='landlord'&&p.property_name?' ('+esc(p.property_name)+')':''}</option>`).join('')
     : '<option value="">No members found</option>';
 }
 function onMePersonTypeChange() { populateMePersons(); }
@@ -1234,7 +1234,7 @@ function editEarning(e) {
   document.getElementById('me-ttl').textContent = 'Edit Earnings Entry';
   document.getElementById('me-save-btn').textContent = 'Save Changes';
   // Determine person type from entity_type
-  const ptype = e.entity_type === 'property' ? 'landlord' : (e.entity_type || 'staff');
+  const ptype = e.entity_type === 'property' ? 'landlord' : (e.entity_type === 'talent' ? 'talent' : 'staff');
   document.getElementById('me-ptype').value = ptype;
   populateMePersons();
   // Try to select matching person
