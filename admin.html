@@ -82,7 +82,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
   <div class="sb-nav">
     <button class="sb-btn on" onclick="goPage('properties',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Properties</button>
-    <button class="sb-btn" onclick="goPage('landlords',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>Landlords</button>
+
     <button class="sb-btn" onclick="goPage('staff',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Manager &amp; Staff</button>
     <button class="sb-btn" onclick="goPage('guests',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guests</button>
     <button class="sb-btn" onclick="goPage('tips',this)"><svg viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>In, Around &amp; Beyond</button>
@@ -100,19 +100,22 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <div class="pg on" id="pg-properties">
   <div class="pg-title">Properties</div>
-  <div class="pg-sub">Edit descriptions and addresses landlords and guests see</div>
-  <div id="props-list">Loading…</div>
-</div>
-
-<div class="pg" id="pg-landlords">
-  <div class="pg-title">Landlords</div>
-  <div class="pg-sub">Property owners — assigned to one property each</div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div class="card-ttl" style="margin:0">All landlords</div>
-      <button class="btn-p" onclick="openLandlordModal()">+ Add landlord</button>
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="ptab on" id="proptab-details" onclick="setPropTab('details',this)">Property Details</button>
+    <button class="ptab" id="proptab-landlords" onclick="setPropTab('landlords',this)">Landlords</button>
+  </div>
+  <div id="prop-details-view">
+    <div class="pg-sub" style="margin-bottom:14px">Edit descriptions and addresses landlords and guests see</div>
+    <div id="props-list">Loading…</div>
+  </div>
+  <div id="prop-landlords-view" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="card-ttl" style="margin:0">All landlords</div>
+        <button class="btn-p" onclick="openLandlordModal()">+ Add property</button>
+      </div>
+      <div id="landlords-list">Loading…</div>
     </div>
-    <div id="landlords-list">Loading…</div>
   </div>
 </div>
 
@@ -591,8 +594,7 @@ function goPage(id,btn){
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='properties') loadProperties();
-  if(id==='landlords')  loadLandlords();
+  if(id==='properties'){ loadProperties(); loadLandlords(); }
   if(id==='staff')      loadStaff();
   if(id==='guests')     loadGuests();
   if(id==='tips')       loadTipsPage();
@@ -603,6 +605,12 @@ function goPage(id,btn){
   if(id==='assets')     loadAssetsPage();
   if(id==='talents')    loadTalentsPage();
   if(id==='earnings')   loadEarningsPage();
+}
+function setPropTab(tab,btn){
+  document.querySelectorAll('#pg-properties .ptab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('prop-details-view').style.display=tab==='details'?'':'none';
+  document.getElementById('prop-landlords-view').style.display=tab==='landlords'?'':'none';
 }
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
