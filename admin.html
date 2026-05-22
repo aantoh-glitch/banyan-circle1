@@ -99,9 +99,22 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="main">
 
 <div class="pg on" id="pg-properties">
-  <div class="pg-title">Properties</div>
-  <div class="pg-sub" style="margin-bottom:14px">Edit descriptions and addresses landlords and guests see</div>
-  <div id="props-list">Loading…</div>
+  <!-- Property selector -->
+  <div id="prop-selector">
+    <div class="pg-title" style="margin-bottom:20px">Properties</div>
+    <div id="props-list" style="display:flex;flex-direction:column;gap:12px;max-width:460px">Loading…</div>
+  </div>
+  <!-- Inline landlord portal iframe -->
+  <div id="prop-iframe-view" style="display:none;flex-direction:column;height:calc(100vh - 80px)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <button onclick="closePropPortal()" class="btn-sec" style="display:flex;align-items:center;gap:6px;font-size:13px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+        Back
+      </button>
+      <span id="prop-portal-label" style="font-family:'Playfair Display',serif;font-size:18px"></span>
+    </div>
+    <iframe id="prop-portal-frame" src="" style="flex:1;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--white)"></iframe>
+  </div>
 </div>
 
 <div class="pg" id="pg-staff">
@@ -602,28 +615,32 @@ async function loadProperties(){
   await loadAllProperties();
   const el=document.getElementById('props-list');
   if(!PROPS.length){el.innerHTML='<div class="empty">No properties.</div>';return;}
-  el.innerHTML=PROPS.map(p=>`<div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="font-family:'Playfair Display',serif;font-size:20px">${p.name}</div>
-      <button class="btn-sec" onclick="openLandlordPortal('${p.name.replace(/'/g,"\\'")}')" style="display:flex;align-items:center;gap:6px;font-size:13px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-        Landlord Portal
-      </button>
-    </div>
-    <div class="fg"><label class="fl">Address</label><input class="fc" id="pa-${p.id}" value="${(p.address||'').replace(/"/g,'&quot;')}"/></div>
-    <div class="fg"><label class="fl">Description</label><textarea class="fc" id="pd-${p.id}" style="min-height:110px">${p.description||''}</textarea></div>
-    <button class="btn-p" onclick="saveProperty('${p.id}')">Save changes</button>
-  </div>`).join('');
-}
-async function saveProperty(id){
-  await api('/rest/v1/properties?id=eq.'+id,'PATCH',{address:document.getElementById('pa-'+id).value.trim(),description:document.getElementById('pd-'+id).value.trim()});
-  toast('Saved'); loadProperties();
+  el.innerHTML=PROPS.map(p=>`
+    <button onclick="openLandlordPortal('${p.name.replace(/'/g,"\\'")}')"
+      style="width:100%;text-align:left;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 24px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;transition:all .15s"
+      onmouseover="this.style.borderColor='#D85A30';this.style.background='var(--br-l)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--white)'">
+      <span style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text)">${p.name}</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>`).join('');
 }
 function openLandlordPortal(propName){
-  const landlordMe = JSON.stringify({id:'office-preview',name:'Office',role:'landlord',prop:propName,property_name:propName});
-  const win = window.open('','_blank');
-  win.document.write('<script>localStorage.setItem("bc_me",'+JSON.stringify(landlordMe)+');location.href="/landlord.html";<\/script>');
-  win.document.close();
+  const officeMe = localStorage.getItem('bc_me');
+  localStorage.setItem('bc_me_office_bkp', officeMe);
+  localStorage.setItem('bc_me', JSON.stringify({id:'office-preview',name:'Office',role:'landlord',prop:propName,property_name:propName}));
+  document.getElementById('prop-selector').style.display='none';
+  const view=document.getElementById('prop-iframe-view');
+  view.style.display='flex';
+  document.getElementById('prop-portal-label').textContent=propName;
+  const frame=document.getElementById('prop-portal-frame');
+  frame.src='/landlord.html';
+  frame.onload=function(){ const bkp=localStorage.getItem('bc_me_office_bkp'); if(bkp)localStorage.setItem('bc_me',bkp); };
+}
+function closePropPortal(){
+  const bkp=localStorage.getItem('bc_me_office_bkp'); if(bkp)localStorage.setItem('bc_me',bkp);
+  document.getElementById('prop-portal-frame').src='';
+  document.getElementById('prop-iframe-view').style.display='none';
+  document.getElementById('prop-selector').style.display='';
 }
 
 // LANDLORDS
