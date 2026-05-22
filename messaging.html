@@ -30,8 +30,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
 /* ── FILTER TABS ── */
 .filter-bar{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--white)}
-.ftab{padding:5px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.ftab{padding:5px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
 .ftab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.ftab-in.on{background:var(--g-l);border-color:var(--g);color:var(--g)}
+.ftab-out.on{background:var(--r-l);border-color:var(--r);color:var(--r)}
 
 /* ── INBOX ── */
 .inbox{flex:1;overflow-y:auto}
@@ -128,6 +130,8 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 .btn-p:disabled{opacity:.5;cursor:not-allowed}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .booking-date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.leave-dur-btn{flex:1;padding:11px 10px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+.leave-dur-btn.leave-dur-on{background:var(--br-l);border-color:var(--br);color:var(--br)}
 
 /* ── RECIPIENT TOGGLE PILLS ── */
 .recip-toggle{display:flex;gap:8px;flex-wrap:wrap}
@@ -166,8 +170,14 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     </div>
     <div class="filter-bar">
       <button class="ftab on" onclick="setFilter('all',this)">All</button>
-      <button class="ftab" onclick="setFilter('unread',this)">Unread</button>
-      <button class="ftab" onclick="setFilter('sent',this)">Sent</button>
+      <button class="ftab ftab-in" onclick="setFilter('in',this)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg>
+        IN
+      </button>
+      <button class="ftab ftab-out" onclick="setFilter('out',this)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>
+        OUT
+      </button>
     </div>
     <div class="inbox" id="inbox-list"><div class="loader">Loading messages…</div></div>
   </div>
@@ -266,6 +276,25 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
       </div>
     </div>
 
+    <!-- Leave fields — shown only when topic = Leave -->
+    <div id="leave-fields" style="display:none">
+      <div class="fg">
+        <label class="fl">Leave date</label>
+        <input type="date" class="fc" id="leave-date"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Duration</label>
+        <div style="display:flex;gap:10px">
+          <button type="button" id="leave-half" class="leave-dur-btn" onclick="setLeaveDur('half')">
+            🌤 Half day
+          </button>
+          <button type="button" id="leave-full" class="leave-dur-btn leave-dur-on" onclick="setLeaveDur('full')">
+            ☀️ Full day
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="fg">
       <label class="fl" for="compose-body">Message</label>
       <textarea class="fc" id="compose-body" placeholder="Write your message…" rows="4"></textarea>
@@ -293,7 +322,8 @@ var TOPICS = {
   'admin-landlord': ['General'],
   'landlord-admin': ['General'],
   'admin-guest':    ['General'],
-  'guest-admin':    ['Complaint', 'Request', 'Feedback'],
+  'guest-admin':    ['Complaint', 'Request', 'Feedback', 'Book Banyan Circle'],
+  'staff-admin':    ['General', 'Leave'],
 };
 
 /* ────────────────────────────────
@@ -382,8 +412,9 @@ function getThreads(msgs){
 
 function renderInbox(){
   var msgs = allMessages;
-  if(currentFilter==='unread') msgs=msgs.filter(m=>!m.read_by_recipient&&amIRecipient(m));
-  else if(currentFilter==='sent') msgs=msgs.filter(m=>iMine(m));
+  // IN = all received messages; OUT = all sent messages
+  if(currentFilter==='in')  msgs=msgs.filter(m=>amIRecipient(m));
+  else if(currentFilter==='out') msgs=msgs.filter(m=>iMine(m));
 
   var threads = getThreads(msgs);
   var el = document.getElementById('inbox-list');
@@ -395,7 +426,8 @@ function renderInbox(){
   var html = '';
   threads.forEach(t=>{
     var m = t.latest, root = t.root;
-    var unread = !m.read_by_recipient && amIRecipient(m);
+    // A thread is unread if ANY message addressed to me in this thread is unread
+    var hasUnread = t.msgs.some(msg => amIRecipient(msg) && !msg.read_by_recipient);
     var mine = iMine(m);
     var fromLabel = mine ? 'You → '+m.recipient_name : m.sender_name+' → '+(isAdmin()?'Admin':me.name);
     var otherRole = mine ? m.recipient_role : m.sender_role;
@@ -411,15 +443,15 @@ function renderInbox(){
     }
 
     html += '<div class="msg-row" onclick="openThread(\''+t.key+'\')">'+
-      '<div class="unread-dot'+(unread?'':' read')+'"></div>'+
+      '<div class="unread-dot'+(hasUnread?'':' read')+'"></div>'+
       '<div class="msg-body">'+
         '<div class="msg-meta">'+
-          '<div class="msg-topic'+(unread?' bold':'')+'">'+esc(m.topic)+'</div>'+
+          '<div class="msg-topic'+(hasUnread?' bold':'')+'">'+esc(m.topic)+'</div>'+
           '<div class="msg-date">'+fmtDate(m.created_at)+'</div>'+
         '</div>'+
         '<div class="msg-from">'+esc(fromLabel)+
           '<span class="role-badge rb-'+esc(otherRole)+'">'+esc(otherRole)+'</span>'+
-          (unread?'<span style="color:var(--br);font-size:11px;font-weight:600">● New</span>':'')+
+          (hasUnread?'<span style="color:var(--br);font-size:11px;font-weight:600">● New</span>':'')+
           bkPill+
         '</div>'+
         '<div class="msg-preview">'+esc(preview.substring(0,80))+'</div>'+
@@ -433,12 +465,21 @@ function renderInbox(){
 ──────────────────────────────── */
 async function openThread(threadKey){
   try{
-    // Mark incoming unread messages as read
+    // Mark ALL incoming unread messages in this thread as read (locally + in DB)
+    var toMark = [];
     allMessages.forEach(m=>{
       if((m.thread_id===threadKey||m.id===threadKey) && amIRecipient(m) && !m.read_by_recipient){
         m.read_by_recipient = true;
-        api('PATCH','messages?id=eq.'+m.id,{read_by_recipient:true});
+        toMark.push(m.id);
       }
+    });
+
+    // Re-render inbox immediately so dots are cleared when returning
+    renderInbox();
+
+    // Fire mark-as-read to DB (batch if possible, fire-and-forget)
+    toMark.forEach(function(id){
+      api('PATCH','messages?id=eq.'+id,{read_by_recipient:true}).catch(function(){});
     });
 
     var threadMsgs = allMessages.filter(m=>m.thread_id===threadKey||m.id===threadKey);
@@ -649,6 +690,7 @@ function openCompose(){
   document.getElementById('compose-topic').innerHTML='<option value="">— Select topic —</option>';
   document.getElementById('compose-body').value='';
   document.getElementById('booking-date-fields').style.display='none';
+  document.getElementById('leave-fields').style.display='none';
   document.getElementById('name-list-wrap').style.display='none';
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
 
@@ -707,11 +749,28 @@ function populateTopics(senderRole, recipientRole){
   sel.innerHTML = '<option value="">— Select topic —</option>';
   topics.forEach(t=>sel.innerHTML+='<option value="'+esc(t)+'">'+esc(t)+'</option>');
   document.getElementById('booking-date-fields').style.display='none';
+  document.getElementById('leave-fields').style.display='none';
 }
 
+var leaveDur = 'full';
+function setLeaveDur(val){
+  leaveDur = val;
+  document.getElementById('leave-half').classList.toggle('leave-dur-on', val==='half');
+  document.getElementById('leave-full').classList.toggle('leave-dur-on', val==='full');
+}
 function onTopicChange(){
-  document.getElementById('booking-date-fields').style.display =
-    document.getElementById('compose-topic').value==='Booking Request' ? 'block' : 'none';
+  var t = document.getElementById('compose-topic').value;
+  document.getElementById('booking-date-fields').style.display = t==='Booking Request' ? 'block' : 'none';
+  document.getElementById('leave-fields').style.display         = t==='Leave'           ? 'block' : 'none';
+  if(t==='Leave'){
+    // default date to today
+    if(!document.getElementById('leave-date').value){
+      document.getElementById('leave-date').value = new Date().toISOString().slice(0,10);
+    }
+    leaveDur='full';
+    document.getElementById('leave-half').classList.remove('leave-dur-on');
+    document.getElementById('leave-full').classList.add('leave-dur-on');
+  }
 }
 
 function closeCompose(){ document.getElementById('compose-overlay').classList.remove('on'); }
@@ -736,6 +795,14 @@ async function sendMessage(){
     var d=document.getElementById('booking-date').value, t=document.getElementById('booking-time').value;
     if(!d||!t){ showToast('Please pick a date and time'); return; }
     bookingDt=fmtBookingDate(d,t);
+  }
+  if(topic==='Leave'){
+    var ld=document.getElementById('leave-date').value;
+    if(!ld){ showToast('Please select a leave date'); return; }
+    var durLabel=leaveDur==='half'?'Half day':'Full day';
+    var fmtLd=new Date(ld+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var leavePrefix='Leave request: '+fmtLd+' ('+durLabel+')\n\n';
+    body=leavePrefix+body;
   }
 
   var payload={

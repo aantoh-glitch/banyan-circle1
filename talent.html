@@ -345,7 +345,7 @@ document.getElementById('top-avatar').textContent=ini(talentNameParam);
 document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
 document.getElementById('prof-id-display').textContent=talentId;
 
-function signOut(){localStorage.removeItem('bc_me');location.href='/index.html';}
+function signOut(){localStorage.removeItem('bc_me');location.replace('/index.html');}
 
 // PANEL NAVIGATION — all collapsed on load
 let currentPanel=null;
@@ -518,6 +518,14 @@ async function loadTalentMessages(){
 }
 async function sendTalentMsg(){const inp=document.getElementById('talent-msg-input');const txt=inp.value.trim();if(!txt)return;try{await api('/rest/v1/internal_messages','POST',{talent_id:talentId,talent_name:talentNameParam,from_role:'talent',from_name:talentNameParam,message:txt,created_at:new Date().toISOString()});inp.value='';inp.style.height='44px';await loadTalentMessages();}catch(e){toast('Send failed: '+e.message);}}
 
+
+// Prevent bfcache from restoring stale authenticated state after logout
+window.addEventListener('pageshow', function(e){
+  if(e.persisted){
+    var m=localStorage.getItem('bc_me');
+    if(!m) location.replace('/index.html');
+  }
+});
 
 // Background preloads
 loadProfile();
