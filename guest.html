@@ -373,6 +373,16 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div id="tips-around-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
   </div>
 
+  <div class="tips-section" id="tips-talents">
+    <div class="tips-section-hdr">Available Talents</div>
+    <div class="tips-section-sub">Curated experiences with our talented team</div>
+    <div id="tips-talent-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+    <div style="margin-top:14px;background:var(--br-l);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91A16 16 0 0 0 16 17l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span style="font-size:13px;color:var(--br);line-height:1.6">Contact your host for availability and booking.</span>
+    </div>
+  </div>
+
   <button class="info-btn" onclick="" style="margin-top:8px">
     <span class="info-btn-icon" style="background:var(--a-l);color:var(--a)">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
@@ -391,14 +401,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <img src="Banyan_Logo.png" style="width:80px;height:80px;object-fit:contain"/>
   </div>
   <div class="pg-title">Talent Experiences</div>
-  <div class="pg-sub">Book a session or rate a talent you've experienced</div>
-
-  <div style="display:flex;gap:8px;margin-bottom:20px">
-    <button onclick="location.href='rating.html'" style="flex:1;padding:14px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-      Rate a Talent
-    </button>
-  </div>
+  <div class="pg-sub">Book a session with our talented team</div>
 
   <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:14px">Request a Booking</div>
   <div class="card" style="padding:16px">
@@ -454,6 +457,18 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="pg" id="pg-reviews">
   <div class="pg-title">Reviews</div>
   <div class="pg-sub">Share your experience</div>
+
+  <!-- Rate a Talent -->
+  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='rating.html'">
+    <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate a Talent</div>
+      <div style="font-size:12px;color:var(--muted)">Share your experience with a talent</div>
+    </div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+  </div>
 
   <!-- Slot 1: Staff Review -->
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='staff-review.html'">
@@ -543,8 +558,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
 <nav class="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
-  <button class="bnt" onclick="goPage('talent',this);loadGuestTalents();loadGuestBookingHistory()"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.5 1.5 4.5 3 6l4 5 4-5c1.5-1.5 3-3.5 3-6 0-3.87-3.13-7-7-7z" fill="none"/><circle cx="12" cy="9" r="2.5" fill="none"/></svg>Banyan Circle</button>
-  <button class="bnt" onclick="goPage('tips',this)"><img src="Banyan_Logo.png" style="width:22px;height:22px;object-fit:contain;filter:grayscale(1) brightness(0.5)" class="bnt-logo-img"/>Explore</button>
+  <button class="bnt" onclick="goPage('tips',this);loadTips()"><img src="Banyan_Logo.png" style="width:22px;height:22px;object-fit:contain;filter:grayscale(1) brightness(0.5)" class="bnt-logo-img"/>Explore</button>
   <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
 </nav>
@@ -877,6 +891,7 @@ async function loadTips(){
   renderSection('tips-in-list','In');
   renderSection('tips-around-list','Around');
   renderSection('tips-beyond-list','Beyond');
+  loadGuestTalents();
 }
 
 // --- GUEST TALENT BOOKING ---
@@ -885,22 +900,41 @@ const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||
 async function loadGuestTalents(){
   try{
     const rows = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name') || [];
-    // Populate select
+    // Populate select (if present)
     const sel = document.getElementById('g-bk-talent');
-    sel.innerHTML = '<option value="">Select talent…</option>' + rows.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
-    // Render cards
+    if(sel) sel.innerHTML = '<option value="">Select talent…</option>' + rows.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
+    // Render cards in pg-talent
     const el = document.getElementById('g-talent-list');
-    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available</div>'; return; }
-    el.innerHTML = rows.map(t=>`
-      <div class="card" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0">${ini(t.name)}</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:500">${t.name}</div>
-          <div style="font-size:12px;color:var(--muted)">${t.category||''}</div>
-          ${t.short_desc ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${t.short_desc}</div>` : ''}
-        </div>
-      </div>`).join('');
-  } catch(e){ document.getElementById('g-talent-list').innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>'; }
+    if(el){
+      if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available</div>'; }
+      else { el.innerHTML = rows.map(t=>`
+        <div class="card" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0">${ini(t.name)}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500">${t.name}</div>
+            <div style="font-size:12px;color:var(--muted)">${t.category||''}</div>
+            ${t.short_desc ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${t.short_desc}</div>` : ''}
+          </div>
+        </div>`).join(''); }
+    }
+    // Render cards in Explore page talent list
+    const exploreEl = document.getElementById('tips-talent-list');
+    if(exploreEl){
+      if(!rows.length){ exploreEl.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available yet.</div>'; }
+      else { exploreEl.innerHTML = rows.map(t=>`
+        <div class="tip-card" style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0">${ini(t.name)}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500">${t.name}</div>
+            <div style="font-size:12px;color:var(--muted)">${t.category||''}</div>
+            ${t.short_desc ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${t.short_desc}</div>` : ''}
+          </div>
+        </div>`).join(''); }
+    }
+  } catch(e){
+    const el=document.getElementById('g-talent-list'); if(el) el.innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>';
+    const exploreEl=document.getElementById('tips-talent-list'); if(exploreEl) exploreEl.innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>';
+  }
 }
 
 async function submitGuestBooking(){
