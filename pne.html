@@ -20,7 +20,7 @@
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
 html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
-.wrap{padding:16px 16px 48px}
+.wrap{padding:16px 16px 120px}
 
 /* ─ SECTION HEADING ─ */
 .sec-hdg{
@@ -232,7 +232,12 @@ function toggleForm(id) {
   var isOpen = f.classList.contains('visible');
   // Close all forms first
   document.querySelectorAll('.add-form').forEach(function(el){ el.classList.remove('visible'); });
-  if (!isOpen) f.classList.add('visible');
+  if (!isOpen) {
+    f.classList.add('visible');
+    setTimeout(function() {
+      f.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
 }
 
 function getList(key) {
