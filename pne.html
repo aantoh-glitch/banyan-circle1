@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>PNE — Banyan Circle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#8B3520;--br-d:#6A2818;--br-l:#FAF0EB;--br-mid:#F2D9D0;
+  --g:#2E5C0F;--g-l:#EBF3E2;
+  --b:#1A4F8A;--b-l:#E8F1FA;
+  --a:#7A4408;--a-l:#FBF0E0;
+  --r:#9B2626;--r-l:#FBEBEB;
+  --text:#1E1C18;--muted:#6B6860;--faint:#9E9C97;
+  --border:#E8E4DC;--border-strong:#C8C2B8;
+  --bg:#F7F5F1;--surface:#FEFCF9;--white:#fff;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+}
+html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
+.wrap{padding:16px 16px 48px}
+
+/* ─ SECTION HEADING ─ */
+.sec-hdg{
+  font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;
+  color:var(--text);margin:0 0 4px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-hdg:not(:first-child){margin-top:28px}
+.sec-sub{font-size:11px;color:var(--faint);letter-spacing:.2px;margin-bottom:12px}
+.sec-divider{width:100%;height:1px;background:var(--border);margin-bottom:14px}
+
+/* ─ CARDS ─ */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.card-ttl{font-size:10px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+
+/* ─ FIELDS ─ */
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
+.fc:focus{border-color:var(--br);background:var(--white)}
+textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
+
+/* ─ BUTTONS ─ */
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.2px}
+.btn-p:active{background:var(--br-d)}
+.btn-sec{padding:9px 14px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sm{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--br);font-family:inherit;font-weight:500;flex-shrink:0}
+.btn-del{background:var(--r-l);border:1px solid #f0c8c8;border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--r);font-family:inherit;font-weight:500;flex-shrink:0}
+.btn-call{background:var(--g-l);border:1px solid #b8dba0;border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--g);font-family:inherit;font-weight:500;flex-shrink:0}
+.btn-row{display:flex;gap:8px;margin-top:10px}
+.btn-row .btn-p,.btn-row .btn-sec{flex:1}
+
+/* ─ INLINE FORM ─ */
+.add-form{
+  background:var(--br-l);border:1px solid var(--br-mid);
+  border-radius:var(--radius);padding:14px;
+  margin-bottom:10px;display:none;
+}
+.add-form.visible{display:block}
+
+/* ─ RULE ITEM ─ */
+.rule-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:11px 0;border-bottom:1px solid var(--border);
+}
+.rule-item:last-child{border-bottom:none}
+.rule-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--br-l);color:var(--br-d);
+  font-size:10px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+.rule-text{flex:1;font-size:13px;line-height:1.55;color:var(--text)}
+
+/* ─ EMERGENCY CONTACT ─ */
+.contact-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+}
+.contact-item:last-child{border-bottom:none;padding-bottom:0}
+.contact-icon{
+  width:40px;height:40px;border-radius:11px;
+  background:var(--br-l);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.contact-icon svg{width:18px;height:18px;stroke:var(--br);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.contact-body{flex:1;min-width:0}
+.contact-name{font-size:14px;font-weight:500;color:var(--text)}
+.contact-role{font-size:11px;color:var(--faint);margin-top:1px}
+.contact-phone{font-size:13px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.contact-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ─ NOTES AUTO-SAVE INDICATOR ─ */
+.save-indicator{
+  font-size:10px;color:var(--faint);
+  display:inline-flex;align-items:center;gap:4px;
+  transition:opacity .3s;
+}
+.save-indicator.saved{color:var(--g)}
+
+/* ─ EMPTY STATE ─ */
+.empty-state{
+  text-align:center;padding:20px 10px;
+  color:var(--faint);font-size:13px;line-height:1.6;
+}
+.empty-icon{font-size:28px;margin-bottom:6px}
+
+/* ─ TOAST ─ */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;
+  font-size:13px;z-index:200;display:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════════════════════════════════ PROPERTY RULES ═══════════════════════════════════ -->
+<div class="sec-hdg">
+  <span>Property Rules</span>
+  <button class="btn-sm" onclick="toggleForm('rules-form')">+ Add Rule</button>
+</div>
+<div class="sec-sub">House rules &amp; guest guidelines</div>
+
+<div class="add-form" id="rules-form">
+  <div class="fg">
+    <label class="fl">Rule</label>
+    <input class="fc" id="rule-input" type="text" placeholder="e.g. No smoking on the premises" onkeydown="if(event.key==='Enter')saveRule()"/>
+  </div>
+  <div class="btn-row">
+    <button class="btn-sec" onclick="toggleForm('rules-form')">Cancel</button>
+    <button class="btn-p" onclick="saveRule()">Save Rule</button>
+  </div>
+</div>
+
+<div class="card" id="rules-list-card">
+  <div id="rules-list">
+    <div class="empty-state"><div class="empty-icon">📋</div>No rules added yet.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ NOTES ═══════════════════════════════════ -->
+<div class="sec-hdg" style="margin-top:28px">
+  <span>Notes</span>
+  <span class="save-indicator" id="notes-save-ind">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+    Saved
+  </span>
+</div>
+<div class="sec-sub">Private notes for this property</div>
+
+<div class="card" style="padding:0;overflow:hidden">
+  <textarea class="fc" id="notes-area"
+    style="border:none;border-radius:var(--radius);min-height:140px;background:var(--white);padding:16px"
+    placeholder="Jot down anything — maintenance reminders, guest preferences, seasonal notes…"
+    oninput="scheduleNoteSave()"></textarea>
+</div>
+
+<!-- ═══════════════════════════════════ EMERGENCY NUMBERS ═══════════════════════════════════ -->
+<div class="sec-hdg" style="margin-top:28px">
+  <span>Emergency Numbers</span>
+  <button class="btn-sm" onclick="toggleForm('emergency-form')">+ Add</button>
+</div>
+<div class="sec-sub">Key contacts for urgent situations</div>
+
+<div class="add-form" id="emergency-form">
+  <div class="fg">
+    <label class="fl">Name</label>
+    <input class="fc" id="emg-name" type="text" placeholder="e.g. Rajan — Electrician"/>
+  </div>
+  <div class="fg">
+    <label class="fl">Role / Category</label>
+    <input class="fc" id="emg-role" type="text" placeholder="e.g. Plumber, Police, Hospital"/>
+  </div>
+  <div class="fg" style="margin-bottom:4px">
+    <label class="fl">Phone Number</label>
+    <input class="fc" id="emg-phone" type="tel" placeholder="+91 98765 43210" inputmode="tel"/>
+  </div>
+  <div class="btn-row">
+    <button class="btn-sec" onclick="toggleForm('emergency-form')">Cancel</button>
+    <button class="btn-p" onclick="saveEmergency()">Save Contact</button>
+  </div>
+</div>
+
+<div class="card" id="emergency-card">
+  <div id="emergency-list">
+    <div class="empty-state"><div class="empty-icon">📞</div>No emergency contacts added yet.</div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─ Resolve property from parent localStorage (same origin) ─
+var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+var PROP = (me && (me.prop || me.property_name)) || 'default';
+
+var KEYS = {
+  rules:     'pne_rules_'     + PROP,
+  notes:     'pne_notes_'     + PROP,
+  emergency: 'pne_emergency_' + PROP,
+};
+
+// ─── INIT ───────────────────────────────────────────────────────────
+window.onload = function() {
+  renderRules();
+  renderEmergency();
+
+  var saved = localStorage.getItem(KEYS.notes) || '';
+  document.getElementById('notes-area').value = saved;
+};
+
+// ─── TOAST ──────────────────────────────────────────────────────────
+function toast(msg, err) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 2200);
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────────
+function toggleForm(id) {
+  var f = document.getElementById(id);
+  var isOpen = f.classList.contains('visible');
+  // Close all forms first
+  document.querySelectorAll('.add-form').forEach(function(el){ el.classList.remove('visible'); });
+  if (!isOpen) f.classList.add('visible');
+}
+
+function getList(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch(e) { return []; }
+}
+
+function saveList(key, arr) {
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── PROPERTY RULES ─────────────────────────────────────────────────
+function renderRules() {
+  var rules = getList(KEYS.rules);
+  var el = document.getElementById('rules-list');
+  if (!rules.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No rules added yet.</div>';
+    return;
+  }
+  el.innerHTML = rules.map(function(r, i) {
+    return '<div class="rule-item">' +
+      '<div class="rule-num">' + (i+1) + '</div>' +
+      '<div class="rule-text">' + esc(r) + '</div>' +
+      '<button class="btn-del" onclick="deleteRule(' + i + ')">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+function saveRule() {
+  var input = document.getElementById('rule-input');
+  var val = input.value.trim();
+  if (!val) { toast('Please enter a rule', true); return; }
+  var rules = getList(KEYS.rules);
+  rules.push(val);
+  saveList(KEYS.rules, rules);
+  input.value = '';
+  document.getElementById('rules-form').classList.remove('visible');
+  renderRules();
+  toast('Rule saved');
+}
+
+function deleteRule(idx) {
+  var rules = getList(KEYS.rules);
+  rules.splice(idx, 1);
+  saveList(KEYS.rules, rules);
+  renderRules();
+  toast('Rule removed');
+}
+
+// ─── NOTES ──────────────────────────────────────────────────────────
+var notesTimer = null;
+
+function scheduleNoteSave() {
+  clearTimeout(notesTimer);
+  var ind = document.getElementById('notes-save-ind');
+  ind.classList.remove('saved');
+  ind.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg> Saving…';
+  notesTimer = setTimeout(function() {
+    localStorage.setItem(KEYS.notes, document.getElementById('notes-area').value);
+    ind.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg> Saved';
+    ind.classList.add('saved');
+  }, 900);
+}
+
+// ─── EMERGENCY NUMBERS ──────────────────────────────────────────────
+function renderEmergency() {
+  var list = getList(KEYS.emergency);
+  var el = document.getElementById('emergency-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📞</div>No emergency contacts added yet.</div>';
+    return;
+  }
+  el.innerHTML = list.map(function(c, i) {
+    var phoneHref = 'tel:' + c.phone.replace(/\s/g, '');
+    return '<div class="contact-item">' +
+      '<div class="contact-icon">' +
+        '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6.29 6.29l.91-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+      '</div>' +
+      '<div class="contact-body">' +
+        '<div class="contact-name">' + esc(c.name) + '</div>' +
+        '<div class="contact-role">' + esc(c.role) + '</div>' +
+        '<div class="contact-phone">' + esc(c.phone) + '</div>' +
+      '</div>' +
+      '<div class="contact-actions">' +
+        '<a href="' + phoneHref + '" class="btn-call">Call</a>' +
+        '<button class="btn-del" onclick="deleteEmergency(' + i + ')">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function saveEmergency() {
+  var name  = document.getElementById('emg-name').value.trim();
+  var role  = document.getElementById('emg-role').value.trim();
+  var phone = document.getElementById('emg-phone').value.trim();
+  if (!name || !phone) { toast('Name and phone are required', true); return; }
+  var list = getList(KEYS.emergency);
+  list.push({ name: name, role: role || '—', phone: phone });
+  saveList(KEYS.emergency, list);
+  document.getElementById('emg-name').value  = '';
+  document.getElementById('emg-role').value  = '';
+  document.getElementById('emg-phone').value = '';
+  document.getElementById('emergency-form').classList.remove('visible');
+  renderEmergency();
+  toast('Contact saved');
+}
+
+function deleteEmergency(idx) {
+  var list = getList(KEYS.emergency);
+  list.splice(idx, 1);
+  saveList(KEYS.emergency, list);
+  renderEmergency();
+  toast('Contact removed');
+}
+</script>
+</body>
+</html>
