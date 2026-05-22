@@ -100,23 +100,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <div class="pg on" id="pg-properties">
   <div class="pg-title">Properties</div>
-  <div style="display:flex;gap:8px;margin-bottom:18px">
-    <button class="ptab on" id="proptab-details" onclick="setPropTab('details',this)">Property Details</button>
-    <button class="ptab" id="proptab-landlords" onclick="setPropTab('landlords',this)">Landlords</button>
-  </div>
-  <div id="prop-details-view">
-    <div class="pg-sub" style="margin-bottom:14px">Edit descriptions and addresses landlords and guests see</div>
-    <div id="props-list">Loading…</div>
-  </div>
-  <div id="prop-landlords-view" style="display:none">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="card-ttl" style="margin:0">All landlords</div>
-        <button class="btn-p" onclick="openLandlordModal()">+ Add property</button>
-      </div>
-      <div id="landlords-list">Loading…</div>
-    </div>
-  </div>
+  <div class="pg-sub" style="margin-bottom:14px">Edit descriptions and addresses landlords and guests see</div>
+  <div id="props-list">Loading…</div>
 </div>
 
 <div class="pg" id="pg-staff">
@@ -594,7 +579,7 @@ function goPage(id,btn){
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='properties'){ loadProperties(); loadLandlords(); }
+  if(id==='properties'){ loadProperties(); }
   if(id==='staff')      loadStaff();
   if(id==='guests')     loadGuests();
   if(id==='tips')       loadTipsPage();
@@ -605,12 +590,6 @@ function goPage(id,btn){
   if(id==='assets')     loadAssetsPage();
   if(id==='talents')    loadTalentsPage();
   if(id==='earnings')   loadEarningsPage();
-}
-function setPropTab(tab,btn){
-  document.querySelectorAll('#pg-properties .ptab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('prop-details-view').style.display=tab==='details'?'':'none';
-  document.getElementById('prop-landlords-view').style.display=tab==='landlords'?'':'none';
 }
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
@@ -624,7 +603,13 @@ async function loadProperties(){
   const el=document.getElementById('props-list');
   if(!PROPS.length){el.innerHTML='<div class="empty">No properties.</div>';return;}
   el.innerHTML=PROPS.map(p=>`<div class="card">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:14px">${p.name}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-family:'Playfair Display',serif;font-size:20px">${p.name}</div>
+      <button class="btn-sec" onclick="openLandlordPortal('${p.name.replace(/'/g,"\\'")}')" style="display:flex;align-items:center;gap:6px;font-size:13px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        Landlord Portal
+      </button>
+    </div>
     <div class="fg"><label class="fl">Address</label><input class="fc" id="pa-${p.id}" value="${(p.address||'').replace(/"/g,'&quot;')}"/></div>
     <div class="fg"><label class="fl">Description</label><textarea class="fc" id="pd-${p.id}" style="min-height:110px">${p.description||''}</textarea></div>
     <button class="btn-p" onclick="saveProperty('${p.id}')">Save changes</button>
@@ -633,6 +618,12 @@ async function loadProperties(){
 async function saveProperty(id){
   await api('/rest/v1/properties?id=eq.'+id,'PATCH',{address:document.getElementById('pa-'+id).value.trim(),description:document.getElementById('pd-'+id).value.trim()});
   toast('Saved'); loadProperties();
+}
+function openLandlordPortal(propName){
+  const landlordMe = JSON.stringify({id:'office-preview',name:'Office',role:'landlord',prop:propName,property_name:propName});
+  const win = window.open('','_blank');
+  win.document.write('<script>localStorage.setItem("bc_me",'+JSON.stringify(landlordMe)+');location.href="/landlord.html";<\/script>');
+  win.document.close();
 }
 
 // LANDLORDS
