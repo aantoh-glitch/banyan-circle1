@@ -90,7 +90,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
   <!-- ─ BANYAN CIRCLE ─ -->
   <div class="sec-hdg">
     <span>Banyan Circle</span>
-    <button class="btn-sm" onclick="openForm('banyan')">+ Add</button>
+    <button class="btn-sm" onclick="openBanyanForm()">+ Add</button>
   </div>
   <div class="sec-divider"></div>
   <div id="list-banyan"></div>
@@ -105,6 +105,23 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     <div class="btn-row">
       <button class="btn-sec" onclick="closeForm()">Cancel</button>
       <button class="btn-p" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+
+  <!-- ─ BANYAN CIRCLE FORM ─ -->
+  <div id="banyan-form" style="display:none" class="card">
+    <div class="card-ttl" id="banyan-form-label">Add to Banyan Circle</div>
+    <input type="hidden" id="banyan-edit-id"/>
+    <div class="fg"><label class="fl">Name</label><input class="fc" id="banyan-name" type="text" placeholder="Name…"/></div>
+    <div class="fg"><label class="fl">Description</label><textarea class="fc" id="banyan-description" placeholder="Description, notes, details…"></textarea></div>
+    <div class="fg">
+      <label class="fl">Relevant URLs</label>
+      <div id="url-list"></div>
+      <button class="btn-sec" style="margin-top:6px;font-size:12px" onclick="addUrlField()">+ Add URL</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="closeBanyanForm()">Cancel</button>
+      <button class="btn-p" onclick="saveBanyanEntry()">Save</button>
     </div>
   </div>
 
@@ -174,7 +191,97 @@ function deleteEntry(section, id) {
   notifyResize();
 }
 
+/* ── BANYAN CIRCLE ── */
+function openBanyanForm(entry) {
+  document.getElementById('banyan-edit-id').value = entry ? entry.id : '';
+  document.getElementById('banyan-form-label').textContent = entry ? 'Edit · Banyan Circle' : 'Add to Banyan Circle';
+  document.getElementById('banyan-name').value = entry ? (entry.name || '') : '';
+  document.getElementById('banyan-description').value = entry ? (entry.description || '') : '';
+  // Rebuild URL fields
+  const urlList = document.getElementById('url-list');
+  urlList.innerHTML = '';
+  const urls = (entry && entry.urls && entry.urls.length) ? entry.urls : [''];
+  urls.forEach(u => addUrlField(u));
+  document.getElementById('banyan-form').style.display = 'block';
+  document.getElementById('banyan-form').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function closeBanyanForm() {
+  document.getElementById('banyan-form').style.display = 'none';
+}
+
+function addUrlField(val) {
+  const urlList = document.getElementById('url-list');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center';
+  row.innerHTML = `<input class="fc" type="url" placeholder="https://…" value="${esc(val||'')}" style="flex:1;margin-bottom:0"/>
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--faint);font-size:18px;line-height:1;padding:0 4px;flex-shrink:0">✕</button>`;
+  urlList.appendChild(row);
+}
+
+function saveBanyanEntry() {
+  const name = document.getElementById('banyan-name').value.trim();
+  const description = document.getElementById('banyan-description').value.trim();
+  const urlInputs = document.querySelectorAll('#url-list input[type="url"]');
+  const urls = Array.from(urlInputs).map(i => i.value.trim()).filter(Boolean);
+  if (!name && !description) { toast('Enter a name or description', true); return; }
+  const editId = document.getElementById('banyan-edit-id').value;
+  const entries = load('banyan');
+  const entry = { id: editId || String(Date.now()), name, description, urls, saved: new Date().toISOString() };
+  if (editId) {
+    const idx = entries.findIndex(e => e.id === editId);
+    if (idx >= 0) entries[idx] = entry; else entries.unshift(entry);
+  } else {
+    entries.unshift(entry);
+  }
+  save('banyan', entries);
+  renderSection('banyan');
+  closeBanyanForm();
+  toast('Saved ✓');
+  notifyResize();
+}
+
+function deleteBanyanEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  save('banyan', load('banyan').filter(e => e.id !== id));
+  renderSection('banyan');
+  toast('Deleted');
+  notifyResize();
+}
+
 function renderSection(section) {
+  const entries = load(section);
+  const el = document.getElementById('list-' + section);
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty">No entries yet.</div>';
+    notifyResize();
+    return;
+  }
+  if (section === 'banyan') {
+    el.innerHTML = entries.map(e => `
+      <div class="entry">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0">
+            ${e.name ? `<div style="font-weight:500;font-size:14px;margin-bottom:4px">${esc(e.name)}</div>` : ''}
+            ${e.description ? `<div style="font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.6;margin-bottom:6px">${esc(e.description)}</div>` : ''}
+            ${e.urls && e.urls.length ? `
+              <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+                ${e.urls.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener"
+                  style="font-size:12px;color:var(--b);word-break:break-all;text-decoration:none;display:flex;align-items:center;gap:4px">
+                  <span style="font-size:11px;opacity:.6">🔗</span>${esc(u)}</a>`).join('')}
+              </div>` : ''}
+            <div style="font-size:10px;color:var(--faint);margin-top:8px">${fmtDate(e.saved)}</div>
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0;margin-top:2px">
+            <button class="btn-sm" onclick='openBanyanForm(${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
+            <button onclick="deleteBanyanEntry('${e.id}')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    notifyResize();
+    return;
+  }
   const entries = load(section);
   const el = document.getElementById('list-' + section);
   if (!entries.length) {
