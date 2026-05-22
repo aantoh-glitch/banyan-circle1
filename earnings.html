@@ -293,6 +293,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <button class="sign-out" onclick="signOut()">Sign out</button>
   </div>
 
+  <!-- READ-ONLY NOTICE (shown to non-admin users) -->
+  <div id="readonly-notice" style="display:none;margin:0 0 12px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:10px;padding:10px 16px;font-size:12px;color:#795548;text-align:center">
+    Read-only view · Your entries are added by the office
+  </div>
+
   <!-- MONTH NAV -->
   <div class="month-nav">
     <button onclick="shiftMonth(-1)">‹</button>
@@ -427,14 +432,18 @@ let viewMonth = new Date().getMonth(); // 0-indexed
 let allEntries = [];
 
 // --- ROLE DISPLAY ---
-const roleLabels = {owner:'Manager',staff:'Staff',landlord:'Landlord'};
+const roleLabels = {owner:'Manager', staff:'Staff', landlord:'Landlord', talent:'Talent', office:'Office'};
 document.getElementById('u-name').textContent = me.name || '—';
 document.getElementById('u-role').textContent = roleLabels[me.role] || me.role || '—';
 
-// Owner can add entries
-if (me.role === 'owner') {
+// Only admin (office) role can add entries from this page
+// All other roles get read-only view of their own entries
+const canAdd = me.role === 'office';
+if (canAdd) {
   document.getElementById('add-entry-btn').style.display = 'flex';
   document.getElementById('entity-field').style.display = 'block';
+} else {
+  document.getElementById('readonly-notice').style.display = 'block';
 }
 
 function signOut() {
@@ -445,7 +454,9 @@ function signOut() {
 function goBack() {
   const r = me.role;
   if (r === 'landlord') location.href = '/landlord.html';
-  else if (r === 'staff') location.href = '/talent.html';
+  else if (r === 'talent') location.href = '/talent.html';
+  else if (r === 'staff')  location.href = '/ops.html';
+  else if (r === 'office') location.href = '/admin.html';
   else location.href = '/ops.html';
 }
 
@@ -491,14 +502,15 @@ async function apiPost(path, body) {
 // --- LOAD ---
 async function loadEntries() {
   let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
-  if (me.role === 'staff') {
+  if (me.role === 'staff' || me.role === 'talent') {
+    // Staff / talent: only their own entries
     path += '&entity_name=eq.' + encodeURIComponent(me.name);
   } else if (me.role === 'landlord') {
-    // Landlord: filter by their property
+    // Landlord: entries for their property
     const prop = me.property_name || me.name;
     path += '&entity_name=eq.' + encodeURIComponent(prop);
   }
-  // owner sees all
+  // office / owner: sees all — no filter
   try {
     allEntries = await api(path);
   } catch(e) {

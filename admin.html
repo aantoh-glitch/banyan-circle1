@@ -92,6 +92,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('msgs',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</button>
     <button class="sb-btn" onclick="goPage('assets',this)"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>Assets</button>
     <button class="sb-btn" onclick="goPage('talents',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Talents</button>
+    <button class="sb-btn" onclick="goPage('earnings',this)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>Earnings</button>
   </div>
   <div class="sb-footer"><div class="sb-user">OFFICE</div><button class="sb-signout" onclick="signOut()">Sign out</button></div>
 </div>
@@ -292,6 +293,49 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div id="assets-prop-list">Loading…</div>
 </div>
 
+<!-- EARNINGS PAGE -->
+<div class="pg" id="pg-earnings">
+  <div class="pg-title">Earnings Log</div>
+  <div class="pg-sub">Add and manage earnings entries for staff, talents and landlords</div>
+
+  <!-- Controls bar -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+      <div class="fg" style="margin:0;min-width:220px;flex:1">
+        <label class="fl">Person</label>
+        <select class="fc" id="earn-person-sel" onchange="loadEarningsLog()">
+          <option value="">All people</option>
+        </select>
+      </div>
+      <div class="fg" style="margin:0">
+        <label class="fl">Month</label>
+        <input class="fc" id="earn-month-sel" type="month" onchange="loadEarningsLog()" style="width:160px"/>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="ptab on" id="etab-all"      onclick="setEarnFilter('all',this)">All</button>
+        <button class="ptab"    id="etab-positive" onclick="setEarnFilter('positive',this)">Positive</button>
+        <button class="ptab"    id="etab-negative" onclick="setEarnFilter('negative',this)">Negative</button>
+      </div>
+      <button class="btn-p" onclick="openEarnModal()">+ Add Entry</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi" style="border-top:3px solid var(--g)"><div class="kpi-label">Total Positive</div><div class="kpi-value" id="earn-kpi-pos" style="color:var(--g)">₹0</div></div>
+    <div class="kpi" style="border-top:3px solid var(--r)"><div class="kpi-label">Total Negative</div><div class="kpi-value" id="earn-kpi-neg" style="color:var(--r)">₹0</div></div>
+    <div class="kpi" style="border-top:3px solid var(--br)"><div class="kpi-label">Net</div><div class="kpi-value" id="earn-kpi-net" style="color:var(--g)">₹0</div></div>
+  </div>
+
+  <!-- Log table -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="card-ttl" style="margin:0" id="earn-log-lbl">All Entries</div>
+    </div>
+    <div id="earn-log"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
 <!-- TALENTS PAGE -->
 <div class="pg" id="pg-talents">
   <div class="pg-title">Talents</div>
@@ -429,6 +473,66 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- EARNINGS ENTRY MODAL -->
+<div class="modal" id="modal-earn"><div class="modal-card">
+  <div class="modal-ttl" id="me-ttl">Add Earnings Entry</div>
+  <input type="hidden" id="me-id"/>
+
+  <div class="row-grid">
+    <div class="fg">
+      <label class="fl">Person type</label>
+      <select class="fc" id="me-ptype" onchange="onMePersonTypeChange()">
+        <option value="staff">Staff</option>
+        <option value="talent">Talent</option>
+        <option value="landlord">Landlord / Property</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Person</label>
+      <select class="fc" id="me-person"></select>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label class="fl">Type</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <button id="me-tbtn-pos" onclick="selectMeType('positive')" style="padding:10px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;background:#E8F5E9;color:#2E7D32">+ Positive</button>
+      <button id="me-tbtn-neg" onclick="selectMeType('negative')" style="padding:10px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;background:var(--white);color:var(--muted)">− Negative</button>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label class="fl">Head</label>
+    <select class="fc" id="me-head" onchange="onMeHeadChange()"><option value="">Select head…</option></select>
+  </div>
+
+  <div class="row-grid">
+    <div class="fg">
+      <label class="fl" id="me-amount-lbl">Amount (₹)</label>
+      <input class="fc" id="me-amount" type="number" min="0" placeholder="0.00"/>
+    </div>
+    <div class="fg" id="me-pct-fg" style="display:none">
+      <label class="fl">Percentage (%)</label>
+      <input class="fc" id="me-pct" type="number" min="0" max="100" step="0.01" placeholder="0.00"/>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label class="fl">Date</label>
+    <input class="fc" id="me-date" type="date"/>
+  </div>
+
+  <div class="fg">
+    <label class="fl">Notes (optional)</label>
+    <textarea class="fc" id="me-notes" style="min-height:68px"></textarea>
+  </div>
+
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-earn')">Cancel</button>
+    <button class="btn-p" id="me-save-btn" onclick="saveEarning()">Add Entry</button>
+  </div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ADMIN BOOKING REQUEST MODAL -->
@@ -498,6 +602,7 @@ function goPage(id,btn){
   if(id==='msgs')       loadMsgsPage();
   if(id==='assets')     loadAssetsPage();
   if(id==='talents')    loadTalentsPage();
+  if(id==='earnings')   loadEarningsPage();
 }
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
@@ -942,6 +1047,258 @@ function openTalentPortal(id,name,pin){
   // Admin goes directly to talent schedule — no PIN prompt
   window.open('talent.html?id='+encodeURIComponent(id)+'&name='+encodeURIComponent(name)+'&admin=1','_blank');
 }
+
+// ─── EARNINGS ────────────────────────────────────────────────────────────────
+const EARN_POS_HEADS = ['Revenue','Profit','PAT','Salary','Pay','Expenses Borne','Percentage of Revenue'];
+const EARN_NEG_HEADS = ['Deduction','Loss'];
+
+let earnFilter = 'all';
+let earnType   = 'positive';
+let _earnPeople = { staff:[], talent:[], landlord:[] };
+
+async function loadEarningsPage() {
+  // Set default month to current
+  if (!document.getElementById('earn-month-sel').value) {
+    document.getElementById('earn-month-sel').value = new Date().toISOString().slice(0,7);
+  }
+  // Load all people for selector
+  const [staffData, talentData, landlordData] = await Promise.all([
+    api('/rest/v1/staff?select=id,name,designation&order=name').catch(()=>[]),
+    api('/rest/v1/talents?select=id,name,category&order=name').catch(()=>[]),
+    api('/rest/v1/landlords?select=id,name,property_name&order=name').catch(()=>[])
+  ]);
+  _earnPeople.staff    = staffData    || [];
+  _earnPeople.talent   = talentData   || [];
+  _earnPeople.landlord = landlordData || [];
+
+  const sel = document.getElementById('earn-person-sel');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All people</option>';
+  if (_earnPeople.staff.length) {
+    const og = document.createElement('optgroup'); og.label = 'Staff';
+    _earnPeople.staff.forEach(s => { const o=document.createElement('option'); o.value='staff:'+s.name; o.textContent=s.name+(s.designation?' ('+s.designation+')':''); og.appendChild(o); });
+    sel.appendChild(og);
+  }
+  if (_earnPeople.talent.length) {
+    const og = document.createElement('optgroup'); og.label = 'Talents';
+    _earnPeople.talent.forEach(t => { const o=document.createElement('option'); o.value='talent:'+t.name; o.textContent=t.name+(t.category?' — '+t.category:''); og.appendChild(o); });
+    sel.appendChild(og);
+  }
+  if (_earnPeople.landlord.length) {
+    const og = document.createElement('optgroup'); og.label = 'Landlords';
+    _earnPeople.landlord.forEach(l => { const o=document.createElement('option'); o.value='landlord:'+(l.property_name||l.name); o.textContent=l.name+(l.property_name?' ('+l.property_name+')':''); og.appendChild(o); });
+    sel.appendChild(og);
+  }
+  if (cur) sel.value = cur;
+  await loadEarningsLog();
+}
+
+async function loadEarningsLog() {
+  const el = document.getElementById('earn-log');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const month = document.getElementById('earn-month-sel').value;
+  const personVal = document.getElementById('earn-person-sel').value;
+
+  let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
+  if (month) {
+    const y = month.split('-')[0], m = month.split('-')[1];
+    const lastDay = new Date(y, m, 0).getDate();
+    path += `&entry_date=gte.${month}-01&entry_date=lte.${month}-${lastDay}`;
+  }
+  if (personVal) {
+    const entityName = personVal.split(':').slice(1).join(':');
+    path += '&entity_name=eq.' + encodeURIComponent(entityName);
+  }
+  if (earnFilter !== 'all') path += '&type=eq.' + earnFilter;
+
+  let data = [];
+  try { data = await api(path) || []; }
+  catch(e) {
+    el.innerHTML = '<div class="empty" style="color:var(--r)">Could not load earnings log. Run earnings-tables.sql in Supabase first.</div>';
+    return;
+  }
+
+  // KPIs
+  let pos=0, neg=0;
+  data.forEach(e => {
+    if(e.type==='positive') pos += parseFloat(e.amount)||0;
+    else neg += parseFloat(e.amount)||0;
+  });
+  const net = pos - neg;
+  document.getElementById('earn-kpi-pos').textContent = fmt(pos);
+  document.getElementById('earn-kpi-neg').textContent = fmt(neg);
+  const netEl = document.getElementById('earn-kpi-net');
+  netEl.textContent = fmt(Math.abs(net)) + (net < 0 ? ' (loss)' : '');
+  netEl.style.color = net >= 0 ? 'var(--g)' : 'var(--r)';
+
+  // Log label
+  const personVal2 = document.getElementById('earn-person-sel');
+  const personTxt = personVal2.options[personVal2.selectedIndex]?.text || 'All People';
+  document.getElementById('earn-log-lbl').textContent =
+    (earnFilter === 'all' ? 'All Entries' : earnFilter.charAt(0).toUpperCase()+earnFilter.slice(1)+' Entries') +
+    ' · ' + personTxt + (month ? ' · '+month : '');
+
+  if (!data.length) { el.innerHTML = '<div class="empty">No entries for this selection.</div>'; return; }
+
+  const isPos = e => e.type === 'positive';
+  const gc = '#2E7D32', rc = '#C62828';
+  el.innerHTML = `<table class="tbl">
+    <thead><tr>
+      <th>Person</th><th>Type</th><th>Head</th><th>Amount</th><th>Date</th><th>Notes</th><th>By</th><th></th>
+    </tr></thead>
+    <tbody>${data.map(e => {
+      const col = isPos(e) ? gc : rc;
+      const bg  = isPos(e) ? '#E8F5E9' : '#FFEBEE';
+      const amt = e.head === 'Percentage of Revenue' && e.percentage
+        ? parseFloat(e.percentage).toFixed(2) + '%' + (e.amount ? ' = '+fmt(e.amount) : '')
+        : fmt(e.amount);
+      return `<tr>
+        <td style="font-weight:500">${esc(e.entity_name||'—')}</td>
+        <td><span style="display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:500;background:${bg};color:${col}">${e.type}</span></td>
+        <td>${esc(e.head)}</td>
+        <td style="font-weight:500;color:${col}">${amt}</td>
+        <td style="font-size:12px;color:var(--muted);white-space:nowrap">${fmtDate(e.entry_date)}</td>
+        <td style="font-size:12px;color:var(--muted);max-width:180px">${esc(e.notes||'—')}</td>
+        <td style="font-size:11px;color:var(--muted)">${esc(e.recorded_by||'—')}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn-edit" onclick='editEarning(${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
+          <button class="btn-del"  onclick="deleteEarning('${e.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function setEarnFilter(f, btn) {
+  earnFilter = f;
+  document.querySelectorAll('#pg-earnings .ptab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  loadEarningsLog();
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Modal helpers
+function populateMePersons() {
+  const type = document.getElementById('me-ptype').value;
+  const sel = document.getElementById('me-person');
+  const list = _earnPeople[type] || [];
+  sel.innerHTML = list.length
+    ? list.map(p => `<option value="${esc(type==='landlord' ? (p.property_name||p.name) : p.name)}">${esc(p.name)}${type==='landlord'&&p.property_name?' ('+esc(p.property_name)+')':''}</option>`).join('')
+    : '<option value="">No members found</option>';
+}
+function onMePersonTypeChange() { populateMePersons(); }
+
+function selectMeType(t) {
+  earnType = t;
+  const pb = document.getElementById('me-tbtn-pos');
+  const nb = document.getElementById('me-tbtn-neg');
+  pb.style.background = t==='positive' ? '#E8F5E9' : 'var(--white)';
+  pb.style.color       = t==='positive' ? '#2E7D32' : 'var(--muted)';
+  nb.style.background  = t==='negative' ? '#FFEBEE' : 'var(--white)';
+  nb.style.color        = t==='negative' ? '#C62828' : 'var(--muted)';
+  populateMeHeads();
+}
+
+function populateMeHeads() {
+  const heads = earnType === 'positive' ? EARN_POS_HEADS : EARN_NEG_HEADS;
+  document.getElementById('me-head').innerHTML =
+    '<option value="">Select head…</option>' + heads.map(h=>`<option value="${esc(h)}">${esc(h)}</option>`).join('');
+  onMeHeadChange();
+}
+
+function onMeHeadChange() {
+  const head = document.getElementById('me-head').value;
+  const isPct = head === 'Percentage of Revenue';
+  document.getElementById('me-pct-fg').style.display = isPct ? '' : 'none';
+  const lbl = document.getElementById('me-amount-lbl');
+  lbl.textContent = isPct ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
+}
+
+function openEarnModal() {
+  // Default to current month date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('me-id').value = '';
+  document.getElementById('me-ttl').textContent = 'Add Earnings Entry';
+  document.getElementById('me-save-btn').textContent = 'Add Entry';
+  document.getElementById('me-ptype').value = 'staff';
+  populateMePersons();
+  selectMeType('positive');
+  populateMeHeads();
+  ['me-amount','me-pct','me-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('me-date').value = today;
+  openModal('modal-earn');
+}
+
+function editEarning(e) {
+  document.getElementById('me-id').value = e.id;
+  document.getElementById('me-ttl').textContent = 'Edit Earnings Entry';
+  document.getElementById('me-save-btn').textContent = 'Save Changes';
+  // Determine person type from entity_type
+  const ptype = e.entity_type === 'property' ? 'landlord' : (e.entity_type || 'staff');
+  document.getElementById('me-ptype').value = ptype;
+  populateMePersons();
+  // Try to select matching person
+  const personSel = document.getElementById('me-person');
+  const entityName = e.entity_name || '';
+  Array.from(personSel.options).forEach(opt => { if(opt.value === entityName) personSel.value = entityName; });
+  selectMeType(e.type || 'positive');
+  document.getElementById('me-head').value = e.head || '';
+  onMeHeadChange();
+  document.getElementById('me-amount').value = e.amount || '';
+  document.getElementById('me-pct').value = e.percentage || '';
+  document.getElementById('me-date').value = e.entry_date || '';
+  document.getElementById('me-notes').value = e.notes || '';
+  openModal('modal-earn');
+}
+
+async function saveEarning() {
+  const id     = document.getElementById('me-id').value;
+  const ptype  = document.getElementById('me-ptype').value;
+  const person = document.getElementById('me-person').value;
+  const head   = document.getElementById('me-head').value;
+  const amount = document.getElementById('me-amount').value;
+  const pct    = document.getElementById('me-pct').value;
+  const date   = document.getElementById('me-date').value;
+  const notes  = document.getElementById('me-notes').value.trim();
+  const isPct  = head === 'Percentage of Revenue';
+
+  if (!person) { toast('Please select a person'); return; }
+  if (!head)   { toast('Please select a head'); return; }
+  if (!isPct && !amount) { toast('Please enter an amount'); return; }
+  if (isPct && !pct)     { toast('Please enter a percentage'); return; }
+  if (!date)   { toast('Please select a date'); return; }
+
+  const entityType = ptype === 'landlord' ? 'property' : ptype;
+  const body = {
+    type:        earnType,
+    head:        head,
+    amount:      amount ? parseFloat(amount) : null,
+    percentage:  pct    ? parseFloat(pct)    : null,
+    notes:       notes  || null,
+    entity_type: entityType,
+    entity_name: person,
+    recorded_by: 'OFFICE',
+    entry_date:  date
+  };
+
+  const btn = document.getElementById('me-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    if (id) await api('/rest/v1/earnings_log?id=eq.'+id, 'PATCH', body);
+    else    await api('/rest/v1/earnings_log', 'POST', body);
+    closeModal('modal-earn');
+    toast(id ? 'Entry updated ✓' : 'Entry added ✓');
+    await loadEarningsLog();
+  } catch(e) { toast('Error: '+e.message); }
+  finally { btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Add Entry'; }
+}
+
+async function deleteEarning(id) {
+  if (!confirm('Delete this earnings entry?')) return;
+  await api('/rest/v1/earnings_log?id=eq.'+id, 'DELETE');
+  toast('Deleted'); loadEarningsLog();
+}
+// ─── END EARNINGS ────────────────────────────────────────────────────────────
 
 // MESSAGES SUB-TABS
 function setMsgTab(tab, btn){
