@@ -312,47 +312,10 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- ── EARNINGS ── -->
-<div class="pg" id="pg-earnings">
-  <div class="pg-head">
-    <div class="pg-title">Earnings</div>
-    <div class="pg-sub">Revenue &amp; expenses for your property</div>
-  </div>
-  <div class="kpi-row">
-    <div class="kpi">
-      <div class="kpi-l">Revenue</div>
-      <div class="kpi-v" style="color:var(--g)" id="e-rev">—</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">Expenses</div>
-      <div class="kpi-v" style="color:var(--r)" id="e-exp">—</div>
-    </div>
-  </div>
-  <div class="card" style="text-align:center;padding:20px">
-    <div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:500">Net Profit / Loss</div>
-    <div id="e-net" style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--g)">—</div>
-    <div id="e-net-note" style="font-size:11px;color:var(--muted);margin-top:5px">Calculating…</div>
-  </div>
-  <div class="sec-hdg">Revenue</div>
-  <div class="card">
-    <div class="tbl-wrap" id="e-rev-table"><div class="empty">Loading…</div></div>
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <span style="font-size:11px;color:var(--muted)">Total</span>
-      <span id="e-rev-total" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--g)">₹0</span>
-    </div>
-  </div>
-  <div class="sec-hdg">Expenses</div>
-  <div class="card">
-    <div class="tbl-wrap" id="e-exp-table"><div class="empty">Loading…</div></div>
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <span style="font-size:11px;color:var(--muted)">Total</span>
-      <span id="e-exp-total" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--r)">₹0</span>
-    </div>
-  </div>
-  <div class="card" style="margin-bottom:6px">
-    <div class="card-ttl">Download Monthly Report</div>
-    <select class="fc" id="e-dl-month" style="margin-bottom:12px"></select>
-    <button class="btn-p" onclick="downloadEarningsReport()">⬇ Download Report</button>
-  </div>
+<div class="pg" id="pg-earnings" style="padding:0">
+  <iframe id="iframe-earnings" src="earnings.html"
+    style="width:100%;min-height:600px;height:600px;border:none;display:block;"
+    scrolling="no"></iframe>
 </div>
 
 <!-- ── MESSAGES ── -->
@@ -576,7 +539,7 @@ function goPage(id, btn) {
   btn.classList.add('on');
   document.querySelector('.content').scrollTop = 0;
   if (id==='description') loadDescription();
-  if (id==='earnings')    loadEarnings();
+  if (id==='earnings')    document.getElementById('iframe-earnings').src = 'earnings.html';
   if (id==='messages')    loadMsgs();
   if (id==='payments')    loadPayments();
   if (id==='assets')      loadLandlordAssets('active');
@@ -924,7 +887,7 @@ async function loadPneRules() {
   el.innerHTML = data.map((r, i) => `
     <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)" id="rule-row-${r.id}">
       <span style="width:22px;height:22px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
-      <span style="flex:1;font-size:14px;color:var(--text)">${esc(r.rule||r.text||r.description||'')}</span>
+      <span style="flex:1;font-size:14px;color:var(--text)">${esc(r.rule_text||'')}</span>
       <button onclick="deleteRule(${r.id})" style="background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--r-l);color:var(--r);font-size:11px;font-weight:600;flex-shrink:0">✕</button>
     </div>
   `).join('');
@@ -941,7 +904,7 @@ function cancelAddRule() {
 async function saveNewRule() {
   const val = document.getElementById('pne-new-rule').value.trim();
   if (!val) { toast('Enter a rule first', true); return; }
-  await api('/rest/v1/property_rules', 'POST', { property_name: PROP, rule: val });
+  await api('/rest/v1/property_rules', 'POST', { property_name: PROP, rule_text: val });
   cancelAddRule();
   loadPneRules();
   toast('Rule added ✓');
@@ -994,10 +957,10 @@ async function loadPneEmergency() {
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--r)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.5 19.79 19.79 0 0 1 1.74 4.34 2 2 0 0 1 3.7 2H6.72a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.69a16 16 0 0 0 6.29 6.29l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-bottom:1px">${esc(c.label||c.name||'Contact')}</div>
-        <div style="font-size:14px;font-weight:500;color:var(--text)">${esc(c.phone||c.number||'—')}</div>
+        <div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-bottom:1px">${esc(c.name||'Contact')}</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text)">${esc(c.phone||'—')}</div>
       </div>
-      <a href="tel:${esc(c.phone||c.number||'')}" style="background:var(--bg);border:none;cursor:pointer;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--br);font-family:inherit;text-decoration:none;flex-shrink:0">Call</a>
+      <a href="tel:${esc(c.phone||'')}" style="background:var(--bg);border:none;cursor:pointer;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--br);font-family:inherit;text-decoration:none;flex-shrink:0">Call</a>
       <button onclick="deleteEmergency(${c.id})" style="background:var(--r-l);border:none;cursor:pointer;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:600;color:var(--r);font-family:inherit">✕</button>
     </div>
   `).join('');
@@ -1016,7 +979,7 @@ async function saveNewEmergency() {
   const label = document.getElementById('pne-emg-name').value.trim();
   const phone = document.getElementById('pne-emg-phone').value.trim();
   if (!label || !phone) { toast('Enter name and phone', true); return; }
-  await api('/rest/v1/emergency_contacts', 'POST', { property_name: PROP, label, phone });
+  await api('/rest/v1/emergency_contacts', 'POST', { property_name: PROP, name: label, phone });
   cancelAddEmergency();
   loadPneEmergency();
   toast('Contact saved ✓');

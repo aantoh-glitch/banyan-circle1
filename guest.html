@@ -378,7 +378,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="pg" id="pg-tips">
 
   <!-- PBB inline embed -->
-  <iframe id="pbb-frame" src="pbb.html" scrolling="no" style="width:100%;border:none;display:block;min-height:60px;transition:height .2s"></iframe>
+  <iframe id="pbb-frame" src="pbb.html?readonly=1" scrolling="no" style="width:100%;border:none;display:block;min-height:60px;transition:height .2s"></iframe>
 
   <!-- Bottom actions -->
   <div style="margin-top:12px">
@@ -1049,12 +1049,46 @@ function closeInfoSheet(){
 }
 async function loadInfoContent(){
   if(!me) return;
+  const prop = encodeURIComponent(me.prop || '');
   try {
-    const data = await api('/rest/v1/property_info?property_id=eq.'+encodeURIComponent(me.prop_id||me.prop)+'&select=rules,notes,emergency_contacts&limit=1');
-    const row = data && data[0];
-    document.getElementById('info-rules-content').innerHTML = row && row.rules ? row.rules.replace(/\n/g,'<br>') : 'No property rules on file.';
-    document.getElementById('info-notes-content').innerHTML = row && row.notes ? row.notes.replace(/\n/g,'<br>') : 'No notes on file.';
-    document.getElementById('info-emergency-content').innerHTML = row && row.emergency_contacts ? row.emergency_contacts.replace(/\n/g,'<br>') : 'No emergency contacts on file.';
+    const [rules, notesData, contacts] = await Promise.all([
+      api('/rest/v1/property_rules?property_name=eq.'+prop+'&order=created_at'),
+      api('/rest/v1/property_notes?property_name=eq.'+prop+'&limit=1'),
+      api('/rest/v1/emergency_contacts?property_name=eq.'+prop+'&order=created_at')
+    ]);
+    // Rules — numbered list, read-only
+    const rulesEl = document.getElementById('info-rules-content');
+    if(rules && rules.length){
+      rulesEl.style.padding='0';rulesEl.style.background='none';
+      rulesEl.innerHTML = rules.map((r,i)=>
+        '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)">'+
+        '<span style="width:20px;height:20px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+(i+1)+'</span>'+
+        '<span style="font-size:13px;line-height:1.55;color:var(--text)">'+r.rule_text+'</span></div>'
+      ).join('');
+    } else {
+      rulesEl.textContent = 'No property rules on file.';
+    }
+    // Notes — plain text, read-only
+    const notesEl = document.getElementById('info-notes-content');
+    const note = notesData && notesData[0];
+    notesEl.innerHTML = note && note.notes ? note.notes.replace(/\n/g,'<br>') : 'No notes on file.';
+    // Emergency contacts — name + role + phone + Call link, read-only
+    const emgEl = document.getElementById('info-emergency-content');
+    if(contacts && contacts.length){
+      emgEl.style.padding='0';emgEl.style.background='none';
+      emgEl.innerHTML = contacts.map(c=>
+        '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06)">'+
+        '<div style="flex:1">'+
+          '<div style="font-size:13px;font-weight:500;color:var(--text)">'+(c.name||'')+'</div>'+
+          (c.role?'<div style="font-size:11px;color:var(--muted)">'+(c.role)+'</div>':'')+
+          '<div style="font-size:13px;color:var(--muted)">'+(c.phone||'')+'</div>'+
+        '</div>'+
+        '<a href="tel:'+(c.phone||'').replace(/\s/g,'')+'" style="padding:6px 12px;background:var(--g-l);border:1px solid rgba(59,109,17,.2);border-radius:7px;font-size:12px;font-weight:500;color:var(--g);text-decoration:none;flex-shrink:0">Call</a>'+
+        '</div>'
+      ).join('');
+    } else {
+      emgEl.textContent = 'No emergency contacts on file.';
+    }
   } catch(e){
     const msg = 'Unable to load — please contact your host.';
     document.getElementById('info-rules-content').textContent=msg;
