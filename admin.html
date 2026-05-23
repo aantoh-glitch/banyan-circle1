@@ -96,7 +96,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="pg on" id="pg-properties">
   <!-- Property selector -->
   <div id="prop-selector">
-    <div class="pg-title" style="margin-bottom:20px">Properties</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div class="pg-title" style="margin:0">Properties</div>
+      <button class="btn-p" onclick="openAddPropertyPortal()" style="display:flex;align-items:center;gap:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Property
+      </button>
+    </div>
     <div id="props-list" style="display:flex;flex-direction:column;gap:12px;max-width:460px">Loading…</div>
   </div>
   <!-- Inline landlord portal iframe -->
@@ -636,6 +642,12 @@ function closePropPortal(){
   document.getElementById('prop-portal-frame').src='';
   document.getElementById('prop-iframe-view').style.display='none';
   document.getElementById('prop-selector').style.display='';
+}
+function openAddPropertyPortal(){
+  document.getElementById('prop-selector').style.display='none';
+  document.getElementById('prop-portal-label').textContent='Add Property';
+  document.getElementById('prop-portal-frame').src='landlord.html';
+  document.getElementById('prop-iframe-view').style.display='flex';
 }
 
 // LANDLORDS
