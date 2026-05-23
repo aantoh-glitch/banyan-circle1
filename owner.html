@@ -96,22 +96,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .comp-meta{font-size:11px;color:var(--muted);margin-top:4px}
 .comp-status{flex-shrink:0}
 
-/* Comms */
-.msg-bubble{margin-bottom:10px;display:flex}
-.msg-bubble.me{justify-content:flex-end}
-.msg-inner{max-width:72%;padding:10px 14px;border-radius:12px;border:1px solid var(--border)}
-.msg-bubble.me .msg-inner{background:#222;color:#fff;border-color:#222}
-.msg-from{font-size:11px;opacity:.65;margin-bottom:3px}
-.msg-text{font-size:13px;line-height:1.55;white-space:pre-wrap}
 
-/* Section C modal */
+/* Modal */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:20px}
 .modal.on{display:flex}
 .modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto}
 .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.row-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 .today-tag{display:inline-block;background:#FFF3CD;color:#856404;font-size:10px;font-weight:500;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
@@ -141,20 +132,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <svg viewBox="0 0 24 24"><path d="M9 21H3v-6M14 10L3 21"/><path d="M3 12V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>Check-outs Due
       <span class="sb-badge" id="badge-checkouts" style="display:none">0</span>
     </button>
-    <button class="sb-btn" onclick="goPage('complaints',this)">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Complaints
-      <span class="sb-badge" id="badge-complaints" style="display:none">0</span>
-    </button>
-    <button class="sb-btn" onclick="goPage('requests',this)">
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Requests
-      <span class="sb-badge" id="badge-requests" style="display:none">0</span>
-    </button>
-    <button class="sb-btn" onclick="goPage('comms',this)">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>Landlord Comms
-    </button>
-    <button class="sb-btn" onclick="goPage('registrations',this)">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Registrations
-    </button>
+
     <button class="sb-btn" onclick="goPage('staff-mgmt',this)">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff
     </button>
@@ -197,16 +175,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="stat-v amber" id="s-co-today">—</div>
       <div class="stat-sub" id="s-co-sub">—</div>
     </div>
-    <div class="stat" onclick="goPageByName('complaints')">
-      <div class="stat-l">Open complaints</div>
-      <div class="stat-v" id="s-complaints">—</div>
-      <div class="stat-sub">Needs attention</div>
-    </div>
-    <div class="stat" onclick="goPageByName('requests')">
-      <div class="stat-l">Pending requests</div>
-      <div class="stat-v" id="s-requests">—</div>
-      <div class="stat-sub">Housekeeping tasks</div>
-    </div>
     <div class="stat" onclick="goPageByName('staff-mgmt')">
       <div class="stat-l">Staff in today</div>
       <div class="stat-v green" id="s-staff-in">—</div>
@@ -231,10 +199,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
   </div>
 
-  <div class="card" style="margin-top:16px">
-    <div class="card-ttl">Open complaints — quick view</div>
-    <div id="dash-complaints"><div class="empty">Loading…</div></div>
-  </div>
 </div>
 
 <!-- CURRENT GUESTS -->
@@ -270,55 +234,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
-<!-- COMPLAINTS -->
-<div class="pg" id="pg-complaints">
-  <div class="pg-title">Complaints</div>
-  <div class="pg-sub">All guest complaints — open and resolved</div>
-  <div style="display:flex;gap:8px;margin-bottom:18px">
-    <button class="ptab on" id="comp-tab-open" onclick="setCompFilter('open',this)">Open</button>
-    <button class="ptab" id="comp-tab-all" onclick="setCompFilter('all',this)">All</button>
-  </div>
-  <div id="comp-list"><div class="empty">Loading…</div></div>
-</div>
-
-<!-- REQUESTS (housekeeping tasks) -->
-<div class="pg" id="pg-requests">
-  <div class="pg-title">Requests</div>
-  <div class="pg-sub">Housekeeping tasks and service requests from staff</div>
-  <div class="prop-tabs" id="req-tabs"></div>
-  <div style="display:flex;gap:8px;margin-bottom:18px">
-    <button class="ptab on" id="req-tab-pending" onclick="setReqFilter('pending',this)">Pending</button>
-    <button class="ptab" id="req-tab-all" onclick="setReqFilter('all',this)">All</button>
-  </div>
-  <div class="card">
-    <div class="card-ttl" id="req-prop-label">Tasks</div>
-    <div id="req-list"><div class="empty">Loading…</div></div>
-  </div>
-</div>
-
-<!-- LANDLORD COMMS -->
-<div class="pg" id="pg-comms">
-  <div class="pg-title">Landlord Comms</div>
-  <div class="pg-sub">Internal thread between you and the property landlords</div>
-  <div class="prop-tabs" id="comms-tabs"></div>
-  <div class="card">
-    <div class="card-ttl" id="comms-prop-label">Thread</div>
-    <div id="comms-msgs" style="max-height:440px;overflow-y:auto;margin-bottom:14px"><div class="empty">Loading…</div></div>
-    <div style="display:flex;gap:8px">
-      <input class="fc" id="comms-input" type="text" placeholder="Write a message…" style="flex:1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCommsMsg();}"/>
-      <button class="btn-p" onclick="sendCommsMsg()">Send</button>
-    </div>
-  </div>
-</div>
-
-<!-- REGISTRATIONS (guest check-in records + Section C) -->
-<div class="pg" id="pg-registrations">
-  <div class="pg-title">Guest Registrations</div>
-  <div class="pg-sub">Submitted check-in forms, ID proofs and Heritance Section C</div>
-  <div class="card">
-    <div id="reg-table"><div class="empty">Loading…</div></div>
-  </div>
-</div>
 
 <!-- STAFF MANAGEMENT -->
 <div class="pg" id="pg-staff-mgmt">
@@ -448,59 +363,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 </div><!-- main -->
 </div><!-- layout -->
 
-<!-- Section C modal -->
-<div class="modal" id="sc-modal">
-  <div class="modal-card">
-    <div class="modal-ttl">Section C — Heritance</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:18px" id="sc-sub">Booking & billing</div>
-    <input type="hidden" id="sc-checkin-id"/>
-    <input type="hidden" id="sc-row-id"/>
-    <div class="row-grid-3">
-      <div class="fg"><label class="fl">Num guests</label><input class="fc" id="sc-guests" type="number"/></div>
-      <div class="fg"><label class="fl">Kids</label><input class="fc" id="sc-kids" type="number"/></div>
-      <div class="fg"><label class="fl">Rooms</label><input class="fc" id="sc-rooms" type="number"/></div>
-    </div>
-    <div class="row-grid-3">
-      <div class="fg"><label class="fl">Plan</label>
-        <select class="fc" id="sc-plan"><option value="">—</option><option>CP</option><option>EP</option><option>MAP</option><option>AP</option></select>
-      </div>
-      <div class="fg"><label class="fl">Extra beds</label><input class="fc" id="sc-beds" type="number"/></div>
-      <div class="fg"><label class="fl">Booking from</label>
-        <select class="fc" id="sc-from"><option value="">—</option><option>Airbnb</option><option>Booking.com</option><option>Direct</option><option>Agent</option><option>Other</option></select>
-      </div>
-    </div>
-    <div class="row-grid-3">
-      <div class="fg"><label class="fl">Booking mode</label>
-        <select class="fc" id="sc-mode"><option value="">—</option><option>Online</option><option>Phone</option><option>Walk-in</option></select>
-      </div>
-      <div class="fg"><label class="fl">Payment status</label>
-        <select class="fc" id="sc-paystatus"><option value="">—</option><option>paid</option><option>pending</option><option>partial</option></select>
-      </div>
-      <div class="fg"></div>
-    </div>
-    <div class="row-grid">
-      <div class="fg"><label class="fl">Billing (₹)</label><input class="fc" id="sc-bill" type="number" step="0.01"/></div>
-      <div class="fg"><label class="fl">GST (₹)</label><input class="fc" id="sc-gst" type="number" step="0.01"/></div>
-    </div>
-    <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="sc-notes" style="min-height:70px"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeSC()">Cancel</button>
-      <button class="btn-p" onclick="saveSC()">Save Section C</button>
-    </div>
-  </div>
-</div>
-
-<!-- Registration detail modal -->
-<div class="modal" id="reg-detail-modal" style="align-items:flex-start;padding:28px 20px">
-  <div class="modal-card" style="max-width:900px;width:100%;padding:28px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div class="modal-ttl">Guest Registration</div>
-      <button class="btn-sec" onclick="closeModal('reg-detail-modal')">✕ Close</button>
-    </div>
-    <div id="rd-body"></div>
-  </div>
-</div>
-
 <!-- Feedback modal -->
 <div class="modal" id="feedback-modal">
   <div class="modal-card" style="max-width:580px">
@@ -557,10 +419,6 @@ function goPage(id, btn){
   if(id==='guests')         loadCurrentGuests();
   if(id==='checkins-due')   loadCheckinsDue();
   if(id==='checkouts-due')  loadCheckoutsDue();
-  if(id==='complaints')     loadComplaints();
-  if(id==='requests')       loadRequests();
-  if(id==='comms')          loadComms();
-  if(id==='registrations')  loadRegistrations();
   if(id==='staff-mgmt')     loadStaffMgmt();
   if(id==='bookings')       loadBookings();
   if(id==='billing')        loadBillingGuests();
@@ -575,13 +433,11 @@ function goPageByName(id){
 // ── DASHBOARD ──
 async function loadDashboard(){
   await ensureProps();
-  const [currentGuests, allGuests, ciToday, coToday, openComps, pendReqs, staffIn, feedback] = await Promise.all([
+  const [currentGuests, allGuests, ciToday, coToday, staffIn, feedback] = await Promise.all([
     api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&select=id,name,property_name'),
     api('/rest/v1/guest_profiles?check_in=lte.'+TODAY+'&check_out=gte.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
     api('/rest/v1/guest_profiles?check_in=eq.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
     api('/rest/v1/guest_profiles?check_out=eq.'+TODAY+'&select=id,name,property_name,check_in,check_out'),
-    api('/rest/v1/guest_complaints?status=eq.open&select=id,guest_name,complaint,created_at,property_id'),
-    api('/rest/v1/housekeeping_tasks?status=neq.completed&select=id&limit=100'),
     api('/rest/v1/attendance?date=eq.'+TODAY+'&select=id,staff_id'),
     api('/rest/v1/guest_feedback?select=id&limit=1000'),
   ]);
@@ -589,24 +445,18 @@ async function loadDashboard(){
   const cg = currentGuests||[];
   const ci = ciToday||[];
   const co = coToday||[];
-  const comps = openComps||[];
-  const reqs = pendReqs||[];
 
   document.getElementById('s-guests').textContent = cg.length;
   document.getElementById('s-ci-today').textContent = ci.length;
   document.getElementById('s-ci-sub').textContent = ci.length===1 ? '1 guest' : ci.length+' guests';
   document.getElementById('s-co-today').textContent = co.length;
   document.getElementById('s-co-sub').textContent = co.length===1 ? '1 guest' : co.length+' guests';
-  document.getElementById('s-complaints').textContent = comps.length;
-  document.getElementById('s-requests').textContent = reqs.length;
   document.getElementById('s-staff-in').textContent = (staffIn||[]).length;
   document.getElementById('s-feedback').textContent = (feedback||[]).length;
 
   // Update badges
   updateBadge('badge-checkins', ci.length);
   updateBadge('badge-checkouts', co.length);
-  updateBadge('badge-complaints', comps.length);
-  updateBadge('badge-requests', reqs.length);
 
   // Arrivals snapshot
   const arrEl = document.getElementById('dash-arrivals');
@@ -625,22 +475,6 @@ async function loadDashboard(){
       <div class="gav">${ini(g.name)}</div>
       <div><div class="g-name">${g.name}</div><div class="g-meta">${g.property_name||'—'} · Checked in ${fmtDate(g.check_in)}</div></div>
     </div>`).join('');
-
-  // Complaints quick view
-  const cmpEl = document.getElementById('dash-complaints');
-  if(!comps.length){ cmpEl.innerHTML='<div class="empty">No open complaints 🎉</div>'; }
-  else {
-    cmpEl.innerHTML = comps.slice(0,5).map(c=>`
-      <div class="comp-row">
-        <div class="comp-body">
-          <div>${c.guest_name||'Guest'}</div>
-          <div style="margin-top:3px;color:var(--text)">${c.complaint}</div>
-          <div class="comp-meta">${fmtDT(c.created_at)}</div>
-        </div>
-        <div class="comp-status"><span class="bdg bdg-r">open</span></div>
-      </div>`).join('');
-    if(comps.length>5) cmpEl.innerHTML += `<div style="font-size:13px;color:var(--muted);padding:10px 0">+${comps.length-5} more — <a href="#" onclick="goPageByName('complaints');return false" style="color:var(--br)">view all</a></div>`;
-  }
 }
 
 function updateBadge(id, count){
@@ -717,318 +551,9 @@ async function loadCheckoutsDue(){
 }
 window.setCoProp = p => { coProp=p; loadCheckoutsDue(); };
 
-// ── COMPLAINTS ──
-let compFilter = 'open';
-function setCompFilter(f, btn){
-  compFilter = f;
-  document.querySelectorAll('#pg-complaints .ptab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  loadComplaints();
-}
-async function loadComplaints(){
-  const path = compFilter==='open'
-    ? '/rest/v1/guest_complaints?status=eq.open&select=*&order=created_at.desc'
-    : '/rest/v1/guest_complaints?select=*&order=created_at.desc';
-  const data = await api(path)||[];
-  const el = document.getElementById('comp-list');
-  if(!data.length){ el.innerHTML='<div class="card"><div class="empty">No complaints '+compFilter+'</div></div>'; return; }
-  const statusBdg = s => s==='open'?'bdg-r':s==='in_progress'?'bdg-a':'bdg-g';
-  el.innerHTML = `<div class="card"><table class="tbl">
-    <thead><tr><th>Guest</th><th>Property</th><th>Complaint</th><th>Date</th><th>Status</th><th>Assigned to</th><th></th></tr></thead>
-    <tbody>${data.map(c=>`<tr>
-      <td style="font-weight:500">${c.guest_name||'Guest'}</td>
-      <td style="color:var(--muted)">${c.property_name||c.property_id||'—'}</td>
-      <td style="max-width:240px">${c.complaint}</td>
-      <td style="color:var(--muted)">${fmtDT(c.created_at)}</td>
-      <td><span class="bdg ${statusBdg(c.status)}">${(c.status||'open').replace('_',' ')}</span></td>
-      <td style="color:var(--muted)">${c.assigned_to||'—'}</td>
-      <td><button class="btn-sm" onclick="resolveComplaint('${c.id}')" ${c.status==='resolved'?'disabled style="opacity:.4"':''}>Mark resolved</button></td>
-    </tr>`).join('')}
-    </tbody></table></div>`;
-}
-async function resolveComplaint(id){
-  await api('/rest/v1/guest_complaints?id=eq.'+id,'PATCH',{status:'resolved'});
-  loadComplaints();
-  loadDashboardBadges();
-}
 
-// ── REQUESTS (housekeeping tasks) ──
-let reqFilter = 'pending', reqProp = '';
-function setReqFilter(f, btn){
-  reqFilter = f;
-  document.querySelectorAll('#pg-requests .ptab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  loadRequests();
-}
-async function loadRequests(){
-  await ensureProps();
-  if(!reqProp) reqProp = PROPS[0]?.name||'all';
-  renderPropTabsWithAll('req-tabs', reqProp, 'setReqProp');
-  document.getElementById('req-prop-label').textContent = reqProp==='all'?'All tasks':'Tasks at '+reqProp;
-  let path = '/rest/v1/housekeeping_tasks?select=*&order=created_at.desc';
-  if(reqProp!=='all') path += '&property_id=eq.'+encodeURIComponent(reqProp);
-  if(reqFilter==='pending') path += '&status=neq.completed';
-  const data = await api(path)||[];
-  const el = document.getElementById('req-list');
-  if(!data.length){ el.innerHTML='<div class="empty">No '+(reqFilter==='pending'?'pending ':'')+'tasks</div>'; return; }
-  const statusBdg = s => s==='completed'?'bdg-g':s==='in_progress'?'bdg-a':'bdg-r';
-  el.innerHTML = data.map(t=>`
-    <div class="comp-row">
-      <div class="comp-body">
-        <div style="font-weight:500">${t.task_description||t.task||'Task'}</div>
-        <div class="comp-meta">${t.property_id||'—'} · Assigned to: ${t.assigned_to||'Unassigned'} · ${fmtDT(t.created_at)}</div>
-        ${t.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px">${t.notes}</div>`:''}
-      </div>
-      <div class="comp-status"><span class="bdg ${statusBdg(t.status)}">${(t.status||'pending').replace('_',' ')}</span></div>
-    </div>`).join('');
-}
-window.setReqProp = p => { reqProp=p; loadRequests(); };
 
-// ── LANDLORD COMMS ──
-let commsProp = '';
-async function loadComms(){
-  await ensureProps();
-  if(!commsProp) commsProp = PROPS[0]?.name||'';
-  renderPropTabs('comms-tabs', commsProp, 'setCommsProp');
-  document.getElementById('comms-prop-label').textContent = commsProp ? 'Thread · '+commsProp : 'Thread';
-  const data = await api('/rest/v1/internal_messages?property_name=eq.'+encodeURIComponent(commsProp)+'&order=created_at.asc')||[];
-  const el = document.getElementById('comms-msgs');
-  if(!data.length){ el.innerHTML='<div class="empty">No messages yet for this property</div>'; return; }
-  el.innerHTML = data.map(m=>{
-    const isMe = m.from_role==='owner' || m.from_role==='manager';
-    return `<div class="msg-bubble${isMe?' me':''}">
-      <div class="msg-inner">
-        <div class="msg-from">${m.from_role==='landlord'?'Landlord':'Manager'} · ${m.from_name||''} · ${fmtDT(m.created_at)}</div>
-        <div class="msg-text">${m.message}</div>
-      </div>
-    </div>`;
-  }).join('');
-  el.scrollTop = el.scrollHeight;
-}
-window.setCommsProp = p => { commsProp=p; loadComms(); };
 
-async function sendCommsMsg(){
-  const txt = document.getElementById('comms-input').value.trim();
-  if(!txt) return;
-  await api('/rest/v1/internal_messages','POST',{
-    property_name: commsProp,
-    from_role: 'manager',
-    from_name: me.name||'Manager',
-    message: txt,
-  });
-  document.getElementById('comms-input').value='';
-  loadComms();
-}
-
-// ── REGISTRATIONS (check-in records) ──
-let CURRENT_REG = null;
-
-async function loadRegistrations(){
-  // Exclude form_data from list query — it can be large (base64 ID images)
-  const [data, sectionC] = await Promise.all([
-    api('/rest/v1/guest_checkins?select=id,guest_name,property_name,travelled_from,travelling_to,num_guests,id_proof_urls,checked_in_at&order=checked_in_at.desc'),
-    api('/rest/v1/guest_section_c?select=*'),
-  ]);
-  const ci = data||[];
-  const scMap = {};
-  (sectionC||[]).forEach(s=>{ scMap[s.guest_checkin_id]=s; });
-  const el = document.getElementById('reg-table');
-  if(!ci.length){ el.innerHTML='<div class="empty">No check-in registrations submitted yet</div>'; return; }
-  el.innerHTML = `<table class="tbl">
-    <thead><tr><th>Guest</th><th>Property</th><th>Submitted</th><th>From → To</th><th>Guests</th><th>IDs</th><th>§C</th><th></th></tr></thead>
-    <tbody>${ci.map(c=>{
-      const sc = scMap[c.id];
-      const idCount=(c.id_proof_urls||[]).length;
-      const idNames=(c.id_proof_urls||[]).join(', ')||'—';
-      const scBdg = sc ? `<span class="bdg bdg-g">Set</span>` : `<span class="bdg bdg-a">Pending</span>`;
-      return `<tr>
-        <td style="font-weight:500">${c.guest_name||'—'}</td>
-        <td>${c.property_name||'—'}</td>
-        <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDT(c.checked_in_at)}</td>
-        <td style="font-size:12px">${c.travelled_from||'—'} → ${c.travelling_to||'—'}</td>
-        <td style="text-align:center">${c.num_guests||1}</td>
-        <td title="${idNames}">${idCount?`<span class="bdg bdg-b">${idCount} doc${idCount>1?'s':''}</span>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
-        <td>${scBdg}</td>
-        <td style="white-space:nowrap">
-          <button class="btn-sm" style="background:var(--br-l);color:var(--br)" onclick="openRegDetail('${c.id}')">View</button>
-          <button class="btn-sm" style="margin-top:4px" onclick='openSC(${JSON.stringify({cid:c.id,name:c.guest_name,prop:c.property_name}).replace(/'/g,"&#39;")})'>${sc?'Edit':'Add'} §C</button>
-        </td>
-      </tr>`;
-    }).join('')}
-    </tbody></table>`;
-}
-
-// ── REGISTRATION DETAIL MODAL ──
-function renderDocCard(doc, idx, section){
-  if(!doc) return '';
-  const isImage=doc.type&&doc.type.startsWith('image/');
-  return `<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
-    ${isImage&&doc.data?`<img src="${doc.data}" style="width:100%;max-height:220px;object-fit:contain;display:block;background:#f5f5f3"/>`:
-      `<div style="padding:22px;text-align:center;background:#f5f5f3;color:var(--muted)">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-        <div style="font-size:11px;margin-top:6px">PDF Document</div>
-      </div>`}
-    <div style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
-      <div>
-        <div style="font-size:13px;font-weight:500">${section} ${idx+1}</div>
-        <div style="font-size:11px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${doc.name||'Document'}</div>
-      </div>
-      ${doc.data?`<button class="btn-sm" style="background:var(--br-l);color:var(--br)" onclick="downloadDoc(${idx},'${section.toLowerCase()}')">Download</button>`:'<span style="font-size:11px;color:var(--muted)">No data</span>'}
-    </div>
-  </div>`;
-}
-
-function downloadDoc(idx, section){
-  const fd=CURRENT_REG?.fd;
-  if(!fd) return;
-  const docs=section==='passport'?(fd.foreign?.passport_docs||[]):(fd.id_proofs||[]);
-  const doc=docs[idx];
-  if(!doc?.data){toast('No file data available');return;}
-  const a=document.createElement('a');
-  a.href=doc.data;
-  a.download=doc.name||'document';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-async function openRegDetail(cid){
-  CURRENT_REG=null;
-  const body=document.getElementById('rd-body');
-  const modal=document.getElementById('reg-detail-modal');
-  body.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted)">Loading…</div>';
-  modal.classList.add('on');
-  const [ciArr,scArr]=await Promise.all([
-    api('/rest/v1/guest_checkins?id=eq.'+cid+'&select=*'),
-    api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+cid+'&select=*'),
-  ]);
-  const c=ciArr&&ciArr[0]; const sc=scArr&&scArr[0];
-  if(!c){body.innerHTML='<div class="empty">Record not found</div>';return;}
-  const fd=c.form_data||{};
-  CURRENT_REG={c,sc,fd};
-  const idProofs=fd.id_proofs||[];
-  const passportDocs=fd.foreign?.passport_docs||[];
-  const r=(l,v)=>v?`<tr><td style="color:var(--muted);font-size:12px;width:42%;padding:5px 0;vertical-align:top;border-bottom:1px solid var(--border)">${l}</td><td style="font-size:13px;padding:5px 0 5px 8px;border-bottom:1px solid var(--border);font-weight:500">${v}</td></tr>`:'';
-  const secHdr=t=>`<div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--br-l)">${t}</div>`;
-  body.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;min-height:300px">
-      <div style="overflow-y:auto;max-height:72vh">
-        ${secHdr('Section A — Guest Details')}
-        <table style="width:100%;border-collapse:collapse">
-          ${r('Name',c.guest_name)}
-          ${r('Property',c.property_name)}
-          ${r('Organisation',fd.organisation)}
-          ${r('Permanent address',fd.permanent_address)}
-          ${r('Email',fd.email)}
-          ${r('Mobile',fd.mobile)}
-          ${r('Date of birth',fd.dob)}
-          ${r('Arrived from',c.travelled_from)}
-          ${r('Proceeding to',c.travelling_to)}
-          ${r('Arrival',(fd.arrival_date||'')+(fd.arrival_time?' · '+fd.arrival_time:''))}
-          ${r('Departure',(fd.departure_date||'')+(fd.departure_time?' · '+fd.departure_time:''))}
-          ${r('Group size',String(c.num_guests||1))}
-          ${r('Payment mode',fd.payment_mode)}
-          ${r('Dietary',fd.dietary)}
-          ${r('Special occasion',fd.special_occasion)}
-          ${r('Comfort requests',fd.comfort_requests)}
-          ${r('Declaration',fd.declaration?'Agreed ✓':'')}
-          ${r('Submitted',new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN'))}
-        </table>
-        ${fd.is_foreign&&fd.foreign?`
-        ${secHdr('Form B — Foreign National')}
-        <table style="width:100%;border-collapse:collapse">
-          ${r('Name in caps',fd.foreign.name_caps)}
-          ${r('Nationality',fd.foreign.nationality)}
-          ${r('Passport no',fd.foreign.passport_no)}
-          ${r('Passport issued',(fd.foreign.passport_date||'')+(fd.foreign.passport_place?' · '+fd.foreign.passport_place:''))}
-          ${r('Address in India',fd.foreign.india_address)}
-          ${r('India arrival',fd.foreign.india_arrival)}
-          ${r('Employed in India',fd.foreign.employed_india)}
-          ${r('Duration',fd.foreign.duration_india)}
-          ${r('Arrived from',fd.foreign.arrived_from)}
-          ${r('Reg cert',fd.foreign.reg_cert)}
-          ${r('Purpose',fd.foreign.purpose)}
-          ${r('Checkout',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
-          ${r('Proceeding to',fd.foreign.proceed_address)}
-        </table>`:''}
-        ${sc?`
-        ${secHdr('Section C — Office')}
-        <table style="width:100%;border-collapse:collapse">
-          ${r('Guests / Kids / Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].filter(v=>v!==null&&v!==undefined).join(' / '))}
-          ${r('Plan',sc.plan)}
-          ${r('Extra beds',sc.extra_beds?String(sc.extra_beds):'')}
-          ${r('Booking source',sc.booking_from)}
-          ${r('Booking mode',sc.booking_mode)}
-          ${r('Payment status',sc.payment_status)}
-          ${r('Billing',sc.billing_amount?fmt(sc.billing_amount):'')}
-          ${r('GST',sc.gst_amount?fmt(sc.gst_amount):'')}
-          ${r('Notes',sc.notes)}
-        </table>`:''}
-      </div>
-      <div style="overflow-y:auto;max-height:72vh">
-        ${secHdr('ID Documents'+(idProofs.length?' ('+idProofs.length+')':''))}
-        ${idProofs.length?idProofs.map((doc,i)=>renderDocCard(doc,i,'ID')).join(''):'<div style="font-size:13px;color:var(--muted);padding:12px 0">No ID documents uploaded</div>'}
-        ${passportDocs.length?`
-        ${secHdr('Passport Copy')}
-        ${passportDocs.map((doc,i)=>renderDocCard(doc,i,'passport')).join('')}`:''}
-      </div>
-    </div>
-    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn-sec" onclick="closeModal('reg-detail-modal')">Close</button>
-      <button class="btn-p" onclick="downloadRegPDF('${c.id}')">Print PDF</button>
-    </div>`;
-}
-
-// ── Section C modal ──
-async function openSC(info){
-  document.getElementById('sc-checkin-id').value = info.cid;
-  document.getElementById('sc-sub').textContent = `${info.name||'Guest'} · ${info.prop||''}`;
-  ['sc-guests','sc-kids','sc-rooms','sc-beds','sc-bill','sc-gst','sc-notes'].forEach(i=>document.getElementById(i).value='');
-  ['sc-plan','sc-from','sc-mode','sc-paystatus'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('sc-row-id').value='';
-  const ex = await api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+info.cid+'&select=*');
-  if(ex&&ex.length){
-    const s=ex[0];
-    document.getElementById('sc-row-id').value=s.id;
-    document.getElementById('sc-guests').value=s.num_guests||'';
-    document.getElementById('sc-kids').value=s.num_kids||'';
-    document.getElementById('sc-rooms').value=s.num_rooms||'';
-    document.getElementById('sc-beds').value=s.extra_beds||'';
-    document.getElementById('sc-bill').value=s.billing_amount||'';
-    document.getElementById('sc-gst').value=s.gst_amount||'';
-    document.getElementById('sc-notes').value=s.notes||'';
-    document.getElementById('sc-plan').value=s.plan||'';
-    document.getElementById('sc-from').value=s.booking_from||'';
-    document.getElementById('sc-mode').value=s.booking_mode||'';
-    document.getElementById('sc-paystatus').value=s.payment_status||'';
-  }
-  document.getElementById('sc-modal').classList.add('on');
-}
-function closeSC(){ document.getElementById('sc-modal').classList.remove('on'); }
-async function saveSC(){
-  const cid=document.getElementById('sc-checkin-id').value;
-  const rowId=document.getElementById('sc-row-id').value;
-  const body={
-    guest_checkin_id:cid,
-    num_guests:parseInt(document.getElementById('sc-guests').value)||null,
-    num_kids:parseInt(document.getElementById('sc-kids').value)||null,
-    num_rooms:parseInt(document.getElementById('sc-rooms').value)||null,
-    plan:document.getElementById('sc-plan').value||null,
-    extra_beds:parseInt(document.getElementById('sc-beds').value)||null,
-    booking_from:document.getElementById('sc-from').value||null,
-    booking_mode:document.getElementById('sc-mode').value||null,
-    payment_status:document.getElementById('sc-paystatus').value||null,
-    billing_amount:parseFloat(document.getElementById('sc-bill').value)||null,
-    gst_amount:parseFloat(document.getElementById('sc-gst').value)||null,
-    notes:document.getElementById('sc-notes').value.trim()||null,
-    updated_by:me.name,
-    updated_at:new Date().toISOString(),
-  };
-  if(rowId) await api('/rest/v1/guest_section_c?id=eq.'+rowId,'PATCH',body);
-  else      await api('/rest/v1/guest_section_c','POST',body);
-  closeSC();
-  loadRegistrations();
-}
 
 // ── Property tab helpers ──
 function renderPropTabs(containerId, current, onClickFn){
@@ -1041,17 +566,6 @@ function renderPropTabsWithAll(containerId, current, onClickFn){
     + PROPS.map(p=>`<button class="ptab ${current===p.name?'on':''}" onclick="${onClickFn}('${p.name.replace(/'/g,"\\'")}')">${p.name}</button>`).join('');
 }
 
-// Refresh badges without full reload
-async function loadDashboardBadges(){
-  const [comps, reqs] = await Promise.all([
-    api('/rest/v1/guest_complaints?status=eq.open&select=id'),
-    api('/rest/v1/housekeeping_tasks?status=neq.completed&select=id&limit=100'),
-  ]);
-  updateBadge('badge-complaints', (comps||[]).length);
-  updateBadge('badge-requests', (reqs||[]).length);
-  document.getElementById('s-complaints').textContent = (comps||[]).length;
-  document.getElementById('s-requests').textContent = (reqs||[]).length;
-}
 
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
@@ -1068,92 +582,6 @@ async function showFeedbackModal(){
   </div>`).join('');
 }
 
-// ── REGISTRATION PDF (rich print) ──
-async function downloadRegPDF(cid){
-  toast('Building PDF…');
-  // If already loaded in CURRENT_REG and it matches, reuse; else fetch
-  let c,sc,fd;
-  if(CURRENT_REG&&CURRENT_REG.c&&CURRENT_REG.c.id===cid){
-    ({c,sc,fd}=CURRENT_REG);
-  } else {
-    const [ciArr,scArr]=await Promise.all([
-      api('/rest/v1/guest_checkins?id=eq.'+cid+'&select=*'),
-      api('/rest/v1/guest_section_c?guest_checkin_id=eq.'+cid+'&select=*'),
-    ]);
-    c=ciArr&&ciArr[0]; sc=scArr&&scArr[0];
-    if(!c){toast('Record not found');return;}
-    fd=c.form_data||{};
-  }
-  const idProofs=fd.id_proofs||[];
-  const passportDocs=fd.foreign?.passport_docs||[];
-
-  // Render a document for print: inline image or filename note
-  function printDoc(doc,label){
-    if(!doc) return '';
-    if(doc.data&&doc.type&&doc.type.startsWith('image/')){
-      return `<div style="margin-bottom:14px;page-break-inside:avoid"><div style="font-size:10px;color:#5F5E5A;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">${label}</div><div style="font-size:10px;color:#5F5E5A;margin-bottom:5px">${doc.name||''}</div><img style="max-width:100%;max-height:260px;border:1px solid #ddd;border-radius:4px;display:block" src="${doc.data}"/></div>`;
-    }
-    return `<div style="margin-bottom:10px;padding:10px 12px;background:#f5f5f3;border:1px solid #ddd;border-radius:6px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#5F5E5A;margin-bottom:3px">${label}</div><div style="font-size:12px;font-weight:500">${doc.name||'Document'}</div><div style="font-size:10px;color:#5F5E5A">Attached separately — not printable inline</div></div>`;
-  }
-
-  const row=(l,v)=>`<tr><td>${l}</td><td>${v||'—'}</td></tr>`;
-  const fname=(c.guest_name||'guest').slice(0,4).toUpperCase()+new Date().toLocaleDateString('en-GB').replace(/\//g,'').slice(0,6);
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${fname}</title>
-  <style>body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:32px;max-width:800px;margin:0 auto}h1{font-size:20px;border-bottom:2px solid #993C1D;padding-bottom:6px;margin-bottom:16px;color:#993C1D}h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5F5E5A;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:3px}table{width:100%;border-collapse:collapse;margin-bottom:12px}td{padding:5px 2px;font-size:12px;vertical-align:top}td:first-child{color:#5F5E5A;width:40%}td:last-child{font-weight:500}.meta{font-size:10px;color:#5F5E5A;margin-top:24px;border-top:1px solid #ddd;padding-top:8px}@media print{body{padding:16px}}</style></head><body>
-  <h1>Heritance — Guest Registration</h1>
-  <h2>Section A — Guest Details</h2>
-  <table>
-    ${row('Guest name',c.guest_name)}
-    ${row('Property',c.property_name)}
-    ${row('Organisation / Designation',fd.organisation)}
-    ${row('Permanent address',fd.permanent_address)}
-    ${row('Email',fd.email)}
-    ${row('Mobile',fd.mobile)}
-    ${row('Date of birth',fd.dob)}
-    ${row('Arrived from',c.travelled_from)}
-    ${row('Proceeding to',c.travelling_to)}
-    ${row('Arrival',(fd.arrival_date||'')+(fd.arrival_time?' · '+fd.arrival_time:''))}
-    ${row('Departure',(fd.departure_date||'')+(fd.departure_time?' · '+fd.departure_time:''))}
-    ${row('Group size',c.num_guests)}
-    ${row('Payment mode',fd.payment_mode)}
-    ${row('Dietary',fd.dietary)}
-    ${row('Special occasion',fd.special_occasion)}
-    ${row('Comfort requests',fd.comfort_requests)}
-    ${row('Declaration',fd.declaration?'Agreed':'—')}
-    ${row('Submitted',new Date(c.checked_in_at||Date.now()).toLocaleString('en-IN'))}
-  </table>
-  <h2>ID Proof (${idProofs.length} document${idProofs.length!==1?'s':''})</h2>
-  ${idProofs.length?idProofs.map((doc,i)=>printDoc(doc,'ID Document '+(i+1))).join(''):'<p style="font-size:12px;color:#5F5E5A">No ID documents uploaded.</p>'}
-  ${fd.is_foreign&&fd.foreign?`<h2>Form B — Foreign National</h2><table>
-    ${row('Name (in caps)',fd.foreign.name_caps)}
-    ${row('Nationality',fd.foreign.nationality)}
-    ${row('Passport number',fd.foreign.passport_no)}
-    ${row('Passport issued',(fd.foreign.passport_date||'')+(fd.foreign.passport_place?' · '+fd.foreign.passport_place:''))}
-    ${row('Address in India',fd.foreign.india_address)}
-    ${row('India arrival',fd.foreign.india_arrival)}
-    ${row('Employed in India',fd.foreign.employed_india)}
-    ${row('Duration in India',fd.foreign.duration_india)}
-    ${row('Arrived from',fd.foreign.arrived_from)}
-    ${row('Registration certificate',fd.foreign.reg_cert)}
-    ${row('Purpose of visit',fd.foreign.purpose)}
-    ${row('Checkout',(fd.foreign.checkout_date||'')+(fd.foreign.checkout_time?' · '+fd.foreign.checkout_time:''))}
-    ${row('Proceeding address',fd.foreign.proceed_address)}
-  </table>${passportDocs.length?`<h2>Passport Copy</h2>${passportDocs.map((doc,i)=>printDoc(doc,'Passport '+(i+1))).join('')}`:''}`:''}
-  ${sc?`<h2>Section C — Heritance (Office Use)</h2><table>
-    ${row('Guests / Kids / Rooms',[sc.num_guests,sc.num_kids,sc.num_rooms].filter(v=>v!==null&&v!==undefined).join(' / '))}
-    ${row('Plan / Extra beds',(sc.plan||'—')+'  ·  '+((sc.extra_beds||0)+' extra bed(s)'))}
-    ${row('Booking source / mode',(sc.booking_from||'—')+'  ·  '+(sc.booking_mode||'—'))}
-    ${row('Payment status',sc.payment_status)}
-    ${row('Billing / GST',(sc.billing_amount?fmt(sc.billing_amount):'—')+(sc.gst_amount?'  +  GST '+fmt(sc.gst_amount):''))}
-    ${row('Notes',sc.notes)}
-  </table>`:''}
-  <div class="meta">Generated ${new Date().toLocaleString('en-IN')} · Heritance — A Property by Banyan Circle · Submitted electronically by guest</div>
-  <script>setTimeout(()=>window.print(),600);<\/script>
-  </body></html>`;
-  const w=window.open('','_blank');
-  if(!w){toast('Allow pop-ups to generate PDF');return;}
-  w.document.open(); w.document.write(html); w.document.close();
-}
 
 // ── STAFF MANAGEMENT ──
 async function loadStaffMgmt(){
