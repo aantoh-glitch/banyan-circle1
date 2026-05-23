@@ -346,9 +346,13 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <!-- IN, AROUND & BEYOND -->
-<div class="pg" id="pg-tips">
-  <div style="margin-top:12px">
-    <button onclick="location.href='messaging.html'" style="width:100%;background:var(--br-l);border:1.5px solid rgba(153,60,29,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:opacity .15s;margin-bottom:10px" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity='1'">
+<div class="pg" id="pg-tips" style="padding-left:0;padding-right:0;padding-top:0">
+  <!-- pbb inline content — auto-sizes via postMessage -->
+  <iframe id="pbb-frame" src="" scrolling="no" style="width:100%;border:none;display:block;overflow:hidden;min-height:100px;transition:height .2s"></iframe>
+
+  <!-- Contact + Itinerary buttons sit below pbb content -->
+  <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px">
+    <button onclick="location.href='messaging.html'" style="width:100%;background:var(--br-l);border:1.5px solid rgba(153,60,29,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:opacity .15s" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity='1'">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span style="font-size:13px;font-weight:500;color:var(--br);line-height:1.5;flex:1">Contact your host for availability and booking.</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.7"><polyline points="9,18 15,12 9,6"/></svg>
@@ -877,6 +881,13 @@ async function submitFeedback(){
 
 // ── TIPS ──
 async function loadTips(){
+  var prop = (me && (me.prop || me.property_name)) || '';
+  var src = 'pbb.html' + (prop ? '?prop=' + encodeURIComponent(prop) : '');
+  var fr = document.getElementById('pbb-frame');
+  if(fr && !fr.getAttribute('data-loaded')){
+    fr.src = src;
+    fr.setAttribute('data-loaded','1');
+  }
   loadGuestTalents();
 }
 
@@ -1066,32 +1077,4 @@ async function loadFinalBill(){
     const badge = document.getElementById('bill-status-badge');
     badge.textContent = bill.payment_status || 'Pending';
     badge.className = 'bdg ' + (statusMap[st]||'bdg-a');
-    document.getElementById('bill-remarks').textContent = bill.remarks || '';
-  } catch(e){
-    document.getElementById('bill-loading').style.display='none';
-    document.getElementById('bill-none').style.display='block';
-  }
-}
-</script>
-
-<!-- MESSAGING FAB -->
-<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:16px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
-</a>
-<script>
-(function(){
-  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
-  var me=JSON.parse(localStorage.getItem("bc_me")||"null");
-  if(!me)return;
-  fetch(S+"/rest/v1/"+"messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
-    .then(function(r){return r.json()})
-    .then(function(d){
-      if(d&&d.length){
-        var b=document.getElementById("msg-fab-badge");
-        if(b){b.textContent=d.length>9?"9+":d.length;b.style.display="block"}
-      }
-    }).catch(function(){});
-})();
-</script>
-</html>
+    document.getElementById('bill-remarks').textContent = bill.remarks ||
