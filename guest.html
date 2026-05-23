@@ -80,6 +80,27 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .bk-edit-btn{font-size:12px;font-weight:500;color:var(--br);background:var(--br-l);border:1px solid rgba(153,60,29,.2);border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:opacity .15s}
 .bk-edit-btn:hover{opacity:.8}
 
+/* ── EXPERIENCE PAGE ── */
+.exp-section{margin-bottom:22px}
+.exp-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.exp-section-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--text)}
+.exp-add-btn{display:flex;align-items:center;gap:5px;background:var(--br-l);border:1px solid rgba(153,60,29,.25);color:var(--br);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;transition:background .15s}
+.exp-add-btn:active{background:rgba(153,60,29,.18)}
+.exp-add-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.exp-entries{display:flex;flex-direction:column;gap:8px}
+.exp-entry{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:14px;color:var(--text);line-height:1.6}
+.exp-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
+.exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
+@keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.exp-form{background:var(--white);border:1px solid rgba(153,60,29,.25);border-radius:12px;padding:14px;margin-top:4px;display:none}
+.exp-form.open{display:block}
+.exp-form textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;resize:vertical;min-height:88px;line-height:1.6}
+.exp-form textarea:focus{border-color:var(--br);background:var(--white)}
+.exp-form-actions{display:flex;gap:8px;margin-top:10px}
+.exp-btn-save{flex:1;padding:10px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
+.exp-btn-save:active{background:#7a2e16}
+.exp-btn-cancel{padding:10px 16px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;cursor:pointer}
+
 /* Welcome banner */
 .welcome-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);cursor:pointer;padding:24px}
 .welcome-banner-inner{background:var(--white);border-radius:18px;padding:32px 28px;text-align:center;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.18);pointer-events:none}
@@ -276,126 +297,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
 </div>
 
-<!-- REQUESTS -->
-<div class="pg" id="pg-requests">
-  <div class="pg-title">Requests</div>
-  <div class="pg-sub">Let us know what you need</div>
-  <div id="req-wrap">
-    <div class="fg"><label class="fl">What do you need?</label><input class="fc" id="req-title" type="text" placeholder="e.g. Extra towels, room service, late checkout…"/></div>
-    <div class="fg"><label class="fl">Any details?</label><textarea class="fc" id="req-notes" style="min-height:80px" placeholder="Optional — add any specifics"></textarea></div>
-    <div class="sub-bar"><button class="btn-sub btn-br" id="req-btn" onclick="submitRequest()">Send request</button></div>
-  </div>
-  <div id="req-success" style="display:none">
-    <div class="success">
-      <div class="s-icon" style="background:var(--g-l)"><svg viewBox="0 0 24 24" stroke="var(--g)"><polyline points="20,6 9,17 4,12"/></svg></div>
-      <div class="s-title">Request sent</div>
-      <div class="s-sub">Our team has been notified and will attend to your request shortly.</div>
-      <button class="btn-again" onclick="resetRequest()">Another request</button>
-    </div>
-  </div>
-  <div style="margin-top:28px">
-    <div class="sec-hdr" style="margin-top:0">Your previous requests</div>
-    <div id="req-history"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-  </div>
-</div>
-
-<!-- COMPLAINT -->
-<div class="pg" id="pg-complaint">
-  <div id="comp-wrap">
-    <div class="pg-title">Log a complaint</div>
-    <div class="pg-sub">Tell us what happened — we'll fix it right away</div>
-    <div class="fg"><textarea class="fc" id="comp-text" placeholder="Describe the issue in detail…" style="min-height:140px"></textarea></div>
-    <div class="sub-bar"><button class="btn-sub btn-br" id="comp-btn" onclick="submitComplaint()">Submit complaint</button></div>
-  </div>
-  <div id="comp-success" style="display:none">
-    <div class="success">
-      <div class="s-icon" style="background:var(--br-l)"><svg viewBox="0 0 24 24" stroke="var(--br)"><polyline points="20,6 9,17 4,12"/></svg></div>
-      <div class="s-title">Complaint logged</div>
-      <div class="s-sub">Our team has been notified and will attend to this immediately.</div>
-      <button class="btn-again" onclick="resetComplaint()">Log another</button>
-    </div>
-  </div>
-  <div style="margin-top:28px">
-    <div class="sec-hdr" style="margin-top:0">Your complaints</div>
-    <div id="comp-history"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-  </div>
-</div>
-
-<!-- FEEDBACK -->
-<div class="pg" id="pg-feedback">
-  <div id="fb-wrap">
-    <div class="pg-title">Share feedback</div>
-    <div class="pg-sub">Your experience at Banyan Circle</div>
-    <div class="fg"><textarea class="fc" id="fb-text" placeholder="What did you enjoy? What could we do better? We genuinely want to know…" style="min-height:140px"></textarea></div>
-    <div class="sub-bar"><button class="btn-sub btn-g" id="fb-btn" onclick="submitFeedback()">Submit feedback</button></div>
-  </div>
-  <div id="fb-success" style="display:none">
-    <div class="success">
-      <div class="s-icon" style="background:var(--g-l)"><svg viewBox="0 0 24 24" stroke="var(--g)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-      <div class="s-title">Thank you</div>
-      <div class="s-sub">Your feedback means the world to us. We look forward to welcoming you back.</div>
-      <button class="btn-again" onclick="document.getElementById('fb-text').value='';document.getElementById('fb-wrap').style.display='block';document.getElementById('fb-success').style.display='none'">Share more</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- TALENT BOOKING & RATINGS PAGE -->
-<div class="pg" id="pg-talent">
-  <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:18px;margin-top:4px">
-    <img src="Banyan_Logo.png" style="width:80px;height:80px;object-fit:contain"/>
-  </div>
-  <div class="pg-title">Talent Experiences</div>
-  <div class="pg-sub">Book a session with our talented team</div>
-
-  <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:14px">Request a Booking</div>
-  <div class="card" style="padding:16px">
-    <div class="fg">
-      <label class="fl">Choose a talent</label>
-      <select class="fc" id="g-bk-talent" style="margin-bottom:0"><option value="">Select talent…</option></select>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Date</label><input class="fc" id="g-bk-date" type="date"/></div>
-      <div class="fg"><label class="fl">Time</label><input class="fc" id="g-bk-time" type="time" value="10:00"/></div>
-    </div>
-    <div class="fg">
-      <label class="fl">Message (optional)</label>
-      <textarea class="fc" id="g-bk-message" placeholder="Session details, group size, preferences…" style="min-height:70px"></textarea>
-    </div>
-    <button class="btn-sub btn-br" onclick="submitGuestBooking()">Send Booking Request</button>
-  </div>
-
-  <div style="font-family:'Playfair Display',serif;font-size:17px;margin:24px 0 14px">Your Booking Requests</div>
-  <div id="g-booking-log"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-
-  <div id="g-bk-edit-panel" style="display:none;background:var(--white);border:1.5px solid var(--br);border-radius:14px;padding:16px;margin-bottom:16px">
-    <div style="font-size:13px;font-weight:500;color:var(--br);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      Edit Booking Request
-    </div>
-    <input type="hidden" id="g-bk-edit-id"/>
-    <div class="fg">
-      <label class="fl">Talent</label>
-      <select class="fc" id="g-bk-edit-talent"></select>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Date</label><input class="fc" id="g-bk-edit-date" type="date"/></div>
-      <div class="fg"><label class="fl">Time</label><input class="fc" id="g-bk-edit-time" type="time"/></div>
-    </div>
-    <div class="fg">
-      <label class="fl">Message</label>
-      <textarea class="fc" id="g-bk-edit-message" style="min-height:70px" placeholder="Session details, group size, preferences…"></textarea>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn-sub btn-br" style="flex:1;padding:13px" onclick="saveBookingEdit()">Save changes</button>
-      <button onclick="closeBookingEdit()" style="padding:13px 18px;border:1.5px solid var(--border);border-radius:12px;background:none;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)">Cancel</button>
-    </div>
-  </div>
-
-  <div style="font-family:'Playfair Display',serif;font-size:17px;margin:24px 0 14px">Available Talents</div>
-  <div id="g-talent-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-</div>
-
 <!-- REVIEWS PAGE -->
 <div class="pg" id="pg-reviews">
   <div class="pg-title">Reviews</div>
@@ -480,21 +381,69 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   </div>
 </div>
 
-<!-- MESSAGES -->
-<div class="pg" id="pg-messages">
-  <div class="pg-title">Messages</div>
-  <div class="pg-sub">Chat with the property team</div>
-  <div id="msg-thread" style="display:flex;flex-direction:column;gap:10px;margin-bottom:80px;min-height:200px">
-    <div style="font-size:13px;color:var(--muted);text-align:center;padding:40px 0">No messages yet</div>
+<!-- EXPERIENCE PAGE -->
+<div class="pg" id="pg-experience">
+  <div class="pg-title">Experience</div>
+  <div class="pg-sub">Curated notes &amp; highlights for your stay</div>
+
+  <!-- Property -->
+  <div class="exp-section">
+    <div class="exp-section-head">
+      <div class="exp-section-title">Property</div>
+      <button class="exp-add-btn" onclick="expToggleForm('property')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
+      </button>
+    </div>
+    <div class="exp-entries" id="exp-entries-property"><div class="exp-skeleton"></div></div>
+    <div class="exp-form" id="exp-form-property">
+      <textarea id="exp-input-property" placeholder="Describe a property experience…"></textarea>
+      <div class="exp-form-actions">
+        <button class="exp-btn-cancel" onclick="expToggleForm('property')">Cancel</button>
+        <button class="exp-btn-save" onclick="expSubmit('property')">Save</button>
+      </div>
+    </div>
   </div>
-  <div style="position:sticky;bottom:62px;background:var(--bg);padding:12px 0 0;display:flex;gap:8px">
-    <input class="fc" id="msg-input" type="text" placeholder="Type a message…" style="flex:1;padding:12px 14px" onkeydown="if(event.key==='Enter')sendMessage()"/>
-    <button onclick="sendMessage()" style="padding:12px 18px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;flex-shrink:0">Send</button>
+
+  <!-- Beyond -->
+  <div class="exp-section">
+    <div class="exp-section-head">
+      <div class="exp-section-title">Beyond</div>
+      <button class="exp-add-btn" onclick="expToggleForm('beyond')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
+      </button>
+    </div>
+    <div class="exp-entries" id="exp-entries-beyond"><div class="exp-skeleton"></div></div>
+    <div class="exp-form" id="exp-form-beyond">
+      <textarea id="exp-input-beyond" placeholder="Describe a beyond experience…"></textarea>
+      <div class="exp-form-actions">
+        <button class="exp-btn-cancel" onclick="expToggleForm('beyond')">Cancel</button>
+        <button class="exp-btn-save" onclick="expSubmit('beyond')">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banyan Circle -->
+  <div class="exp-section">
+    <div class="exp-section-head">
+      <div class="exp-section-title">Banyan Circle</div>
+      <button class="exp-add-btn" onclick="expToggleForm('banyan_circle')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
+      </button>
+    </div>
+    <div class="exp-entries" id="exp-entries-banyan_circle"><div class="exp-skeleton"></div></div>
+    <div class="exp-form" id="exp-form-banyan_circle">
+      <textarea id="exp-input-banyan_circle" placeholder="Describe a Banyan Circle experience…"></textarea>
+      <div class="exp-form-actions">
+        <button class="exp-btn-cancel" onclick="expToggleForm('banyan_circle')">Cancel</button>
+        <button class="exp-btn-save" onclick="expSubmit('banyan_circle')">Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <nav class="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
+  <button class="bnt" onclick="goPage('experience',this);expLoad()"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 4 5 4 9c0 5 8 13 8 13s8-8 8-13c0-4-4-7-8-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Experience</button>
   <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
 </nav>
@@ -540,10 +489,68 @@ function goPage(id, btn) {
   document.querySelectorAll('.bnt').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-if(id==='talent')     { loadGuestTalents(); loadGuestBookingHistory(); }
-  if(id==='requests')   { loadReqHistory(); }
-  if(id==='complaint')  loadCompHistory();
   if(id==='finalbill')  loadFinalBill();
+}
+
+// ── EXPERIENCE ──
+let expLoaded = false;
+function expLoad() {
+  if (expLoaded) return;
+  expLoaded = true;
+  expLoadSection('property');
+  expLoadSection('beyond');
+  expLoadSection('banyan_circle');
+}
+
+function expToggleForm(section) {
+  const form = document.getElementById('exp-form-' + section);
+  const isOpen = form.classList.contains('open');
+  document.querySelectorAll('.exp-form').forEach(f => f.classList.remove('open'));
+  if (!isOpen) {
+    form.classList.add('open');
+    document.getElementById('exp-input-' + section).focus();
+  }
+}
+
+function expEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function expLoadSection(section) {
+  const el = document.getElementById('exp-entries-' + section);
+  try {
+    const prop = me.prop || '';
+    const data = await api('/rest/v1/experiences?property_name=eq.' + encodeURIComponent(prop) + '&section=eq.' + encodeURIComponent(section) + '&order=created_at.desc') || [];
+    if (!data.length) {
+      el.innerHTML = '<div class="exp-empty">No entries yet.</div>';
+    } else {
+      el.innerHTML = data.map(e => `<div class="exp-entry">${expEsc(e.content||'')}</div>`).join('');
+    }
+  } catch(e) {
+    el.innerHTML = '<div class="exp-empty">Could not load entries.</div>';
+  }
+}
+
+async function expSubmit(section) {
+  const input = document.getElementById('exp-input-' + section);
+  const content = input.value.trim();
+  if (!content) { toast('Please enter some text first'); return; }
+  const btn = document.querySelector('#exp-form-' + section + ' .exp-btn-save');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await api('/rest/v1/experiences', 'POST', {
+      property_name: me.prop || '',
+      section: section,
+      content: content
+    });
+    input.value = '';
+    expToggleForm(section);
+    expLoadSection(section);
+    toast('Saved ✓');
+  } catch(e) {
+    toast('Failed to save');
+  }
+  btn.disabled = false; btn.textContent = 'Save';
 }
 
 // ── PNE slide-up sheet ──
@@ -753,222 +760,6 @@ async function submitCheckin(){
   }
 }
 
-// ── REQUESTS ──
-async function submitRequest(){
-  const title = document.getElementById('req-title').value.trim();
-  const notes = document.getElementById('req-notes').value.trim();
-  if(!title){toast('Please describe your request');return;}
-  const btn=document.getElementById('req-btn');
-  btn.disabled=true; btn.textContent='Sending…';
-  await api('/rest/v1/housekeeping_tasks','POST',{
-    task_description: title,
-    notes: notes||null,
-    property_id: me.prop||null,
-    assigned_to: null,
-    status: 'pending',
-    requested_by: me.name,
-    source: 'guest',
-    created_at: new Date().toISOString(),
-  });
-  btn.disabled=false;
-  document.getElementById('req-wrap').style.display='none';
-  document.getElementById('req-success').style.display='block';
-  loadReqHistory();
-}
-function resetRequest(){
-  document.getElementById('req-title').value='';
-  document.getElementById('req-notes').value='';
-  document.getElementById('req-wrap').style.display='block';
-  document.getElementById('req-success').style.display='none';
-}
-async function loadReqHistory(){
-  const data=await api('/rest/v1/housekeeping_tasks?requested_by=eq.'+encodeURIComponent(me.name)+'&source=eq.guest&select=*&order=created_at.desc&limit=10')||[];
-  const el=document.getElementById('req-history');
-  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No requests yet</div>';return;}
-  const statusBdg=s=>s==='completed'?'bdg-g':s==='in_progress'?'bdg-a':'';
-  el.innerHTML='<div class="card">'+data.map(r=>`<div class="req-row"><div style="flex:1"><div style="font-size:14px;font-weight:500">${r.task_description}</div>${r.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px">${r.notes}</div>`:''}</div><span class="bdg ${statusBdg(r.status)}" style="font-size:11px;flex-shrink:0">${(r.status||'pending').replace('_',' ')}</span></div>`).join('')+'</div>';
-}
-
-// ── COMPLAINTS ──
-async function submitComplaint(){
-  const text=document.getElementById('comp-text').value.trim(),btn=document.getElementById('comp-btn');
-  if(!text){toast('Please describe the issue');return;}
-  btn.disabled=true;btn.textContent='Submitting…';
-  const propId=await getPropId();
-  await api('/rest/v1/guest_complaints','POST',{
-    property_id: propId,
-    property_name: me.prop,
-    guest_name: me.name,
-    complaint: text,
-    status: 'open',
-    created_at: new Date().toISOString(),
-  });
-  btn.disabled=false;
-  document.getElementById('comp-wrap').style.display='none';
-  document.getElementById('comp-success').style.display='block';
-  loadCompHistory();
-}
-function resetComplaint(){
-  document.getElementById('comp-text').value='';
-  document.getElementById('comp-wrap').style.display='block';
-  document.getElementById('comp-success').style.display='none';
-}
-async function loadCompHistory(){
-  const data=await api('/rest/v1/guest_complaints?guest_name=eq.'+encodeURIComponent(me.name)+'&select=*&order=created_at.desc&limit=10')||[];
-  const el=document.getElementById('comp-history');
-  if(!data.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No complaints logged yet</div>';return;}
-  const statusBdg=s=>s==='open'?'bdg-r':s==='in_progress'?'bdg-a':'bdg-g';
-  el.innerHTML='<div class="card">'+data.map(c=>`<div class="req-row"><div style="flex:1"><div style="font-size:13px">${c.complaint}</div><div style="font-size:11px;color:var(--muted);margin-top:3px">${c.created_at?new Date(c.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</div></div><span class="bdg ${statusBdg(c.status)}">${(c.status||'open').replace('_',' ')}</span></div>`).join('')+'</div>';
-}
-
-// ── FEEDBACK ──
-async function submitFeedback(){
-  const text=document.getElementById('fb-text').value.trim(),btn=document.getElementById('fb-btn');
-  if(!text){toast('Please write your feedback');return;}
-  btn.disabled=true;btn.textContent='Submitting…';
-  const propId=await getPropId();
-  await api('/rest/v1/guest_feedback','POST',{
-    property_id:propId,
-    property_name:me.prop,
-    guest_name:me.name,
-    missing_or_feedback:text,
-    created_at:new Date().toISOString(),
-  });
-  btn.disabled=false;
-  document.getElementById('fb-wrap').style.display='none';
-  document.getElementById('fb-success').style.display='block';
-}
-
-
-// --- GUEST TALENT BOOKING ---
-const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
-
-async function loadGuestTalents(){
-  try{
-    const rows = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name') || [];
-    const sel = document.getElementById('g-bk-talent');
-    if(sel) sel.innerHTML = '<option value="">Select talent…</option>' + rows.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
-    const el = document.getElementById('g-talent-list');
-    if(el){
-      if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available</div>'; }
-      else { el.innerHTML = rows.map(t=>`
-        <div class="card" style="padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
-          <div style="width:42px;height:42px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0">${ini(t.name)}</div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:500">${t.name}</div>
-            <div style="font-size:12px;color:var(--muted)">${t.category||''}</div>
-            ${t.short_desc ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${t.short_desc}</div>` : ''}
-          </div>
-        </div>`).join(''); }
-    }
-  } catch(e){
-    const el=document.getElementById('g-talent-list'); if(el) el.innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>';
-  }
-}
-
-async function submitGuestBooking(){
-  const sel = document.getElementById('g-bk-talent');
-  const talentId = sel.value;
-  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || '';
-  const requested_date = document.getElementById('g-bk-date').value;
-  const requested_time = document.getElementById('g-bk-time').value;
-  const message = document.getElementById('g-bk-message').value.trim();
-  if(!talentId || !requested_date){ toast('Please select a talent and date'); return; }
-  const btn = document.querySelector('#pg-talent .btn-sub.btn-br');
-  btn.disabled=true; btn.textContent='Sending…';
-  try{
-    await api('/rest/v1/talent_booking_requests','POST',{
-      talent_id: talentId,
-      talent_name: talentName,
-      property_name: me.prop||null,
-      requested_date,
-      requested_time: requested_time||null,
-      message: message||null,
-      requested_by: me.name,
-      status: 'pending',
-      created_at: new Date().toISOString()
-    });
-    document.getElementById('g-bk-date').value='';
-    document.getElementById('g-bk-message').value='';
-    document.getElementById('g-bk-time').value='10:00';
-    sel.value='';
-    toast('Booking request sent ✓');
-    loadGuestBookingHistory();
-  } catch(e){ toast('Error: '+e.message); }
-  btn.disabled=false; btn.textContent='Send Booking Request';
-}
-
-async function loadGuestBookingHistory(){
-  const el = document.getElementById('g-booking-log');
-  el.innerHTML='<div style="font-size:13px;color:var(--muted)">Loading…</div>';
-  try{
-    const data = await api('/rest/v1/talent_booking_requests?requested_by=eq.'+encodeURIComponent(me.name)+'&select=*&order=created_at.desc&limit=20') || [];
-    if(!data.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No booking requests yet</div>'; return; }
-    const bdgClass = s => s==='confirmed'?'bdg-g': s==='cancelled'||s==='rejected'?'bdg-r':'bdg-a';
-    el.innerHTML = '<div class="card">' + data.map(r=>{
-      const d = r.requested_date ? new Date(r.requested_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
-      const t = r.requested_time ? r.requested_time.slice(0,5) : '';
-      const when = [d,t].filter(Boolean).join(' · ');
-      const isPending = !r.status || r.status==='pending';
-      return `<div class="bk-log-row">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:500;margin-bottom:2px">${r.talent_name||'Talent'}</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${when}</div>
-          ${r.message?`<div style="font-size:12px;color:var(--muted);white-space:pre-line;line-height:1.5">${r.message}</div>`:''}
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
-          <span class="bdg ${bdgClass(r.status)}">${(r.status||'pending').replace('_',' ')}</span>
-          ${isPending?`<button class="bk-edit-btn" onclick="openBookingEdit('${r.id}','${r.talent_id}','${r.requested_date||''}','${r.requested_time||''}',\`${(r.message||'').replace(/`/g,"'")}\`)">✏ Edit</button>`:''}
-        </div>
-      </div>`;
-    }).join('') + '</div>';
-  } catch(e){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load history</div>'; }
-}
-
-function openBookingEdit(id, talentId, date, time, message){
-  document.getElementById('g-bk-edit-id').value = id;
-  const src = document.getElementById('g-bk-talent');
-  const dst = document.getElementById('g-bk-edit-talent');
-  dst.innerHTML = src.innerHTML;
-  dst.value = talentId;
-  document.getElementById('g-bk-edit-date').value = date;
-  document.getElementById('g-bk-edit-time').value = time || '10:00';
-  document.getElementById('g-bk-edit-message').value = message;
-  const panel = document.getElementById('g-bk-edit-panel');
-  panel.style.display = 'block';
-  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-function closeBookingEdit(){
-  document.getElementById('g-bk-edit-panel').style.display = 'none';
-}
-
-async function saveBookingEdit(){
-  const id = document.getElementById('g-bk-edit-id').value;
-  const sel = document.getElementById('g-bk-edit-talent');
-  const talentId = sel.value;
-  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || sel.options[sel.selectedIndex]?.text?.split('—')[0]?.trim() || '';
-  const requested_date = document.getElementById('g-bk-edit-date').value;
-  const requested_time = document.getElementById('g-bk-edit-time').value;
-  const message = document.getElementById('g-bk-edit-message').value.trim();
-  if(!talentId || !requested_date){ toast('Please select a talent and date'); return; }
-  const btn = document.querySelector('#g-bk-edit-panel .btn-br');
-  btn.disabled=true; btn.textContent='Saving…';
-  try{
-    await api('/rest/v1/talent_booking_requests?id=eq.'+id,'PATCH',{
-      talent_id: talentId,
-      talent_name: talentName,
-      requested_date,
-      requested_time: requested_time||null,
-      message: message||null,
-    });
-    closeBookingEdit();
-    toast('Booking updated ✓');
-    loadGuestBookingHistory();
-  } catch(e){ toast('Error: '+e.message); }
-  btn.disabled=false; btn.textContent='Save changes';
-}
-
 // ── Welcome banner ──
 function dismissBanner(){
   const b = document.getElementById('welcome-banner');
@@ -1019,6 +810,7 @@ async function loadFinalBill(){
   }
 }
 </script>
+
 
 <!-- MESSAGING FAB -->
 <a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:16px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
