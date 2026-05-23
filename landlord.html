@@ -1031,7 +1031,7 @@ async function deleteEmergency(id) {
 loadDescription();
 </script>
 
-<!-- MESSAGING FAB -->
+<!-- MESSAGING FAB (hidden when viewed inside admin iframe) -->
 <a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:14px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
@@ -1041,6 +1041,8 @@ loadDescription();
   var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
   var me=JSON.parse(localStorage.getItem("bc_me")||"null");
   if(!me)return;
+  // Hide FAB when embedded in admin iframe
+  if(window!==window.top){var f=document.getElementById("msg-fab");if(f)f.style.display="none";return;}
   fetch(S+"/rest/v1/"+"messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
     .then(function(r){return r.json()})
     .then(function(d){

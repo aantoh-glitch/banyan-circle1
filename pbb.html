@@ -8,120 +8,268 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --br:#993C1D;--br-l:#FDF3EF;
+  --br:#993C1D;--br-d:#7A2E14;--br-l:#FDF3EF;--br-mid:#F2C9B8;
   --g:#2D6A17;--g-l:#EBF3E2;
-  --a:#7A5C1E;--a-l:#FBF4E4;
-  --text:#1C1917;--muted:#78716C;
+  --r:#9B2626;--r-l:#FBEBEB;
+  --text:#1C1917;--muted:#78716C;--faint:#9e9c97;
   --border:#E7E5E4;--bg:#F9F8F6;--white:#fff;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
 }
 html,body{font-family:'DM Sans',sans-serif;background:transparent;color:var(--text);font-size:15px;line-height:1.5;margin:0;padding:0}
-body{padding:0 0 8px}
+body{padding:0 0 20px}
 
+/* ─ SECTIONS ─ */
 .section{margin-bottom:26px}
-.sec-hdr{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;margin-bottom:3px;color:var(--text)}
-.sec-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
-.tip-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:8px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.sec-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:var(--text)}
+.sec-sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+
+/* ─ TIP CARD ─ */
+.tip-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:8px;box-shadow:var(--shadow)}
+.tip-card-inner{display:flex;gap:10px;align-items:flex-start}
+.tip-body{flex:1;min-width:0}
 .tip-name{font-size:14px;font-weight:500;margin-bottom:4px}
 .tip-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:6px}
 .tip-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-right:3px;background:var(--br-l);color:var(--br);font-weight:500}
-.empty{font-size:13px;color:var(--muted);padding:2px 0}
+.tip-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 
-/* talent avatar card */
-.talent-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+/* ─ TALENT CARD ─ */
+.talent-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
 .talent-av{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
 .talent-name{font-size:14px;font-weight:500}
 .talent-cat{font-size:12px;color:var(--muted)}
 .talent-desc{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ─ BUTTONS ─ */
+.btn-add{background:var(--br-l);border:1px solid var(--br-mid);border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--br);font-family:inherit;font-weight:500}
+.btn-add:active{background:var(--br-mid)}
+.btn-edit{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit;white-space:nowrap}
+.btn-del{background:var(--r-l);border:1px solid #f0c8c8;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--r);font-family:inherit;white-space:nowrap}
+.btn-p{padding:8px 16px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;flex:1}
+.btn-p:active{background:var(--br-d)}
+.btn-sec{padding:8px 14px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit;flex:1}
+.btn-row{display:flex;gap:8px;margin-top:8px}
+
+/* ─ INLINE FORM ─ */
+.add-form{background:var(--br-l);border:1px solid var(--br-mid);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:none}
+.add-form.visible{display:block}
+.form-title{font-size:13px;font-weight:600;color:var(--br);margin-bottom:10px}
+.fg{margin-bottom:10px}
+.fl{display:block;font-size:10px;color:var(--faint);margin-bottom:4px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.fc{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:72px;line-height:1.55}
+
+/* ─ EMPTY ─ */
+.empty{font-size:13px;color:var(--muted);padding:10px 0}
+
+/* ─ TOAST ─ */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:200;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root" style="padding:12px 14px 24px"></div>
+<div class="toast" id="pbb-toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-const propName = me ? (me.prop || '') : '';
+var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+var propName = me ? (me.prop || me.property_name || '') : '';
 
-async function api(path){
-  try{
-    const r = await fetch(SB + path, {headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
-    if(!r.ok) return [];
-    return await r.json();
-  } catch(e){ return []; }
+// currently open form state
+var editState = { cat: null, id: null };
+
+// ── API ──────────────────────────────────────────────────────
+async function api(path, method, body) {
+  try {
+    var opts = {
+      method: method || 'GET',
+      headers: {
+        'apikey': KEY, 'Authorization': 'Bearer ' + KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    var r = await fetch(SB + path, opts);
+    if (!r.ok) return null;
+    var text = await r.text();
+    return text ? JSON.parse(text) : null;
+  } catch(e) { return null; }
 }
 
-const ini = n => (n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase() || '?';
-
-function section(id, hdr, sub, content){
-  return `<div class="section" id="${id}">
-    <div class="sec-hdr">${hdr}</div>
-    <div class="sec-sub">${sub}</div>
-    <div id="${id}-list">${content}</div>
-  </div>`;
+// ── TOAST ────────────────────────────────────────────────────
+function toast(msg, err) {
+  var t = document.getElementById('pbb-toast');
+  t.textContent = msg;
+  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 2200);
 }
 
-function sendHeight(){
-  const h = document.body.scrollHeight;
-  window.parent.postMessage({type:'pbb-height',height:h},'*');
+// ── HELPERS ──────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+var ini = function(n){ return (n||'').split(' ').map(function(x){return x[0];}).join('').slice(0,2).toUpperCase() || '?'; };
+
+function sendHeight() {
+  var h = document.body.scrollHeight;
+  window.parent.postMessage({type:'pbb-height', height:h},'*');
+  window.parent.postMessage({type:'bc_resize',  height:h},'*');
 }
 
-async function load(){
-  const root = document.getElementById('root');
-  root.innerHTML =
-    section('pbb-in','Property','What\'s available at your property','<div class="empty">Loading…</div>') +
-    section('pbb-beyond','Beyond','Local food, cafes, sightseeing &amp; culture nearby','<div class="empty">Loading…</div>') +
-    section('pbb-around','Banyan Circle','Banyan Circle curated experiences made for you','<div class="empty">Loading…</div>');
+// ── FORM OPEN / CLOSE ────────────────────────────────────────
+function openAddForm(cat) {
+  editState = { cat: cat, id: null };
+  document.querySelectorAll('.add-form').forEach(function(el){ el.classList.remove('visible'); });
+  var f = document.getElementById('form-' + cat);
+  if (!f) return;
+  f.querySelector('.form-name').value = '';
+  f.querySelector('.form-desc').value = '';
+  f.querySelector('.form-tags').value = '';
+  f.querySelector('.form-title').textContent = 'Add tip';
+  f.classList.add('visible');
+  sendHeight();
+}
 
-  // Load local tips
-  const tips = await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(propName)+'&order=category,name');
+function openEditForm(cat, tipJson) {
+  var tip = JSON.parse(tipJson);
+  editState = { cat: cat, id: tip.id };
+  document.querySelectorAll('.add-form').forEach(function(el){ el.classList.remove('visible'); });
+  var f = document.getElementById('form-' + cat);
+  if (!f) return;
+  f.querySelector('.form-name').value = tip.name || '';
+  f.querySelector('.form-desc').value = tip.description || '';
+  f.querySelector('.form-tags').value = (tip.tags || []).join(', ');
+  f.querySelector('.form-title').textContent = 'Edit tip';
+  f.classList.add('visible');
+  sendHeight();
+}
 
-  const renderTips = (listId, cat) => {
-    const el = document.getElementById(listId);
-    if(!el) return;
-    const items = tips.filter(t => t.category === cat);
-    if(!items.length){
-      el.innerHTML = '<div class="empty">Nothing here yet — check back after your host updates this.</div>';
-    } else {
-      el.innerHTML = items.map(t => `<div class="tip-card">
-        <div class="tip-name">${t.name}</div>
-        ${t.description ? `<div class="tip-desc">${t.description}</div>` : ''}
-        <div>${(t.tags||[]).map(tg=>`<span class="tip-tag">${tg}</span>`).join('')}</div>
-      </div>`).join('');
-    }
-  };
+function closeForm(cat) {
+  var f = document.getElementById('form-' + cat);
+  if (f) f.classList.remove('visible');
+  editState = { cat: null, id: null };
+  sendHeight();
+}
 
-  renderTips('pbb-in-list','In');
-  renderTips('pbb-beyond-list','Beyond');
-
-  // Load talents for Banyan Circle section
-  const talents = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name');
-  const aroundEl = document.getElementById('pbb-around-list');
-  if(aroundEl){
-    const aroundTips = tips.filter(t => t.category === 'Around');
-    let html = '';
-    if(aroundTips.length){
-      html += aroundTips.map(t => `<div class="tip-card">
-        <div class="tip-name">${t.name}</div>
-        ${t.description ? `<div class="tip-desc">${t.description}</div>` : ''}
-        <div>${(t.tags||[]).map(tg=>`<span class="tip-tag">${tg}</span>`).join('')}</div>
-      </div>`).join('');
-    }
-    if(talents.length){
-      html += talents.map(t => `<div class="talent-card">
-        <div class="talent-av">${ini(t.name)}</div>
-        <div>
-          <div class="talent-name">${t.name}</div>
-          <div class="talent-cat">${t.category||''}</div>
-          ${t.short_desc ? `<div class="talent-desc">${t.short_desc}</div>` : ''}
-        </div>
-      </div>`).join('');
-    }
-    if(!html) html = '<div class="empty">Nothing here yet — check back after your host updates this.</div>';
-    aroundEl.innerHTML = html;
+// ── SAVE TIP ─────────────────────────────────────────────────
+async function saveTip(cat) {
+  var f = document.getElementById('form-' + cat);
+  var name = f.querySelector('.form-name').value.trim();
+  if (!name) { toast('Name is required', true); return; }
+  var desc = f.querySelector('.form-desc').value.trim();
+  var tagsRaw = f.querySelector('.form-tags').value;
+  var tags = tagsRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var body = { property_name: propName, name: name, category: cat, description: desc || null, tags: tags };
+  if (editState.id) {
+    await api('/rest/v1/local_tips?id=eq.' + editState.id, 'PATCH', body);
+    toast('Tip updated');
+  } else {
+    await api('/rest/v1/local_tips', 'POST', body);
+    toast('Tip added');
   }
+  closeForm(cat);
+  load();
+}
 
+// ── DELETE TIP ────────────────────────────────────────────────
+async function deleteTip(id) {
+  if (!confirm('Delete this tip?')) return;
+  await api('/rest/v1/local_tips?id=eq.' + id, 'DELETE');
+  toast('Tip deleted');
+  load();
+}
+
+// ── RENDER HELPERS ────────────────────────────────────────────
+function renderForm(cat) {
+  return '<div class="add-form" id="form-' + cat + '">' +
+    '<div class="form-title">Add tip</div>' +
+    '<div class="fg"><label class="fl">Name</label>' +
+      '<input class="fc form-name" type="text" placeholder="e.g. Coffee at Kalpetta"/></div>' +
+    '<div class="fg"><label class="fl">Description</label>' +
+      '<textarea class="fc form-desc" placeholder="Brief description…"></textarea></div>' +
+    '<div class="fg" style="margin-bottom:4px"><label class="fl">Tags (comma separated)</label>' +
+      '<input class="fc form-tags" type="text" placeholder="e.g. Cafe, Breakfast"/></div>' +
+    '<div class="btn-row">' +
+      '<button class="btn-sec" onclick="closeForm(\'' + cat + '\')">Cancel</button>' +
+      '<button class="btn-p" onclick="saveTip(\'' + cat + '\')">Save Tip</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderTipCard(t, cat) {
+  var tagsHtml = (t.tags||[]).map(function(tg){ return '<span class="tip-tag">' + esc(tg) + '</span>'; }).join('');
+  var safeJson = JSON.stringify(t).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return '<div class="tip-card">' +
+    '<div class="tip-card-inner">' +
+      '<div class="tip-body">' +
+        '<div class="tip-name">' + esc(t.name) + '</div>' +
+        (t.description ? '<div class="tip-desc">' + esc(t.description) + '</div>' : '') +
+        (tagsHtml ? '<div>' + tagsHtml + '</div>' : '') +
+      '</div>' +
+      '<div class="tip-actions">' +
+        '<button class="btn-edit" onclick="openEditForm(\'' + cat + '\',\'' + safeJson + '\')">Edit</button>' +
+        '<button class="btn-del" onclick="deleteTip(\'' + t.id + '\')">Delete</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// ── MAIN LOAD ──────────────────────────────────────────────────
+async function load() {
+  var root = document.getElementById('root');
+  var tips    = await api('/rest/v1/local_tips?property_name=eq.' + encodeURIComponent(propName) + '&order=category,name') || [];
+  var talents = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name') || [];
+
+  var cats = [
+    { id: 'In',     title: 'Property',     sub: 'What\'s available at your property' },
+    { id: 'Beyond', title: 'Beyond',        sub: 'Local food, cafes, sightseeing &amp; culture nearby' },
+    { id: 'Around', title: 'Banyan Circle', sub: 'Banyan Circle curated experiences' }
+  ];
+
+  var html = '';
+  cats.forEach(function(c) {
+    var items = tips.filter(function(t){ return t.category === c.id; });
+    var cardsHtml = items.map(function(t){ return renderTipCard(t, c.id); }).join('');
+
+    // Around: append read-only talents below tips
+    var extrasHtml = '';
+    if (c.id === 'Around' && talents.length) {
+      extrasHtml = '<div style="margin-top:8px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--faint);font-weight:500;margin-bottom:6px">Talents</div>';
+      extrasHtml += talents.map(function(t){
+        return '<div class="talent-card">' +
+          '<div class="talent-av">' + ini(t.name) + '</div>' +
+          '<div>' +
+            '<div class="talent-name">' + esc(t.name) + '</div>' +
+            '<div class="talent-cat">' + esc(t.category||'') + '</div>' +
+            (t.short_desc ? '<div class="talent-desc">' + esc(t.short_desc) + '</div>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    if (!cardsHtml && !extrasHtml) {
+      cardsHtml = '<div class="empty">Nothing added yet — use + Add above.</div>';
+    }
+
+    html += '<div class="section">' +
+      '<div class="sec-hdr">' +
+        '<div class="sec-title">' + c.title + '</div>' +
+        '<button class="btn-add" onclick="openAddForm(\'' + c.id + '\')">+ Add</button>' +
+      '</div>' +
+      '<div class="sec-sub">' + c.sub + '</div>' +
+      renderForm(c.id) +
+      cardsHtml +
+      extrasHtml +
+    '</div>';
+  });
+
+  root.innerHTML = html;
   sendHeight();
   setTimeout(sendHeight, 300);
 }
