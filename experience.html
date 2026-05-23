@@ -4,23 +4,195 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Banyan Circle — Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#8B3520;--br-d:#6A2818;--br-l:#FAF0EB;--br-mid:#F2D9D0;
+  --text:#1E1C18;--muted:#6B6860;--faint:#9E9C97;
+  --border:#E8E4DC;--border-strong:#C8C2B8;
+  --bg:#F7F5F1;--surface:#FEFCF9;--white:#fff;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+.app{max-width:430px;margin:0 auto;min-height:100dvh;background:var(--surface);display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.top-bar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:14px 18px 12px;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:50;
+}
+.top-back{background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);display:flex;align-items:center}
+.top-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.top-titles{flex:1;min-width:0}
+.top-label{font-size:10px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:1px}
+.top-prop{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--br-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:20px 16px 48px}
+
+/* ── SECTION ── */
+.section{margin-bottom:22px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text)}
+.add-btn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--br-l);border:1px solid var(--br-mid);
+  color:var(--br);border-radius:20px;
+  padding:5px 12px;font-size:12px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:background .15s;
+}
+.add-btn:active{background:var(--br-mid)}
+.add-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── ENTRIES ── */
+.entries{display:flex;flex-direction:column;gap:8px}
+.entry-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:13px 15px;
+  box-shadow:var(--shadow);font-size:14px;color:var(--text);line-height:1.6;
+}
+.entry-card.empty-state{
+  color:var(--faint);font-size:13px;text-align:center;
+  padding:22px 16px;border-style:dashed;
+}
+
+/* ── ADD FORM ── */
+.add-form{
+  background:var(--white);border:1px solid var(--br-mid);
+  border-radius:var(--radius);padding:16px;margin-top:4px;
+  box-shadow:0 4px 16px rgba(139,53,32,.08);
+  display:none;
+}
+.add-form.open{display:block;animation:fadeUp .18s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.add-form textarea{
+  width:100%;padding:11px 13px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:14px;font-family:inherit;
+  color:var(--text);background:var(--bg);outline:none;
+  resize:vertical;min-height:90px;line-height:1.6;
+}
+.add-form textarea:focus{border-color:var(--br);background:var(--white)}
+.form-actions{display:flex;gap:8px;margin-top:10px}
+.btn-submit{
+  flex:1;padding:10px;background:var(--br);color:#fff;
+  border:none;border-radius:var(--radius-sm);font-size:14px;
+  font-weight:500;font-family:inherit;cursor:pointer;
+}
+.btn-submit:active{background:var(--br-d)}
+.btn-cancel{
+  padding:10px 16px;background:var(--white);color:var(--muted);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:13px;font-family:inherit;cursor:pointer;
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;
+  font-size:13px;z-index:200;display:none;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);
+}
+
+/* ── LOADING ── */
+.skeleton{height:54px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:var(--radius-sm);animation:shimmer 1.2s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
 </head>
 <body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="top-bar">
+    <button class="top-back" onclick="history.back()" title="Back">
+      <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="top-titles">
+      <div class="top-label">Experience</div>
+      <div class="top-prop" id="header-prop">Loading…</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PROPERTY -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">Property</div>
+        <button class="add-btn" onclick="toggleForm('property')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+      <div class="entries" id="entries-property"><div class="skeleton"></div></div>
+      <div class="add-form" id="form-property">
+        <textarea id="input-property" placeholder="Describe a property experience…"></textarea>
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="toggleForm('property')">Cancel</button>
+          <button class="btn-submit" onclick="submitEntry('property')">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEYOND -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">Beyond</div>
+        <button class="add-btn" onclick="toggleForm('beyond')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+      <div class="entries" id="entries-beyond"><div class="skeleton"></div></div>
+      <div class="add-form" id="form-beyond">
+        <textarea id="input-beyond" placeholder="Describe a beyond experience…"></textarea>
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="toggleForm('beyond')">Cancel</button>
+          <button class="btn-submit" onclick="submitEntry('beyond')">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANYAN CIRCLE -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">Banyan Circle</div>
+        <button class="add-btn" onclick="toggleForm('banyan_circle')">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+      <div class="entries" id="entries-banyan_circle"><div class="skeleton"></div></div>
+      <div class="add-form" id="form-banyan_circle">
+        <textarea id="input-banyan_circle" placeholder="Describe a Banyan Circle experience…"></textarea>
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="toggleForm('banyan_circle')">Cancel</button>
+          <button class="btn-submit" onclick="submitEntry('banyan_circle')">Save</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-// Catch property from URL param, fallback to localStorage
-const params   = new URLSearchParams(window.location.search);
-const me       = JSON.parse(localStorage.getItem('bc_me') || 'null');
-const PROP     = params.get('property') || (me && (me.prop || me.property_name)) || null;
+// Catch property from URL param only — no login required
+const PROP = new URLSearchParams(window.location.search).get('property') || null;
 
 if (!PROP) {
-  console.warn('No property found. Redirecting.');
-  location.href = 'index.html';
+  document.getElementById('header-prop').textContent = 'No property specified';
   throw new Error('No property');
 }
+
+document.getElementById('header-prop').textContent = PROP;
 
 async function api(path, method, body) {
   const h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Accept: 'application/json', Prefer: 'return=representation' };
@@ -29,15 +201,77 @@ async function api(path, method, body) {
   return r.json().catch(() => null);
 }
 
-let property = null;
-
-async function init() {
-  property = (await api('/rest/v1/properties?name=eq.' + encodeURIComponent(PROP) + '&select=*'))?.[0] || null;
-  // Build your UI here using `property`
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2400);
 }
 
-init().catch(console.error);
-</script>
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
+// ── FORMS ──
+function toggleForm(section) {
+  const form = document.getElementById('form-' + section);
+  const isOpen = form.classList.contains('open');
+  // Close all forms first
+  document.querySelectorAll('.add-form').forEach(f => f.classList.remove('open'));
+  if (!isOpen) {
+    form.classList.add('open');
+    document.getElementById('input-' + section).focus();
+  }
+}
+
+// ── LOAD ENTRIES ──
+async function loadSection(section) {
+  const el = document.getElementById('entries-' + section);
+  const data = await api('/rest/v1/experiences?property_name=eq.' + encodeURIComponent(PROP) + '&section=eq.' + encodeURIComponent(section) + '&order=created_at.desc') || [];
+  if (!data.length) {
+    el.innerHTML = '<div class="entry-card empty-state">No entries yet. Tap + Add to begin.</div>';
+    return;
+  }
+  el.innerHTML = data.map(e => `
+    <div class="entry-card">${esc(e.content || '')}</div>
+  `).join('');
+}
+
+// ── SUBMIT ──
+async function submitEntry(section) {
+  const input = document.getElementById('input-' + section);
+  const content = input.value.trim();
+  if (!content) { toast('Please enter some text first', true); return; }
+
+  const btn = document.querySelector('#form-' + section + ' .btn-submit');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  const result = await api('/rest/v1/experiences', 'POST', {
+    property_name: PROP,
+    section: section,
+    content: content
+  });
+
+  btn.textContent = 'Save';
+  btn.disabled = false;
+
+  if (!result) {
+    toast('Failed to save. Check table exists.', true);
+    return;
+  }
+
+  input.value = '';
+  toggleForm(section);
+  loadSection(section);
+  toast('Saved ✓');
+}
+
+// ── BOOT ──
+loadSection('property');
+loadSection('beyond');
+loadSection('banyan_circle');
+</script>
 </body>
 </html>
