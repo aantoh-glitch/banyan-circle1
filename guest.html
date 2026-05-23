@@ -111,6 +111,18 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .info-btn-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .info-btn-arrow{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
+/* ── PNE Slide-up Sheet ── */
+.pne-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
+.pne-backdrop.open{opacity:1;pointer-events:all}
+.pne-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:430px;height:92vh;background:var(--bg);border-radius:20px 20px 0 0;z-index:301;transition:transform .36s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.18)}
+.pne-sheet.open{transform:translateX(-50%) translateY(0)}
+.pne-sheet-grab{width:36px;height:4px;background:var(--border);border-radius:999px;margin:10px auto 0;flex-shrink:0}
+.pne-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.pne-sheet-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
+.pne-sheet-close{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pne-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.pne-sheet-body{flex:1;overflow:hidden}
+.pne-sheet-body iframe{width:100%;height:100%;border:none;display:block}
 
 </style>
 </head>
@@ -233,7 +245,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
           <label class="radio-opt"><input type="radio" name="purpose" value="Medical"/> Medical</label>
           <label class="radio-opt"><input type="radio" name="purpose" value="Transit"/> Transit</label>
           <label class="radio-opt"><input type="radio" name="purpose" value="Remote working"/> Remote working</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Visiting friends & family"/> Visiting friends &amp; family</label>
+          <label class="radio-opt"><input type="radio" name="purpose" value="Visiting friends &amp; family"/> Visiting friends &amp; family</label>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -253,10 +265,10 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="sub-bar"><button class="btn-sub btn-br" id="ci-btn" onclick="submitCheckin()">Submit registration</button></div>
   </div>
 
-  <!-- INFO BUTTON (combined) -->
+  <!-- PROPERTY INFORMATION — PNE button -->
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
     <div class="sec-hdr" style="margin-top:0">Property Information</div>
-    <button class="info-btn">
+    <button class="info-btn" onclick="openPne()">
       <span class="info-btn-icon" style="background:var(--br-l);color:var(--br)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
       </span>
@@ -335,8 +347,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
 <!-- IN, AROUND & BEYOND -->
 <div class="pg" id="pg-tips">
-
-  <!-- Bottom actions -->
   <div style="margin-top:12px">
     <button onclick="location.href='messaging.html'" style="width:100%;background:var(--br-l);border:1.5px solid rgba(153,60,29,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:opacity .15s;margin-bottom:10px" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity='1'">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -381,11 +391,9 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <button class="btn-sub btn-br" onclick="submitGuestBooking()">Send Booking Request</button>
   </div>
 
-  <!-- BOOKING LOG -->
   <div style="font-family:'Playfair Display',serif;font-size:17px;margin:24px 0 14px">Your Booking Requests</div>
   <div id="g-booking-log"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
 
-  <!-- EDIT BOOKING MODAL (inline drawer) -->
   <div id="g-bk-edit-panel" style="display:none;background:var(--white);border:1.5px solid var(--br);border-radius:14px;padding:16px;margin-bottom:16px">
     <div style="font-size:13px;font-weight:500;color:var(--br);margin-bottom:14px;display:flex;align-items:center;gap:8px">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -419,7 +427,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <div class="pg-title">Reviews</div>
   <div class="pg-sub">Share your experience</div>
 
-  <!-- Rate a Talent -->
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='rating.html'">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
@@ -431,10 +438,9 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
 
-  <!-- Slot 1: Staff Review -->
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='staff-review.html'">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--br-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polygon points="23,10 23.5,12.5 26,13 23.5,13.5 23,16 22.5,13.5 20,13 22.5,12.5" style="display:none"/><path d="M22 11l.5 2 2 .5-2 .5-.5 2-.5-2-2-.5 2-.5z"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l.5 2 2 .5-2 .5-.5 2-.5-2-2-.5 2-.5z"/></svg>
     </div>
     <div style="flex:1">
       <div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate Our Staff</div>
@@ -443,7 +449,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
 
-  <!-- Slot 2: Property Review (coming soon) -->
   <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;opacity:0.5;cursor:not-allowed">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--g-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
@@ -464,7 +469,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
 
   <div id="bill-content" style="display:none">
-    <!-- Stay summary card -->
     <div class="card" style="padding:16px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Stay Summary</div>
       <div class="bill-line"><span style="color:var(--muted)">Guest</span><span id="bill-guest-name" style="font-weight:500">—</span></div>
@@ -474,14 +478,12 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <div class="bill-line" style="border:none"><span style="color:var(--muted)">Nights</span><span id="bill-nights">—</span></div>
     </div>
 
-    <!-- Charges -->
     <div class="card" style="padding:16px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Charges</div>
       <div id="bill-items"><div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges available yet.</div></div>
       <div class="bill-total"><span>Total</span><span id="bill-total">—</span></div>
     </div>
 
-    <!-- Status -->
     <div class="card" style="padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
       <div>
         <div style="font-size:13px;font-weight:500;margin-bottom:2px">Payment Status</div>
@@ -524,6 +526,22 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
 </nav>
 </div>
+
+<!-- ── PNE SLIDE-UP SHEET ── -->
+<div class="pne-backdrop" id="pne-backdrop" onclick="closePne()"></div>
+<div class="pne-sheet" id="pne-sheet">
+  <div class="pne-sheet-grab"></div>
+  <div class="pne-sheet-hdr">
+    <div class="pne-sheet-title">Property Rules, Notes &amp; Emergency Contacts</div>
+    <button class="pne-sheet-close" onclick="closePne()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="pne-sheet-body">
+    <iframe id="pne-frame" src="" title="Property Rules, Notes & Emergency Contacts"></iframe>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -544,7 +562,6 @@ if (!me || me.role !== 'guest') { location.href = '/index.html'; throw new Error
 document.getElementById('hdr-name').textContent = me.name;
 document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
 
-
 // Pre-fill name and dates
 document.getElementById('ci-name').value = me.name || '';
 if(me.check_in) document.getElementById('ci-arr-date').value = me.check_in;
@@ -564,10 +581,27 @@ function goPage(id, btn) {
   if(id==='complaint')  loadCompHistory();
   if(id==='finalbill')  loadFinalBill();
 }
+
+// ── PNE slide-up sheet ──
 function openPne() {
   var prop = (me && (me.prop || me.property_name)) || '';
-  location.href = prop ? 'pne.html?prop=' + encodeURIComponent(prop) : 'pne.html';
+  var src = prop ? 'pne.html?prop=' + encodeURIComponent(prop) : 'pne.html';
+  var frame = document.getElementById('pne-frame');
+  // Only reload if src changed (avoids flicker on repeated opens)
+  if(frame.getAttribute('data-loaded-src') !== src) {
+    frame.src = src;
+    frame.setAttribute('data-loaded-src', src);
+  }
+  document.getElementById('pne-backdrop').classList.add('open');
+  document.getElementById('pne-sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
+function closePne() {
+  document.getElementById('pne-backdrop').classList.remove('open');
+  document.getElementById('pne-sheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 async function api(path, method, body) {
   const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
@@ -661,7 +695,6 @@ async function submitCheckin(){
   const btn = document.getElementById('ci-btn');
   btn.disabled=true;
 
-  // Convert ID proof files to base64 (or keep existing on edit if no new files uploaded)
   let id_proofs=[];
   if(files.length){
     for(let i=0;i<files.length;i++){
@@ -674,7 +707,6 @@ async function submitCheckin(){
     id_proofs=CI_RECORD.form_data?.id_proofs||[];
   }
 
-  // Convert passport if Section B open
   const sbOpen = document.getElementById('section-b').classList.contains('open');
   const passport_docs=[];
   if(sbOpen){
@@ -688,7 +720,6 @@ async function submitCheckin(){
 
   btn.textContent='Saving…';
 
-  // Build form_data JSON — includes id_proofs as base64 array
   const form_data = {
     organisation: document.getElementById('ci-org').value.trim(),
     permanent_address: addr,
@@ -701,7 +732,7 @@ async function submitCheckin(){
     comfort_requests: document.getElementById('ci-comfort').value.trim(),
     declaration: true,
     is_foreign: sbOpen,
-    id_proofs,   // [{name, type, data: "data:...;base64,..."}]
+    id_proofs,
   };
 
   if(sbOpen){
@@ -711,7 +742,7 @@ async function submitCheckin(){
       passport_no:      document.getElementById('fb-passport-no').value.trim(),
       passport_date:    document.getElementById('fb-passport-date').value,
       passport_place:   document.getElementById('fb-passport-place').value.trim(),
-      passport_docs,   // [{name, type, data}]
+      passport_docs,
       india_address:    document.getElementById('fb-india-addr').value.trim(),
       india_arrival:    document.getElementById('fb-india-arrival').value,
       employed_india:   document.querySelector('input[name="employed"]:checked')?.value||'',
@@ -844,9 +875,8 @@ async function submitFeedback(){
   document.getElementById('fb-success').style.display='block';
 }
 
-// ── TIPS — handled by pbb.html iframe ──
+// ── TIPS ──
 async function loadTips(){
-  // pbb.html renders Property / Beyond / Banyan Circle inline
   loadGuestTalents();
 }
 
@@ -856,10 +886,8 @@ const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||
 async function loadGuestTalents(){
   try{
     const rows = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name') || [];
-    // Populate select (if present)
     const sel = document.getElementById('g-bk-talent');
     if(sel) sel.innerHTML = '<option value="">Select talent…</option>' + rows.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
-    // Render cards in pg-talent
     const el = document.getElementById('g-talent-list');
     if(el){
       if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available</div>'; }
@@ -873,7 +901,6 @@ async function loadGuestTalents(){
           </div>
         </div>`).join(''); }
     }
-    // Render cards in Explore page talent list
     const exploreEl = document.getElementById('tips-talent-list');
     if(exploreEl){
       if(!rows.length){ exploreEl.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available yet.</div>'; }
@@ -954,7 +981,6 @@ async function loadGuestBookingHistory(){
 
 function openBookingEdit(id, talentId, date, time, message){
   document.getElementById('g-bk-edit-id').value = id;
-  // Populate talent select (clone options from main select)
   const src = document.getElementById('g-bk-talent');
   const dst = document.getElementById('g-bk-edit-talent');
   dst.innerHTML = src.innerHTML;
@@ -996,6 +1022,7 @@ async function saveBookingEdit(){
   } catch(e){ toast('Error: '+e.message); }
   btn.disabled=false; btn.textContent='Save changes';
 }
+
 // ── Welcome banner ──
 function dismissBanner(){
   const b = document.getElementById('welcome-banner');
@@ -1020,12 +1047,10 @@ async function loadFinalBill(){
     const fmt = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
     document.getElementById('bill-checkin').textContent  = fmt(bill.check_in_date);
     document.getElementById('bill-checkout').textContent = fmt(bill.check_out_date);
-    // nights
     if(bill.check_in_date && bill.check_out_date){
       const diff = Math.round((new Date(bill.check_out_date)-new Date(bill.check_in_date))/(1000*60*60*24));
       document.getElementById('bill-nights').textContent = diff > 0 ? diff+' night'+(diff!==1?'s':'') : '—';
     }
-    // items
     const items = bill.line_items || [];
     if(items.length){
       document.getElementById('bill-items').innerHTML = items.map(i=>`
@@ -1036,7 +1061,6 @@ async function loadFinalBill(){
     }
     const total = bill.total_amount != null ? bill.total_amount : (items.reduce((s,i)=>s+Number(i.amount||0),0)||null);
     document.getElementById('bill-total').textContent = total != null ? (bill.currency||'₹')+' '+Number(total).toLocaleString('en-IN',{minimumFractionDigits:2}) : '—';
-    // status badge
     const statusMap = {paid:'bdg-g', pending:'bdg-a', overdue:'bdg-r', waived:'bdg-g'};
     const st = (bill.payment_status||'pending').toLowerCase();
     const badge = document.getElementById('bill-status-badge');
