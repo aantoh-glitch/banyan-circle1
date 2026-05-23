@@ -876,7 +876,7 @@ async function loadTips(){
   var root = document.getElementById('pbb-root');
   if(root && !root.getAttribute('data-loaded')){
     root.setAttribute('data-loaded','1');
-    pbbLoad();
+    if(typeof window.pbbLoad === 'function') window.pbbLoad();
   }
 }
 
@@ -1095,165 +1095,181 @@ async function loadFinalBill(){
 })();
 </script>
 <style>
-.pbb-section{margin-bottom:22px}
-.pbb-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-.pbb-sec-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:var(--text)}
-.pbb-sec-sub{font-size:12px;color:var(--muted);margin-bottom:10px}
-.pbb-tip-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:8px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
-.pbb-tip-inner{display:flex;gap:10px;align-items:flex-start}
-.pbb-tip-body{flex:1;min-width:0}
-.pbb-tip-name{font-size:14px;font-weight:500;margin-bottom:4px}
-.pbb-tip-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:6px}
-.pbb-tip-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-right:3px;background:var(--br-l);color:var(--br);font-weight:500}
-.pbb-tip-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
-.pbb-talent-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
-.pbb-talent-av{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
-.pbb-btn-add{background:var(--br-l);border:1px solid #F2C9B8;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--br);font-family:inherit;font-weight:500}
-.pbb-btn-edit{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit;white-space:nowrap}
-.pbb-btn-del{background:#FCEBEB;border:1px solid #f0c8c8;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:#791F1F;font-family:inherit;white-space:nowrap}
-.pbb-add-form{background:var(--br-l);border:1px solid #F2C9B8;border-radius:12px;padding:14px;margin-bottom:10px;display:none}
-.pbb-add-form.open{display:block}
-.pbb-form-title{font-size:13px;font-weight:600;color:var(--br);margin-bottom:10px}
+.pbb-s{margin-bottom:22px}
+.pbb-sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.pbb-st{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:var(--text)}
+.pbb-ss{font-size:12px;color:var(--muted);margin-bottom:10px}
+.pbb-tc{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:8px}
+.pbb-ti{display:flex;gap:10px;align-items:flex-start}
+.pbb-tb{flex:1;min-width:0}
+.pbb-tn{font-size:14px;font-weight:500;margin-bottom:4px}
+.pbb-td{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+.pbb-tg{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-right:3px;background:var(--br-l);color:var(--br);font-weight:500}
+.pbb-ta{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.pbb-xc{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.pbb-xa{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
+.pbb-ba{background:var(--br-l);border:1px solid #F2C9B8;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--br);font-family:inherit;font-weight:500}
+.pbb-be{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit}
+.pbb-bd{background:#FCEBEB;border:1px solid #f0c8c8;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:#791F1F;font-family:inherit}
+.pbb-af{background:var(--br-l);border:1px solid #F2C9B8;border-radius:12px;padding:14px;margin-bottom:10px;display:none}
+.pbb-af.open{display:block}
+.pbb-ft{font-size:13px;font-weight:600;color:var(--br);margin-bottom:10px}
 .pbb-fg{margin-bottom:10px}
 .pbb-fl{display:block;font-size:10px;color:#9e9c97;margin-bottom:4px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
-.pbb-fc{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.pbb-fc{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
 .pbb-fc:focus{border-color:var(--br)}
 textarea.pbb-fc{resize:vertical;min-height:72px;line-height:1.55}
-.pbb-empty{font-size:13px;color:var(--muted);padding:8px 0}
+.pbb-em{font-size:13px;color:var(--muted);padding:8px 0}
 </style>
 
 <script>
-(function(){
-  var SB='https://wwdnuajhqfajvsexszpy.supabase.co';
-  var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
-  var pbbMe=JSON.parse(localStorage.getItem('bc_me')||'null');
-  var pbbProp=pbbMe?(pbbMe.prop||pbbMe.property_name||'default'):'default';
-  var pbbEdit={cat:null,id:null};
+var SB_PBB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY_PBB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+var pbbMe   = JSON.parse(localStorage.getItem('bc_me') || 'null');
+var pbbProp = pbbMe ? (pbbMe.prop || pbbMe.property_name || 'default') : 'default';
+var pbbEdit = { cat: null, id: null };
 
-  async function pbbApi(path,method,body){
-    try{
-      var opts={method:method||'GET',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'}};
-      if(body)opts.body=JSON.stringify(body);
-      var r=await fetch(SB+path,opts);
-      if(!r.ok)return null;
-      var t=await r.text();return t?JSON.parse(t):null;
-    }catch(e){return null;}
-  }
-
-  function pbbEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  var pbbIni=function(n){return (n||'').split(' ').map(function(x){return x[0];}).join('').slice(0,2).toUpperCase()||'?';};
-
-  window.pbbOpenAddForm=function(cat){
-    pbbEdit={cat:cat,id:null};
-    document.querySelectorAll('.pbb-add-form').forEach(function(el){el.classList.remove('open');});
-    var f=document.getElementById('pbbf-'+cat);if(!f)return;
-    f.querySelector('.pbb-fname').value='';
-    f.querySelector('.pbb-fdesc').value='';
-    f.querySelector('.pbb-ftags').value='';
-    f.querySelector('.pbb-form-title').textContent='Add tip';
-    f.classList.add('open');
-  };
-
-  window.pbbOpenEditForm=function(cat,tipJson){
-    var tip=JSON.parse(tipJson);pbbEdit={cat:cat,id:tip.id};
-    document.querySelectorAll('.pbb-add-form').forEach(function(el){el.classList.remove('open');});
-    var f=document.getElementById('pbbf-'+cat);if(!f)return;
-    f.querySelector('.pbb-fname').value=tip.name||'';
-    f.querySelector('.pbb-fdesc').value=tip.description||'';
-    f.querySelector('.pbb-ftags').value=(tip.tags||[]).join(', ');
-    f.querySelector('.pbb-form-title').textContent='Edit tip';
-    f.classList.add('open');
-  };
-
-  window.pbbCloseForm=function(cat){
-    var f=document.getElementById('pbbf-'+cat);if(f)f.classList.remove('open');
-    pbbEdit={cat:null,id:null};
-  };
-
-  window.pbbSaveTip=async function(cat){
-    var f=document.getElementById('pbbf-'+cat);
-    var name=f.querySelector('.pbb-fname').value.trim();if(!name)return;
-    var desc=f.querySelector('.pbb-fdesc').value.trim();
-    var tags=f.querySelector('.pbb-ftags').value.split(',').map(function(s){return s.trim();}).filter(Boolean);
-    var body={property_name:pbbProp,name:name,category:cat,description:desc||null,tags:tags};
-    if(pbbEdit.id){await pbbApi('/rest/v1/local_tips?id=eq.'+pbbEdit.id,'PATCH',body);}
-    else{await pbbApi('/rest/v1/local_tips','POST',body);}
-    pbbCloseForm(cat);pbbLoad();
-  };
-
-  window.pbbDeleteTip=async function(id){
-    if(!confirm('Delete this tip?'))return;
-    await pbbApi('/rest/v1/local_tips?id=eq.'+id,'DELETE');
-    pbbLoad();
-  };
-
-  function pbbRenderForm(cat){
-    return '<div class="pbb-add-form" id="pbbf-'+cat+'">'
-      +'<div class="pbb-form-title">Add tip</div>'
-      +'<div class="pbb-fg"><label class="pbb-fl">Name</label><input class="pbb-fc pbb-fname" type="text" placeholder="Place name"/></div>'
-      +'<div class="pbb-fg"><label class="pbb-fl">Description</label><textarea class="pbb-fc pbb-fdesc" placeholder="Brief description…"></textarea></div>'
-      +'<div class="pbb-fg"><label class="pbb-fl">Tags (comma separated)</label><input class="pbb-fc pbb-ftags" type="text" placeholder="e.g. Cafe, Breakfast"/></div>'
-      +'<div style="display:flex;gap:8px;margin-top:4px">'
-        +'<button class="pbb-btn-edit" style="flex:1;padding:8px" onclick="pbbCloseForm(''+cat+'')">Cancel</button>'
-        +'<button class="pbb-btn-add" style="flex:1;padding:8px;font-size:13px" onclick="pbbSaveTip(''+cat+'')">Save</button>'
-      +'</div>'
-      +'</div>';
-  }
-
-  function pbbRenderCard(t,cat){
-    var tags=(t.tags||[]).map(function(tg){return '<span class="pbb-tip-tag">'+pbbEsc(tg)+'</span>';}).join('');
-    var safe=JSON.stringify(t).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return '<div class="pbb-tip-card"><div class="pbb-tip-inner">'
-      +'<div class="pbb-tip-body">'
-        +'<div class="pbb-tip-name">'+pbbEsc(t.name)+'</div>'
-        +(t.description?'<div class="pbb-tip-desc">'+pbbEsc(t.description)+'</div>':'')
-        +(tags?'<div>'+tags+'</div>':'')
-      +'</div>'
-      +'<div class="pbb-tip-actions">'
-        +'<button class="pbb-btn-edit" onclick="pbbOpenEditForm(''+cat+'',''+safe+'')">Edit</button>'
-        +'<button class="pbb-btn-del" onclick="pbbDeleteTip(''+t.id+'')">Del</button>'
-      +'</div>'
-      +'</div></div>';
-  }
-
-  window.pbbLoad=async function(){
-    var root=document.getElementById('pbb-root');if(!root)return;
-    root.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Loading…</div>';
-    var tips=await pbbApi('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(pbbProp)+'&order=category,name')||[];
-    var talents=await pbbApi('/rest/v1/talents?select=id,name,category,short_desc&order=name')||[];
-    var cats=[
-      {id:'In',title:'Property',sub:"What's available at your property"},
-      {id:'Beyond',title:'Beyond',sub:'Local food, cafes, sightseeing & culture nearby'},
-      {id:'Around',title:'Banyan Circle',sub:'Banyan Circle curated experiences'}
-    ];
-    var html='';
-    cats.forEach(function(c){
-      var items=tips.filter(function(t){return t.category===c.id;});
-      var cards=items.length?items.map(function(t){return pbbRenderCard(t,c.id);}).join(''):'<div class="pbb-empty">Nothing added yet.</div>';
-      var extras='';
-      if(c.id==='Around'&&talents.length){
-        extras='<div style="margin-top:8px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9e9c97;font-weight:500;margin-bottom:6px">Talents</div>';
-        extras+=talents.map(function(t){
-          return '<div class="pbb-talent-card">'
-            +'<div class="pbb-talent-av">'+pbbIni(t.name)+'</div>'
-            +'<div><div style="font-size:14px;font-weight:500">'+pbbEsc(t.name)+'</div>'
-            +'<div style="font-size:12px;color:var(--muted)">'+pbbEsc(t.category||'')+'</div>'
-            +(t.short_desc?'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+pbbEsc(t.short_desc)+'</div>':'')
-            +'</div></div>';
-        }).join('');
-      }
-      html+='<div class="pbb-section">'
-        +'<div class="pbb-sec-hdr">'
-          +'<div class="pbb-sec-title">'+c.title+'</div>'
-          +'<button class="pbb-btn-add" onclick="pbbOpenAddForm(''+c.id+'')">+ Add</button>'
-        +'</div>'
-        +'<div class="pbb-sec-sub">'+c.sub+'</div>'
-        +pbbRenderForm(c.id)
-        +cards+extras
-        +'</div>';
+async function pbbApi(path, method, body) {
+  try {
+    var r = await fetch(SB_PBB + path, {
+      method: method || 'GET',
+      headers: { apikey: KEY_PBB, Authorization: 'Bearer ' + KEY_PBB, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: body ? JSON.stringify(body) : undefined
     });
-    root.innerHTML=html;
-  };
-})();
+    if (!r.ok) return null;
+    var txt = await r.text();
+    return txt ? JSON.parse(txt) : null;
+  } catch(e) { return null; }
+}
+
+function pbbEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function pbbIni(n) {
+  return (n||'').split(' ').map(function(x){return x[0];}).join('').slice(0,2).toUpperCase() || '?';
+}
+
+function pbbOpenAddForm(cat) {
+  pbbEdit = { cat: cat, id: null };
+  document.querySelectorAll('.pbb-af').forEach(function(el){ el.classList.remove('open'); });
+  var f = document.getElementById('pbbf-' + cat);
+  if (!f) return;
+  f.querySelector('.pbb-fn').value = '';
+  f.querySelector('.pbb-fd').value = '';
+  f.querySelector('.pbb-fk').value = '';
+  f.querySelector('.pbb-ft').textContent = 'Add tip';
+  f.classList.add('open');
+}
+
+function pbbOpenEditForm(cat, id, name, desc, tags) {
+  pbbEdit = { cat: cat, id: id };
+  document.querySelectorAll('.pbb-af').forEach(function(el){ el.classList.remove('open'); });
+  var f = document.getElementById('pbbf-' + cat);
+  if (!f) return;
+  f.querySelector('.pbb-fn').value = name || '';
+  f.querySelector('.pbb-fd').value = desc || '';
+  f.querySelector('.pbb-fk').value = tags || '';
+  f.querySelector('.pbb-ft').textContent = 'Edit tip';
+  f.classList.add('open');
+}
+
+function pbbCloseForm(cat) {
+  var f = document.getElementById('pbbf-' + cat);
+  if (f) f.classList.remove('open');
+  pbbEdit = { cat: null, id: null };
+}
+
+async function pbbSaveTip(cat) {
+  var f = document.getElementById('pbbf-' + cat);
+  var name = f.querySelector('.pbb-fn').value.trim();
+  if (!name) return;
+  var desc = f.querySelector('.pbb-fd').value.trim();
+  var tags = f.querySelector('.pbb-fk').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var body = { property_name: pbbProp, name: name, category: cat, description: desc || null, tags: tags };
+  if (pbbEdit.id) {
+    await pbbApi('/rest/v1/local_tips?id=eq.' + pbbEdit.id, 'PATCH', body);
+  } else {
+    await pbbApi('/rest/v1/local_tips', 'POST', body);
+  }
+  pbbCloseForm(cat);
+  pbbLoad();
+}
+
+async function pbbDeleteTip(id) {
+  if (!confirm('Delete this tip?')) return;
+  await pbbApi('/rest/v1/local_tips?id=eq.' + id, 'DELETE');
+  pbbLoad();
+}
+
+function pbbForm(cat) {
+  return '<div class="pbb-af" id="pbbf-' + cat + '">'
+    + '<div class="pbb-ft">Add tip</div>'
+    + '<div class="pbb-fg"><label class="pbb-fl">Name</label><input class="pbb-fc pbb-fn" type="text" placeholder="Place name"/></div>'
+    + '<div class="pbb-fg"><label class="pbb-fl">Description</label><textarea class="pbb-fc pbb-fd" placeholder="Brief description..."></textarea></div>'
+    + '<div class="pbb-fg"><label class="pbb-fl">Tags (comma separated)</label><input class="pbb-fc pbb-fk" type="text" placeholder="e.g. Cafe, Food"/></div>'
+    + '<div style="display:flex;gap:8px;margin-top:4px">'
+    + '<button class="pbb-be" style="flex:1;padding:8px" onclick="pbbCloseForm('' + cat + '')">Cancel</button>'
+    + '<button class="pbb-ba" style="flex:1;padding:8px;font-size:13px" onclick="pbbSaveTip('' + cat + '')">Save</button>'
+    + '</div></div>';
+}
+
+function pbbCard(t, cat) {
+  var tags = (t.tags || []).map(function(tg){ return '<span class="pbb-tg">' + pbbEsc(tg) + '</span>'; }).join('');
+  // pass individual fields to avoid JSON serialisation escaping issues
+  var n = pbbEsc(t.name);
+  var d = pbbEsc(t.description || '');
+  var k = pbbEsc((t.tags||[]).join(', '));
+  return '<div class="pbb-tc"><div class="pbb-ti">'
+    + '<div class="pbb-tb">'
+    + '<div class="pbb-tn">' + n + '</div>'
+    + (d ? '<div class="pbb-td">' + d + '</div>' : '')
+    + (tags ? '<div>' + tags + '</div>' : '')
+    + '</div>'
+    + '<div class="pbb-ta">'
+    + '<button class="pbb-be" onclick="pbbOpenEditForm('' + cat + '','' + t.id + '',this.closest('.pbb-tc').querySelector('.pbb-tn').textContent,this.closest('.pbb-tc').querySelector('.pbb-td') ? this.closest('.pbb-tc').querySelector('.pbb-td').textContent : '',this.closest('.pbb-tc').querySelectorAll('.pbb-tg').length ? Array.from(this.closest('.pbb-tc').querySelectorAll('.pbb-tg')).map(function(e){return e.textContent;}).join(', ') : '')">Edit</button>'
+    + '<button class="pbb-bd" onclick="pbbDeleteTip('' + t.id + '')">Del</button>'
+    + '</div>'
+    + '</div></div>';
+}
+
+async function pbbLoad() {
+  var root = document.getElementById('pbb-root');
+  if (!root) return;
+  root.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Loading...</div>';
+  var tips    = (await pbbApi('/rest/v1/local_tips?property_name=eq.' + encodeURIComponent(pbbProp) + '&order=category,name')) || [];
+  var talents = (await pbbApi('/rest/v1/talents?select=id,name,category,short_desc&order=name')) || [];
+  var cats = [
+    { id: 'In',     title: 'Property',      sub: "What's available at your property" },
+    { id: 'Beyond', title: 'Beyond',         sub: 'Local food, cafes & sightseeing nearby' },
+    { id: 'Around', title: 'Banyan Circle',  sub: 'Banyan Circle curated experiences' }
+  ];
+  var html = '';
+  cats.forEach(function(c) {
+    var items = tips.filter(function(t){ return t.category === c.id; });
+    var cards = items.length
+      ? items.map(function(t){ return pbbCard(t, c.id); }).join('')
+      : '<div class="pbb-em">Nothing added yet.</div>';
+    var extras = '';
+    if (c.id === 'Around' && talents.length) {
+      extras = '<div style="margin-top:8px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9e9c97;font-weight:500;margin-bottom:6px">Talents</div>';
+      extras += talents.map(function(t) {
+        return '<div class="pbb-xc">'
+          + '<div class="pbb-xa">' + pbbIni(t.name) + '</div>'
+          + '<div><div style="font-size:14px;font-weight:500">' + pbbEsc(t.name) + '</div>'
+          + '<div style="font-size:12px;color:var(--muted)">' + pbbEsc(t.category||'') + '</div>'
+          + (t.short_desc ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + pbbEsc(t.short_desc) + '</div>' : '')
+          + '</div></div>';
+      }).join('');
+    }
+    html += '<div class="pbb-s">'
+      + '<div class="pbb-sh"><div class="pbb-st">' + c.title + '</div>'
+      + '<button class="pbb-ba" onclick="pbbOpenAddForm('' + c.id + '')">+ Add</button></div>'
+      + '<div class="pbb-ss">' + c.sub + '</div>'
+      + pbbForm(c.id)
+      + cards + extras
+      + '</div>';
+  });
+  root.innerHTML = html;
+}
 </script>
 </html>
