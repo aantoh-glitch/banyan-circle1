@@ -861,24 +861,6 @@ function downloadAdminRegPDF(){
   ${imgTags?`<h2>ID Documents</h2><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">${imgTags}</div>`:''}
   <div class="decl">Declaration: The information provided above is accurate and the guest agrees to all applicable hospitality policies and local regulations. &nbsp;&nbsp;Submitted: ${c.checked_in_at?new Date(c.checked_in_at).toLocaleString('en-IN'):''}</div>
   <script>window.onload=()=>{document.title='${fn}';window.print()}<\/script>
-<!-- PIN Confirm Modal for staff removal -->
-<div class="modal" id="modal-pin-confirm"><div class="modal-card" style="max-width:320px">
-  <div class="modal-title" id="pin-confirm-title">Confirm removal</div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Enter the Office PIN to remove <strong id="pin-confirm-name"></strong>.</p>
-  <div style="display:flex;justify-content:center;gap:14px;margin-bottom:16px" id="pin-confirm-dots">
-    <div class="dot" id="pc-d0"></div><div class="dot" id="pc-d1"></div>
-    <div class="dot" id="pc-d2"></div><div class="dot" id="pc-d3"></div>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
-    <button class="key" onclick="pcKey('1')">1</button><button class="key" onclick="pcKey('2')">2</button><button class="key" onclick="pcKey('3')">3</button>
-    <button class="key" onclick="pcKey('4')">4</button><button class="key" onclick="pcKey('5')">5</button><button class="key" onclick="pcKey('6')">6</button>
-    <button class="key" onclick="pcKey('7')">7</button><button class="key" onclick="pcKey('8')">8</button><button class="key" onclick="pcKey('9')">9</button>
-    <div></div><button class="key" onclick="pcKey('0')">0</button>
-    <button class="key" onclick="pcDel()" style="font-size:16px;color:var(--muted)">⌫</button>
-  </div>
-  <div style="font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:10px" id="pin-confirm-err"></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-pin-confirm')">Cancel</button></div>
-</div></div>
 </body></html>`;
   const blob=new Blob([html],{type:'text/html'}); window.open(URL.createObjectURL(blob),'_blank');
 }
@@ -904,24 +886,6 @@ async function loadRevenueSection(){ const el=document.getElementById('rev-list'
 function updateProfitDisplay(){ const p=revenueTotal-expenseTotal; document.getElementById('profit-amt').textContent=fmt(Math.abs(p))+(p<0?' (loss)':''); document.getElementById('profit-amt').style.color=p>=0?'var(--g)':'var(--r)'; document.getElementById('profit-note').textContent='Revenue '+fmt(revenueTotal)+' − Expenses '+fmt(expenseTotal); document.getElementById('kpi-row').style.display='grid'; document.getElementById('kpi-expense').textContent=fmt(expenseTotal); document.getElementById('kpi-revenue').textContent=fmt(revenueTotal); const kp=document.getElementById('kpi-profit'); kp.textContent=fmt(Math.abs(p))+(p<0?' loss':''); kp.style.color=p>=0?'var(--g)':'var(--r)'; }
 function populateDlMonths(){ const sel=document.getElementById('dl-month'); const months=[]; const now=new Date(); for(let i=0;i<18;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.toISOString().slice(0,7));} sel.innerHTML=months.map(m=>`<option value="${m}">${m}</option>`).join(''); }
 async function downloadMonthlyReport(){ const month=document.getElementById('dl-month').value; if(!month){alert('Select a month');return;} const expenses=await api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(SCOPE.util)+'&month=eq.'+month+'&order=utility_type')||[]; let revenues=[]; try{const res=await api('/rest/v1/property_revenues?property_name=eq.'+encodeURIComponent(SCOPE.util)+'&date=gte.'+month+'-01&date=lte.'+month+'-31&order=date'); if(res&&Array.isArray(res))revenues=res;}catch(e){} const eT=expenses.reduce((s,e)=>s+(parseFloat(e.amount)||0),0); const rT=revenues.reduce((s,r)=>s+(parseFloat(r.amount)||0),0); const pr=rT-eT; const fI=n=>'₹'+Math.round(n||0).toLocaleString('en-IN'); const fD=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—'; const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>BC Report</title><style>body{font-family:Arial,sans-serif;padding:40px;color:#222;font-size:14px}h1{font-size:24px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:#666;margin:24px 0 8px;border-bottom:2px solid #eee;padding-bottom:6px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:7px 10px;background:#f7f7f7;border-bottom:2px solid #ddd;font-size:11px;text-transform:uppercase;color:#666}td{padding:9px 10px;border-bottom:1px solid #eee}.green{color:#27500A}.red{color:#A32D2D}.profit-box{border-radius:10px;padding:22px 24px;margin-top:28px;border:2px solid}.p-val{font-size:36px;font-weight:700}</style></head><body><h1>Banyan Circle · ${SCOPE.util}</h1><p style="color:#888;font-size:13px">Monthly Report · ${month}</p><h2>Expenses</h2>${expenses.length?`<table><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>${expenses.map(e=>`<tr><td>${e.month}</td><td>${e.utility_type}</td><td>${fI(e.amount)}</td><td>${e.status}</td></tr>`).join('')}<tr style="font-weight:700;background:#fafafa"><td colspan="2">Total</td><td class="red">${fI(eT)}</td><td></td></tr></tbody></table>`:'<p style="color:#aaa">No expenses.</p>'}<h2>Revenue</h2>${revenues.length?`<table><thead><tr><th>Item</th><th>Date</th><th>Amount</th></tr></thead><tbody>${revenues.map(r=>`<tr><td>${r.item}</td><td>${fD(r.date)}</td><td>${fI(r.amount)}</td></tr>`).join('')}<tr style="font-weight:700;background:#fafafa"><td colspan="2">Total</td><td class="green">${fI(rT)}</td></tr></tbody></table>`:'<p style="color:#aaa">No revenue.</p>'}<div class="profit-box" style="border-color:${pr>=0?'#c8e6c9':'#ffcdd2'}"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#888;margin-bottom:8px">Net Profit / Loss</div><div class="p-val ${pr>=0?'green':'red'}">${fI(Math.abs(pr))}${pr<0?' (loss)':''}</div><div style="font-size:13px;color:#999;margin-top:6px">Revenue ${fI(rT)} − Expenses ${fI(eT)}</div></div><script>window.onload=()=>window.print();<\/script>
-<!-- PIN Confirm Modal for staff removal -->
-<div class="modal" id="modal-pin-confirm"><div class="modal-card" style="max-width:320px">
-  <div class="modal-title" id="pin-confirm-title">Confirm removal</div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Enter the Office PIN to remove <strong id="pin-confirm-name"></strong>.</p>
-  <div style="display:flex;justify-content:center;gap:14px;margin-bottom:16px" id="pin-confirm-dots">
-    <div class="dot" id="pc-d0"></div><div class="dot" id="pc-d1"></div>
-    <div class="dot" id="pc-d2"></div><div class="dot" id="pc-d3"></div>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
-    <button class="key" onclick="pcKey('1')">1</button><button class="key" onclick="pcKey('2')">2</button><button class="key" onclick="pcKey('3')">3</button>
-    <button class="key" onclick="pcKey('4')">4</button><button class="key" onclick="pcKey('5')">5</button><button class="key" onclick="pcKey('6')">6</button>
-    <button class="key" onclick="pcKey('7')">7</button><button class="key" onclick="pcKey('8')">8</button><button class="key" onclick="pcKey('9')">9</button>
-    <div></div><button class="key" onclick="pcKey('0')">0</button>
-    <button class="key" onclick="pcDel()" style="font-size:16px;color:var(--muted)">⌫</button>
-  </div>
-  <div style="font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:10px" id="pin-confirm-err"></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-pin-confirm')">Cancel</button></div>
-</div></div>
 </body></html>`; const blob=new Blob([html],{type:'text/html'}); window.open(URL.createObjectURL(blob),'_blank'); }
 function openUtilityModal(){ document.getElementById('mu-id').value=''; document.getElementById('mu-ttl').textContent='Log expense · '+SCOPE.util; ['mu-amount','mu-paid','mu-notes'].forEach(i=>document.getElementById(i).value=''); document.getElementById('mu-proof').value=''; document.getElementById('mu-month').value=new Date().toISOString().slice(0,7); document.getElementById('mu-type').value='Electricity'; document.getElementById('mu-status').value='pending'; openModal('modal-utility'); }
 function editUtility(u){ document.getElementById('mu-id').value=u.id; document.getElementById('mu-ttl').textContent='Edit expense'; document.getElementById('mu-month').value=u.month||''; document.getElementById('mu-type').value=u.utility_type||'Electricity'; document.getElementById('mu-amount').value=u.amount||''; document.getElementById('mu-status').value=u.status||'pending'; document.getElementById('mu-paid').value=u.paid_on||''; document.getElementById('mu-notes').value=u.notes||''; document.getElementById('mu-proof').value=''; openModal('modal-utility'); }
