@@ -300,11 +300,12 @@ function scheduleNoteSave() {
   clearTimeout(notesTimer);
   var ind = document.getElementById('notes-save-ind');
   ind.classList.remove('saved');
+  ind.style.color = '';
   ind.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg> Saving…';
   notesTimer = setTimeout(async function() {
     var val = document.getElementById('notes-area').value;
-    // Upsert: insert or update by property_name (unique constraint required)
-    await fetch(SB + '/rest/v1/property_notes', {
+    // FIX: check response — requires UNIQUE on property_name (new-tables-2.sql) for merge-duplicates to work
+    var r = await fetch(SB + '/rest/v1/property_notes', {
       method: 'POST',
       headers: {
         'apikey': KEY, 'Authorization': 'Bearer ' + KEY,
@@ -313,6 +314,12 @@ function scheduleNoteSave() {
       },
       body: JSON.stringify({ property_name: PROP, notes: val, updated_at: new Date().toISOString() })
     });
+    if (!r.ok) {
+      ind.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg> Save failed';
+      ind.style.color = 'var(--r)';
+      return;
+    }
+    ind.style.color = '';
     ind.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg> Saved';
     ind.classList.add('saved');
   }, 900);

@@ -77,7 +77,8 @@ var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-var propName = me ? (me.prop || me.property_name || '') : '';
+// FIX: fallback to 'default' so tips are never saved/loaded against an empty key
+var propName = me ? (me.prop || me.property_name || 'default') : 'default';
 
 // currently open form state
 var editState = { cat: null, id: null };
@@ -166,11 +167,15 @@ async function saveTip(cat) {
   var tagsRaw = f.querySelector('.form-tags').value;
   var tags = tagsRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
   var body = { property_name: propName, name: name, category: cat, description: desc || null, tags: tags };
+  // FIX: check null response — API returns null when table doesn't exist or insert fails
+  var res;
   if (editState.id) {
-    await api('/rest/v1/local_tips?id=eq.' + editState.id, 'PATCH', body);
+    res = await api('/rest/v1/local_tips?id=eq.' + editState.id, 'PATCH', body);
+    if (!res) { toast('Could not update tip', true); return; }
     toast('Tip updated');
   } else {
-    await api('/rest/v1/local_tips', 'POST', body);
+    res = await api('/rest/v1/local_tips', 'POST', body);
+    if (!res) { toast('Could not save tip', true); return; }
     toast('Tip added');
   }
   closeForm(cat);
