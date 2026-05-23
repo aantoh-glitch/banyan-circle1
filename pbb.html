@@ -79,7 +79,16 @@ var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 // URL param takes priority — parent frame passes ?prop=... explicitly so each property gets its own data
 var _urlProp = new URLSearchParams(window.location.search).get('prop') || '';
-var propName = _urlProp || (me ? (me.prop || me.property_name || 'default') : 'default');
+var propName = _urlProp
+  || (me ? (me.prop || me.property_name || '') : '')
+  || localStorage.getItem('pbb_prop') || '';
+var KNOWN_PROPS = ['Villa 21', '19A Link Heritage'];
+
+function selectProp(p) {
+  propName = p;
+  localStorage.setItem('pbb_prop', p);
+  load();
+}
 
 // currently open form state
 var editState = { cat: null, id: null };
@@ -229,6 +238,25 @@ function renderTipCard(t, cat) {
 // ── MAIN LOAD ──────────────────────────────────────────────────
 async function load() {
   var root = document.getElementById('root');
+
+  // No property context — show picker
+  if (!propName) {
+    root.innerHTML = '<div style="padding:16px 0">'
+      + '<div style="font-family:\'Playfair Display\',serif;font-size:17px;font-weight:500;margin-bottom:6px">Select property</div>'
+      + '<div style="font-size:13px;color:var(--muted);margin-bottom:14px">Which property are you managing tips for?</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + KNOWN_PROPS.map(function(p){
+          return '<button onclick="selectProp(\'' + p + '\')"'
+            + ' style="padding:13px 16px;background:var(--white);border:1px solid var(--border);'
+            + 'border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;'
+            + 'text-align:left;font-family:inherit;color:var(--text)">' + p + '</button>';
+        }).join('')
+      + '</div></div>';
+    sendHeight();
+    setTimeout(sendHeight, 300);
+    return;
+  }
+
   var tips    = await api('/rest/v1/local_tips?property_name=eq.' + encodeURIComponent(propName) + '&order=category,name') || [];
   var talents = await api('/rest/v1/talents?select=id,name,category,short_desc&order=name') || [];
 
@@ -238,7 +266,10 @@ async function load() {
     { id: 'Around', title: 'Banyan Circle', sub: 'Banyan Circle curated experiences' }
   ];
 
-  var html = '';
+  var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+    + '<div style="font-size:12px;color:var(--muted)">Tips for <strong style="color:var(--text)">' + esc(propName) + '</strong></div>'
+    + '<button onclick="propName=\'\';localStorage.removeItem(\'pbb_prop\');load()" style="font-size:11px;color:var(--br);background:none;border:none;cursor:pointer;padding:0;font-family:inherit">Change</button>'
+    + '</div>';
   cats.forEach(function(c) {
     var items = tips.filter(function(t){ return t.category === c.id; });
     var cardsHtml = items.map(function(t){ return renderTipCard(t, c.id); }).join('');

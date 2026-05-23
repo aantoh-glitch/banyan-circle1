@@ -1126,7 +1126,8 @@ textarea.pbb-fc{resize:vertical;min-height:72px;line-height:1.55}
 var SB_PBB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY_PBB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 var pbbMe   = JSON.parse(localStorage.getItem('bc_me') || 'null');
-var pbbProp = pbbMe ? (pbbMe.prop || pbbMe.property_name || 'default') : 'default';
+var pbbProp = (pbbMe ? (pbbMe.prop || pbbMe.property_name || '') : '')
+  || localStorage.getItem('pbb_prop') || '';
 var pbbEdit = { cat: null, id: null };
 
 async function pbbApi(path, method, body) {
