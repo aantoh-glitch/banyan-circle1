@@ -118,7 +118,10 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
 var SB='https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 var me=JSON.parse(localStorage.getItem('bc_me')||'null');
-var PROP=(me&&(me.prop||me.property_name))||'default';
+// Prefer ?prop= query param (set by guest.html iframe) so PNE is always
+// scoped to the correct property regardless of which guest is logged in.
+var _urlProp=(new URLSearchParams(location.search)).get('prop')||'';
+var PROP=_urlProp||(me&&(me.prop||me.property_name))||'default';
 
 async function api(path,method,body){
   try{

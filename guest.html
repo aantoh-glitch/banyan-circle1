@@ -285,7 +285,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div style="font-family:'Playfair Display',serif;font-size:18px">Property Information</div>
     <button onclick="closeInfoSheet()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:20px;line-height:1">×</button>
   </div>
-  <iframe id="pne-iframe" src="pne.html" style="flex:1;width:100%;border:none;display:block;min-height:0" scrolling="yes"></iframe>
+  <iframe id="pne-iframe" src="" style="flex:1;width:100%;border:none;display:block;min-height:0" scrolling="yes"></iframe>
 </div>
 
 <!-- REQUESTS -->
@@ -1018,6 +1018,10 @@ async function saveBookingEdit(){
 function openInfoSheet(){
   var overlay=document.getElementById('info-sheet-overlay');
   var sheet=document.getElementById('info-sheet');
+  // Pass the current property via query param so pne.html scopes data correctly
+  var prop = (me && (me.prop || me.property_name)) || '';
+  var iframe = document.getElementById('pne-iframe');
+  iframe.src = 'pne.html?prop=' + encodeURIComponent(prop);
   overlay.style.display='block';
   sheet.style.display='flex';
   sheet.offsetHeight;
