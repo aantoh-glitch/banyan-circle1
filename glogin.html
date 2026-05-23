@@ -77,10 +77,8 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 </div>
 
 <script>
-// ─── Pre-added guest PIN ───────────────────────────────────────────────────
-// Change this value to whatever PIN guests are given at check-in.
-const GUEST_PIN = '1234';
-// ──────────────────────────────────────────────────────────────────────────
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 let pin = '';
 
@@ -103,23 +101,38 @@ function dots(state) {
   }
 }
 
-function checkPin() {
-  if (pin !== GUEST_PIN) {
-    dots('err');
-    document.getElementById('pin-err').textContent = 'Wrong PIN — try again';
-    setTimeout(() => {
-      pin = '';
-      dots();
-      document.getElementById('pin-err').textContent = '';
-    }, 1200);
+function showErr(msg) {
+  dots('err');
+  document.getElementById('pin-err').textContent = msg;
+  setTimeout(() => { pin = ''; dots(); document.getElementById('pin-err').textContent = ''; }, 1500);
+}
+
+async function checkPin() {
+  const res = await fetch(SB + '/rest/v1/guest_profiles?pin=eq.' + encodeURIComponent(pin) + '&select=*', {
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
+  }).then(r => r.json()).catch(() => []);
+
+  if (!res || !res.length) { showErr('Wrong PIN — try again'); return; }
+
+  // If multiple profiles match the PIN, pick the one whose stay window covers today
+  const today = new Date();
+  const g = res.find(p => {
+    const ci = new Date(p.check_in  + 'T00:00:00');
+    const co = new Date(p.check_out + 'T23:59:59');
+    return today >= ci && today <= co;
+  });
+
+  if (!g) {
+    // PIN exists but no active stay today
+    const future = res.find(p => today < new Date(p.check_in + 'T00:00:00'));
+    if (future) { showErr('Stay not started yet'); }
+    else         { showErr('Stay has ended — thank you!'); }
     return;
   }
 
-  // PIN correct — store a minimal guest session and go to guest.html
   localStorage.setItem('bc_me', JSON.stringify({
-    id: 'guest',
-    name: 'Guest',
-    role: 'guest'
+    id: g.id, name: g.name, role: 'guest',
+    prop: g.property_name, check_in: g.check_in, check_out: g.check_out
   }));
   location.href = 'guest.html';
 }
