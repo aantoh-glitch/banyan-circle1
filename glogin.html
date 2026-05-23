@@ -110,9 +110,15 @@ function showErr(msg) {
 async function checkPin() {
   const res = await fetch(SB + '/rest/v1/guest_profiles?pin=eq.' + encodeURIComponent(pin) + '&select=*', {
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
-  }).then(r => r.json()).catch(() => []);
+  }).then(async r => {
+    const text = await r.text();
+    console.log('HTTP', r.status, text);
+    try { return JSON.parse(text); } catch(e) { return []; }
+  }).catch(e => { console.error('fetch error', e); return []; });
 
-  if (!res || !res.length) { showErr('Wrong PIN — try again'); return; }
+  console.log('res type:', Array.isArray(res), 'length:', res && res.length, JSON.stringify(res).slice(0,200));
+  if (!Array.isArray(res)) { showErr('Server error — check console'); return; }
+  if (!res.length) { showErr('Wrong PIN — try again'); return; }
 
   // If multiple profiles match the PIN, pick the one whose stay window covers today
   const today = new Date();
