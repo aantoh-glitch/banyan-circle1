@@ -251,39 +251,63 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="sub-bar"><button class="btn-sub btn-br" id="ci-btn" onclick="submitCheckin()">Submit registration</button></div>
   </div>
 
-  <!-- INFO BUTTONS -->
+  <!-- INFO BUTTON (combined) -->
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
     <div class="sec-hdr" style="margin-top:0">Property Information</div>
-    <button class="info-btn" onclick="">
+    <button class="info-btn" onclick="openInfoSheet()">
       <span class="info-btn-icon" style="background:var(--br-l);color:var(--br)">
-        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
       </span>
       <div class="info-btn-text">
-        <div class="info-btn-title">Property Rules</div>
-        <div class="info-btn-sub">House guidelines &amp; policies</div>
+        <div class="info-btn-title">Property Rules, Notes &amp; Emergency Contacts</div>
+        <div class="info-btn-sub">Guidelines, important notes &amp; key numbers</div>
       </div>
       <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
     </button>
-    <button class="info-btn" onclick="">
-      <span class="info-btn-icon" style="background:var(--g-l);color:var(--g)">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+  </div>
+</div>
+
+<!-- INFO SHEET MODAL -->
+<div id="info-sheet-overlay" onclick="closeInfoSheet()" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.45);backdrop-filter:blur(2px)"></div>
+<div id="info-sheet" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:301;background:var(--white);border-radius:20px 20px 0 0;padding:0 0 40px;max-height:82vh;overflow-y:auto">
+  <!-- Handle -->
+  <div style="display:flex;justify-content:center;padding:12px 0 4px">
+    <div style="width:36px;height:4px;border-radius:999px;background:rgba(0,0,0,.12)"></div>
+  </div>
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 18px 16px;border-bottom:1px solid var(--border)">
+    <div style="font-family:'Playfair Display',serif;font-size:18px">Property Information</div>
+    <button onclick="closeInfoSheet()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:20px;line-height:1">×</button>
+  </div>
+  <!-- Section: Property Rules -->
+  <div style="padding:18px 18px 0">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="width:32px;height:32px;border-radius:8px;background:var(--br-l);color:var(--br);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </span>
-      <div class="info-btn-text">
-        <div class="info-btn-title">Notes</div>
-        <div class="info-btn-sub">Important notes for your stay</div>
-      </div>
-      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-    </button>
-    <button class="info-btn" onclick="">
-      <span class="info-btn-icon" style="background:#FCEBEB;color:#791F1F">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91A16 16 0 0 0 16 17l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <div style="font-size:14px;font-weight:500">Property Rules</div>
+    </div>
+    <div id="info-rules-content" style="font-size:13px;color:var(--muted);line-height:1.7;padding:12px 14px;background:var(--bg);border-radius:10px;margin-bottom:18px">Loading…</div>
+  </div>
+  <!-- Section: Notes -->
+  <div style="padding:0 18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="width:32px;height:32px;border-radius:8px;background:var(--g-l);color:var(--g);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       </span>
-      <div class="info-btn-text">
-        <div class="info-btn-title">Emergency Contact</div>
-        <div class="info-btn-sub">Numbers you may need during your stay</div>
-      </div>
-      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-    </button>
+      <div style="font-size:14px;font-weight:500">Notes</div>
+    </div>
+    <div id="info-notes-content" style="font-size:13px;color:var(--muted);line-height:1.7;padding:12px 14px;background:var(--bg);border-radius:10px;margin-bottom:18px">Loading…</div>
+  </div>
+  <!-- Section: Emergency Contacts -->
+  <div style="padding:0 18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="width:32px;height:32px;border-radius:8px;background:#FCEBEB;color:#791F1F;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91A16 16 0 0 0 16 17l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </span>
+      <div style="font-size:14px;font-weight:500">Emergency Contacts</div>
+    </div>
+    <div id="info-emergency-content" style="font-size:13px;color:var(--muted);line-height:1.7;padding:12px 14px;background:var(--bg);border-radius:10px">Loading…</div>
   </div>
 </div>
 
@@ -1013,6 +1037,32 @@ async function saveBookingEdit(){
   } catch(e){ toast('Error: '+e.message); }
   btn.disabled=false; btn.textContent='Save changes';
 }
+// ── Info Sheet ──
+function openInfoSheet(){
+  document.getElementById('info-sheet-overlay').style.display='block';
+  document.getElementById('info-sheet').style.display='block';
+  loadInfoContent();
+}
+function closeInfoSheet(){
+  document.getElementById('info-sheet-overlay').style.display='none';
+  document.getElementById('info-sheet').style.display='none';
+}
+async function loadInfoContent(){
+  if(!me) return;
+  try {
+    const data = await api('/rest/v1/property_info?property_id=eq.'+encodeURIComponent(me.prop_id||me.prop)+'&select=rules,notes,emergency_contacts&limit=1');
+    const row = data && data[0];
+    document.getElementById('info-rules-content').innerHTML = row && row.rules ? row.rules.replace(/\n/g,'<br>') : 'No property rules on file.';
+    document.getElementById('info-notes-content').innerHTML = row && row.notes ? row.notes.replace(/\n/g,'<br>') : 'No notes on file.';
+    document.getElementById('info-emergency-content').innerHTML = row && row.emergency_contacts ? row.emergency_contacts.replace(/\n/g,'<br>') : 'No emergency contacts on file.';
+  } catch(e){
+    const msg = 'Unable to load — please contact your host.';
+    document.getElementById('info-rules-content').textContent=msg;
+    document.getElementById('info-notes-content').textContent=msg;
+    document.getElementById('info-emergency-content').textContent=msg;
+  }
+}
+
 // ── Welcome banner ──
 function dismissBanner(){
   const b = document.getElementById('welcome-banner');
