@@ -68,12 +68,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .lf-row{padding:11px 0;border-bottom:1px solid var(--border)}
 .lf-row:last-child{border-bottom:none}
 
-/* Tips - In/Around/Beyond */
-.tips-section{margin-bottom:28px}
-.tips-section-hdr{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:4px}
-.tips-section-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
-.tip-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:10px}
-.tip-tag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;margin-right:4px;margin-bottom:3px;background:var(--br-l);color:var(--br)}
 
 /* Request row */
 .req-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
@@ -345,30 +339,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   </div>
 </div>
 
-<!-- IN, AROUND & BEYOND -->
-<div class="pg" id="pg-tips">
-  <!-- pbb tips rendered inline here -->
-  <div id="pbb-root"></div>
-
-  <!-- Contact + Itinerary always at bottom -->
-  <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px;padding-bottom:10px">
-    <button onclick="location.href='messaging.html'" style="width:100%;background:var(--br-l);border:1.5px solid rgba(153,60,29,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:opacity .15s" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity='1'">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span style="font-size:13px;font-weight:500;color:var(--br);line-height:1.5;flex:1">Contact your host for availability and booking.</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.7"><polyline points="9,18 15,12 9,6"/></svg>
-    </button>
-    <button class="info-btn" onclick="">
-      <span class="info-btn-icon" style="background:var(--a-l);color:var(--a)">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
-      </span>
-      <div class="info-btn-text">
-        <div class="info-btn-title">Itinerary</div>
-        <div class="info-btn-sub">Your curated day-by-day plan</div>
-      </div>
-      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-    </button>
-  </div>
-</div>
 
 <!-- TALENT BOOKING & RATINGS PAGE -->
 <div class="pg" id="pg-talent">
@@ -525,7 +495,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
 <nav class="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
-  <button class="bnt" onclick="goPage('tips',this);loadTips()"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><circle cx="6" cy="14" r="4"/><circle cx="18" cy="14" r="4"/><path d="M2 14h4M18 14h4M10 14h4"/><path d="M6 10V7a1 1 0 0 1 1-1h2l2 4M18 10V7a1 1 0 0 0-1-1h-2l-2 4"/></svg>Explore</button>
   <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
 </nav>
@@ -571,8 +540,7 @@ function goPage(id, btn) {
   document.querySelectorAll('.bnt').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='tips')       loadTips();
-  if(id==='talent')     { loadGuestTalents(); loadGuestBookingHistory(); }
+if(id==='talent')     { loadGuestTalents(); loadGuestBookingHistory(); }
   if(id==='requests')   { loadReqHistory(); }
   if(id==='complaint')  loadCompHistory();
   if(id==='finalbill')  loadFinalBill();
@@ -871,14 +839,6 @@ async function submitFeedback(){
   document.getElementById('fb-success').style.display='block';
 }
 
-// ── TIPS ──
-async function loadTips(){
-  var root = document.getElementById('pbb-root');
-  if(root && !root.getAttribute('data-loaded')){
-    root.setAttribute('data-loaded','1');
-    if(typeof window.pbbLoad === 'function') window.pbbLoad();
-  }
-}
 
 // --- GUEST TALENT BOOKING ---
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
@@ -901,22 +861,8 @@ async function loadGuestTalents(){
           </div>
         </div>`).join(''); }
     }
-    const exploreEl = document.getElementById('tips-talent-list');
-    if(exploreEl){
-      if(!rows.length){ exploreEl.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents available yet.</div>'; }
-      else { exploreEl.innerHTML = rows.map(t=>`
-        <div class="tip-card" style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0">${ini(t.name)}</div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:500">${t.name}</div>
-            <div style="font-size:12px;color:var(--muted)">${t.category||''}</div>
-            ${t.short_desc ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${t.short_desc}</div>` : ''}
-          </div>
-        </div>`).join(''); }
-    }
   } catch(e){
     const el=document.getElementById('g-talent-list'); if(el) el.innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>';
-    const exploreEl=document.getElementById('tips-talent-list'); if(exploreEl) exploreEl.innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>';
   }
 }
 
@@ -1094,183 +1040,5 @@ async function loadFinalBill(){
     }).catch(function(){});
 })();
 </script>
-<style>
-.pbb-s{margin-bottom:22px}
-.pbb-sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-.pbb-st{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:var(--text)}
-.pbb-ss{font-size:12px;color:var(--muted);margin-bottom:10px}
-.pbb-tc{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:8px}
-.pbb-ti{display:flex;gap:10px;align-items:flex-start}
-.pbb-tb{flex:1;min-width:0}
-.pbb-tn{font-size:14px;font-weight:500;margin-bottom:4px}
-.pbb-td{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:6px}
-.pbb-tg{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-right:3px;background:var(--br-l);color:var(--br);font-weight:500}
-.pbb-ta{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
-.pbb-xc{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
-.pbb-xa{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
-.pbb-ba{background:var(--br-l);border:1px solid #F2C9B8;border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--br);font-family:inherit;font-weight:500}
-.pbb-be{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit}
-.pbb-bd{background:#FCEBEB;border:1px solid #f0c8c8;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;color:#791F1F;font-family:inherit}
-.pbb-af{background:var(--br-l);border:1px solid #F2C9B8;border-radius:12px;padding:14px;margin-bottom:10px;display:none}
-.pbb-af.open{display:block}
-.pbb-ft{font-size:13px;font-weight:600;color:var(--br);margin-bottom:10px}
-.pbb-fg{margin-bottom:10px}
-.pbb-fl{display:block;font-size:10px;color:#9e9c97;margin-bottom:4px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
-.pbb-fc{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
-.pbb-fc:focus{border-color:var(--br)}
-textarea.pbb-fc{resize:vertical;min-height:72px;line-height:1.55}
-.pbb-em{font-size:13px;color:var(--muted);padding:8px 0}
-</style>
 
-<script>
-var SB_PBB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-var KEY_PBB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
-var pbbMe   = JSON.parse(localStorage.getItem('bc_me') || 'null');
-var pbbProp = (pbbMe ? (pbbMe.prop || pbbMe.property_name || '') : '')
-  || localStorage.getItem('pbb_prop') || '';
-var pbbEdit = { cat: null, id: null };
-
-async function pbbApi(path, method, body) {
-  try {
-    var r = await fetch(SB_PBB + path, {
-      method: method || 'GET',
-      headers: { apikey: KEY_PBB, Authorization: 'Bearer ' + KEY_PBB, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: body ? JSON.stringify(body) : undefined
-    });
-    if (!r.ok) return null;
-    var txt = await r.text();
-    return txt ? JSON.parse(txt) : null;
-  } catch(e) { return null; }
-}
-
-function pbbEsc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function pbbIni(n) {
-  return (n||'').split(' ').map(function(x){return x[0];}).join('').slice(0,2).toUpperCase() || '?';
-}
-
-function pbbOpenAddForm(cat) {
-  pbbEdit = { cat: cat, id: null };
-  document.querySelectorAll('.pbb-af').forEach(function(el){ el.classList.remove('open'); });
-  var f = document.getElementById('pbbf-' + cat);
-  if (!f) return;
-  f.querySelector('.pbb-fn').value = '';
-  f.querySelector('.pbb-fd').value = '';
-  f.querySelector('.pbb-fk').value = '';
-  f.querySelector('.pbb-ft').textContent = 'Add tip';
-  f.classList.add('open');
-}
-
-function pbbOpenEditForm(cat, id, name, desc, tags) {
-  pbbEdit = { cat: cat, id: id };
-  document.querySelectorAll('.pbb-af').forEach(function(el){ el.classList.remove('open'); });
-  var f = document.getElementById('pbbf-' + cat);
-  if (!f) return;
-  f.querySelector('.pbb-fn').value = name || '';
-  f.querySelector('.pbb-fd').value = desc || '';
-  f.querySelector('.pbb-fk').value = tags || '';
-  f.querySelector('.pbb-ft').textContent = 'Edit tip';
-  f.classList.add('open');
-}
-
-function pbbCloseForm(cat) {
-  var f = document.getElementById('pbbf-' + cat);
-  if (f) f.classList.remove('open');
-  pbbEdit = { cat: null, id: null };
-}
-
-async function pbbSaveTip(cat) {
-  var f = document.getElementById('pbbf-' + cat);
-  var name = f.querySelector('.pbb-fn').value.trim();
-  if (!name) return;
-  var desc = f.querySelector('.pbb-fd').value.trim();
-  var tags = f.querySelector('.pbb-fk').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-  var body = { property_name: pbbProp, name: name, category: cat, description: desc || null, tags: tags };
-  if (pbbEdit.id) {
-    await pbbApi('/rest/v1/local_tips?id=eq.' + pbbEdit.id, 'PATCH', body);
-  } else {
-    await pbbApi('/rest/v1/local_tips', 'POST', body);
-  }
-  pbbCloseForm(cat);
-  pbbLoad();
-}
-
-async function pbbDeleteTip(id) {
-  if (!confirm('Delete this tip?')) return;
-  await pbbApi('/rest/v1/local_tips?id=eq.' + id, 'DELETE');
-  pbbLoad();
-}
-
-function pbbForm(cat) {
-  return '<div class="pbb-af" id="pbbf-' + cat + '">'
-    + '<div class="pbb-ft">Add tip</div>'
-    + '<div class="pbb-fg"><label class="pbb-fl">Name</label><input class="pbb-fc pbb-fn" type="text" placeholder="Place name"/></div>'
-    + '<div class="pbb-fg"><label class="pbb-fl">Description</label><textarea class="pbb-fc pbb-fd" placeholder="Brief description..."></textarea></div>'
-    + '<div class="pbb-fg"><label class="pbb-fl">Tags (comma separated)</label><input class="pbb-fc pbb-fk" type="text" placeholder="e.g. Cafe, Food"/></div>'
-    + '<div style="display:flex;gap:8px;margin-top:4px">'
-    + '<button class="pbb-be" style="flex:1;padding:8px" onclick="pbbCloseForm('' + cat + '')">Cancel</button>'
-    + '<button class="pbb-ba" style="flex:1;padding:8px;font-size:13px" onclick="pbbSaveTip('' + cat + '')">Save</button>'
-    + '</div></div>';
-}
-
-function pbbCard(t, cat) {
-  var tags = (t.tags || []).map(function(tg){ return '<span class="pbb-tg">' + pbbEsc(tg) + '</span>'; }).join('');
-  // pass individual fields to avoid JSON serialisation escaping issues
-  var n = pbbEsc(t.name);
-  var d = pbbEsc(t.description || '');
-  var k = pbbEsc((t.tags||[]).join(', '));
-  return '<div class="pbb-tc"><div class="pbb-ti">'
-    + '<div class="pbb-tb">'
-    + '<div class="pbb-tn">' + n + '</div>'
-    + (d ? '<div class="pbb-td">' + d + '</div>' : '')
-    + (tags ? '<div>' + tags + '</div>' : '')
-    + '</div>'
-    + '<div class="pbb-ta">'
-    + '<button class="pbb-be" onclick="pbbOpenEditForm('' + cat + '','' + t.id + '',this.closest('.pbb-tc').querySelector('.pbb-tn').textContent,this.closest('.pbb-tc').querySelector('.pbb-td') ? this.closest('.pbb-tc').querySelector('.pbb-td').textContent : '',this.closest('.pbb-tc').querySelectorAll('.pbb-tg').length ? Array.from(this.closest('.pbb-tc').querySelectorAll('.pbb-tg')).map(function(e){return e.textContent;}).join(', ') : '')">Edit</button>'
-    + '<button class="pbb-bd" onclick="pbbDeleteTip('' + t.id + '')">Del</button>'
-    + '</div>'
-    + '</div></div>';
-}
-
-async function pbbLoad() {
-  var root = document.getElementById('pbb-root');
-  if (!root) return;
-  root.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">Loading...</div>';
-  var tips    = (await pbbApi('/rest/v1/local_tips?property_name=eq.' + encodeURIComponent(pbbProp) + '&order=category,name')) || [];
-  var talents = (await pbbApi('/rest/v1/talents?select=id,name,category,short_desc&order=name')) || [];
-  var cats = [
-    { id: 'In',     title: 'Property',      sub: "What's available at your property" },
-    { id: 'Beyond', title: 'Beyond',         sub: 'Local food, cafes & sightseeing nearby' },
-    { id: 'Around', title: 'Banyan Circle',  sub: 'Banyan Circle curated experiences' }
-  ];
-  var html = '';
-  cats.forEach(function(c) {
-    var items = tips.filter(function(t){ return t.category === c.id; });
-    var cards = items.length
-      ? items.map(function(t){ return pbbCard(t, c.id); }).join('')
-      : '<div class="pbb-em">Nothing added yet.</div>';
-    var extras = '';
-    if (c.id === 'Around' && talents.length) {
-      extras = '<div style="margin-top:8px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9e9c97;font-weight:500;margin-bottom:6px">Talents</div>';
-      extras += talents.map(function(t) {
-        return '<div class="pbb-xc">'
-          + '<div class="pbb-xa">' + pbbIni(t.name) + '</div>'
-          + '<div><div style="font-size:14px;font-weight:500">' + pbbEsc(t.name) + '</div>'
-          + '<div style="font-size:12px;color:var(--muted)">' + pbbEsc(t.category||'') + '</div>'
-          + (t.short_desc ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + pbbEsc(t.short_desc) + '</div>' : '')
-          + '</div></div>';
-      }).join('');
-    }
-    html += '<div class="pbb-s">'
-      + '<div class="pbb-sh"><div class="pbb-st">' + c.title + '</div>'
-      + '<button class="pbb-ba" onclick="pbbOpenAddForm('' + c.id + '')">+ Add</button></div>'
-      + '<div class="pbb-ss">' + c.sub + '</div>'
-      + pbbForm(c.id)
-      + cards + extras
-      + '</div>';
-  });
-  root.innerHTML = html;
-}
-</script>
 </html>
