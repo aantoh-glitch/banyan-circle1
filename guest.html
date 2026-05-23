@@ -390,54 +390,24 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <div class="exp-section">
     <div class="exp-section-head">
       <div class="exp-section-title">Property</div>
-      <button class="exp-add-btn" onclick="expToggleForm('property')">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
-      </button>
     </div>
     <div class="exp-entries" id="exp-entries-property"><div class="exp-skeleton"></div></div>
-    <div class="exp-form" id="exp-form-property">
-      <textarea id="exp-input-property" placeholder="Describe a property experience…"></textarea>
-      <div class="exp-form-actions">
-        <button class="exp-btn-cancel" onclick="expToggleForm('property')">Cancel</button>
-        <button class="exp-btn-save" onclick="expSubmit('property')">Save</button>
-      </div>
-    </div>
   </div>
 
   <!-- Beyond -->
   <div class="exp-section">
     <div class="exp-section-head">
       <div class="exp-section-title">Beyond</div>
-      <button class="exp-add-btn" onclick="expToggleForm('beyond')">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
-      </button>
     </div>
     <div class="exp-entries" id="exp-entries-beyond"><div class="exp-skeleton"></div></div>
-    <div class="exp-form" id="exp-form-beyond">
-      <textarea id="exp-input-beyond" placeholder="Describe a beyond experience…"></textarea>
-      <div class="exp-form-actions">
-        <button class="exp-btn-cancel" onclick="expToggleForm('beyond')">Cancel</button>
-        <button class="exp-btn-save" onclick="expSubmit('beyond')">Save</button>
-      </div>
-    </div>
   </div>
 
   <!-- Banyan Circle -->
   <div class="exp-section">
     <div class="exp-section-head">
       <div class="exp-section-title">Banyan Circle</div>
-      <button class="exp-add-btn" onclick="expToggleForm('banyan_circle')">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add
-      </button>
     </div>
     <div class="exp-entries" id="exp-entries-banyan_circle"><div class="exp-skeleton"></div></div>
-    <div class="exp-form" id="exp-form-banyan_circle">
-      <textarea id="exp-input-banyan_circle" placeholder="Describe a Banyan Circle experience…"></textarea>
-      <div class="exp-form-actions">
-        <button class="exp-btn-cancel" onclick="expToggleForm('banyan_circle')">Cancel</button>
-        <button class="exp-btn-save" onclick="expSubmit('banyan_circle')">Save</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -502,16 +472,6 @@ function expLoad() {
   expLoadSection('banyan_circle');
 }
 
-function expToggleForm(section) {
-  const form = document.getElementById('exp-form-' + section);
-  const isOpen = form.classList.contains('open');
-  document.querySelectorAll('.exp-form').forEach(f => f.classList.remove('open'));
-  if (!isOpen) {
-    form.classList.add('open');
-    document.getElementById('exp-input-' + section).focus();
-  }
-}
-
 function expEsc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -529,28 +489,6 @@ async function expLoadSection(section) {
   } catch(e) {
     el.innerHTML = '<div class="exp-empty">Could not load entries.</div>';
   }
-}
-
-async function expSubmit(section) {
-  const input = document.getElementById('exp-input-' + section);
-  const content = input.value.trim();
-  if (!content) { toast('Please enter some text first'); return; }
-  const btn = document.querySelector('#exp-form-' + section + ' .exp-btn-save');
-  btn.disabled = true; btn.textContent = 'Saving…';
-  try {
-    await api('/rest/v1/experiences', 'POST', {
-      property_name: me.prop || '',
-      section: section,
-      content: content
-    });
-    input.value = '';
-    expToggleForm(section);
-    expLoadSection(section);
-    toast('Saved ✓');
-  } catch(e) {
-    toast('Failed to save');
-  }
-  btn.disabled = false; btn.textContent = 'Save';
 }
 
 // ── PNE slide-up sheet ──
