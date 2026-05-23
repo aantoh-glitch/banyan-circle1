@@ -353,40 +353,27 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <!-- IN, AROUND & BEYOND -->
 <div class="pg" id="pg-tips">
 
+  <!-- PBB inline embed -->
+  <iframe id="pbb-frame" src="pbb.html" scrolling="no" style="width:100%;border:none;display:block;min-height:60px;transition:height .2s"></iframe>
 
-  <div class="tips-section" id="tips-in">
-    <div class="tips-section-hdr">Property</div>
-    <div class="tips-section-sub">What's available at your property</div>
-    <div id="tips-in-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-  </div>
-
-  <div class="tips-section" id="tips-beyond">
-    <div class="tips-section-hdr">Beyond</div>
-    <div class="tips-section-sub">Local food, cafes, sightseeing &amp; culture nearby</div>
-    <div id="tips-beyond-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-  </div>
-
-  <div class="tips-section" id="tips-around">
-    <div class="tips-section-hdr">Banyan Circle</div>
-    <div class="tips-section-sub">Banyan Circle curated experiences made for you</div>
-    <div id="tips-around-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
-    <button onclick="location.href='messaging.html'" style="margin-top:14px;width:100%;background:var(--br-l);border:1.5px solid rgba(153,60,29,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:opacity .15s" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity='1'">
+  <!-- Bottom actions -->
+  <div style="margin-top:12px">
+    <button onclick="location.href='messaging.html'" style="width:100%;background:var(--br-l);border:1.5px solid rgba(153,60,29,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:opacity .15s;margin-bottom:10px" onmousedown="this.style.opacity='.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity='1'">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span style="font-size:13px;font-weight:500;color:var(--br);line-height:1.5;flex:1">Contact your host for availability and booking.</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.7"><polyline points="9,18 15,12 9,6"/></svg>
     </button>
+    <button class="info-btn" onclick="">
+      <span class="info-btn-icon" style="background:var(--a-l);color:var(--a)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+      </span>
+      <div class="info-btn-text">
+        <div class="info-btn-title">Itinerary</div>
+        <div class="info-btn-sub">Your curated day-by-day plan</div>
+      </div>
+      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
   </div>
-
-  <button class="info-btn" onclick="" style="margin-top:8px">
-    <span class="info-btn-icon" style="background:var(--a-l);color:var(--a)">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
-    </span>
-    <div class="info-btn-text">
-      <div class="info-btn-title">Itinerary</div>
-      <div class="info-btn-sub">Your curated day-by-day plan</div>
-    </div>
-    <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-  </button>
 </div>
 
 <!-- TALENT BOOKING & RATINGS PAGE -->
@@ -560,6 +547,14 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
+// Auto-size pbb iframe
+window.addEventListener('message', function(e){
+  if(e.data && e.data.type === 'pbb-height'){
+    var fr = document.getElementById('pbb-frame');
+    if(fr) fr.style.height = e.data.height + 'px';
+  }
+});
+
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
@@ -866,25 +861,9 @@ async function submitFeedback(){
   document.getElementById('fb-success').style.display='block';
 }
 
-// ── TIPS — In / Around / Beyond ──
+// ── TIPS — handled by pbb.html iframe ──
 async function loadTips(){
-  const propName=me.prop||'';
-  const data=await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(propName)+'&order=category,name')||[];
-
-  const renderSection=(listId,cat)=>{
-    const items=data.filter(t=>t.category===cat);
-    const el=document.getElementById(listId);
-    if(!items.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:4px 0">Nothing here yet — check back after your host updates this.</div>';return;}
-    el.innerHTML=items.map(t=>`<div class="tip-card">
-      <div style="font-size:15px;font-weight:500;margin-bottom:5px">${t.name}</div>
-      ${t.description?`<div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:8px">${t.description}</div>`:''}
-      <div>${(t.tags||[]).map(tg=>`<span class="tip-tag">${tg}</span>`).join('')}</div>
-    </div>`).join('');
-  };
-
-  renderSection('tips-in-list','In');
-  renderSection('tips-around-list','Around');
-  renderSection('tips-beyond-list','Beyond');
+  // pbb.html renders Property / Beyond / Banyan Circle inline
   loadGuestTalents();
 }
 
