@@ -111,11 +111,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .info-btn-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .info-btn-arrow{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
-/* PNE slide-up sheet */
-#info-sheet-overlay{opacity:0;transition:opacity .3s;pointer-events:none}
-#info-sheet-overlay.open{opacity:1;pointer-events:auto}
-#info-sheet{transform:translateX(-50%) translateY(105%);transition:transform .38s cubic-bezier(.22,1,.36,1)}
-#info-sheet.open{transform:translateX(-50%) translateY(0)}
+
 </style>
 </head>
 <body>
@@ -260,7 +256,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <!-- INFO BUTTON (combined) -->
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
     <div class="sec-hdr" style="margin-top:0">Property Information</div>
-    <button class="info-btn" onclick="openInfoSheet()">
+    <button class="info-btn" onclick="location.href='pne.html'+(me&&(me.prop||me.property_name)?'?prop='+encodeURIComponent(me.prop||me.property_name):'')">
       <span class="info-btn-icon" style="background:var(--br-l);color:var(--br)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
       </span>
@@ -271,22 +267,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
     </button>
   </div>
-</div>
-
-<!-- INFO SHEET MODAL -->
-<div id="info-sheet-overlay" onclick="closeInfoSheet()" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.45);backdrop-filter:blur(2px)"></div>
-<div id="info-sheet" style="display:none;position:fixed;bottom:0;left:50%;width:100%;max-width:430px;z-index:301;background:var(--white);border-radius:20px 20px 0 0;height:82vh;flex-direction:column">
-  <!-- Handle -->
-  <div style="display:flex;justify-content:center;padding:12px 0 4px">
-    <div style="width:36px;height:4px;border-radius:999px;background:rgba(0,0,0,.12)"></div>
-  </div>
-  <!-- Header -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 18px 16px;border-bottom:1px solid var(--border)">
-    <div style="font-family:'Playfair Display',serif;font-size:18px">Property Information</div>
-    <button onclick="closeInfoSheet()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:20px;line-height:1">×</button>
-  </div>
-  <!-- PNE iframe -->
-  <iframe id="pne-iframe" src="" style="flex:1;width:100%;border:none;display:block;min-height:0"></iframe>
 </div>
 
 <!-- REQUESTS -->
@@ -1015,31 +995,6 @@ async function saveBookingEdit(){
   } catch(e){ toast('Error: '+e.message); }
   btn.disabled=false; btn.textContent='Save changes';
 }
-// ── Info Sheet ──
-function openInfoSheet(){
-  var overlay=document.getElementById('info-sheet-overlay');
-  var sheet=document.getElementById('info-sheet');
-  var iframe=document.getElementById('pne-iframe');
-  var prop=(me&&(me.prop||me.property_name))||'';
-  iframe.src='pne.html'+(prop?'?prop='+encodeURIComponent(prop):'');
-  overlay.style.display='block';
-  sheet.style.display='flex';
-  sheet.offsetHeight;
-  overlay.classList.add('open');
-  sheet.classList.add('open');
-}
-function closeInfoSheet(){
-  var overlay=document.getElementById('info-sheet-overlay');
-  var sheet=document.getElementById('info-sheet');
-  overlay.classList.remove('open');
-  sheet.classList.remove('open');
-  setTimeout(function(){
-    overlay.style.display='none';
-    sheet.style.display='none';
-    document.getElementById('pne-iframe').src='';
-  },400);
-}
-
 // ── Welcome banner ──
 function dismissBanner(){
   const b = document.getElementById('welcome-banner');
