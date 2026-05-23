@@ -158,18 +158,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
-<div class="pg" id="pg-tips">
-  <div class="pg-title">In, Around &amp; Beyond</div>
-  <div class="pg-sub">Curated spots shown to guests at each property</div>
-  <div class="prop-tabs" id="tips-prop-tabs"></div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div class="card-ttl" style="margin:0" id="tips-prop-label">Tips</div>
-      <button class="btn-p" onclick="openTipModal()">+ Add tip</button>
-    </div>
-    <div id="tips-list">Loading…</div>
-  </div>
-</div>
 
 <div class="pg" id="pg-docs">
   <div class="pg-title">Property documents</div>
@@ -407,16 +395,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-guest')">Cancel</button><button class="btn-p" onclick="saveGuest()">Save</button></div>
 </div></div>
 
-<div class="modal" id="modal-tip"><div class="modal-card">
-  <div class="modal-ttl" id="mt-ttl">Add tip</div><input type="hidden" id="mt-id"/>
-  <div class="row-grid">
-    <div class="fg"><label class="fl">Name</label><input class="fc" id="mt-name"/></div>
-    <div class="fg"><label class="fl">Category</label><select class="fc" id="mt-cat"><option>In</option><option>Around</option><option>Beyond</option></select></div>
-  </div>
-  <div class="fg"><label class="fl">Description</label><textarea class="fc" id="mt-desc"></textarea></div>
-  <div class="fg"><label class="fl">Tags (comma separated)</label><input class="fc" id="mt-tags" placeholder="e.g. Sunset, Houseboat"/></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-tip')">Cancel</button><button class="btn-p" onclick="saveTip()">Save</button></div>
-</div></div>
 
 <div class="modal" id="modal-doc"><div class="modal-card">
   <div class="modal-ttl">Upload document</div>
@@ -599,7 +577,6 @@ function goPage(id,btn){
   if(id==='properties'){ loadProperties(); }
   if(id==='staff')      loadStaff();
   if(id==='guests')     loadGuests();
-  if(id==='tips')       loadTipsPage();
   if(id==='docs')       loadDocsPage();
   if(id==='utilities')  loadUtilPage();
   if(id==='maint')      loadMaintPage();
@@ -907,16 +884,10 @@ function downloadAdminRegPDF(){
 }
 
 // PROPERTY SCOPED TABS
-const SCOPE={tips:null,docs:null,util:null,maint:null,msgs:null};
+const SCOPE={docs:null,util:null,maint:null,msgs:null};
 function renderPropTabs(prefix,currentKey,onClick){ document.getElementById(prefix+'-prop-tabs').innerHTML=PROPS.map(p=>`<button class="ptab ${SCOPE[currentKey]===p.name?'on':''}" onclick="${onClick}('${p.name.replace(/'/g,"\\'")}')">${p.name}</button>`).join(''); }
 
 // TIPS
-async function loadTipsPage(){ await loadAllProperties(); if(!SCOPE.tips)SCOPE.tips=PROPS[0]?.name||''; renderPropTabs('tips','tips','setTipsProp'); document.getElementById('tips-prop-label').textContent=SCOPE.tips?'Tips for '+SCOPE.tips:'Tips'; const data=await api('/rest/v1/local_tips?property_name=eq.'+encodeURIComponent(SCOPE.tips)+'&order=category,name')||[]; const el=document.getElementById('tips-list'); if(!data.length){el.innerHTML='<div class="empty">No tips for this property yet</div>';return;} const ri=t=>`<div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)"><div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:4px">${t.name}</div><div style="font-size:13px;color:var(--muted);line-height:1.5">${t.description||''}</div>${(t.tags||[]).length?`<div style="margin-top:6px">${t.tags.map(tg=>`<span class="bdg bdg-b" style="margin-right:4px">${tg}</span>`).join('')}</div>`:''}</div><div style="display:flex;gap:6px;align-items:flex-start"><button class="btn-edit" onclick='editTip(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button><button class="btn-del" onclick="deleteTip('${t.id}')">Delete</button></div></div>`; const sL={In:'In — at the property',Around:'Around — local area',Beyond:'Beyond — curated experiences'}; el.innerHTML=['In','Around','Beyond'].map(cat=>`<div style="margin-bottom:18px"><div style="font-size:11px;font-weight:500;color:var(--br);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--br-l)">${sL[cat]}</div>${data.filter(t=>t.category===cat).map(ri).join('')||'<div style="font-size:13px;color:var(--muted);padding:8px 0">No tips added yet</div>'}</div>`).join(''); }
-window.setTipsProp=p=>{SCOPE.tips=p;loadTipsPage();};
-function openTipModal(){ document.getElementById('mt-id').value=''; document.getElementById('mt-ttl').textContent='Add tip · '+SCOPE.tips; ['mt-name','mt-desc','mt-tags'].forEach(i=>document.getElementById(i).value=''); document.getElementById('mt-cat').value='In'; openModal('modal-tip'); }
-function editTip(t){ document.getElementById('mt-id').value=t.id; document.getElementById('mt-ttl').textContent='Edit tip'; document.getElementById('mt-name').value=t.name||''; document.getElementById('mt-desc').value=t.description||''; document.getElementById('mt-tags').value=(t.tags||[]).join(', '); document.getElementById('mt-cat').value=t.category||'In'; openModal('modal-tip'); }
-async function saveTip(){ const id=document.getElementById('mt-id').value; const body={property_name:SCOPE.tips,name:document.getElementById('mt-name').value.trim(),category:document.getElementById('mt-cat').value,description:document.getElementById('mt-desc').value.trim()||null,tags:document.getElementById('mt-tags').value.split(',').map(s=>s.trim()).filter(Boolean)}; if(!body.name){alert('Need a name');return;} if(id)await api('/rest/v1/local_tips?id=eq.'+id,'PATCH',body); else await api('/rest/v1/local_tips','POST',body); closeModal('modal-tip'); toast('Saved'); loadTipsPage(); }
-async function deleteTip(id){ if(!confirm('Delete this tip?'))return; await api('/rest/v1/local_tips?id=eq.'+id,'DELETE'); loadTipsPage(); }
 
 // DOCUMENTS
 async function loadDocsPage(){ await loadAllProperties(); if(!SCOPE.docs)SCOPE.docs=PROPS[0]?.name||''; renderPropTabs('docs','docs','setDocsProp'); document.getElementById('docs-prop-label').textContent=SCOPE.docs?'Documents for '+SCOPE.docs:'Documents'; const data=await api('/rest/v1/property_documents?property_name=eq.'+encodeURIComponent(SCOPE.docs)+'&order=uploaded_at.desc')||[]; const el=document.getElementById('docs-list'); if(!data.length){el.innerHTML='<div class="empty">No documents uploaded for this property yet</div>';return;} el.innerHTML=`<table class="tbl"><thead><tr><th>Title</th><th>Type</th><th>Uploaded</th><th></th></tr></thead><tbody>${data.map(d=>`<tr><td><a href="${d.file_url}" target="_blank" style="color:var(--br);font-weight:500">${d.title}</a></td><td>${d.doc_type||'—'}</td><td>${fmtDate(d.uploaded_at)}</td><td style="text-align:right"><button class="btn-del" onclick="deleteDoc('${d.id}')">Delete</button></td></tr>`).join('')}</tbody></table>`; }
