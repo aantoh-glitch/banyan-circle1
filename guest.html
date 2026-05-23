@@ -285,31 +285,8 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div style="font-family:'Playfair Display',serif;font-size:18px">Property Information</div>
     <button onclick="closeInfoSheet()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:20px;line-height:1">×</button>
   </div>
-  <!-- Scrollable PNE content — rendered natively (no iframe) so fonts & property scope always match -->
-  <div id="pne-body" style="flex:1;overflow-y:auto;padding:18px 16px 32px">
-
-    <!-- Rules -->
-    <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:3px">Property Rules</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">House rules &amp; guest guidelines</div>
-    <div id="pne-rules-card" style="background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:20px">
-      <div id="pne-rules"><div style="text-align:center;padding:14px 0;color:var(--muted);font-size:13px">Loading…</div></div>
-    </div>
-
-    <!-- Notes -->
-    <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:3px">Notes</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Private notes for this property</div>
-    <div id="pne-notes-card" style="background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:20px;font-size:13px;line-height:1.65;color:var(--text)">
-      <div id="pne-notes">Loading…</div>
-    </div>
-
-    <!-- Emergency -->
-    <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:3px">Emergency Numbers</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Key contacts for urgent situations</div>
-    <div id="pne-emg-card" style="background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px">
-      <div id="pne-emg"><div style="text-align:center;padding:14px 0;color:var(--muted);font-size:13px">Loading…</div></div>
-    </div>
-
-  </div>
+  <!-- PNE iframe -->
+  <iframe id="pne-iframe" src="" style="flex:1;width:100%;border:none;display:block;min-height:0"></iframe>
 </div>
 
 <!-- REQUESTS -->
@@ -1042,12 +1019,14 @@ async function saveBookingEdit(){
 function openInfoSheet(){
   var overlay=document.getElementById('info-sheet-overlay');
   var sheet=document.getElementById('info-sheet');
+  var iframe=document.getElementById('pne-iframe');
+  var prop=(me&&(me.prop||me.property_name))||'';
+  iframe.src='pne.html'+(prop?'?prop='+encodeURIComponent(prop):'');
   overlay.style.display='block';
   sheet.style.display='flex';
   sheet.offsetHeight;
   overlay.classList.add('open');
   sheet.classList.add('open');
-  loadPNEContent();
 }
 function closeInfoSheet(){
   var overlay=document.getElementById('info-sheet-overlay');
@@ -1057,66 +1036,10 @@ function closeInfoSheet(){
   setTimeout(function(){
     overlay.style.display='none';
     sheet.style.display='none';
+    document.getElementById('pne-iframe').src='';
   },400);
 }
 
-// ── PNE: load rules, notes & emergency contacts into the native sheet ──
-async function loadPNEContent(){
-  if(!me) return;
-  const prop = encodeURIComponent(me.prop || me.property_name || '');
-  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  try {
-    const [rules, notesData, contacts] = await Promise.all([
-      api('/rest/v1/property_rules?property_name=eq.'+prop+'&order=created_at'),
-      api('/rest/v1/property_notes?property_name=eq.'+prop+'&limit=1'),
-      api('/rest/v1/emergency_contacts?property_name=eq.'+prop+'&order=created_at')
-    ]);
-
-    // Rules
-    const rulesEl = document.getElementById('pne-rules');
-    if(rules && rules.length){
-      rulesEl.innerHTML = rules.map((r,i)=>
-        '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'+
-        '<div style="width:22px;height:22px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">'+(i+1)+'</div>'+
-        '<div style="font-size:13px;line-height:1.55;color:var(--text)">'+esc(r.rule_text)+'</div></div>'
-      ).join('');
-    } else {
-      rulesEl.innerHTML='<div style="font-size:13px;color:var(--muted);padding:6px 0">No property rules on file.</div>';
-    }
-
-    // Notes
-    const notesEl = document.getElementById('pne-notes');
-    const note = notesData && notesData[0];
-    notesEl.innerHTML = note && note.notes
-      ? note.notes.replace(/\n/g,'<br>')
-      : '<span style="color:var(--muted)">No notes on file.</span>';
-
-    // Emergency contacts
-    const emgEl = document.getElementById('pne-emg');
-    if(contacts && contacts.length){
-      emgEl.innerHTML = contacts.map(c=>
-        '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'+
-        '<div style="width:40px;height:40px;border-radius:11px;background:var(--br-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
-          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.39 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6.29 6.29l.91-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'+
-        '</div>'+
-        '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:14px;font-weight:500;color:var(--text)">'+esc(c.name)+'</div>'+
-          (c.role?'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+esc(c.role)+'</div>':'')+
-          '<div style="font-size:13px;color:var(--muted);margin-top:2px">'+esc(c.phone)+'</div>'+
-        '</div>'+
-        '<a href="tel:'+(c.phone||'').replace(/\s/g,'')+'" style="padding:6px 13px;background:var(--g-l);border:1px solid rgba(59,109,17,.2);border-radius:7px;font-size:12px;font-weight:500;color:var(--g);text-decoration:none;flex-shrink:0">Call</a>'+
-        '</div>'
-      ).join('');
-    } else {
-      emgEl.innerHTML='<div style="font-size:13px;color:var(--muted);padding:6px 0">No emergency contacts on file.</div>';
-    }
-  } catch(e){
-    ['pne-rules','pne-notes','pne-emg'].forEach(function(id){
-      var el=document.getElementById(id);
-      if(el) el.innerHTML='<div style="font-size:13px;color:var(--muted)">Unable to load — please contact your host.</div>';
-    });
-  }
-}
 // ── Welcome banner ──
 function dismissBanner(){
   const b = document.getElementById('welcome-banner');
