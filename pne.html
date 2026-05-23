@@ -76,6 +76,8 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
 
 <div class="wrap">
 
+<div id="prop-label-debug" style="font-size:11px;color:var(--faint);margin-bottom:16px;letter-spacing:.2px"></div>
+
 <div class="sec-hdg">
   <span>Property Rules</span>
   <button class="btn-sm admin-only" onclick="toggleForm('rules-form')">+ Add Rule</button>
@@ -174,7 +176,15 @@ async function api(path,method,body){
 
 window.onload=async function(){
   // Guard: don't attempt data load if we have no property context
-  if(!PROP){ return; }
+  if(!PROP){
+    // Show visible debug when no property is resolved — helps catch mismatches
+    document.getElementById('rules-list').innerHTML='<div class="empty-state" style="color:var(--r)"><div class="empty-icon">⚠️</div>No property detected.<br><small style="font-size:11px">URL prop: "'+_urlProp+'"<br>Session prop: "'+(me&&(me.prop||me.property_name)||'')+ '"</small></div>';
+    return;
+  }
+  // Show the active property so mismatches are easy to spot
+  document.title = 'PNE — ' + PROP;
+  var lbl = document.getElementById('prop-label-debug');
+  if(lbl) lbl.textContent = PROP;
   await Promise.all([renderRules(),renderEmergency(),loadNotes()]);
 };
 
