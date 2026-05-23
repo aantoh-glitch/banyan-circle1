@@ -468,6 +468,7 @@ function shiftMonth(d) {
   renderMonthLabel();
   renderLog();
   renderKPIs();
+  notifyResize();
 }
 function renderMonthLabel() {
   const d = new Date(viewYear, viewMonth, 1);
@@ -733,6 +734,15 @@ function showToast(msg) {
   clearTimeout(t._timer);
   t._timer = setTimeout(() => { t.style.display = 'none'; }, 2400);
 }
+
+// --- NOTIFY PARENT TO RESIZE IFRAME ---
+function notifyResize() {
+  try {
+    const h = document.body.scrollHeight;
+    window.parent.postMessage({type:'bc_resize', height: h}, '*');
+  } catch(e){}
+}
+window.addEventListener('load', notifyResize);
 
 // --- INIT ---
 populateHeads();
