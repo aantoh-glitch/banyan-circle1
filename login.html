@@ -299,7 +299,7 @@ function gdots(state) {
 async function checkGuestPin() {
   const err = document.getElementById('guest-pin-err');
   // Look up guest profile by name + PIN
-  const data = await api('/rest/v1/guest_profiles?name=ilike.'+encodeURIComponent(guestName)+'&pin=eq.'+encodeURIComponent(guestPin)+'&select=*');
+  const data = await api('/rest/v1/guest_profiles?name=ilike.'+encodeURIComponent(guestName)+'%25&pin=eq.'+encodeURIComponent(guestPin)+'&select=*');
   if (!data || !data.length) {
     gdots('err');
     err.textContent = 'Wrong PIN';
