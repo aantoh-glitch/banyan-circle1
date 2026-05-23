@@ -77,8 +77,9 @@ var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-// FIX: fallback to 'default' so tips are never saved/loaded against an empty key
-var propName = me ? (me.prop || me.property_name || 'default') : 'default';
+// URL param takes priority — parent frame passes ?prop=... explicitly so each property gets its own data
+var _urlProp = new URLSearchParams(window.location.search).get('prop') || '';
+var propName = _urlProp || (me ? (me.prop || me.property_name || 'default') : 'default');
 
 // currently open form state
 var editState = { cat: null, id: null };

@@ -543,7 +543,7 @@ function goPage(id, btn) {
   if (id==='payments')    loadPayments();
   if (id==='assets')      loadLandlordAssets('active');
   if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html';
-  if (id==='pbb')         document.getElementById('iframe-pbb').src = 'pbb.html';
+  if (id==='pbb')         document.getElementById('iframe-pbb').src = 'pbb.html' + (PROP ? '?prop=' + encodeURIComponent(PROP) : '');
   if (id==='pne')         loadPne();
 }
 

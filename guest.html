@@ -256,7 +256,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <!-- INFO BUTTON (combined) -->
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
     <div class="sec-hdr" style="margin-top:0">Property Information</div>
-    <button class="info-btn" onclick="location.href='pne.html'+(me&&(me.prop||me.property_name)?'?prop='+encodeURIComponent(me.prop||me.property_name):'')">
+    <button class="info-btn" onclick="openPne()">
       <span class="info-btn-icon" style="background:var(--br-l);color:var(--br)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
       </span>
@@ -337,6 +337,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
   <!-- PBB inline embed -->
   <iframe id="pbb-frame" src="pbb.html?readonly=1" scrolling="no" style="width:100%;border:none;display:block;min-height:60px;transition:height .2s"></iframe>
+  <script>(function(){ var _p=(JSON.parse(localStorage.getItem('bc_me')||'null')||{}).prop||''; if(_p){ var f=document.getElementById('pbb-frame'); f.src='pbb.html?readonly=1&prop='+encodeURIComponent(_p); } })();</script>
 
   <!-- Bottom actions -->
   <div style="margin-top:12px">
@@ -553,6 +554,11 @@ if(me.check_in) document.getElementById('ci-arr-date').value = me.check_in;
 if(me.check_out) document.getElementById('ci-dep-date').value = me.check_out;
 
 function signOut() { localStorage.removeItem('bc_me'); location.href = '/index.html'; }
+// Navigate to PNE — always pass property via URL param so pne.html queries the right data
+function openPne() {
+  var prop = (me && (me.prop || me.property_name)) || '';
+  location.href = prop ? 'pne.html?prop=' + encodeURIComponent(prop) : 'pne.html';
+}
 function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
 
 function goPage(id, btn) {
