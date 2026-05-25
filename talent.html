@@ -364,9 +364,9 @@ html, body {
   <button class="nav-btn" id="nav-ratings" onclick="showPanel('ratings')">
     <span class="nav-icon">⭐</span><span>Ratings</span>
   </button>
-  <a class="nav-btn" id="nav-earnings" href="/earnings.html">
+  <button class="nav-btn" id="nav-earnings" onclick="openEarnings()">
     <span class="nav-icon">💰</span><span>Earnings</span>
-  </a>
+  </button>
 </nav>
 
 <!-- DAY MODAL -->
@@ -442,6 +442,7 @@ document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
 document.getElementById('prof-id-display').textContent=talentId;
 
 function signOut(){localStorage.removeItem('bc_me');location.replace('/login.html');}
+function openEarnings(){location.href='/earnings.html?role=talent&name='+encodeURIComponent(talentNameParam||'');}
 
 // PANEL NAVIGATION — all collapsed on load
 let currentPanel=null;

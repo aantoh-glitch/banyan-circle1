@@ -587,7 +587,7 @@ function goPage(id, btn) {
   btn.classList.add('on');
   document.querySelector('.content').scrollTop = 0;
   if (id==='description') loadDescription();
-  if (id==='earnings')    document.getElementById('iframe-earnings').src = 'earnings.html';
+  if (id==='earnings')    document.getElementById('iframe-earnings').src = 'earnings.html?role=landlord&name=' + encodeURIComponent(me.name || '');
   if (id==='messages')    loadMsgs();
   if (id==='payments')    loadPayments();
   if (id==='assets')      loadLandlordAssets('active');

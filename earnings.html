@@ -47,21 +47,27 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .hdr-right{width:60px;display:flex;justify-content:flex-end}
 
-/* USER STRIP */
-.user-strip{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px;
+/* IDENTITY STRIP */
+.id-strip{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 20px;
   background:var(--white);
   border-bottom:1px solid var(--border);
-  margin-bottom:20px;
+  margin-bottom:16px;
 }
-.user-name{font-size:13px;font-weight:500}
-.user-role{font-size:11px;color:var(--muted);margin-top:1px}
-.sign-out{
-  font-size:11px;color:var(--muted);
-  background:none;border:1px solid var(--border);
-  border-radius:999px;padding:4px 12px;
-  cursor:pointer;font-family:inherit;
+.id-role-chip{
+  font-size:11px;font-weight:500;letter-spacing:.4px;text-transform:uppercase;
+  padding:3px 10px;border-radius:999px;
+}
+.id-role-chip.admin{background:#EDE7F6;color:#4527A0}
+.id-role-chip.landlord{background:#E3F2FD;color:#0D47A1}
+.id-role-chip.staff{background:#E8F5E9;color:#1B5E20}
+.id-role-chip.talent{background:#FFF3E0;color:#E65100}
+.id-name{font-size:13px;font-weight:500;flex:1}
+.readonly-tag{
+  font-size:10px;color:var(--muted);
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:999px;padding:2px 8px;
 }
 
 /* MONTH NAV */
@@ -122,6 +128,34 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .add-btn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
 
+/* HEAD FILTER ROW (admin only) */
+.head-filter-row{
+  display:flex;align-items:center;gap:8px;
+  padding:0 20px;margin-bottom:14px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.head-filter-row::-webkit-scrollbar{display:none}
+.hftab{
+  font-size:11px;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--border);background:var(--white);
+  cursor:pointer;font-family:inherit;color:var(--muted);
+  white-space:nowrap;flex-shrink:0;
+  transition:all .15s;
+}
+.hftab.active{border-color:var(--br);color:var(--br);background:var(--br-l)}
+
+/* UNASSIGNED BADGE */
+.unassigned-banner{
+  margin:0 20px 14px;
+  background:#FFF8E1;border:1px solid #FFD54F;
+  border-radius:10px;padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;
+}
+.unassigned-banner span{font-size:12px;color:#795548}
+.unassigned-banner strong{font-weight:600}
+
 /* LOG ENTRIES */
 .log-wrap{padding:0 20px}
 .log-empty{
@@ -135,6 +169,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .entry-card.positive{border-left:3px solid var(--green)}
 .entry-card.negative{border-left:3px solid var(--red)}
+.entry-card.unassigned{border-left:3px solid #FFD54F}
 .entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .entry-head-chip{
   display:inline-flex;align-items:center;
@@ -143,6 +178,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .positive .entry-head-chip{background:var(--green-l);color:var(--green)}
 .negative .entry-head-chip{background:var(--red-l);color:var(--red)}
+.unassigned .entry-head-chip{background:#FFF8E1;color:#795548}
 .entry-amount{
   font-family:'Cormorant Garamond',serif;
   font-size:22px;font-weight:600;line-height:1;
@@ -159,6 +195,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   font-size:11px;color:var(--br);
   background:var(--br-l);padding:2px 7px;border-radius:999px;
 }
+.entry-entity.landlord-tag{color:#0D47A1;background:#E3F2FD}
+.entry-entity.staff-tag{color:#1B5E20;background:#E8F5E9}
+.entry-entity.talent-tag{color:#E65100;background:#FFF3E0}
 .entry-notes{
   font-size:12px;color:var(--muted);
   margin-top:6px;line-height:1.4;
@@ -166,6 +205,12 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .entry-pct{
   font-size:12px;color:var(--muted);margin-top:4px;
+}
+.assign-btn{
+  font-size:11px;color:var(--br);
+  background:var(--br-l);border:1px solid rgba(153,60,29,.18);
+  border-radius:6px;padding:4px 10px;cursor:pointer;
+  font-family:inherit;margin-top:8px;width:100%;text-align:center;
 }
 
 /* SECTION LABEL */
@@ -260,6 +305,22 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .submit-btn:active{opacity:.88}
 .submit-btn:disabled{opacity:.5;cursor:default}
 
+/* ASSIGN SHEET */
+.assign-entity-row{
+  display:flex;flex-direction:column;gap:10px;
+}
+.assign-type-toggle{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  margin-bottom:16px;
+}
+.assign-type-btn{
+  padding:10px 4px;text-align:center;font-size:12px;font-weight:500;
+  cursor:pointer;background:var(--white);border:none;
+  font-family:inherit;color:var(--muted);transition:all .15s;
+}
+.assign-type-btn.active{background:var(--br-l);color:var(--br)}
+
 /* TOAST */
 .toast{
   position:fixed;bottom:calc(var(--nav-h) + 16px);
@@ -276,7 +337,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
   <!-- HEADER -->
   <div class="hdr">
-    <button class="back-btn" onclick="goBack()">
+    <button class="back-btn" id="back-btn" onclick="goBack()">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       Back
     </button>
@@ -284,18 +345,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <div class="hdr-right"></div>
   </div>
 
-  <!-- USER STRIP -->
-  <div class="user-strip">
-    <div>
-      <div class="user-name" id="u-name">—</div>
-      <div class="user-role" id="u-role">—</div>
-    </div>
-    <button class="sign-out" onclick="signOut()">Sign out</button>
-  </div>
-
-  <!-- READ-ONLY NOTICE (shown to non-admin users) -->
-  <div id="readonly-notice" style="display:none;margin:0 0 12px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:10px;padding:10px 16px;font-size:12px;color:#795548;text-align:center">
-    Read-only view · Your entries are added by the office
+  <!-- IDENTITY STRIP -->
+  <div class="id-strip">
+    <span class="id-role-chip" id="id-role-chip">—</span>
+    <span class="id-name" id="id-name">—</span>
+    <span class="readonly-tag" id="readonly-tag" style="display:none">Read-only</span>
   </div>
 
   <!-- MONTH NAV -->
@@ -328,10 +382,19 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       <button class="ftab" id="ftab-positive" onclick="setFilter('positive')">Positive</button>
       <button class="ftab" id="ftab-negative" onclick="setFilter('negative')">Negative</button>
     </div>
-    <button class="add-btn" id="add-entry-btn" onclick="openSheet()" style="display:none">
+    <button class="add-btn" id="add-entry-btn" onclick="openAddSheet()" style="display:none">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Entry
     </button>
+  </div>
+
+  <!-- HEAD FILTER (admin only — filter by entity type) -->
+  <div class="head-filter-row" id="head-filter-row" style="display:none">
+    <button class="hftab active" id="hftab-all" onclick="setHeadFilter('all')">All Heads</button>
+    <button class="hftab" id="hftab-unassigned" onclick="setHeadFilter('unassigned')">Unassigned</button>
+    <button class="hftab" id="hftab-landlord" onclick="setHeadFilter('landlord')">Landlords</button>
+    <button class="hftab" id="hftab-staff" onclick="setHeadFilter('staff')">Staff</button>
+    <button class="hftab" id="hftab-talent" onclick="setHeadFilter('talent')">Talent</button>
   </div>
 
   <!-- LOG -->
@@ -345,8 +408,10 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <!-- OVERLAY -->
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 
-<!-- ADD ENTRY SHEET -->
-<div class="sheet" id="sheet">
+<!-- ══════════════════════════════════════════
+     ADD ENTRY SHEET (admin only)
+═══════════════════════════════════════════ -->
+<div class="sheet" id="add-sheet">
   <div class="sheet-handle"></div>
   <div class="sheet-hdr">
     <div class="sheet-title">Add Entry</div>
@@ -354,15 +419,15 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
   <div class="sheet-body">
 
-    <!-- TYPE TOGGLE -->
+    <!-- POSITIVE / NEGATIVE -->
     <div class="type-toggle">
       <button class="type-btn pos active" id="tbtn-pos" onclick="selectType('positive')">+ Positive</button>
       <button class="type-btn neg" id="tbtn-neg" onclick="selectType('negative')">− Negative</button>
     </div>
 
-    <!-- HEAD -->
+    <!-- EARNINGS HEAD -->
     <div class="form-field">
-      <label class="form-label">Head</label>
+      <label class="form-label">Earnings Head</label>
       <select class="form-select" id="f-head" onchange="onHeadChange()">
         <option value="">Select head…</option>
       </select>
@@ -371,7 +436,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <!-- AMOUNT + PERCENTAGE ROW -->
     <div class="form-row">
       <div class="form-field" id="amount-field">
-        <label class="form-label">Amount (₹)</label>
+        <label class="form-label" id="amount-lbl">Amount (₹)</label>
         <input class="form-input" id="f-amount" type="number" min="0" placeholder="0.00"/>
       </div>
       <div class="form-field pct-field" id="pct-field">
@@ -380,10 +445,17 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       </div>
     </div>
 
-    <!-- ENTITY (owner sees this; others pre-filled) -->
-    <div class="form-field" id="entity-field" style="display:none">
-      <label class="form-label">For (Property / Person)</label>
-      <input class="form-input" id="f-entity" type="text" placeholder="e.g. Villa 21 or Staff Name"/>
+    <!-- ASSIGN TO HEAD -->
+    <div class="form-field">
+      <label class="form-label">Assign to Head</label>
+      <div class="assign-type-toggle">
+        <button class="assign-type-btn active" id="atbtn-landlord" onclick="selectEntityType('landlord')">Landlord</button>
+        <button class="assign-type-btn" id="atbtn-staff" onclick="selectEntityType('staff')">Staff</button>
+        <button class="assign-type-btn" id="atbtn-talent" onclick="selectEntityType('talent')">Talent</button>
+      </div>
+      <select class="form-select" id="f-entity-name">
+        <option value="">Loading…</option>
+      </select>
     </div>
 
     <!-- DATE -->
@@ -402,82 +474,104 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     ASSIGN SHEET (admin assigns existing entry)
+═══════════════════════════════════════════ -->
+<div class="sheet" id="assign-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hdr">
+    <div class="sheet-title">Assign Entry</div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div id="assign-entry-summary" style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:var(--muted)">—</div>
+
+    <div class="form-field">
+      <label class="form-label">Assign to Head Type</label>
+      <div class="assign-type-toggle">
+        <button class="assign-type-btn active" id="aatbtn-landlord" onclick="selectAssignType('landlord')">Landlord</button>
+        <button class="assign-type-btn" id="aatbtn-staff" onclick="selectAssignType('staff')">Staff</button>
+        <button class="assign-type-btn" id="aatbtn-talent" onclick="selectAssignType('talent')">Talent</button>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Name</label>
+      <select class="form-select" id="assign-name-select">
+        <option value="">Loading…</option>
+      </select>
+    </div>
+
+    <button class="submit-btn" id="assign-submit-btn" onclick="submitAssign()">Assign</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+/* ═══════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════ */
 const SUPA_URL = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const POSITIVE_HEADS = [
-  'Revenue',
-  'Profit',
-  'PAT',
-  'Salary',
-  'Pay',
-  'Expenses Borne',
-  'Percentage of Revenue'
-];
-const NEGATIVE_HEADS = [
-  'Deduction',
-  'Loss'
-];
+const POSITIVE_HEADS = ['Revenue','Profit','PAT','Salary','Pay','Expenses Borne','Percentage of Revenue'];
+const NEGATIVE_HEADS = ['Deduction','Loss'];
 
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (!me) { location.href = '/index.html'; throw new Error('No auth'); }
+/* ═══════════════════════════════════════════
+   IDENTITY FROM URL PARAMS
+   ?role=admin|landlord|staff|talent
+   ?name=PersonName  (required for non-admin)
+═══════════════════════════════════════════ */
+const params  = new URLSearchParams(window.location.search);
+const viewRole = (params.get('role') || 'admin').toLowerCase();
+const viewName = params.get('name') || '';
 
-let currentFilter = 'all';
-let currentType = 'positive';
-let viewYear = new Date().getFullYear();
-let viewMonth = new Date().getMonth(); // 0-indexed
-let allEntries = [];
+const isAdmin = (viewRole === 'admin' || viewRole === 'office');
 
-// --- ROLE DISPLAY ---
-const roleLabels = {owner:'Manager', staff:'Staff', landlord:'Landlord', talent:'Talent', office:'Office'};
-document.getElementById('u-name').textContent = me.name || '—';
-document.getElementById('u-role').textContent = roleLabels[me.role] || me.role || '—';
+/* Back-button destination */
+const BACK_MAP = {
+  landlord: '/landlord.html',
+  staff:    '/ops.html',
+  talent:   '/talent.html',
+  admin:    '/admin.html',
+  office:   '/admin.html',
+};
+document.getElementById('back-btn').style.display = BACK_MAP[viewRole] ? 'flex' : 'none';
 
-// Only admin (office) role can add entries from this page
-// All other roles get read-only view of their own entries
-const canAdd = me.role === 'office';
-if (canAdd) {
+/* Identity strip */
+const roleLabels = {admin:'Admin',office:'Admin',landlord:'Landlord',staff:'Staff',talent:'Talent'};
+const chipEl = document.getElementById('id-role-chip');
+chipEl.textContent = roleLabels[viewRole] || viewRole;
+chipEl.className = 'id-role-chip ' + (isAdmin ? 'admin' : viewRole);
+document.getElementById('id-name').textContent = isAdmin
+  ? 'All Earnings'
+  : (viewName || 'Unknown');
+if (!isAdmin) document.getElementById('readonly-tag').style.display = '';
+
+/* Show admin controls */
+if (isAdmin) {
   document.getElementById('add-entry-btn').style.display = 'flex';
-  document.getElementById('entity-field').style.display = 'block';
-} else {
-  document.getElementById('readonly-notice').style.display = 'block';
+  document.getElementById('head-filter-row').style.display = 'flex';
 }
 
-function signOut() {
-  localStorage.removeItem('bc_me');
-  location.href = '/index.html';
-}
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let currentFilter = 'all';
+let currentHeadFilter = 'all'; // admin: all|unassigned|landlord|staff|talent
+let currentType = 'positive';
+let currentEntityType = 'landlord';
+let currentAssignType = 'landlord';
+let viewYear  = new Date().getFullYear();
+let viewMonth = new Date().getMonth();
+let allEntries = [];
+let entityLists = { landlord: [], staff: [], talent: [] }; // loaded once
+let assigningEntryId = null;
 
-function goBack() {
-  const r = me.role;
-  if (r === 'landlord') location.href = '/landlord.html';
-  else if (r === 'talent') location.href = '/talent.html';
-  else if (r === 'staff')  location.href = '/ops.html';
-  else if (r === 'office') location.href = '/admin.html';
-  else location.href = '/ops.html';
-}
-
-// --- MONTH ---
-function shiftMonth(d) {
-  viewMonth += d;
-  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-  if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
-  renderMonthLabel();
-  renderLog();
-  renderKPIs();
-  notifyResize();
-}
-function renderMonthLabel() {
-  const d = new Date(viewYear, viewMonth, 1);
-  document.getElementById('month-label').textContent =
-    d.toLocaleDateString('en-IN', {month:'long', year:'numeric'});
-}
-renderMonthLabel();
-
-// --- API ---
+/* ═══════════════════════════════════════════
+   API HELPERS
+═══════════════════════════════════════════ */
 async function api(path) {
   const r = await fetch(SUPA_URL + path, {
     headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
@@ -499,18 +593,76 @@ async function apiPost(path, body) {
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
+async function apiPatch(path, body) {
+  const r = await fetch(SUPA_URL + path, {
+    method: 'PATCH',
+    headers: {
+      apikey: SUPA_KEY,
+      Authorization: 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
 
-// --- LOAD ---
+/* ═══════════════════════════════════════════
+   BACK
+═══════════════════════════════════════════ */
+function goBack() {
+  location.href = BACK_MAP[viewRole] || '/admin.html';
+}
+
+/* ═══════════════════════════════════════════
+   MONTH
+═══════════════════════════════════════════ */
+function shiftMonth(d) {
+  viewMonth += d;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+  renderMonthLabel();
+  renderLog();
+  renderKPIs();
+}
+function renderMonthLabel() {
+  document.getElementById('month-label').textContent =
+    new Date(viewYear, viewMonth, 1)
+      .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+}
+renderMonthLabel();
+
+/* ═══════════════════════════════════════════
+   LOAD ENTITY LISTS FROM DB
+═══════════════════════════════════════════ */
+async function loadEntityLists() {
+  try {
+    const [landlords, staff, talents] = await Promise.all([
+      api('/rest/v1/landlords?select=name&order=name.asc'),
+      api('/rest/v1/staff?select=name&order=name.asc'),
+      api('/rest/v1/talents?select=name&order=name.asc').catch(() => [])
+    ]);
+    entityLists.landlord = (landlords || []).map(r => r.name).filter(Boolean);
+    entityLists.staff    = (staff    || []).map(r => r.name).filter(Boolean);
+    entityLists.talent   = (talents  || []).map(r => r.name).filter(Boolean);
+  } catch(e) {
+    console.warn('Could not load entity lists', e);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LOAD EARNINGS
+═══════════════════════════════════════════ */
 async function loadEntries() {
   let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
-  if (me.role === 'staff' || me.role === 'talent') {
-    // Staff / talent: only their own entries
-    path += '&entity_name=eq.' + encodeURIComponent(me.name);
-  } else if (me.role === 'landlord') {
-    // Filter by landlord's personal name — matches how admin saves entries
-    path += '&entity_name=eq.' + encodeURIComponent(me.name);
+
+  if (!isAdmin) {
+    // Non-admin: filter to own name
+    path += '&entity_name=eq.' + encodeURIComponent(viewName);
+    path += '&entity_type=eq.' + encodeURIComponent(viewRole);
   }
-  // office / owner: sees all — no filter
+
   try {
     allEntries = await api(path);
   } catch(e) {
@@ -523,18 +675,28 @@ async function loadEntries() {
   renderKPIs();
 }
 
-// --- FILTER ENTRIES FOR CURRENT MONTH ---
+/* ═══════════════════════════════════════════
+   FILTER HELPERS
+═══════════════════════════════════════════ */
 function filteredEntries() {
   return allEntries.filter(e => {
     if (!e.entry_date) return false;
     const d = new Date(e.entry_date);
     if (d.getFullYear() !== viewYear || d.getMonth() !== viewMonth) return false;
-    if (currentFilter === 'all') return true;
-    return e.type === currentFilter;
+    if (currentFilter !== 'all' && e.type !== currentFilter) return false;
+    if (isAdmin && currentHeadFilter !== 'all') {
+      if (currentHeadFilter === 'unassigned') {
+        return !e.entity_type || !e.entity_name;
+      }
+      return e.entity_type === currentHeadFilter;
+    }
+    return true;
   });
 }
 
-// --- RENDER KPIs ---
+/* ═══════════════════════════════════════════
+   RENDER KPIs
+═══════════════════════════════════════════ */
 function renderKPIs() {
   const entries = allEntries.filter(e => {
     if (!e.entry_date) return false;
@@ -555,36 +717,37 @@ function renderKPIs() {
   netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
 }
 
-function fmtAmt(n) {
-  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
-  if (n >= 1000) return '₹' + (n/1000).toFixed(1) + 'k';
-  return '₹' + n.toLocaleString('en-IN');
-}
-
-function fmtFull(n) {
-  if (!n && n !== 0) return '—';
-  return '₹' + parseFloat(n).toLocaleString('en-IN', {minimumFractionDigits:0, maximumFractionDigits:2});
-}
-
-function fmtDate(d) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
-}
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// --- RENDER LOG ---
+/* ═══════════════════════════════════════════
+   RENDER LOG
+═══════════════════════════════════════════ */
 function renderLog() {
   const entries = filteredEntries();
   const wrap = document.getElementById('log-wrap');
-  const lbl = document.getElementById('log-lbl');
 
+  // Count unassigned in current month (admin banner)
+  if (isAdmin) {
+    const monthEntries = allEntries.filter(e => {
+      if (!e.entry_date) return false;
+      const d = new Date(e.entry_date);
+      return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+    });
+    const unassignedCount = monthEntries.filter(e => !e.entity_type || !e.entity_name).length;
+    const existing = document.getElementById('unassigned-banner');
+    if (existing) existing.remove();
+    if (unassignedCount > 0) {
+      const banner = document.createElement('div');
+      banner.id = 'unassigned-banner';
+      banner.className = 'unassigned-banner';
+      banner.innerHTML = `<span><strong>${unassignedCount}</strong> unassigned entr${unassignedCount===1?'y':'ies'} this month</span><button class="hftab" style="background:var(--white);border-color:#FFD54F;color:#795548" onclick="setHeadFilter('unassigned')">View</button>`;
+      wrap.parentNode.insertBefore(banner, wrap);
+    }
+  }
+
+  const lbl = document.getElementById('log-lbl');
   const fName = currentFilter === 'all' ? 'All Entries' :
                 currentFilter === 'positive' ? 'Positive Entries' : 'Negative Entries';
   lbl.textContent = fName + ' — ' + new Date(viewYear, viewMonth, 1)
-    .toLocaleDateString('en-IN', {month:'long', year:'numeric'});
+    .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
   if (!entries.length) {
     wrap.innerHTML = '<div class="log-empty">No entries for this period.</div>';
@@ -593,21 +756,38 @@ function renderLog() {
 
   wrap.innerHTML = entries.map(e => {
     const isPos = e.type === 'positive';
+    const isUnassigned = !e.entity_type || !e.entity_name;
+    const cardClass = isUnassigned ? 'unassigned' : (isPos ? 'positive' : 'negative');
+
     const isPct = e.head === 'Percentage of Revenue';
     const amtDisplay = isPct && e.percentage
       ? `<span class="entry-amount">${parseFloat(e.percentage).toFixed(2)}%</span>`
-      : `<span class="entry-amount">${fmtFull(e.amount)}</span>`;
+      : `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${fmtFull(e.amount)}</span>`;
     const pctNote = isPct && e.percentage && e.amount
-      ? `<div class="entry-pct">= ${fmtFull(e.amount)} (calculated amount)</div>` : '';
-    const entityTag = e.entity_name
-      ? `<span class="entry-entity">${esc(e.entity_name)}</span>` : '';
+      ? `<div class="entry-pct">= ${fmtFull(e.amount)} (calculated)</div>` : '';
+
+    // Entity tag
+    let entityTag = '';
+    if (isUnassigned && isAdmin) {
+      entityTag = `<span style="font-size:11px;color:#9E8A4F;background:#FFF8E1;padding:2px 7px;border-radius:999px">Unassigned</span>`;
+    } else if (e.entity_name) {
+      const cls = e.entity_type === 'landlord' ? 'landlord-tag'
+                : e.entity_type === 'staff'    ? 'staff-tag'
+                : e.entity_type === 'talent'   ? 'talent-tag' : '';
+      entityTag = `<span class="entry-entity ${cls}">${esc(e.entity_name)}</span>`;
+    }
+
     const byTag = e.recorded_by
       ? `<span class="entry-by">by ${esc(e.recorded_by)}</span>` : '';
     const notesHtml = e.notes
       ? `<div class="entry-notes">${esc(e.notes)}</div>` : '';
 
+    // Admin: show assign button if unassigned
+    const assignHtml = (isAdmin && isUnassigned)
+      ? `<button class="assign-btn" onclick="openAssignSheet('${e.id}')">Assign to head →</button>` : '';
+
     return `
-      <div class="entry-card ${isPos?'positive':'negative'}">
+      <div class="entry-card ${cardClass}">
         <div class="entry-top">
           <span class="entry-head-chip">${esc(e.head)}</span>
           ${amtDisplay}
@@ -619,11 +799,14 @@ function renderLog() {
           ${byTag}
         </div>
         ${notesHtml}
+        ${assignHtml}
       </div>`;
   }).join('');
 }
 
-// --- FILTER ---
+/* ═══════════════════════════════════════════
+   FILTER CONTROLS
+═══════════════════════════════════════════ */
 function setFilter(f) {
   currentFilter = f;
   document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
@@ -631,32 +814,31 @@ function setFilter(f) {
   renderLog();
 }
 
-// --- SHEET ---
-function openSheet() {
+function setHeadFilter(f) {
+  currentHeadFilter = f;
+  document.querySelectorAll('.hftab').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('hftab-' + f);
+  if (el) el.classList.add('active');
+  renderLog();
+}
+
+/* ═══════════════════════════════════════════
+   ADD ENTRY SHEET
+═══════════════════════════════════════════ */
+function openAddSheet() {
   selectType('positive');
+  selectEntityType('landlord');
   document.getElementById('f-amount').value = '';
   document.getElementById('f-pct').value = '';
   document.getElementById('f-notes').value = '';
-  document.getElementById('f-entity').value = '';
   document.getElementById('f-date').value = todayStr();
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('sheet').classList.add('open');
-}
-function closeSheet() {
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('sheet').classList.remove('open');
+  openSheetEl('add-sheet');
 }
 
-function todayStr() {
-  const d = new Date();
-  return d.toISOString().split('T')[0];
-}
-
-// --- TYPE SELECT ---
 function selectType(t) {
   currentType = t;
-  document.getElementById('tbtn-pos').classList.toggle('active', t==='positive');
-  document.getElementById('tbtn-neg').classList.toggle('active', t==='negative');
+  document.getElementById('tbtn-pos').classList.toggle('active', t === 'positive');
+  document.getElementById('tbtn-neg').classList.toggle('active', t === 'negative');
   populateHeads();
 }
 
@@ -672,48 +854,58 @@ function onHeadChange() {
   const head = document.getElementById('f-head').value;
   const isPctHead = head === 'Percentage of Revenue';
   document.getElementById('pct-field').classList.toggle('show', isPctHead);
-  // If pct head: amount field becomes optional "calculated ₹ value"
-  const amtLabel = document.querySelector('#amount-field .form-label');
-  if (amtLabel) amtLabel.textContent = isPctHead ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
-  document.getElementById('f-amount').placeholder = isPctHead ? '0.00 (leave blank if unknown)' : '0.00';
+  document.getElementById('amount-lbl').textContent =
+    isPctHead ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
+  document.getElementById('f-amount').placeholder =
+    isPctHead ? '0.00 (leave blank if unknown)' : '0.00';
 }
 
-// --- SUBMIT ---
+function selectEntityType(t) {
+  currentEntityType = t;
+  ['landlord','staff','talent'].forEach(x => {
+    document.getElementById('atbtn-' + x).classList.toggle('active', x === t);
+  });
+  populateEntitySelect('f-entity-name', t);
+}
+
+function populateEntitySelect(selectId, type) {
+  const sel = document.getElementById(selectId);
+  const names = entityLists[type] || [];
+  sel.innerHTML = names.length
+    ? '<option value="">Select ' + type + '…</option>' +
+      names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')
+    : '<option value="">No ' + type + 's found</option>';
+}
+
 async function submitEntry() {
-  const head = document.getElementById('f-head').value;
+  const head   = document.getElementById('f-head').value;
   const amount = document.getElementById('f-amount').value;
-  const pct = document.getElementById('f-pct').value;
-  const notes = document.getElementById('f-notes').value.trim();
-  const date = document.getElementById('f-date').value;
-  const entityInput = document.getElementById('f-entity').value.trim();
+  const pct    = document.getElementById('f-pct').value;
+  const notes  = document.getElementById('f-notes').value.trim();
+  const date   = document.getElementById('f-date').value;
+  const entity = document.getElementById('f-entity-name').value;
   const isPctHead = head === 'Percentage of Revenue';
 
-  if (!head) { showToast('Please select a head'); return; }
-  if (!isPctHead && !amount) { showToast('Please enter an amount'); return; }
-  if (isPctHead && !pct) { showToast('Please enter a percentage'); return; }
-  if (!date) { showToast('Please select a date'); return; }
-
-  // Determine entity — only 'office' role can reach this function
-  let entityType = 'general';
-  let entityName = entityInput || '';
+  if (!head)                          { showToast('Select an earnings head'); return; }
+  if (!isPctHead && !amount)          { showToast('Enter an amount'); return; }
+  if (isPctHead && !pct)              { showToast('Enter a percentage'); return; }
+  if (!date)                          { showToast('Select a date'); return; }
 
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
+  btn.disabled = true; btn.textContent = 'Saving…';
 
   try {
-    const payload = {
-      type: currentType,
-      head: head,
-      amount: amount ? parseFloat(amount) : null,
-      percentage: pct ? parseFloat(pct) : null,
-      notes: notes || null,
-      entity_type: entityType,
-      entity_name: entityName || null,
-      recorded_by: me.name,
-      entry_date: date
-    };
-    await apiPost('/rest/v1/earnings_log', payload);
+    await apiPost('/rest/v1/earnings_log', {
+      type:        currentType,
+      head:        head,
+      amount:      amount ? parseFloat(amount) : null,
+      percentage:  pct    ? parseFloat(pct)    : null,
+      notes:       notes || null,
+      entity_type: entity ? currentEntityType  : null,
+      entity_name: entity || null,
+      recorded_by: 'Admin',
+      entry_date:  date
+    });
     closeSheet();
     showToast('Entry added');
     await loadEntries();
@@ -721,12 +913,106 @@ async function submitEntry() {
     showToast('Error saving — check console');
     console.error(e);
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Add Entry';
+    btn.disabled = false; btn.textContent = 'Add Entry';
   }
 }
 
-// --- TOAST ---
+/* ═══════════════════════════════════════════
+   ASSIGN SHEET (for existing unassigned entries)
+═══════════════════════════════════════════ */
+function openAssignSheet(entryId) {
+  assigningEntryId = entryId;
+  const entry = allEntries.find(e => e.id === entryId);
+  if (!entry) return;
+
+  const summary = document.getElementById('assign-entry-summary');
+  summary.innerHTML = `
+    <strong>${esc(entry.head)}</strong> · ${fmtFull(entry.amount)}
+    <br/><span style="font-size:11px">${fmtDate(entry.entry_date)}</span>
+    ${entry.notes ? `<br/><span style="font-size:11px;font-style:italic">${esc(entry.notes)}</span>` : ''}
+  `;
+
+  selectAssignType('landlord');
+  openSheetEl('assign-sheet');
+}
+
+function selectAssignType(t) {
+  currentAssignType = t;
+  ['landlord','staff','talent'].forEach(x => {
+    document.getElementById('aatbtn-' + x).classList.toggle('active', x === t);
+  });
+  populateEntitySelect('assign-name-select', t);
+}
+
+async function submitAssign() {
+  const name = document.getElementById('assign-name-select').value;
+  if (!name) { showToast('Select a person to assign to'); return; }
+  if (!assigningEntryId) return;
+
+  const btn = document.getElementById('assign-submit-btn');
+  btn.disabled = true; btn.textContent = 'Assigning…';
+
+  try {
+    await apiPatch(
+      '/rest/v1/earnings_log?id=eq.' + assigningEntryId,
+      { entity_type: currentAssignType, entity_name: name }
+    );
+    closeSheet();
+    showToast('Assigned to ' + name);
+    await loadEntries();
+  } catch(e) {
+    showToast('Error assigning — check console');
+    console.error(e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Assign';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SHEET CONTROL
+═══════════════════════════════════════════ */
+let activeSheet = null;
+function openSheetEl(id) {
+  activeSheet = id;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById(id).classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  ['add-sheet','assign-sheet'].forEach(id => {
+    document.getElementById(id).classList.remove('open');
+  });
+  activeSheet = null;
+}
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+function fmtAmt(n) {
+  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
+  if (n >= 1000)   return '₹' + (n/1000).toFixed(1) + 'k';
+  return '₹' + n.toLocaleString('en-IN');
+}
+function fmtFull(n) {
+  if (!n && n !== 0) return '—';
+  return '₹' + parseFloat(n).toLocaleString('en-IN',
+    { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function fmtDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-IN',
+    { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -735,18 +1021,16 @@ function showToast(msg) {
   t._timer = setTimeout(() => { t.style.display = 'none'; }, 2400);
 }
 
-// --- NOTIFY PARENT TO RESIZE IFRAME ---
-function notifyResize() {
-  try {
-    const h = document.body.scrollHeight;
-    window.parent.postMessage({type:'bc_resize', height: h}, '*');
-  } catch(e){}
-}
-window.addEventListener('load', notifyResize);
-
-// --- INIT ---
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
 populateHeads();
-loadEntries();
+
+async function init() {
+  if (isAdmin) await loadEntityLists();
+  await loadEntries();
+}
+init();
 </script>
 </body>
 </html>

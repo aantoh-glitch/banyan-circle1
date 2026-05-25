@@ -233,7 +233,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       </div>
     </a>
 
-    <a class="dash-btn" href="/earnings.html">
+    <a class="dash-btn" id="earnings-link" href="/earnings.html">
       <div class="db-icon">
         <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>
       </div>
@@ -258,6 +258,11 @@ const today = new Date();
 document.getElementById('user-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
 function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
+// Wire earnings link with staff name param
+const earnLink = document.getElementById('earnings-link');
+if (earnLink && me && me.name) {
+  earnLink.href = '/earnings.html?role=staff&name=' + encodeURIComponent(me.name);
+}
 </script>
 </body>
 </html>
