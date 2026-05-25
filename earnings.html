@@ -212,6 +212,21 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   border-radius:6px;padding:4px 10px;cursor:pointer;
   font-family:inherit;margin-top:8px;width:100%;text-align:center;
 }
+.entry-actions{display:flex;gap:6px;margin-top:8px}
+.entry-edit-btn{
+  flex:1;font-size:11px;color:var(--br);
+  background:var(--br-l);border:1px solid rgba(153,60,29,.18);
+  border-radius:6px;padding:5px 10px;cursor:pointer;
+  font-family:inherit;text-align:center;
+}
+.entry-edit-btn:active{opacity:.75}
+.entry-del-btn{
+  font-size:11px;color:var(--red);
+  background:var(--red-l);border:1px solid rgba(198,40,40,.15);
+  border-radius:6px;padding:5px 14px;cursor:pointer;
+  font-family:inherit;text-align:center;
+}
+.entry-del-btn:active{opacity:.75}
 
 /* SECTION LABEL */
 .section-lbl{
@@ -506,6 +521,72 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     EDIT ENTRY SHEET (admin only)
+═══════════════════════════════════════════ -->
+<div class="sheet" id="edit-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hdr">
+    <div class="sheet-title">Edit Entry</div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sheet-body">
+
+    <!-- POSITIVE / NEGATIVE -->
+    <div class="type-toggle">
+      <button class="type-btn pos active" id="etbtn-pos" onclick="selectEditType('positive')">+ Positive</button>
+      <button class="type-btn neg" id="etbtn-neg" onclick="selectEditType('negative')">− Negative</button>
+    </div>
+
+    <!-- EARNINGS HEAD -->
+    <div class="form-field">
+      <label class="form-label">Earnings Head</label>
+      <select class="form-select" id="ef-head" onchange="onEditHeadChange()">
+        <option value="">Select head…</option>
+      </select>
+    </div>
+
+    <!-- AMOUNT + PERCENTAGE ROW -->
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label" id="ef-amount-lbl">Amount (₹)</label>
+        <input class="form-input" id="ef-amount" type="number" min="0" placeholder="0.00"/>
+      </div>
+      <div class="form-field pct-field" id="epct-field">
+        <label class="form-label">Percentage (%)</label>
+        <input class="form-input" id="ef-pct" type="number" min="0" max="100" step="0.01" placeholder="0.00"/>
+      </div>
+    </div>
+
+    <!-- ASSIGN TO -->
+    <div class="form-field">
+      <label class="form-label">Assigned To</label>
+      <div class="assign-type-toggle">
+        <button class="assign-type-btn active" id="eatbtn-landlord" onclick="selectEditEntityType('landlord')">Landlord</button>
+        <button class="assign-type-btn" id="eatbtn-staff" onclick="selectEditEntityType('staff')">Staff</button>
+        <button class="assign-type-btn" id="eatbtn-talent" onclick="selectEditEntityType('talent')">Talent</button>
+      </div>
+      <select class="form-select" id="ef-entity-name" style="margin-top:8px">
+        <option value="">Select…</option>
+      </select>
+    </div>
+
+    <!-- DATE -->
+    <div class="form-field">
+      <label class="form-label">Date</label>
+      <input class="form-input" id="ef-date" type="date"/>
+    </div>
+
+    <!-- NOTES -->
+    <div class="form-field">
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-textarea" id="ef-notes" placeholder="Any additional context…"></textarea>
+    </div>
+
+    <button class="submit-btn" id="edit-submit-btn" onclick="submitEditEntry()">Save Changes</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -786,6 +867,13 @@ function renderLog() {
     const assignHtml = (isAdmin && isUnassigned)
       ? `<button class="assign-btn" onclick="openAssignSheet('${e.id}')">Assign to head →</button>` : '';
 
+    // Admin: edit + delete on every card
+    const actionsHtml = isAdmin
+      ? `<div class="entry-actions">
+          <button class="entry-edit-btn" onclick="openEditSheet('${e.id}')">Edit</button>
+          <button class="entry-del-btn" onclick="deleteEntry('${e.id}')">Delete</button>
+         </div>` : '';
+
     return `
       <div class="entry-card ${cardClass}">
         <div class="entry-top">
@@ -800,6 +888,7 @@ function renderLog() {
         </div>
         ${notesHtml}
         ${assignHtml}
+        ${actionsHtml}
       </div>`;
   }).join('');
 }
@@ -969,6 +1058,136 @@ async function submitAssign() {
 }
 
 /* ═══════════════════════════════════════════
+   EDIT + DELETE
+═══════════════════════════════════════════ */
+let editingEntryId = null;
+let currentEditType = 'positive';
+let currentEditEntityType = 'landlord';
+
+function selectEditType(t) {
+  currentEditType = t;
+  document.getElementById('etbtn-pos').classList.toggle('active', t === 'positive');
+  document.getElementById('etbtn-neg').classList.toggle('active', t === 'negative');
+  populateEditHeads();
+}
+
+function populateEditHeads() {
+  const sel = document.getElementById('ef-head');
+  const saved = sel.value;
+  const heads = currentEditType === 'positive' ? POSITIVE_HEADS : NEGATIVE_HEADS;
+  sel.innerHTML = '<option value="">Select head…</option>' +
+    heads.map(h => `<option value="${esc(h)}">${esc(h)}</option>`).join('');
+  if (saved) sel.value = saved;
+  onEditHeadChange();
+}
+
+function onEditHeadChange() {
+  const head = document.getElementById('ef-head').value;
+  const isPct = head === 'Percentage of Revenue';
+  document.getElementById('epct-field').classList.toggle('show', isPct);
+  document.getElementById('ef-amount-lbl').textContent =
+    isPct ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
+}
+
+function selectEditEntityType(t) {
+  currentEditEntityType = t;
+  ['landlord','staff','talent'].forEach(x => {
+    document.getElementById('eatbtn-' + x).classList.toggle('active', x === t);
+  });
+  populateEntitySelect('ef-entity-name', t);
+}
+
+function openEditSheet(id) {
+  const e = allEntries.find(x => x.id === id);
+  if (!e) return;
+  editingEntryId = id;
+
+  selectEditType(e.type || 'positive');
+  populateEditHeads();
+  document.getElementById('ef-head').value = e.head || '';
+  onEditHeadChange();
+
+  const et = ['landlord','staff','talent'].includes(e.entity_type) ? e.entity_type : 'landlord';
+  selectEditEntityType(et);
+
+  if (e.entity_name) {
+    const nameSel = document.getElementById('ef-entity-name');
+    const found = Array.from(nameSel.options).some(o => {
+      if (o.value === e.entity_name) { nameSel.value = e.entity_name; return true; }
+      return false;
+    });
+    if (!found) {
+      const opt = document.createElement('option');
+      opt.value = e.entity_name;
+      opt.textContent = e.entity_name;
+      nameSel.appendChild(opt);
+      nameSel.value = e.entity_name;
+    }
+  }
+
+  document.getElementById('ef-amount').value = e.amount || '';
+  document.getElementById('ef-pct').value = e.percentage || '';
+  document.getElementById('ef-date').value = e.entry_date || '';
+  document.getElementById('ef-notes').value = e.notes || '';
+
+  openSheetEl('edit-sheet');
+}
+
+async function submitEditEntry() {
+  const head   = document.getElementById('ef-head').value;
+  const amount = document.getElementById('ef-amount').value;
+  const pct    = document.getElementById('ef-pct').value;
+  const notes  = document.getElementById('ef-notes').value.trim();
+  const date   = document.getElementById('ef-date').value;
+  const entity = document.getElementById('ef-entity-name').value;
+  const isPct  = head === 'Percentage of Revenue';
+
+  if (!head)             { showToast('Select an earnings head'); return; }
+  if (!isPct && !amount) { showToast('Enter an amount'); return; }
+  if (isPct && !pct)     { showToast('Enter a percentage'); return; }
+  if (!date)             { showToast('Select a date'); return; }
+
+  const btn = document.getElementById('edit-submit-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await apiPatch('/rest/v1/earnings_log?id=eq.' + editingEntryId, {
+      type:        currentEditType,
+      head:        head,
+      amount:      amount ? parseFloat(amount) : null,
+      percentage:  pct    ? parseFloat(pct)    : null,
+      notes:       notes  || null,
+      entity_type: entity ? currentEditEntityType : null,
+      entity_name: entity || null,
+      entry_date:  date
+    });
+    closeSheet();
+    showToast('Entry updated ✓');
+    await loadEntries();
+  } catch(err) {
+    showToast('Error saving — check console');
+    console.error(err);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+}
+
+async function deleteEntry(id) {
+  if (!confirm('Delete this entry? This cannot be undone.')) return;
+  try {
+    const r = await fetch(SUPA_URL + '/rest/v1/earnings_log?id=eq.' + id, {
+      method: 'DELETE',
+      headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+    });
+    if (!r.ok) throw new Error(await r.text());
+    showToast('Entry deleted');
+    await loadEntries();
+  } catch(err) {
+    showToast('Error deleting — check console');
+    console.error(err);
+  }
+}
+
+/* ═══════════════════════════════════════════
    SHEET CONTROL
 ═══════════════════════════════════════════ */
 let activeSheet = null;
@@ -979,7 +1198,7 @@ function openSheetEl(id) {
 }
 function closeSheet() {
   document.getElementById('overlay').classList.remove('open');
-  ['add-sheet','assign-sheet'].forEach(id => {
+  ['add-sheet','assign-sheet','edit-sheet'].forEach(id => {
     document.getElementById(id).classList.remove('open');
   });
   activeSheet = null;

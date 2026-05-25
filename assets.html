@@ -30,7 +30,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .section-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600}
 
 /* Tabs */
-.tabs{display:flex;gap:8px;margin-bottom:24px}
+.tabs{display:flex;gap:8px;margin-bottom:0}
 .tab{padding:8px 20px;border-radius:999px;border:1px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
 .tab.on{background:var(--text);color:#fff;border-color:var(--text)}
 
@@ -117,17 +117,19 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       <div class="hdr-title" id="hdr-title">Assets</div>
       <div class="hdr-sub" id="hdr-sub">Loading…</div>
     </div>
-    <button class="btn-p" id="add-btn" onclick="openAddModal()" style="display:none">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Asset
-    </button>
   </div>
 
   <div class="content">
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab on" id="tab-active" onclick="switchTab('active')">Active Assets</button>
-      <button class="tab" id="tab-removed" onclick="switchTab('removed')">Removed Log</button>
+    <!-- Tabs + Add button row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div class="tabs" style="margin-bottom:0">
+        <button class="tab on" id="tab-active" onclick="switchTab('active')">Active Assets</button>
+        <button class="tab" id="tab-removed" onclick="switchTab('removed')">Removed Log</button>
+      </div>
+      <button class="btn-p" id="add-btn" onclick="openAddModal()" style="display:none">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Asset
+      </button>
     </div>
 
     <!-- Active assets -->
