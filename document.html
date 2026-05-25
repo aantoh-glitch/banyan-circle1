@@ -37,9 +37,16 @@ select.fc{cursor:pointer}
 /* buttons */
 .btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.2px}
 .btn-p:active{background:var(--br-d)}
+.btn-p:disabled{opacity:.55;cursor:not-allowed}
 .btn-sec{padding:10px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
 .btn-row{display:flex;gap:8px;margin-top:4px}
 .btn-row .btn-p,.btn-row .btn-sec{flex:1}
+
+/* doc action buttons */
+.btn-view{padding:5px 12px;background:var(--b-l);color:#133A6A;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.btn-view:active{background:#d0e4f7}
+.btn-del2{padding:5px 9px;background:none;border:1px solid var(--border);cursor:pointer;color:var(--faint);font-size:13px;line-height:1;border-radius:7px;font-family:inherit}
+.btn-del2:hover{background:var(--r-l);color:var(--r);border-color:var(--r)}
 
 /* badges */
 .bdg{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.3px}
@@ -58,19 +65,38 @@ select.fc{cursor:pointer}
   font-size:13px;z-index:200;display:none;white-space:nowrap;
   box-shadow:0 4px 20px rgba(0,0,0,.25);
 }
+
+/* upload progress bar */
+.upload-bar{height:4px;border-radius:2px;background:var(--br-mid);margin-top:10px;display:none;overflow:hidden}
+.upload-bar-fill{height:100%;background:var(--br);width:0%;transition:width .3s ease;border-radius:2px}
+
+/* readonly notice */
+.readonly-notice{
+  display:flex;align-items:center;gap:8px;
+  background:var(--a-l);border:1px solid #E8D0AA;border-radius:var(--radius-sm);
+  padding:9px 13px;margin-bottom:14px;font-size:12px;color:#5A3006;
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- ADD BUTTON -->
-  <button class="btn-p" id="doc-add-btn" onclick="showForm()" style="margin-bottom:14px">+ Add Document</button>
+  <!-- READ-ONLY NOTICE for landlord -->
+  <div class="readonly-notice" id="readonly-notice" style="display:none">
+    <span style="font-size:16px">🔒</span>
+    <span>View-only — documents are managed by Office</span>
+  </div>
 
-  <!-- ADD / EDIT FORM -->
+  <!-- ADD BUTTON — shown only to admin -->
+  <button class="btn-p" id="doc-add-btn" onclick="showForm()" style="margin-bottom:14px;display:none">+ Upload Document</button>
+
+  <!-- ADD FORM — admin only -->
   <div id="doc-form" style="display:none" class="card">
-    <div class="card-ttl" id="form-title">New Document</div>
-    <input type="hidden" id="edit-id"/>
-    <div class="fg"><label class="fl">Document Name</label><input class="fc" id="doc-name" type="text" placeholder="e.g. Lease Agreement 2025"/></div>
+    <div class="card-ttl">Upload New Document</div>
+    <div class="fg">
+      <label class="fl">Document Title <span style="color:var(--r)">*</span></label>
+      <input class="fc" id="doc-name" type="text" placeholder="e.g. Lease Agreement 2025"/>
+    </div>
     <div class="fg">
       <label class="fl">Type</label>
       <select class="fc" id="doc-type">
@@ -81,140 +107,284 @@ select.fc{cursor:pointer}
         <option value="Permit">Permit</option>
         <option value="NOC">NOC</option>
         <option value="Agreement">Agreement</option>
+        <option value="Tax">Tax</option>
         <option value="Other">Other</option>
       </select>
     </div>
-    <div class="fg"><label class="fl">Link / URL</label><input class="fc" id="doc-url" type="url" placeholder="https://drive.google.com/…"/></div>
-    <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="doc-notes" placeholder="Optional notes…"></textarea></div>
+    <div class="fg">
+      <label class="fl">File <span style="color:var(--r)">*</span></label>
+      <input class="fc" id="doc-file" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"/>
+      <div style="font-size:11px;color:var(--faint);margin-top:5px">PDF, Word, Excel, or image · max 20 MB</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Notes (optional)</label>
+      <textarea class="fc" id="doc-notes" placeholder="Optional notes…"></textarea>
+    </div>
+    <div class="upload-bar" id="upload-bar"><div class="upload-bar-fill" id="upload-bar-fill"></div></div>
     <div class="btn-row">
       <button class="btn-sec" onclick="hideForm()">Cancel</button>
-      <button class="btn-p" onclick="saveDoc()">Save</button>
+      <button class="btn-p" id="doc-save-btn" onclick="saveDoc()">Upload</button>
     </div>
   </div>
 
   <!-- DOCUMENT LIST -->
   <div id="doc-list">
-    <div class="empty"><div class="empty-icon">📄</div>No documents added yet.<br/>Tap <strong>+ Add Document</strong> to get started.</div>
+    <div class="empty"><div class="empty-icon">📄</div>Loading documents…</div>
   </div>
 
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-const me   = JSON.parse(localStorage.getItem('bc_me')||'null');
-const PROP = me ? (me.prop || me.property_name || 'default') : 'default';
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-function storageKey() { return 'bc_docs_' + PROP; }
-function load() { try { return JSON.parse(localStorage.getItem(storageKey())||'[]'); } catch(e){return [];} }
-function save(arr) { localStorage.setItem(storageKey(), JSON.stringify(arr)); }
+// ── Viewer mode ──
+// ?viewer=admin  → full access (Upload + View + Remove)
+// default        → read-only (View only, no Upload/Remove)
+const IS_ADMIN = new URLSearchParams(location.search).get('viewer') === 'admin';
 
-function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// ── Property ──
+const me   = JSON.parse(localStorage.getItem('bc_me') || 'null');
+const PROP = (me && (me.prop || me.property_name)) || new URLSearchParams(location.search).get('prop') || '';
+
+// Apply UI mode
+if (IS_ADMIN) {
+  document.getElementById('doc-add-btn').style.display = 'block';
+} else {
+  document.getElementById('readonly-notice').style.display = 'flex';
+}
+
+// ── Helpers ──
+async function api(path, method, body) {
+  const h = {
+    apikey: KEY, Authorization: 'Bearer ' + KEY,
+    'Content-Type': 'application/json', Accept: 'application/json',
+    Prefer: 'return=representation'
+  };
+  const r = await fetch(SB + path, {method: method||'GET', headers: h, body: body ? JSON.stringify(body) : undefined});
+  if (r.status === 204) return null;
+  const json = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((json && (json.message || json.hint || json.error)) || ('HTTP ' + r.status));
+  return json;
+}
+
+function fmtDate(d) {
+  return d ? new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '—';
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 function toast(msg, err) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = err ? '#9B2626' : '#1E1C18';
   t.style.display = 'block';
-  setTimeout(()=>t.style.display='none', 2200);
+  setTimeout(() => t.style.display = 'none', 2400);
+}
+function notifyResize() {
+  try {
+    window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*');
+  } catch(e) {}
 }
 
-function showForm(doc) {
-  document.getElementById('edit-id').value      = doc ? doc.id : '';
-  document.getElementById('form-title').textContent = doc ? 'Edit Document' : 'New Document';
-  document.getElementById('doc-name').value     = doc ? doc.name  : '';
-  document.getElementById('doc-type').value     = doc ? (doc.type||'Lease') : 'Lease';
-  document.getElementById('doc-url').value      = doc ? (doc.url||'')  : '';
-  document.getElementById('doc-notes').value    = doc ? (doc.notes||'') : '';
+// ── Form show / hide ──
+function showForm() {
+  if (!IS_ADMIN) return;
+  document.getElementById('doc-name').value  = '';
+  document.getElementById('doc-type').value  = 'Lease';
+  document.getElementById('doc-file').value  = '';
+  document.getElementById('doc-notes').value = '';
+  document.getElementById('upload-bar').style.display = 'none';
+  document.getElementById('upload-bar-fill').style.width = '0%';
   document.getElementById('doc-form').style.display = 'block';
   document.getElementById('doc-add-btn').style.display = 'none';
-  if (doc) document.getElementById('doc-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+  notifyResize();
 }
-
 function hideForm() {
   document.getElementById('doc-form').style.display = 'none';
-  document.getElementById('doc-add-btn').style.display = 'block';
+  if (IS_ADMIN) document.getElementById('doc-add-btn').style.display = 'block';
+  notifyResize();
 }
 
-function saveDoc() {
-  const name = document.getElementById('doc-name').value.trim();
-  if (!name) { toast('Document name is required', true); return; }
-  const editId = document.getElementById('edit-id').value;
-  const docs   = load();
-  const entry  = {
-    id:    editId || String(Date.now()),
-    name,
-    type:  document.getElementById('doc-type').value,
-    url:   document.getElementById('doc-url').value.trim(),
-    notes: document.getElementById('doc-notes').value.trim(),
-    saved: new Date().toISOString()
-  };
-  if (editId) {
-    const idx = docs.findIndex(d=>d.id===editId);
-    if (idx>=0) docs[idx] = entry; else docs.unshift(entry);
-  } else {
-    docs.unshift(entry);
+// ── Upload & save ──
+async function saveDoc() {
+  if (!IS_ADMIN) return;
+
+  const title = document.getElementById('doc-name').value.trim();
+  const type  = document.getElementById('doc-type').value;
+  const notes = document.getElementById('doc-notes').value.trim();
+  const file  = document.getElementById('doc-file').files[0];
+  const btn   = document.getElementById('doc-save-btn');
+  const bar   = document.getElementById('upload-bar');
+  const fill  = document.getElementById('upload-bar-fill');
+
+  if (!title) { toast('Document title is required', true); return; }
+  if (!file)  { toast('Please choose a file to upload', true); return; }
+  if (file.size > 20 * 1024 * 1024) { toast('File exceeds 20 MB limit', true); return; }
+  if (!PROP)  { toast('Property not identified — please log in again', true); return; }
+
+  btn.disabled    = true;
+  btn.textContent = 'Uploading…';
+  bar.style.display = 'block';
+
+  // Animate progress (indeterminate-style crawl)
+  let prog = 0;
+  const tick = setInterval(() => {
+    prog = Math.min(prog + 3, 80);
+    fill.style.width = prog + '%';
+  }, 120);
+
+  try {
+    const safeProp    = PROP.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
+    const safeFile    = file.name.replace(/\s+/g, '_');
+    const storagePath = safeProp + '/' + Date.now() + '_' + safeFile;
+
+    const upRes = await fetch(
+      SB + '/storage/v1/object/property-docs/' + storagePath,
+      {
+        method: 'POST',
+        headers: {
+          apikey: KEY,
+          Authorization: 'Bearer ' + KEY,
+          'Content-Type': file.type || 'application/octet-stream',
+          'x-upsert': 'true'
+        },
+        body: file
+      }
+    );
+
+    clearInterval(tick);
+    if (!upRes.ok) {
+      const e = await upRes.json().catch(() => ({}));
+      throw new Error(e.message || e.error || ('Upload failed: HTTP ' + upRes.status));
+    }
+
+    fill.style.width = '100%';
+
+    const fileUrl = SB + '/storage/v1/object/public/property-docs/' + storagePath;
+
+    await api('/rest/v1/property_documents', 'POST', {
+      property_name: PROP,
+      title,
+      doc_type:     type,
+      file_url:     fileUrl,
+      notes:        notes || null,
+      storage_path: storagePath,
+      uploaded_by:  IS_ADMIN ? 'OFFICE' : (me && me.name) || 'Landlord'
+    });
+
+    toast('Document uploaded ✓');
+    hideForm();
+    loadDocs();
+  } catch(err) {
+    clearInterval(tick);
+    toast(err.message || 'Upload failed', true);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Upload';
+    setTimeout(() => { bar.style.display = 'none'; fill.style.width = '0%'; }, 800);
   }
-  save(docs);
-  render();
-  hideForm();
-  toast('Document saved ✓');
-  notifyResize();
 }
 
-function deleteDoc(id) {
-  if (!confirm('Remove this document?')) return;
-  save(load().filter(d=>d.id!==id));
-  render();
-  toast('Removed');
-  notifyResize();
+// ── Remove ──
+async function removeDoc(id, storagePath) {
+  if (!IS_ADMIN) return;
+  if (!confirm('Remove this document? This cannot be undone.')) return;
+  try {
+    await api('/rest/v1/property_documents?id=eq.' + id, 'DELETE');
+    // Best-effort storage cleanup
+    if (storagePath) {
+      fetch(SB + '/storage/v1/object/property-docs/' + storagePath, {
+        method: 'DELETE',
+        headers: {apikey: KEY, Authorization: 'Bearer ' + KEY}
+      }).catch(() => {});
+    }
+    toast('Document removed');
+    loadDocs();
+  } catch(err) {
+    toast(err.message || 'Could not remove', true);
+  }
 }
 
+// ── Badge map ──
 const TYPE_BADGES = {
   Lease:'bdg-b', License:'bdg-g', Certificate:'bdg-g',
   Insurance:'bdg-a', Permit:'bdg-a', NOC:'bdg-b',
-  Agreement:'bdg-b', Other:'bdg-a'
+  Agreement:'bdg-b', Tax:'bdg-a', Other:'bdg-a'
 };
 
-function render() {
-  const docs = load();
-  const el   = document.getElementById('doc-list');
-  if (!docs.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>No documents added yet.<br/>Tap <strong>+ Add Document</strong> to get started.</div>';
+// ── Load & render ──
+async function loadDocs() {
+  const el = document.getElementById('doc-list');
+  el.innerHTML = '<div class="empty"><div style="font-size:22px;margin-bottom:6px">⏳</div>Loading…</div>';
+
+  if (!PROP) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Property not identified.<br>Please log in again.</div>';
     notifyResize();
     return;
   }
-  el.innerHTML = docs.map(d => `
-    <div class="card" style="padding:14px">
-      <div style="display:flex;align-items:flex-start;gap:12px">
-        <div style="width:38px;height:38px;background:var(--b-l);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">📄</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:500;font-size:14px;margin-bottom:3px">${esc(d.name)}</div>
-          <div style="font-size:11px;color:var(--faint);margin-bottom:6px">
-            <span class="bdg ${TYPE_BADGES[d.type]||'bdg-b'}">${esc(d.type||'Other')}</span>
-            &ensp;${fmtDate(d.saved)}
+
+  let docs = [];
+  try {
+    docs = await api(
+      '/rest/v1/property_documents?property_name=eq.' + encodeURIComponent(PROP) +
+      '&order=uploaded_at.desc'
+    ) || [];
+  } catch(err) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load documents.<br><span style="font-size:11px;opacity:.7">' + esc(err.message) + '</span></div>';
+    notifyResize();
+    return;
+  }
+
+  if (!docs.length) {
+    el.innerHTML = IS_ADMIN
+      ? '<div class="empty"><div class="empty-icon">📄</div>No documents uploaded yet.<br>Tap <strong>+ Upload Document</strong> to get started.</div>'
+      : '<div class="empty"><div class="empty-icon">📄</div>No documents have been shared for this property yet.</div>';
+    notifyResize();
+    return;
+  }
+
+  el.innerHTML = docs.map(d => {
+    const badge = TYPE_BADGES[d.doc_type] || 'bdg-b';
+    // Escape for safe use in onclick attribute strings
+    const safeId   = (d.id || '').replace(/'/g, "\\'");
+    const safePath = (d.storage_path || '').replace(/'/g, "\\'");
+
+    const viewBtn = d.file_url
+      ? `<button class="btn-view" onclick="window.open('${esc(d.file_url)}','_blank')">View ↗</button>`
+      : `<span style="font-size:12px;color:var(--faint)">No file URL</span>`;
+
+    const delBtn = IS_ADMIN
+      ? `<button class="btn-del2" onclick="removeDoc('${safeId}','${safePath}')" title="Remove document">Remove</button>`
+      : '';
+
+    return `
+      <div class="card" style="padding:14px">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="width:38px;height:38px;background:var(--b-l);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">📄</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:500;font-size:14px;margin-bottom:3px">${esc(d.title || d.doc_type || 'Document')}</div>
+            <div style="font-size:11px;color:var(--faint);margin-bottom:8px">
+              <span class="bdg ${badge}">${esc(d.doc_type || 'Other')}</span>
+              &ensp;${fmtDate(d.uploaded_at)}
+              ${d.uploaded_by ? `<span style="opacity:.7"> · ${esc(d.uploaded_by)}</span>` : ''}
+            </div>
+            ${d.notes ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px">${esc(d.notes)}</div>` : ''}
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              ${viewBtn}
+              ${delBtn}
+            </div>
           </div>
-          ${d.notes ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px">${esc(d.notes)}</div>` : ''}
-          ${d.url   ? `<a href="${esc(d.url)}" target="_blank" style="font-size:12px;color:var(--br);font-weight:500;text-decoration:none">View Document →</a>` : ''}
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          <button onclick='showForm(${JSON.stringify(d).replace(/'/g,"&#39;")})' style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:var(--text);font-family:inherit">Edit</button>
-          <button onclick="deleteDoc('${d.id}')" style="background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--faint);font-size:16px;line-height:1">✕</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+      </div>`;
+  }).join('');
+
   notifyResize();
 }
 
-// Tell parent iframe to resize
-function notifyResize() {
-  try {
-    const h = document.body.scrollHeight;
-    window.parent.postMessage({type:'bc_resize', height: h}, '*');
-  } catch(e){}
-}
-
-render();
+// ── Init ──
+loadDocs();
 window.addEventListener('load', notifyResize);
 </script>
 </body>

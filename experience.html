@@ -236,6 +236,8 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 // Catch property from URL param only — no login required
 const PROP = new URLSearchParams(window.location.search).get('property') || null;
+const _me = JSON.parse(localStorage.getItem('bc_me')||'null');
+const IS_READ_ONLY = _me && _me.role === 'landlord';
 
 if (!PROP) {
   document.getElementById('header-prop').textContent = 'No property specified';
@@ -243,6 +245,9 @@ if (!PROP) {
 }
 
 document.getElementById('header-prop').textContent = PROP;
+if (IS_READ_ONLY) {
+  document.querySelectorAll('.add-btn').forEach(btn => btn.style.display = 'none');
+}
 
 async function api(path, method, body) {
   const h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Accept: 'application/json', Prefer: 'return=representation' };
@@ -286,9 +291,9 @@ async function loadSection(section) {
   el.innerHTML = data.map(e => `
     <div class="entry-card">
       <div class="entry-content">${esc(e.content || '')}</div>
-      <button class="delete-btn" onclick="confirmDelete('${esc(e.id)}','${esc(section)}')" title="Delete">
+      ${!IS_READ_ONLY ? `<button class="delete-btn" onclick="confirmDelete('${esc(e.id)}','${esc(section)}')" title="Delete">
         <svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
-      </button>
+      </button>` : ''}
     </div>
   `).join('');
 }

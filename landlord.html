@@ -387,7 +387,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <div style="font-size:15px;font-weight:600;color:var(--text)">Property Rules</div>
       <div style="font-size:11px;color:var(--faint)">House rules &amp; guest guidelines</div>
     </div>
-    <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="showAddRule()">+ Add Rule</button>
+    <button class="btn-sec" id="pne-add-rule-btn" style="font-size:12px;padding:6px 12px;display:none" onclick="showAddRule()">+ Add Rule</button>
   </div>
   <div class="card" style="margin-bottom:18px">
     <div id="pne-rules-list">
@@ -423,7 +423,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <div style="font-size:15px;font-weight:600;color:var(--text)">Emergency Numbers</div>
       <div style="font-size:11px;color:var(--faint)">Key contacts for urgent situations</div>
     </div>
-    <button class="btn-sec" style="font-size:12px;padding:6px 12px" onclick="showAddEmergency()">+ Add</button>
+    <button class="btn-sec" id="pne-add-emg-btn" style="font-size:12px;padding:6px 12px;display:none" onclick="showAddEmergency()">+ Add</button>
   </div>
   <div class="card" style="margin-bottom:8px">
     <div id="pne-emergency-list">
@@ -558,9 +558,12 @@ document.getElementById('cred-phone1').value = me.phone1 || me.phone || '';
 document.getElementById('cred-phone2').value = me.phone2 || '';
 
 async function api(path, method, body) {
-  const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
+  const isDel = (method||'GET') === 'DELETE';
+  const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json'};
+  if (!isDel) h['Prefer'] = 'return=representation';
   const r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
-  if (r.status===204) return null;
+  if (!r.ok) { const err = await r.text(); console.error('API error', r.status, err); return null; }
+  if (r.status===204) return true;
   return r.json().catch(()=>null);
 }
 
@@ -595,6 +598,13 @@ if (id==='pne')         loadPne();
 // ── ADMIN ASSET CONTROLS ──
 if (IS_ADMIN_VIEW) {
   document.getElementById('asset-add-btn').style.display = 'inline-flex';
+  // Show PNE add controls for admin
+  document.getElementById('pne-add-rule-btn').style.display = 'inline-flex';
+  document.getElementById('pne-add-emg-btn').style.display = 'inline-flex';
+} else {
+  // Landlord view — PNE notes read-only
+  const notesEl = document.getElementById('pne-notes-textarea');
+  if (notesEl) { notesEl.readOnly = true; notesEl.style.cursor = 'default'; notesEl.style.background = 'var(--bg)'; }
 }
 
 let _assetPhotoFile = null;
@@ -1016,7 +1026,7 @@ async function loadPneRules() {
     <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)" id="rule-row-${r.id}">
       <span style="width:22px;height:22px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
       <span style="flex:1;font-size:14px;color:var(--text)">${esc(r.rule_text||'')}</span>
-      <button onclick="deleteRule(${r.id})" style="background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--r-l);color:var(--r);font-size:11px;font-weight:600;flex-shrink:0">✕</button>
+      ${IS_ADMIN_VIEW ? `<button onclick="deleteRule(${r.id})" style="background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--r-l);color:var(--r);font-size:11px;font-weight:600;flex-shrink:0">✕</button>` : ''}
     </div>
   `).join('');
 }
@@ -1038,7 +1048,8 @@ async function saveNewRule() {
   toast('Rule added ✓');
 }
 async function deleteRule(id) {
-  await api('/rest/v1/property_rules?id=eq.'+id, 'DELETE');
+  const ok = await api('/rest/v1/property_rules?id=eq.'+id, 'DELETE');
+  if (!ok) { toast('Could not delete rule', true); return; }
   loadPneRules();
   toast('Rule removed');
 }
@@ -1089,7 +1100,7 @@ async function loadPneEmergency() {
         <div style="font-size:14px;font-weight:500;color:var(--text)">${esc(c.phone||'—')}</div>
       </div>
       <a href="tel:${esc(c.phone||'')}" style="background:var(--bg);border:none;cursor:pointer;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--br);font-family:inherit;text-decoration:none;flex-shrink:0">Call</a>
-      <button onclick="deleteEmergency(${c.id})" style="background:var(--r-l);border:none;cursor:pointer;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:600;color:var(--r);font-family:inherit">✕</button>
+      ${IS_ADMIN_VIEW ? `<button onclick="deleteEmergency(${c.id})" style="background:var(--r-l);border:none;cursor:pointer;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:600;color:var(--r);font-family:inherit">✕</button>` : ''}
     </div>
   `).join('');
 }
@@ -1113,7 +1124,8 @@ async function saveNewEmergency() {
   toast('Contact saved ✓');
 }
 async function deleteEmergency(id) {
-  await api('/rest/v1/emergency_contacts?id=eq.'+id, 'DELETE');
+  const ok = await api('/rest/v1/emergency_contacts?id=eq.'+id, 'DELETE');
+  if (!ok) { toast('Could not delete contact', true); return; }
   loadPneEmergency();
   toast('Contact removed');
 }

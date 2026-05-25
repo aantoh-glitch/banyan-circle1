@@ -44,6 +44,23 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .upload-zone p{font-size:13px;color:var(--muted)}
 .file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
 .file-item{background:var(--g-l);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--g);display:flex;align-items:center;gap:8px}
+
+/* ID Upload Previews */
+.id-preview-list{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px}
+.id-preview-item{position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--border);background:var(--white);cursor:pointer;transition:border-color .15s;flex-shrink:0}
+.id-preview-item:hover{border-color:var(--br)}
+.id-preview-item img{width:90px;height:70px;object-fit:cover;display:block}
+.id-preview-pdf{width:90px;height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--br-l)}
+.id-preview-pdf svg{width:24px;height:24px;stroke:var(--br);fill:none;stroke-width:1.5}
+.id-preview-pdf span{font-size:9px;color:var(--br);font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.id-preview-label{font-size:9px;color:var(--muted);padding:3px 6px;background:var(--bg);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.id-preview-uploading{position:absolute;inset:0;background:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--br);font-weight:500}
+
+/* Lightbox */
+.id-lightbox{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer}
+.id-lightbox img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;cursor:default}
+.id-lightbox-close{position:absolute;top:16px;right:16px;width:36px;height:36px;background:rgba(255,255,255,.15);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.id-lightbox-close svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .section-toggle{background:var(--bg);border-radius:10px;padding:14px 16px;font-size:14px;font-weight:500;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1.5px solid var(--border);margin-bottom:4px}
 .toggle-arrow{font-size:18px;color:var(--muted);transition:transform .2s}
 .section-body{display:none;padding-top:6px}
@@ -185,7 +202,8 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
         <p>Tap to upload · JPG, PNG or PDF · Multiple files</p>
       </div>
-      <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="showFiles(this,'ci-file-list')"/>
+      <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="handleIdUpload(this)"/>
+      <div class="id-preview-list" id="ci-id-previews"></div>
       <div class="file-list" id="ci-file-list"></div>
     </div>
     <div class="fg"><label class="fl">Organisation &amp; Designation</label><input class="fc" id="ci-org" type="text" placeholder="Company / Job title"/></div>
@@ -436,6 +454,14 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
 <div class="toast" id="toast"></div>
 
+<!-- ID Lightbox -->
+<div class="id-lightbox" id="id-lightbox" style="display:none" onclick="closeLightbox()">
+  <button class="id-lightbox-close" onclick="closeLightbox()">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <img id="id-lightbox-img" src="" alt="ID proof" onclick="event.stopPropagation()"/>
+</div>
+
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
@@ -523,6 +549,9 @@ async function api(path, method, body) {
 // ── Edit existing check-in ──
 function editCheckin(){
   if(!CI_RECORD) return;
+  uploadedIdUrls = [];
+  document.getElementById('ci-id-previews').innerHTML = '';
+  document.getElementById('ci-file-list').innerHTML = '';
   const fd=CI_RECORD.form_data||{};
   document.getElementById('ci-name').value=CI_RECORD.guest_name||'';
   document.getElementById('ci-address').value=fd.permanent_address||'';
@@ -542,8 +571,16 @@ function editCheckin(){
   document.getElementById('ci-comfort').value=fd.comfort_requests||'';
   if(fd.payment_mode){const r=document.querySelector(`input[name="payment"][value="${fd.payment_mode}"]`);if(r)r.checked=true;}
   document.getElementById('ci-declaration').checked=!!fd.declaration;
-  const existing=(fd.id_proofs||[]).map(f=>f.name);
-  if(existing.length) document.getElementById('ci-file-list').innerHTML=`<div class="file-item">Existing: ${existing.join(', ')} <span style="margin-left:auto;font-size:11px;opacity:.7">Upload new to replace</span></div>`;
+  const existing=(fd.id_proofs||[]);
+  uploadedIdUrls = existing.filter(f => f.url); // restore any already-uploaded ones
+  const previewEl = document.getElementById('ci-id-previews');
+  if(existing.length) {
+    // If they have URLs render thumbnails; otherwise show a text fallback
+    const withUrls = existing.filter(f => f.url);
+    const withoutUrls = existing.filter(f => !f.url);
+    renderIdPreviews(withUrls, previewEl);
+    if(withoutUrls.length) document.getElementById('ci-file-list').innerHTML=`<div class="file-item">Existing: ${withoutUrls.map(f=>f.name).join(', ')} <span style="margin-left:auto;font-size:11px;opacity:.7">Upload new to replace</span></div>`;
+  }
   document.getElementById('ci-done').style.display='none';
   document.getElementById('ci-form').style.display='block';
   document.getElementById('ci-btn').textContent='Update registration';
@@ -555,6 +592,96 @@ function toggleSectionB(el){
   const arrow = document.getElementById('sb-arrow');
   body.classList.toggle('open');
   arrow.style.transform = body.classList.contains('open') ? 'rotate(90deg)' : '';
+}
+
+// ── ID Upload: Supabase Storage ──
+const ID_BUCKET = 'id-upload';
+let uploadedIdUrls = []; // [{name, url, type}]
+
+async function uploadFileToSupabase(file) {
+  const ext = file.name.split('.').pop();
+  const safeName = `${me.id}_${Date.now()}_${Math.random().toString(36).slice(2,7)}.${ext}`;
+  const path = `${me.id}/${safeName}`;
+  const res = await fetch(`${SB}/storage/v1/object/${ID_BUCKET}/${path}`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+    body: file
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Upload failed');
+  }
+  const publicUrl = `${SB}/storage/v1/object/public/${ID_BUCKET}/${path}`;
+  return { name: file.name, url: publicUrl, type: file.type };
+}
+
+async function handleIdUpload(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const previewList = document.getElementById('ci-id-previews');
+  // Keep existing previews, append new
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    // Create placeholder card
+    const card = document.createElement('div');
+    card.className = 'id-preview-item';
+    card.style.pointerEvents = 'none';
+    if (isPdf) {
+      card.innerHTML = `<div class="id-preview-pdf"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><span>${file.name}</span></div><div class="id-preview-label">${file.name}</div><div class="id-preview-uploading">Uploading…</div>`;
+    } else {
+      const localUrl = URL.createObjectURL(file);
+      card.innerHTML = `<img src="${localUrl}" alt="${file.name}"/><div class="id-preview-label">${file.name}</div><div class="id-preview-uploading">Uploading…</div>`;
+    }
+    previewList.appendChild(card);
+    try {
+      const result = await uploadFileToSupabase(file);
+      uploadedIdUrls.push(result);
+      // Remove uploading overlay, make clickable
+      card.querySelector('.id-preview-uploading').remove();
+      card.style.pointerEvents = '';
+      if (isPdf) {
+        card.onclick = () => window.open(result.url, '_blank');
+      } else {
+        card.onclick = () => openLightbox(result.url);
+      }
+    } catch(e) {
+      card.querySelector('.id-preview-uploading').textContent = '✗ Failed';
+      card.querySelector('.id-preview-uploading').style.background = 'rgba(255,235,235,.9)';
+      card.querySelector('.id-preview-uploading').style.color = '#791F1F';
+      toast('Upload failed: ' + e.message);
+    }
+  }
+}
+
+function renderIdPreviews(idList, containerEl) {
+  // idList: [{name, url, type}]
+  containerEl.innerHTML = '';
+  (idList || []).forEach(f => {
+    const isPdf = (f.type || '').includes('pdf') || (f.name || '').toLowerCase().endsWith('.pdf');
+    const card = document.createElement('div');
+    card.className = 'id-preview-item';
+    if (isPdf) {
+      card.innerHTML = `<div class="id-preview-pdf"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><span>${f.name||'PDF'}</span></div><div class="id-preview-label">${f.name||'PDF'}</div>`;
+      card.onclick = () => window.open(f.url, '_blank');
+    } else {
+      card.innerHTML = `<img src="${f.url}" alt="${f.name||'ID'}"/><div class="id-preview-label">${f.name||'ID'}</div>`;
+      card.onclick = () => openLightbox(f.url);
+    }
+    containerEl.appendChild(card);
+  });
+}
+
+function openLightbox(url) {
+  const lb = document.getElementById('id-lightbox');
+  document.getElementById('id-lightbox-img').src = url;
+  lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('id-lightbox').style.display = 'none';
+  document.getElementById('id-lightbox-img').src = '';
+  document.body.style.overflow = '';
 }
 
 function showFiles(input, listId){
@@ -597,7 +724,7 @@ async function submitCheckin(){
 
   const isEdit=!!(CI_RECORD&&CI_RECORD.id);
   if(!name||!addr||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
-  if(!files.length&&!(CI_RECORD?.form_data?.id_proofs?.length)){toast('Please upload ID proof');return;}
+  if(!files.length&&!uploadedIdUrls.length&&!(CI_RECORD?.form_data?.id_proofs?.length)){toast('Please upload ID proof');return;}
   if(!payment){toast('Please select payment mode');return;}
   if(!decl){toast('Please accept the declaration');return;}
 
@@ -605,13 +732,8 @@ async function submitCheckin(){
   btn.disabled=true;
 
   let id_proofs=[];
-  if(files.length){
-    for(let i=0;i<files.length;i++){
-      btn.textContent=`Reading ID ${i+1} of ${files.length}…`;
-      const file=files[i];
-      const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(file);});
-      id_proofs.push({name:file.name,type:file.type,data});
-    }
+  if(uploadedIdUrls.length){
+    id_proofs = uploadedIdUrls.map(f=>({name:f.name, url:f.url, type:f.type}));
   } else if(isEdit){
     id_proofs=CI_RECORD.form_data?.id_proofs||[];
   }
@@ -672,7 +794,7 @@ async function submitCheckin(){
     travelled_from: from,
     travelling_to: to,
     num_guests: guests,
-    id_proof_urls: id_proofs.map(f=>f.name),
+    id_proof_urls: id_proofs.map(f=>f.url||f.name),
     form_data,
   };
   try {

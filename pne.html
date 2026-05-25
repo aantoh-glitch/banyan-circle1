@@ -135,7 +135,8 @@ var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6In
 var me=JSON.parse(localStorage.getItem('bc_me')||'null');
 var _urlProp=(new URLSearchParams(location.search)).get('prop')||'';
 var PROP=_urlProp||(me&&(me.prop||me.property_name))||'';
-var isAdmin=(me&&(me.role==='owner'||me.role==='staff'||me.role==='manager'||me.role==='office'||me.role==='landlord'));
+var isAdmin=(me&&(me.role==='owner'||me.role==='staff'||me.role==='manager'||me.role==='office'||me.role==='admin'));
+var isLandlord=(me&&me.role==='landlord');
 var isGuest=(me&&me.role==='guest');
 
 window.addEventListener('DOMContentLoaded',function(){
@@ -145,10 +146,10 @@ window.addEventListener('DOMContentLoaded',function(){
   } else {
     document.getElementById('prop-banner').style.display='none';
   }
-  if(isAdmin||(!isGuest&&!_urlProp)){
+  if(!isLandlord&&(isAdmin||(!isGuest&&!_urlProp))){
     document.body.classList.add('is-admin');
   }
-  if(isGuest){
+  if(isGuest||isLandlord){
     var ta=document.getElementById('notes-area');
     if(ta){ta.readOnly=true;ta.style.color='var(--text)';ta.style.cursor='default';}
   }
