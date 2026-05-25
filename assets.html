@@ -97,10 +97,19 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+
+/* Read-only notice */
+.readonly-notice{display:flex;align-items:center;gap:8px;background:#FBF0E0;border:1px solid #E8D0AA;border-radius:10px;padding:9px 14px;margin:16px 24px 0;font-size:12px;color:#5A3006}
 </style>
 </head>
 <body>
 <div class="shell">
+
+  <!-- Read-only notice (shown to landlord, hidden to admin) -->
+  <div class="readonly-notice" id="readonly-notice" style="display:none">
+    <span style="font-size:16px">🔒</span>
+    <span>View-only — assets are managed by Office</span>
+  </div>
 
   <div class="hdr">
     <a class="back" onclick="history.back()">←</a>
@@ -211,13 +220,18 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 const params = new URLSearchParams(location.search);
 const PROPERTY = decodeURIComponent(params.get('property') || '');
+const IS_ADMIN = params.get('viewer') === 'admin';
 
 if (!PROPERTY) {
   document.getElementById('hdr-sub').textContent = 'No property specified';
 } else {
   document.getElementById('hdr-title').textContent = PROPERTY;
   document.getElementById('hdr-sub').textContent = 'Asset inventory';
-  document.getElementById('add-btn').style.display = 'inline-flex';
+  if (IS_ADMIN) {
+    document.getElementById('add-btn').style.display = 'inline-flex';
+  } else {
+    document.getElementById('readonly-notice').style.display = 'flex';
+  }
 }
 
 let currentTab = 'active';
@@ -258,7 +272,7 @@ async function loadAssets() {
       <th style="width:80px">Qty</th>
       <th style="width:90px">Owner</th>
       <th style="width:70px">Photo</th>
-      <th style="width:90px"></th>
+      ${IS_ADMIN ? '<th style="width:90px"></th>' : ''}
     </tr></thead>
     <tbody>
       ${data.map((a, i) => `<tr>
@@ -269,14 +283,16 @@ async function loadAssets() {
         <td>
           ${a.photo_url
             ? `<img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>`
-            : `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.name)}')">
-                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-               </div>`
+            : IS_ADMIN
+              ? `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.name)}')">
+                  <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                 </div>`
+              : '<span style="font-size:11px;color:var(--muted)">—</span>'
           }
         </td>
-        <td style="text-align:right">
+        ${IS_ADMIN ? `<td style="text-align:right">
           <button class="btn-remove" onclick="openRemoveModal('${a.id}','${esc(a.name).replace(/'/g,"\\'")}')">Remove</button>
-        </td>
+        </td>` : ''}
       </tr>`).join('')}
     </tbody>
   </table>`;

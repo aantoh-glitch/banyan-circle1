@@ -590,7 +590,7 @@ function goPage(id, btn) {
   if (id==='messages')    loadMsgs();
   if (id==='payments')    loadPayments();
   if (id==='assets')      loadLandlordAssets('active');
-  if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html';
+  if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
 if (id==='pne')         loadPne();
 }
 
