@@ -111,7 +111,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <span>View-only — assets are managed by Office</span>
   </div>
 
-  <div class="hdr">
+  <div class="hdr" id="main-hdr">
     <a class="back" onclick="history.back()">←</a>
     <div class="hdr-info">
       <div class="hdr-title" id="hdr-title">Assets</div>
@@ -221,6 +221,17 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const params = new URLSearchParams(location.search);
 const PROPERTY = decodeURIComponent(params.get('property') || '');
 const IS_ADMIN = params.get('viewer') === 'admin';
+const IS_EMBEDDED = window !== window.top;
+
+// Hide header when embedded inside landlord.html iframe
+if (IS_EMBEDDED) {
+  document.getElementById('main-hdr').style.display = 'none';
+  document.querySelector('.shell').style.paddingTop = '0';
+}
+
+function notifyResize() {
+  try { window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*'); } catch(e) {}
+}
 
 if (!PROPERTY) {
   document.getElementById('hdr-sub').textContent = 'No property specified';
@@ -296,6 +307,7 @@ async function loadAssets() {
       </tr>`).join('')}
     </tbody>
   </table>`;
+  notifyResize();
 }
 
 // ── Load removed log ──
@@ -333,6 +345,7 @@ async function loadRemoved() {
       </tr>`).join('')}
     </tbody>
   </table>`;
+  notifyResize();
 }
 
 // ── Add / Edit modal ──
