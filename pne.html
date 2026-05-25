@@ -151,7 +151,17 @@ window.addEventListener('DOMContentLoaded',function(){
   }
   if(isGuest||isLandlord){
     var ta=document.getElementById('notes-area');
-    if(ta){ta.readOnly=true;ta.style.color='var(--text)';ta.style.cursor='default';}
+    if(ta){ta.readOnly=true;ta.style.color='var(--text)';ta.style.cursor='default';ta.style.background='var(--bg)';}
+    // Remove all add-forms so they can't be submitted
+    document.querySelectorAll('.add-form').forEach(function(f){f.remove();});
+    // Show read-only badge in header
+    var hdg=document.querySelector('.sec-hdg');
+    if(hdg){
+      var badge=document.createElement('span');
+      badge.textContent='View only';
+      badge.style.cssText='font-size:10px;font-weight:500;color:var(--faint);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:2px 9px;letter-spacing:.3px;flex-shrink:0';
+      hdg.appendChild(badge);
+    }
   }
 });
 

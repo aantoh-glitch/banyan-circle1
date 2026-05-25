@@ -246,7 +246,15 @@ if (!PROP) {
 
 document.getElementById('header-prop').textContent = PROP;
 if (IS_READ_ONLY) {
+  // Hide all add buttons
   document.querySelectorAll('.add-btn').forEach(btn => btn.style.display = 'none');
+  // Remove all add-forms from the DOM so they can never be submitted
+  document.querySelectorAll('.add-form').forEach(f => f.remove());
+  // Show read-only banner in header
+  const roTag = document.createElement('span');
+  roTag.textContent = 'View only';
+  roTag.style.cssText = 'font-size:10px;font-weight:500;color:var(--faint);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:2px 9px;flex-shrink:0;letter-spacing:.3px';
+  document.querySelector('.top-bar').appendChild(roTag);
 }
 
 async function api(path, method, body) {
