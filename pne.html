@@ -161,13 +161,16 @@ function switchProp(val){
 
 async function api(path,method,body){
   try{
-    var opts={method:method||'GET',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'}};
+    var isDel=(method||'GET')==='DELETE';
+    var headers={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
+    if(!isDel)headers['Prefer']='return=representation';
+    var opts={method:method||'GET',headers:headers};
     if(body)opts.body=JSON.stringify(body);
     var r=await fetch(SB+path,opts);
-    if(!r.ok)return null;
+    if(!r.ok){var errText=await r.text();console.error('API error',r.status,errText);return null;}
     var text=await r.text();
-    return text?JSON.parse(text):null;
-  }catch(e){return null;}
+    return isDel?true:(text?JSON.parse(text):null);
+  }catch(e){console.error('API exception',e);return null;}
 }
 
 window.onload=async function(){
@@ -210,7 +213,8 @@ async function saveRule(){
 }
 
 async function deleteRule(id){
-  await api('/rest/v1/property_rules?id=eq.'+id,'DELETE');
+  var ok=await api('/rest/v1/property_rules?id=eq.'+id,'DELETE');
+  if(!ok){toast('Could not delete rule',true);return;}
   await renderRules();
   toast('Rule removed');
 }
@@ -275,7 +279,8 @@ async function saveEmergency(){
 }
 
 async function deleteEmergency(id){
-  await api('/rest/v1/emergency_contacts?id=eq.'+id,'DELETE');
+  var ok=await api('/rest/v1/emergency_contacts?id=eq.'+id,'DELETE');
+  if(!ok){toast('Could not delete contact',true);return;}
   await renderEmergency();
   toast('Contact removed');
 }
