@@ -2,878 +2,540 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Guest</title>
-<meta name="theme-color" content="#993C1D"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Banyan Circle — Talent Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
-html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
-.hdr-logo{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--br);display:flex;align-items:center;justify-content:center}
-.hdr-logo img{width:36px;height:36px;object-fit:contain}
-.hdr-info{flex:1}
-.hdr-name{font-size:15px;font-weight:500}
-.hdr-prop{font-size:12px;color:var(--muted)}
-.hdr-out{background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);font-family:inherit;padding:4px 8px;border-radius:6px}
-.bnav{background:var(--white);border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;max-width:430px;margin:0 auto}
-.bnt{flex:1;padding:10px 2px 8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:9px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
-.bnt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.bnt.on{color:var(--br)}
-.pg{display:none;padding:18px 16px 100px}
-.pg.on{display:block}
-.pg-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:5px}
-.pg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-.sec-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
+  --text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
+  --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
+  --nav-h:60px;--top-h:52px;
+}
+html{height:100%}
+body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;position:fixed;width:100%}
+
+/* TOP BAR */
+.top-bar{
+  position:fixed;top:0;left:0;right:0;height:var(--top-h);z-index:50;
+  background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:8px;
+}
+.top-logo{font-family:'Playfair Display',serif;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--br)}
+.btn-signout{font-size:11px;padding:4px 10px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:inherit}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:50;
+  background:var(--white);border-top:1px solid var(--border);
+  display:flex;
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;border:none;background:none;font-family:inherit;
+  color:var(--muted);font-size:9px;font-weight:500;letter-spacing:.2px;
+  padding:6px 2px;position:relative;transition:color .15s;
+}
+.nav-btn.active{color:var(--br)}
+.nav-btn.active::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;background:var(--br);border-radius:0 0 2px 2px}
+.nav-icon{font-size:22px;line-height:1}
+.nav-badge{
+  position:absolute;top:5px;right:calc(50% - 20px);
+  background:var(--br);color:#fff;font-size:9px;font-weight:700;
+  padding:1px 4px;border-radius:999px;display:none;min-width:14px;text-align:center;
+}
+
+/* SCROLL PANELS */
+.panel{
+  position:fixed;
+  top:var(--top-h);
+  left:0;right:0;
+  bottom:var(--nav-h);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  background:var(--bg);
+  padding:16px 14px;
+  display:none;
+}
+.panel.active{display:block}
+
+/* Messages panel is flex column */
+#panel-messages{
+  display:none;
+  flex-direction:column;
+  padding:0;
+}
+#panel-messages.active{display:flex}
+
+/* FORM ELEMENTS */
+.fc{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;-webkit-appearance:none}
+.fc:focus{border-color:var(--br);outline:none}
+textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fg{margin-bottom:14px}
-.fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
-.fl span{color:var(--br);margin-left:2px}
-.fc{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;transition:border-color .15s}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:none;min-height:80px;line-height:1.6}
-.fc::placeholder{color:rgba(0,0,0,.28)}
-.radio-group{display:flex;flex-direction:column;gap:8px}
-.radio-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:14px;transition:all .15s}
-.radio-opt:has(input:checked){border-color:var(--br);background:var(--br-l)}
-.radio-opt input{accent-color:var(--br);width:16px;height:16px;flex-shrink:0}
-.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:var(--white)}
-.upload-zone:active{border-color:var(--br);background:var(--br-l)}
-.upload-zone svg{width:26px;height:26px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:8px}
-.upload-zone p{font-size:13px;color:var(--muted)}
-.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
-.file-item{background:var(--g-l);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--g);display:flex;align-items:center;gap:8px}
 
-/* ID Upload Previews */
-.id-preview-list{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px}
-.id-preview-item{position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--border);background:var(--white);cursor:pointer;transition:border-color .15s;flex-shrink:0}
-.id-preview-item:hover{border-color:var(--br)}
-.id-preview-item img{width:90px;height:70px;object-fit:cover;display:block}
-.id-preview-pdf{width:90px;height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--br-l)}
-.id-preview-pdf svg{width:24px;height:24px;stroke:var(--br);fill:none;stroke-width:1.5}
-.id-preview-pdf span{font-size:9px;color:var(--br);font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
-.id-preview-label{font-size:9px;color:var(--muted);padding:3px 6px;background:var(--bg);text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.id-preview-uploading{position:absolute;inset:0;background:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--br);font-weight:500}
+/* BUTTONS */
+.btn-p{display:block;width:100%;padding:13px 20px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center}
+.btn-p:active{opacity:.85}
+.btn-sec{display:block;width:100%;padding:12px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;text-align:center}
+.btn-sec:active{border-color:var(--br);color:var(--br)}
+.btn-danger{display:block;width:100%;padding:12px 16px;background:var(--r-l);color:var(--r);border:1px solid var(--r);border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;text-align:center}
+.btn-danger:active{background:var(--r);color:#fff}
 
-/* Lightbox */
-.id-lightbox{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer}
-.id-lightbox img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;cursor:default}
-.id-lightbox-close{position:absolute;top:16px;right:16px;width:36px;height:36px;background:rgba(255,255,255,.15);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.id-lightbox-close svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.section-toggle{background:var(--bg);border-radius:10px;padding:14px 16px;font-size:14px;font-weight:500;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1.5px solid var(--border);margin-bottom:4px}
-.toggle-arrow{font-size:18px;color:var(--muted);transition:transform .2s}
-.section-body{display:none;padding-top:6px}
-.section-body.open{display:block}
-.sub-bar{position:sticky;bottom:62px;padding:14px 16px 0;background:linear-gradient(transparent,var(--bg) 50%);margin:14px -16px -18px}
-.btn-sub{width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
-.btn-sub:disabled{opacity:.6;cursor:not-allowed}
-.btn-br{background:var(--br);color:#fff}
-.btn-g{background:var(--g);color:#fff}
-.btn-a{background:var(--a);color:#fff}
-.success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;padding:32px}
-.s-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
-.s-icon svg{width:34px;height:34px;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.s-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
-.s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
-.btn-again{padding:11px 26px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
-.done-banner{background:var(--g-l);border-radius:10px;padding:13px 16px;font-size:13px;color:var(--g);display:none;align-items:center;gap:10px;margin-bottom:18px}
-.done-banner svg{width:16px;height:16px;stroke:var(--g);fill:none;stroke-width:2.5;flex-shrink:0}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:12px}
-.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-a{background:var(--a-l);color:var(--a)}.bdg-g{background:var(--g-l);color:var(--g)}.bdg-r{background:#FCEBEB;color:#791F1F}
-.lf-row{padding:11px 0;border-bottom:1px solid var(--border)}
-.lf-row:last-child{border-bottom:none}
+/* CARDS */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
+.section-hdg{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;margin:0 0 14px;padding-bottom:10px;border-bottom:1.5px solid var(--border)}
 
+/* BOOKING STATUS CARDS */
+.booking-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.booking-card.pending{border-left:3px solid var(--a)}
+.booking-card.confirmed{border-left:3px solid var(--g)}
+.booking-card.declined{border-left:3px solid var(--r)}
 
-/* Request row */
-.req-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
-.req-row:last-child{border-bottom:none}
+/* STARS */
+.star{font-size:15px;color:#C8A84B}
+.star.empty{color:var(--border)}
 
-.bnt.on .bnt-logo-img{filter:grayscale(0) sepia(1) saturate(5) hue-rotate(330deg) brightness(0.7) !important}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-.bk-log-row{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-bottom:1px solid var(--border)}
-.bk-log-row:last-child{border-bottom:none}
-.bk-edit-btn{font-size:12px;font-weight:500;color:var(--br);background:var(--br-l);border:1px solid rgba(153,60,29,.2);border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:opacity .15s}
-.bk-edit-btn:hover{opacity:.8}
+/* SCHEDULE CALENDAR */
+.month-nav{display:flex;align-items:center;margin-bottom:12px}
+.month-nav button{width:38px;height:38px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text)}
+.month-nav button:active{border-color:var(--br);color:var(--br)}
+.month-label{font-family:'Playfair Display',serif;font-size:17px;flex:1;text-align:center}
+.sched-legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:3px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-hdr{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:4px 0}
+.cal-day{border:1px solid var(--border);border-radius:7px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;background:var(--white);transition:opacity .1s}
+.cal-day:active{opacity:.7}
+.cal-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.cal-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
+.cal-day.today-ring{box-shadow:0 0 0 2px var(--br)}
+.cal-day-num{font-size:14px;font-weight:600;font-family:'Playfair Display',serif}
+.cal-day-status{font-size:8px;font-weight:500}
 
-/* ── EXPERIENCE PAGE ── */
-.exp-section{margin-bottom:22px}
-.exp-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.exp-section-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--text)}
-.exp-add-btn{display:flex;align-items:center;gap:5px;background:var(--br-l);border:1px solid rgba(153,60,29,.25);color:var(--br);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;transition:background .15s}
-.exp-add-btn:active{background:rgba(153,60,29,.18)}
-.exp-add-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.exp-entries{display:flex;flex-direction:column;gap:8px}
-.exp-entry{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:14px;color:var(--text);line-height:1.6}
-.exp-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
-.exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
-@keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.exp-form{background:var(--white);border:1px solid rgba(153,60,29,.25);border-radius:12px;padding:14px;margin-top:4px;display:none}
-.exp-form.open{display:block}
-.exp-form textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;resize:vertical;min-height:88px;line-height:1.6}
-.exp-form textarea:focus{border-color:var(--br);background:var(--white)}
-.exp-form-actions{display:flex;gap:8px;margin-top:10px}
-.exp-btn-save{flex:1;padding:10px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
-.exp-btn-save:active{background:#7a2e16}
-.exp-btn-cancel{padding:10px 16px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;cursor:pointer}
+/* MODAL SHEET */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal-sheet{background:var(--white);border-radius:18px 18px 0 0;padding:12px 18px 32px;width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 16px}
+.modal-title{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.status-toggle{display:flex;gap:8px;margin-bottom:16px}
+.stgl-btn{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
+.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 
-/* Welcome banner */
-.welcome-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);cursor:pointer;padding:24px}
-.welcome-banner-inner{background:var(--white);border-radius:18px;padding:32px 28px;text-align:center;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.18);pointer-events:none}
-.welcome-banner-logo{width:56px;height:56px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.welcome-banner-logo svg{width:28px;height:28px;fill:white}
-.welcome-banner-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:10px}
-.welcome-banner-sub{font-size:13px;color:var(--muted);line-height:1.6}
-.welcome-banner-hint{margin-top:18px;font-size:11px;color:var(--muted);opacity:.7}
+/* MESSAGES */
+.msgs-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--white);flex-shrink:0}
+.msgs-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msgs-input-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;background:var(--white);flex-shrink:0;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.msg-ta{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;resize:none;min-height:44px;max-height:100px;line-height:1.5}
+.msg-ta:focus{border-color:var(--br)}
+.send-btn{padding:10px 16px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;align-self:flex-end}
+.send-btn:active{opacity:.85}
 
-/* Final bill page */
-.bill-line{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px}
-.bill-line:last-child{border-bottom:none}
-.bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
-.bill-section-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+/* PROFILE HEADER */
+.prof-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.prof-avatar-lg{width:54px;height:54px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--br);flex-shrink:0}
 
-/* ── Info buttons ── */
-.info-btn{width:100%;padding:14px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:14px;font-family:inherit;transition:all .18s;text-align:left}
-.info-btn:hover{border-color:var(--br);box-shadow:0 3px 14px rgba(153,60,29,.08)}
-.info-btn-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.info-btn-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.info-btn-text{flex:1}
-.info-btn-title{font-size:15px;font-weight:500;color:var(--text)}
-.info-btn-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.info-btn-arrow{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+/* OPT LABELS */
+.opt-label{display:flex;align-items:center;gap:7px;font-size:13px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;user-select:none}
+.opt-label input{accent-color:var(--br)}
 
-/* ── PNE Slide-up Sheet ── */
-.pne-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
-.pne-backdrop.open{opacity:1;pointer-events:all}
-.pne-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:430px;height:92vh;background:var(--bg);border-radius:20px 20px 0 0;z-index:301;transition:transform .36s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.18)}
-.pne-sheet.open{transform:translateX(-50%) translateY(0)}
-.pne-sheet-grab{width:36px;height:4px;background:var(--border);border-radius:999px;margin:10px auto 0;flex-shrink:0}
-.pne-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--border)}
-.pne-sheet-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
-.pne-sheet-close{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pne-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.pne-sheet-body{flex:1;overflow:hidden}
-.pne-sheet-body iframe{width:100%;height:100%;border:none;display:block}
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 10px);left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:200;display:none;pointer-events:none;white-space:nowrap}
 
+/* EARNINGS */
+.earn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.earn-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:14px}
+.earn-amount{font-family:'Playfair Display',serif;font-size:24px;font-weight:500}
+.earn-label{font-size:11px;color:var(--muted);margin-top:2px}
 </style>
 </head>
 <body>
-<div class="shell">
 
-<!-- WELCOME BANNER -->
-<div class="welcome-banner" id="welcome-banner" onclick="dismissBanner()">
-  <div class="welcome-banner-inner">
-    <div class="welcome-banner-logo">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="none" stroke="white" stroke-width="1.5"/></svg>
-    </div>
-    <div class="welcome-banner-title">Welcome to Properties by Heritance</div>
-    <div class="welcome-banner-sub">We hope you have a pleasant experience.</div>
-    <div class="welcome-banner-hint">Tap anywhere to continue</div>
-  </div>
-</div>
-<div class="hdr">
-  <div class="hdr-logo"><img src="/herit.jpg" onerror="this.style.display='none';this.parentNode.innerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;white&quot; width=&quot;18&quot; height=&quot;18&quot;><path d=&quot;M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z&quot;/></svg>'"/></div>
-  <div class="hdr-info"><div class="hdr-name" id="hdr-name">Guest</div><div class="hdr-prop" id="hdr-prop">Banyan Circle</div></div>
-  <button class="hdr-out" onclick="signOut()">Sign out</button>
-</div>
-
-<!-- CHECK-IN FORM -->
-<div class="pg on" id="pg-checkin">
-  <div class="pg-title">Check-in</div>
-  <div class="pg-sub">Register with Property by Heritance</div>
-
-  <div class="done-banner" id="ci-done" style="flex-direction:column;align-items:flex-start;gap:10px">
-    <div style="display:flex;align-items:center;gap:10px;width:100%">
-      <svg viewBox="0 0 24 24" style="flex-shrink:0"><polyline points="20,6 9,17 4,12"/></svg>
-      <span>Registration submitted. Welcome to Banyan Circle!</span>
-    </div>
-    <button onclick="editCheckin()" style="font-size:13px;font-weight:500;color:var(--br);background:none;border:1.5px solid var(--br);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;width:100%">Edit / update registration</button>
-  </div>
-
-  <div id="ci-form">
-    <!-- SECTION A -->
-    <div class="sec-hdr">Section A — Guest Details</div>
-
-    <div class="fg"><label class="fl">Guest name<span>*</span></label><input class="fc" id="ci-name" type="text"/></div>
-    <div class="fg">
-      <label class="fl">ID proof with photo<span>*</span></label>
-      <div class="upload-zone" onclick="document.getElementById('ci-files').click()">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-        <p>Tap to upload · JPG, PNG or PDF · Multiple files</p>
-      </div>
-      <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="handleIdUpload(this)"/>
-      <div class="id-preview-list" id="ci-id-previews"></div>
-      <div class="file-list" id="ci-file-list"></div>
-    </div>
-    <div class="fg"><label class="fl">Organisation &amp; Designation</label><input class="fc" id="ci-org" type="text" placeholder="Company / Job title"/></div>
-    <div class="fg"><label class="fl">Permanent address<span>*</span></label><textarea class="fc" id="ci-address" placeholder="Full home address"></textarea></div>
-    <div class="fg"><label class="fl">Email ID<span>*</span></label><input class="fc" id="ci-email" type="email" placeholder="your@email.com"/></div>
-    <div class="fg"><label class="fl">Mobile No<span>*</span></label><input class="fc" id="ci-mobile" type="tel" placeholder="+91 XXXXXXXXXX"/></div>
-    <div class="fg"><label class="fl">Date of Birth<span>*</span></label><input class="fc" id="ci-dob" type="date"/></div>
-    <div class="fg"><label class="fl">Arrived from<span>*</span></label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
-    <div class="fg"><label class="fl">Proceeding to<span>*</span></label><input class="fc" id="ci-to" type="text" placeholder="Next destination"/></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Arrival Date<span>*</span></label><input class="fc" id="ci-arr-date" type="date"/></div>
-      <div class="fg"><label class="fl">Arrival Time<span>*</span></label><input class="fc" id="ci-arr-time" type="time"/></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Departure Date<span>*</span></label><input class="fc" id="ci-dep-date" type="date"/></div>
-      <div class="fg"><label class="fl">Departure Time<span>*</span></label><input class="fc" id="ci-dep-time" type="time"/></div>
-    </div>
-    <div class="fg"><label class="fl">Size of your group<span>*</span></label><input class="fc" id="ci-guests" type="number" min="1" value="1"/></div>
-    <div class="fg">
-      <label class="fl">Mode of payment<span>*</span></label>
-      <div class="radio-group" id="ci-payment">
-        <label class="radio-opt"><input type="radio" name="payment" value="Cash"/> Cash</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="UPI"/> UPI</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="Net transfer"/> Net transfer</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="OTA"/> OTA</label>
-      </div>
-    </div>
-    <div class="fg"><label class="fl">Any dietary preferences or allergies?</label><textarea class="fc" id="ci-dietary" placeholder="Vegetarian, nut allergy, etc."></textarea></div>
-    <div class="fg"><label class="fl">Any special occasion during your stay?</label><input class="fc" id="ci-occasion" type="text" placeholder="Birthday, anniversary, honeymoon…"/></div>
-    <div class="fg"><label class="fl">Anything we can do to make your stay more comfortable?</label><textarea class="fc" id="ci-comfort" placeholder="Pillow preference, room temperature, etc."></textarea></div>
-
-    <!-- SECTION B (Foreign Passport) -->
-    <div class="section-toggle" onclick="toggleSectionB(this)">
-      <span>Form B — Foreign Passport Holders</span>
-      <span class="toggle-arrow" id="sb-arrow">›</span>
-    </div>
-    <div class="section-body" id="section-b">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;padding:10px 14px;background:var(--bg);border-radius:8px">Fill this section only if you hold a foreign passport</div>
-      <div class="fg"><label class="fl">Guest name (in capital letters)</label><input class="fc" id="fb-name" type="text" style="text-transform:uppercase" placeholder="AS ON PASSPORT"/></div>
-      <div class="fg"><label class="fl">Nationality</label><input class="fc" id="fb-nationality" type="text"/></div>
-      <div class="fg"><label class="fl">Passport No</label><input class="fc" id="fb-passport-no" type="text"/></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg"><label class="fl">Date of passport issue</label><input class="fc" id="fb-passport-date" type="date"/></div>
-        <div class="fg"><label class="fl">Place of passport issue</label><input class="fc" id="fb-passport-place" type="text"/></div>
-      </div>
-      <div class="fg">
-        <label class="fl">Passport copy<span>*</span></label>
-        <div class="upload-zone" onclick="document.getElementById('fb-passport-file').click()">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-          <p>Upload passport photo page</p>
-        </div>
-        <input type="file" id="fb-passport-file" accept="image/*,.pdf" style="display:none" onchange="showFiles(this,'fb-passport-list')"/>
-        <div class="file-list" id="fb-passport-list"></div>
-      </div>
-      <div class="fg"><label class="fl">Address in India</label><textarea class="fc" id="fb-india-addr" placeholder="Where are you staying in India?"></textarea></div>
-      <div class="fg"><label class="fl">Date of arrival in India</label><input class="fc" id="fb-india-arrival" type="date"/></div>
-      <div class="fg">
-        <label class="fl">Whether employed in India</label>
-        <div class="radio-group">
-          <label class="radio-opt"><input type="radio" name="employed" value="Yes"/> Yes</label>
-          <label class="radio-opt"><input type="radio" name="employed" value="No"/> No</label>
-        </div>
-      </div>
-      <div class="fg"><label class="fl">Proposed duration of stay in India</label><input class="fc" id="fb-duration" type="text" placeholder="e.g. 14 days"/></div>
-      <div class="fg"><label class="fl">Arrived from</label><input class="fc" id="fb-arrived" type="text"/></div>
-      <div class="fg"><label class="fl">Number, date and place of issue of certificate of registration (if any)</label><textarea class="fc" id="fb-reg-cert"></textarea></div>
-      <div class="fg">
-        <label class="fl">Purpose of visit</label>
-        <div class="radio-group" id="fb-purpose">
-          <label class="radio-opt"><input type="radio" name="purpose" value="Leisure"/> Leisure</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Business"/> Business</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Medical"/> Medical</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Transit"/> Transit</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Remote working"/> Remote working</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Visiting friends &amp; family"/> Visiting friends &amp; family</label>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fg"><label class="fl">Date of checkout</label><input class="fc" id="fb-checkout-date" type="date"/></div>
-        <div class="fg"><label class="fl">Time of checkout</label><input class="fc" id="fb-checkout-time" type="time"/></div>
-      </div>
-      <div class="fg"><label class="fl">Address proceeding to</label><textarea class="fc" id="fb-proceed-addr"></textarea></div>
-    </div>
-
-    <!-- DECLARATION -->
-    <div class="sec-hdr">Declaration</div>
-    <label style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px;line-height:1.6;margin-bottom:18px">
-      <input type="checkbox" id="ci-declaration" style="accent-color:var(--br);width:18px;height:18px;flex-shrink:0;margin-top:2px"/>
-      I confirm that the information provided above is accurate and understand that the property reserves the right to admission in accordance with applicable hospitality policies and local regulations.
-    </label>
-
-    <div class="sub-bar"><button class="btn-sub btn-br" id="ci-btn" onclick="submitCheckin()">Submit registration</button></div>
-  </div>
-
-  <!-- PROPERTY INFORMATION — PNE button -->
-  <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
-    <div class="sec-hdr" style="margin-top:0">Property Information</div>
-    <button class="info-btn" onclick="openPne()">
-      <span class="info-btn-icon" style="background:var(--br-l);color:var(--br)">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      </span>
-      <div class="info-btn-text">
-        <div class="info-btn-title">Property Rules, Notes &amp; Emergency Contacts</div>
-        <div class="info-btn-sub">Guidelines, important notes &amp; key numbers</div>
-      </div>
-      <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-    </button>
-  </div>
-
-</div>
-
-<!-- REVIEWS PAGE -->
-<div class="pg" id="pg-reviews">
-  <div class="pg-title">Reviews</div>
-  <div class="pg-sub">Share your experience</div>
-
-  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='rating.html'">
-    <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-    </div>
-    <div style="flex:1">
-      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate a Talent</div>
-      <div style="font-size:12px;color:var(--muted)">Share your experience with a talent</div>
-    </div>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
-  </div>
-
-  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='staff-review.html'">
-    <div style="width:44px;height:44px;border-radius:12px;background:var(--br-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l.5 2 2 .5-2 .5-.5 2-.5-2-2-.5 2-.5z"/></svg>
-    </div>
-    <div style="flex:1">
-      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate Our Staff</div>
-      <div style="font-size:12px;color:var(--muted)">Review the team who made your stay special</div>
-    </div>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
-  </div>
-
-  <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;opacity:0.5;cursor:not-allowed">
-    <div style="width:44px;height:44px;border-radius:12px;background:var(--g-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-    </div>
-    <div style="flex:1">
-      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Review the Property</div>
-      <div style="font-size:12px;color:var(--muted)">Coming soon — share your stay experience</div>
-    </div>
-    <span class="bdg" style="background:var(--bg);color:var(--muted);border:1px solid var(--border);font-size:10px">Soon</span>
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-logo">Banyan Circle · Talent</div>
+  <div class="top-right">
+    <span style="font-size:13px;font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="top-name"></span>
+    <div class="avatar" id="top-avatar">?</div>
+    <button class="btn-signout" onclick="signOut()">Sign out</button>
   </div>
 </div>
 
-<!-- FINAL BILL -->
-<div class="pg" id="pg-finalbill">
-  <div class="pg-title">Final Bill</div>
-  <div class="pg-sub">Your stay summary &amp; charges</div>
-
-  <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
-
-  <div id="bill-content" style="display:none">
-    <div class="card" style="padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Stay Summary</div>
-      <div class="bill-line"><span style="color:var(--muted)">Guest</span><span id="bill-guest-name" style="font-weight:500">—</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Property</span><span id="bill-property" style="font-weight:500">—</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Check-in</span><span id="bill-checkin">—</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Check-out</span><span id="bill-checkout">—</span></div>
-      <div class="bill-line" style="border:none"><span style="color:var(--muted)">Nights</span><span id="bill-nights">—</span></div>
+<!-- PANEL: PROFILE -->
+<div class="panel" id="panel-profile">
+  <div class="prof-header">
+    <div class="prof-avatar-lg" id="prof-avatar-lg">?</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-family:'Playfair Display',serif;font-size:17px" id="prof-heading">My Profile</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">ID: <span id="prof-id-display"></span></div>
     </div>
-
-    <div class="card" style="padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Charges</div>
-      <div id="bill-items"><div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges available yet.</div></div>
-      <div class="bill-total"><span>Total</span><span id="bill-total">—</span></div>
-    </div>
-
-    <div class="card" style="padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-      <div>
-        <div style="font-size:13px;font-weight:500;margin-bottom:2px">Payment Status</div>
-        <span class="bdg" id="bill-status-badge">Pending</span>
-      </div>
-      <div style="margin-left:auto;font-size:12px;color:var(--muted)" id="bill-remarks"></div>
-    </div>
-
-    <div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0 4px">For queries, please contact the front desk.</div>
+    <span id="save-status" style="font-size:12px;color:var(--g);display:none;flex-shrink:0">✓ Saved</span>
   </div>
 
-  <div id="bill-none" style="display:none">
-    <div class="success">
-      <div class="s-icon" style="background:var(--br-l)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-      </div>
-      <div class="s-title">No bill yet</div>
-      <div class="s-sub">Your final bill will appear here once it has been prepared by the property.</div>
-    </div>
+  <div class="fg"><label class="fl">Name *</label><input class="fc" id="p-name" placeholder="Your full name"/></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
+    <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
   </div>
-</div>
-
-<!-- EXPERIENCE PAGE -->
-<div class="pg" id="pg-experience">
-  <div class="pg-title">Experience</div>
-  <div class="pg-sub">Curated notes &amp; highlights for your stay</div>
-
-  <!-- Property -->
-  <div class="exp-section">
-    <div class="exp-section-head">
-      <div class="exp-section-title">Property</div>
-    </div>
-    <div class="exp-entries" id="exp-entries-property"><div class="exp-skeleton"></div></div>
+  <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
+  <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
+  <div class="fg">
+    <label class="fl">Category</label>
+    <select class="fc" id="p-cat">
+      <option value="">Select a category</option>
+      <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
+      <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
+      <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
+      <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
+    </select>
   </div>
-
-  <!-- Beyond -->
-  <div class="exp-section">
-    <div class="exp-section-head">
-      <div class="exp-section-title">Beyond</div>
-    </div>
-    <div class="exp-entries" id="exp-entries-beyond"><div class="exp-skeleton"></div></div>
+  <div id="cat-others-fg" class="fg" style="display:none"><label class="fl">Please specify</label><input class="fc" id="p-cat-other" placeholder="Your talent category"/></div>
+  <div class="fg"><label class="fl">Name your talent</label><input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/></div>
+  <div class="fg"><label class="fl">Tagline</label><input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/></div>
+  <div class="fg"><label class="fl">Describe your talent</label><textarea class="fc" id="p-desc" placeholder="Describe the experience you create…"></textarea></div>
+  <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
+  <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
+  <div class="fg"><label class="fl">Your photo</label><input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/><div id="p-photo-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
+  <div class="fg"><label class="fl">Biodata / CV (PDF or Word)</label><input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/><div id="p-bio-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
+  <div class="fg">
+    <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
+    <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
   </div>
-
-  <!-- Banyan Circle -->
-  <div class="exp-section">
-    <div class="exp-section-head">
-      <div class="exp-section-title">Banyan Circle</div>
-    </div>
-    <div class="exp-entries" id="exp-entries-banyan_circle"><div class="exp-skeleton"></div></div>
+  <div style="padding-bottom:10px">
+    <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
   </div>
 </div>
 
-<nav class="bnav">
-  <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
-  <button class="bnt" onclick="goPage('experience',this);expLoad()"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 4 5 4 9c0 5 8 13 8 13s8-8 8-13c0-4-4-7-8-7z"/><circle cx="12" cy="9" r="2.5"/></svg>Experience</button>
-  <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
-  <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
+<!-- PANEL: SCHEDULE -->
+<div class="panel" id="panel-schedule">
+  <div class="section-hdg">Schedule</div>
+  <div class="card">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <div class="month-label" id="month-label"></div>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="sched-legend">
+      <span><span class="leg-dot" style="background:#FCEBEB;border:1px solid #E57373"></span>Busy</span>
+      <span><span class="leg-dot" style="background:var(--g-l);border:1px solid #86C860"></span>Available</span>
+      <span><span class="leg-dot" style="background:var(--white);border:1px solid var(--border)"></span>Unmarked</span>
+    </div>
+    <div class="cal-grid" style="margin-bottom:3px">
+      <div class="cal-day-hdr">Su</div><div class="cal-day-hdr">Mo</div><div class="cal-day-hdr">Tu</div>
+      <div class="cal-day-hdr">We</div><div class="cal-day-hdr">Th</div><div class="cal-day-hdr">Fr</div><div class="cal-day-hdr">Sa</div>
+    </div>
+    <div class="cal-grid" id="sched-grid"></div>
+  </div>
+  <button class="btn-p" onclick="openBookingRequestModal()" style="margin-top:4px">+ Request a Booking</button>
+</div>
+
+
+
+<!-- PANEL: RATINGS -->
+<div class="panel" id="panel-ratings">
+  <div class="section-hdg">My Ratings</div>
+  <div id="ratings-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+</div>
+
+<!-- PANEL: EARNINGS -->
+<div class="panel" id="panel-earnings">
+  <div class="section-hdg">Earnings</div>
+  <div class="earn-grid">
+    <div class="earn-card"><div class="earn-amount" id="earn-total">—</div><div class="earn-label">Total Earned</div></div>
+    <div class="earn-card"><div class="earn-amount" id="earn-month">—</div><div class="earn-label">This Month</div></div>
+  </div>
+  <div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">Earnings appear once bookings are confirmed and processed by the office.</div></div>
+  <div style="margin-top:8px;padding-bottom:10px">
+    <a href="documents.html" class="btn-sec" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
+      <span style="font-size:16px">📄</span> Documents
+    </a>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn" id="nav-profile" onclick="showPanel('profile')">
+    <span class="nav-icon">👤</span><span>Profile</span>
+  </button>
+  <button class="nav-btn" id="nav-schedule" onclick="showPanel('schedule')">
+    <span class="nav-icon">📅</span><span>Schedule</span>
+  </button>
+  <button class="nav-btn" id="nav-ratings" onclick="showPanel('ratings')">
+    <span class="nav-icon">⭐</span><span>Ratings</span>
+  </button>
+  <a class="nav-btn" id="nav-earnings" href="/earnings.html">
+    <span class="nav-icon">💰</span><span>Earnings</span>
+  </a>
 </nav>
+
+<!-- DAY MODAL -->
+<div class="modal-backdrop" id="day-modal" style="display:none" onclick="if(event.target===this)closeDayModal()">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="modal-title" id="modal-title">Set day status</div>
+    <div class="modal-sub" id="modal-date"></div>
+    <div class="status-toggle">
+      <button class="stgl-btn" id="btn-busy" onclick="setModalStatus('busy')">🔴 Busy</button>
+      <button class="stgl-btn" id="btn-avail" onclick="setModalStatus('available')">🟢 Available</button>
+    </div>
+    <div id="time-fields">
+      <div class="time-row">
+        <div class="fg" style="margin:0"><label class="fl">From</label><input class="fc" type="time" id="modal-start" value="09:00"/></div>
+        <div class="fg" style="margin:0"><label class="fl">To</label><input class="fc" type="time" id="modal-end" value="17:00"/></div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-p" onclick="saveDaySlot()">Save</button>
+      <button class="btn-danger" id="modal-remove-btn" style="display:none" onclick="removeDay()">Remove status</button>
+      <button class="btn-sec" onclick="closeDayModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
-<!-- ── PNE SLIDE-UP SHEET ── -->
-<div class="pne-backdrop" id="pne-backdrop" onclick="closePne()"></div>
-<div class="pne-sheet" id="pne-sheet">
-  <div class="pne-sheet-grab"></div>
-  <div class="pne-sheet-hdr">
-    <div class="pne-sheet-title">Property Rules, Notes &amp; Emergency Contacts</div>
-    <button class="pne-sheet-close" onclick="closePne()">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="pne-sheet-body">
-    <iframe id="pne-frame" src="" title="Property Rules, Notes & Emergency Contacts"></iframe>
+<!-- BOOKING REQUEST MODAL -->
+<div class="modal-backdrop" id="bk-modal" style="display:none" onclick="if(event.target===this)closeBkModal()">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <div class="modal-title" style="margin-bottom:16px">Request a Booking</div>
+    <div class="fg"><label class="fl">Property / Event</label><input class="fc" id="bk-property" placeholder="e.g. Banyan Circle — Morjim"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Date</label><input class="fc" id="bk-date" type="date"/></div>
+      <div class="fg"><label class="fl">Time</label><input class="fc" id="bk-time" type="time" value="10:00"/></div>
+    </div>
+    <div class="fg"><label class="fl">Message (optional)</label><textarea class="fc" id="bk-message" placeholder="Duration, group size, notes…"></textarea></div>
+    <div class="modal-btns">
+      <button class="btn-p" onclick="submitBookingRequest()">Send Request</button>
+      <button class="btn-sec" onclick="closeBkModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- ID Lightbox -->
-<div class="id-lightbox" id="id-lightbox" style="display:none" onclick="closeLightbox()">
-  <button class="id-lightbox-close" onclick="closeLightbox()">
-    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
-  <img id="id-lightbox-img" src="" alt="ID proof" onclick="event.stopPropagation()"/>
-</div>
-
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (!me || me.role !== 'guest') { location.href = '/index.html'; throw new Error(); }
-
-document.getElementById('hdr-name').textContent = me.name;
-document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
-
-// Pre-fill name and dates
-document.getElementById('ci-name').value = me.name || '';
-if(me.check_in) document.getElementById('ci-arr-date').value = me.check_in;
-if(me.check_out) document.getElementById('ci-dep-date').value = me.check_out;
-
-function signOut() { localStorage.removeItem('bc_me'); location.href = '/index.html'; }
-function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
-
-function goPage(id, btn) {
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.bnt').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pg-'+id).classList.add('on');
-  btn.classList.add('on');
-  if(id==='finalbill')  loadFinalBill();
-}
-
-// ── EXPERIENCE ──
-let expLoaded = false;
-function expLoad() {
-  if (expLoaded) return;
-  expLoaded = true;
-  expLoadSection('property');
-  expLoadSection('beyond');
-  expLoadSection('banyan_circle');
-}
-
-function expEsc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-async function expLoadSection(section) {
-  const el = document.getElementById('exp-entries-' + section);
-  try {
-    const prop = me.prop || '';
-    const data = await api('/rest/v1/experiences?property_name=eq.' + encodeURIComponent(prop) + '&section=eq.' + encodeURIComponent(section) + '&order=created_at.desc') || [];
-    if (!data.length) {
-      el.innerHTML = '<div class="exp-empty">No entries yet.</div>';
-    } else {
-      el.innerHTML = data.map(e => `<div class="exp-entry">${expEsc(e.content||'')}</div>`).join('');
-    }
-  } catch(e) {
-    el.innerHTML = '<div class="exp-empty">Could not load entries.</div>';
-  }
-}
-
-// ── PNE slide-up sheet ──
-function openPne() {
-  var prop = (me && (me.prop || me.property_name)) || '';
-  var src = prop ? 'pne.html?prop=' + encodeURIComponent(prop) : 'pne.html';
-  var frame = document.getElementById('pne-frame');
-  // Only reload if src changed (avoids flicker on repeated opens)
-  if(frame.getAttribute('data-loaded-src') !== src) {
-    frame.src = src;
-    frame.setAttribute('data-loaded-src', src);
-  }
-  document.getElementById('pne-backdrop').classList.add('open');
-  document.getElementById('pne-sheet').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closePne() {
-  document.getElementById('pne-backdrop').classList.remove('open');
-  document.getElementById('pne-sheet').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-async function api(path, method, body) {
+async function api(path, method, body){
   const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
-  if(r.status===204)return null;
+  if(r.status===204) return null;
   const json=await r.json().catch(()=>null);
   if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
   return json;
 }
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2400);}
+const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
-// ── Edit existing check-in ──
-function editCheckin(){
-  if(!CI_RECORD) return;
-  uploadedIdUrls = [];
-  document.getElementById('ci-id-previews').innerHTML = '';
-  document.getElementById('ci-file-list').innerHTML = '';
-  const fd=CI_RECORD.form_data||{};
-  document.getElementById('ci-name').value=CI_RECORD.guest_name||'';
-  document.getElementById('ci-address').value=fd.permanent_address||'';
-  document.getElementById('ci-email').value=fd.email||'';
-  document.getElementById('ci-mobile').value=fd.mobile||'';
-  document.getElementById('ci-dob').value=fd.dob||'';
-  document.getElementById('ci-org').value=fd.organisation||'';
-  document.getElementById('ci-from').value=CI_RECORD.travelled_from||'';
-  document.getElementById('ci-to').value=CI_RECORD.travelling_to||'';
-  document.getElementById('ci-arr-date').value=fd.arrival_date||'';
-  document.getElementById('ci-arr-time').value=fd.arrival_time||'';
-  document.getElementById('ci-dep-date').value=fd.departure_date||'';
-  document.getElementById('ci-dep-time').value=fd.departure_time||'';
-  document.getElementById('ci-guests').value=CI_RECORD.num_guests||1;
-  document.getElementById('ci-dietary').value=fd.dietary||'';
-  document.getElementById('ci-occasion').value=fd.special_occasion||'';
-  document.getElementById('ci-comfort').value=fd.comfort_requests||'';
-  if(fd.payment_mode){const r=document.querySelector(`input[name="payment"][value="${fd.payment_mode}"]`);if(r)r.checked=true;}
-  document.getElementById('ci-declaration').checked=!!fd.declaration;
-  const existing=(fd.id_proofs||[]);
-  uploadedIdUrls = existing.filter(f => f.url); // restore any already-uploaded ones
-  const previewEl = document.getElementById('ci-id-previews');
-  if(existing.length) {
-    // If they have URLs render thumbnails; otherwise show a text fallback
-    const withUrls = existing.filter(f => f.url);
-    const withoutUrls = existing.filter(f => !f.url);
-    renderIdPreviews(withUrls, previewEl);
-    if(withoutUrls.length) document.getElementById('ci-file-list').innerHTML=`<div class="file-item">Existing: ${withoutUrls.map(f=>f.name).join(', ')} <span style="margin-left:auto;font-size:11px;opacity:.7">Upload new to replace</span></div>`;
+// BOOT
+const params=new URLSearchParams(location.search);
+const talentId=params.get('id')||'';
+const talentNameParam=params.get('name')||'Talent';
+if(!talentId){location.href='/login.html';throw new Error('No talent ID');}
+const _me = JSON.parse(localStorage.getItem('bc_me')||'null');
+if(!_me){location.replace('/login.html');throw new Error('Not authenticated');}
+
+document.getElementById('top-name').textContent=talentNameParam;
+document.getElementById('top-avatar').textContent=ini(talentNameParam);
+document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
+document.getElementById('prof-id-display').textContent=talentId;
+
+function signOut(){localStorage.removeItem('bc_me');location.replace('/login.html');}
+
+// PANEL NAVIGATION — all collapsed on load
+let currentPanel=null;
+const loaders={
+  schedule:()=>renderSchedule(),
+
+  ratings:()=>loadRatings(),
+  earnings:()=>{},
+  profile:()=>{}
+};
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  currentPanel=id;
+  if(loaders[id]) loaders[id]();
+}
+
+// PROFILE
+let profileExists=false;
+document.getElementById('p-cat').addEventListener('change',function(){
+  document.getElementById('cat-others-fg').style.display=this.value==='Others'?'':'none';
+});
+function fillForm(d){
+  document.getElementById('p-name').value=d.name||'';
+  document.getElementById('p-age').value=d.age||'';
+  document.getElementById('p-phone').value=d.phone||'';
+  document.getElementById('p-email').value=d.email||'';
+  document.getElementById('p-location').value=d.location||'';
+  document.getElementById('p-talent-name').value=d.talent_name||'';
+  document.getElementById('p-tagline').value=d.tagline||'';
+  document.getElementById('p-desc').value=d.description||'';
+  document.getElementById('p-instagram').value=d.instagram||'';
+  document.getElementById('p-performance').value=d.performance_link||'';
+  const cats=['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
+  if(cats.includes(d.category)) document.getElementById('p-cat').value=d.category;
+  if(d.category==='Others'&&d.category_other){document.getElementById('cat-others-fg').style.display='';document.getElementById('p-cat-other').value=d.category_other||'';}
+  if(d.photo_url) document.getElementById('p-photo-current').innerHTML=`Current: <a href="${d.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+  if(d.bio_url) document.getElementById('p-bio-current').innerHTML=`Current: <a href="${d.bio_url}" target="_blank" style="color:var(--br)">Download ${d.bio_name||'file'}</a>`;
+  if(d.venues) setVenueChecks(d.venues);
+}
+async function loadProfile(){
+  try{
+    const rows=await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*')||[];
+    if(rows.length){profileExists=true;fillForm(rows[0]);document.getElementById('prof-heading').textContent='Edit Profile';document.getElementById('save-btn').textContent='Update profile';}
+    else{document.getElementById('p-name').value=talentNameParam;}
+  }catch(e){console.error(e);}
+}
+let ALL_PROPS=[];
+async function loadProperties(){
+  ALL_PROPS=await api('/rest/v1/properties?select=name&order=name')||[];
+  document.getElementById('p-venues').innerHTML=ALL_PROPS.map(p=>`<label class="opt-label"><input type="checkbox" name="venue" value="${p.name}"/> ${p.name}</label>`).join('');
+}
+function setVenueChecks(arr){document.querySelectorAll('[name="venue"]').forEach(cb=>{cb.checked=arr.includes(cb.value);});}
+function getVenueChecks(){return[...document.querySelectorAll('[name="venue"]:checked')].map(cb=>cb.value);}
+async function saveProfile(){
+  const name=document.getElementById('p-name').value.trim();
+  if(!name){alert('Name is required');return;}
+  const body={talent_id:talentId,name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,category:document.getElementById('p-cat').value||null,category_other:document.getElementById('p-cat').value==='Others'?document.getElementById('p-cat-other').value.trim()||null:null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
+  const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving…';
+  async function uploadToStorage(bucket,file,folder){const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_');const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file});if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.message||e?.error||'Upload failed: '+res.status);}return SB+'/storage/v1/object/public/'+bucket+'/'+path;}
+  try{
+    const pf=document.getElementById('p-photo').files[0],bf=document.getElementById('p-bio').files[0];
+    if(pf){if(pf.size>5*1024*1024){alert('Photo must be under 5 MB');btn.disabled=false;btn.textContent='Save profile';return;}btn.textContent='Uploading photo…';body.photo_url=await uploadToStorage('talent-photos',pf,talentId);body.photo_name=pf.name;}
+    if(bf){if(bf.size>10*1024*1024){alert('CV must be under 10 MB');btn.disabled=false;btn.textContent='Save profile';return;}btn.textContent='Uploading CV…';body.bio_url=await uploadToStorage('talent-bios',bf,talentId);body.bio_name=bf.name;}
+    btn.textContent='Saving…';
+    if(profileExists){await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);}
+    else{await api('/rest/v1/talent_profiles','POST',body);profileExists=true;}
+    await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
+    document.getElementById('prof-heading').textContent='Edit Profile';
+    if(pf) document.getElementById('p-photo-current').innerHTML=`Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
+    if(bf) document.getElementById('p-bio-current').innerHTML=`Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
+    const s=document.getElementById('save-status');s.style.display='';setTimeout(()=>s.style.display='none',2500);
+    toast('Profile saved ✓');btn.textContent='Update profile';
+  }catch(e){alert('Error: '+e.message);btn.textContent='Save profile';}
+  finally{btn.disabled=false;}
+}
+
+// SCHEDULE
+let scheduleData={},schedYear,schedMonth,modalDateStr=null,modalStatus='available';
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function fmt12(t){if(!t)return'';const[h,m]=t.split(':');const hr=+h;return(hr%12||12)+':'+(m||'00')+' '+(hr<12?'AM':'PM');}
+function changeMonth(d){schedMonth+=d;if(schedMonth>11){schedMonth=0;schedYear++;}if(schedMonth<0){schedMonth=11;schedYear--;}renderSchedule();}
+async function renderSchedule(){
+  const now=new Date();
+  if(schedYear===undefined){schedYear=now.getFullYear();schedMonth=now.getMonth();}
+  document.getElementById('month-label').textContent=MONTHS[schedMonth]+' '+schedYear;
+  const ms=schedYear+'-'+String(schedMonth+1).padStart(2,'0');
+  try{const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+ms+'-01&date=lte.'+ms+'-31&select=date,status,time_start,time_end')||[];scheduleData={};rows.forEach(r=>scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end});}catch(e){console.error(e);}
+  const grid=document.getElementById('sched-grid');
+  const firstDay=new Date(schedYear,schedMonth,1).getDay();
+  const dim=new Date(schedYear,schedMonth+1,0).getDate();
+  const today=new Date().toISOString().slice(0,10);
+  let h='';
+  for(let i=0;i<firstDay;i++) h+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const ds=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const e=scheduleData[ds];const st=e?.status||'';
+    const cls=st==='busy'?'cal-day busy':st==='available'?'cal-day available':'cal-day';
+    const isT=ds===today;
+    let lbl=st==='busy'?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
+    h+=`<div class="${cls}${isT?' today-ring':''}" onclick="openDayModal('${ds}')"><div class="cal-day-num" style="${isT?'color:var(--br)':''}">${d}</div>${lbl}</div>`;
   }
-  document.getElementById('ci-done').style.display='none';
-  document.getElementById('ci-form').style.display='block';
-  document.getElementById('ci-btn').textContent='Update registration';
+  grid.innerHTML=h;
 }
-
-// ── Section B toggle ──
-function toggleSectionB(el){
-  const body = document.getElementById('section-b');
-  const arrow = document.getElementById('sb-arrow');
-  body.classList.toggle('open');
-  arrow.style.transform = body.classList.contains('open') ? 'rotate(90deg)' : '';
-}
-
-// ── ID Upload: Supabase Storage ──
-const ID_BUCKET = 'id-upload';
-let uploadedIdUrls = []; // [{name, url, type}]
-
-async function uploadFileToSupabase(file) {
-  const ext = file.name.split('.').pop();
-  const safeName = `${me.id}_${Date.now()}_${Math.random().toString(36).slice(2,7)}.${ext}`;
-  const path = `${me.id}/${safeName}`;
-  const res = await fetch(`${SB}/storage/v1/object/${ID_BUCKET}/${path}`, {
-    method: 'POST',
-    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
-    body: file
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || 'Upload failed');
-  }
-  const publicUrl = `${SB}/storage/v1/object/public/${ID_BUCKET}/${path}`;
-  return { name: file.name, url: publicUrl, type: file.type };
-}
-
-async function handleIdUpload(input) {
-  const files = Array.from(input.files);
-  if (!files.length) return;
-  const previewList = document.getElementById('ci-id-previews');
-  // Keep existing previews, append new
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    // Create placeholder card
-    const card = document.createElement('div');
-    card.className = 'id-preview-item';
-    card.style.pointerEvents = 'none';
-    if (isPdf) {
-      card.innerHTML = `<div class="id-preview-pdf"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><span>${file.name}</span></div><div class="id-preview-label">${file.name}</div><div class="id-preview-uploading">Uploading…</div>`;
+function setModalStatus(s){modalStatus=s;document.getElementById('btn-busy').className='stgl-btn'+(s==='busy'?' busy-on':'');document.getElementById('btn-avail').className='stgl-btn'+(s==='available'?' avail-on':'');document.getElementById('time-fields').style.display=s==='available'?'':'none';}
+function openDayModal(ds){modalDateStr=ds;const e=scheduleData[ds];const d=new Date(ds+'T00:00:00');document.getElementById('modal-date').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();document.getElementById('modal-title').textContent=e?'Edit day status':'Set day status';document.getElementById('modal-start').value=e?.time_start?.slice(0,5)||'09:00';document.getElementById('modal-end').value=e?.time_end?.slice(0,5)||'17:00';document.getElementById('modal-remove-btn').style.display=e?'':'none';setModalStatus(e?.status||'available');document.getElementById('day-modal').style.display='flex';}
+function closeDayModal(){document.getElementById('day-modal').style.display='none';modalDateStr=null;}
+async function saveDaySlot(){
+  try{
+    if(modalStatus==='available'){
+      const s=document.getElementById('modal-start').value,en=document.getElementById('modal-end').value;
+      if(!s||!en){toast('Set both times');return;}
+      if(en<=s){toast('End must be after start');return;}
+      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'available',time_start:s,time_end:en});
     } else {
-      const localUrl = URL.createObjectURL(file);
-      card.innerHTML = `<img src="${localUrl}" alt="${file.name}"/><div class="id-preview-label">${file.name}</div><div class="id-preview-uploading">Uploading…</div>`;
+      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'busy',time_start:'00:00',time_end:'00:00'});
     }
-    previewList.appendChild(card);
-    try {
-      const result = await uploadFileToSupabase(file);
-      uploadedIdUrls.push(result);
-      // Remove uploading overlay, make clickable
-      card.querySelector('.id-preview-uploading').remove();
-      card.style.pointerEvents = '';
-      if (isPdf) {
-        card.onclick = () => window.open(result.url, '_blank');
-      } else {
-        card.onclick = () => openLightbox(result.url);
-      }
-    } catch(e) {
-      card.querySelector('.id-preview-uploading').textContent = '✗ Failed';
-      card.querySelector('.id-preview-uploading').style.background = 'rgba(255,235,235,.9)';
-      card.querySelector('.id-preview-uploading').style.color = '#791F1F';
-      toast('Upload failed: ' + e.message);
-    }
+  }catch(e){toast('Error: '+e.message);return;}
+  closeDayModal();await renderSchedule();toast('Saved ✓');
+}
+async function apiUpsert(payload){
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'resolution=merge-duplicates,return=minimal'};
+  const r=await fetch(SB+'/rest/v1/talent_schedule',{method:'POST',headers:h,body:JSON.stringify(payload)});
+  if(r.status===204||r.status===200||r.status===201) return null;
+  const json=await r.json().catch(()=>null);
+  throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+}
+async function removeDay(){try{await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE');closeDayModal();await renderSchedule();toast('Removed');}catch(e){toast('Error: '+e.message);}}
+
+// BOOKING REQUESTS
+async function loadBookingRequests(){
+  const el=document.getElementById('booking-requests-list');
+  try{
+    const rows=await api('/rest/v1/talent_booking_requests?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20')||[];
+    if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No booking requests yet</div>';return;}
+    el.innerHTML=rows.map(r=>{
+      const sc=r.status==='confirmed'?'var(--g)':r.status==='declined'?'var(--r)':'var(--a)';
+      const sl=r.status==='confirmed'?'✓ Confirmed':r.status==='declined'?'✕ Declined':'⏳ Pending';
+      return`<div class="booking-card ${r.status||'pending'}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div style="font-size:14px;font-weight:500">${r.property_name||'—'}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${r.requested_date||''} ${r.requested_time?'· '+fmt12(r.requested_time):''}</div>${r.message?`<div style="font-size:13px;margin-top:6px">${r.message}</div>`:''}<div style="font-size:11px;color:var(--muted);margin-top:5px">By: ${r.requested_by||'Office'}</div></div><span style="font-size:12px;font-weight:500;color:${sc};white-space:nowrap">${sl}</span></div></div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Unavailable</div>';}
+}
+function openBookingRequestModal(){document.getElementById('bk-property').value='';document.getElementById('bk-date').value=new Date().toISOString().slice(0,10);document.getElementById('bk-time').value='10:00';document.getElementById('bk-message').value='';document.getElementById('bk-modal').style.display='flex';}
+function closeBkModal(){document.getElementById('bk-modal').style.display='none';}
+async function submitBookingRequest(){const pn=document.getElementById('bk-property').value.trim(),rd=document.getElementById('bk-date').value,rt=document.getElementById('bk-time').value,msg=document.getElementById('bk-message').value.trim();if(!pn||!rd){toast('Fill property and date');return;}try{await api('/rest/v1/talent_booking_requests','POST',{talent_id:talentId,talent_name:talentNameParam,property_name:pn,requested_date:rd,requested_time:rt||null,message:msg||null,requested_by:talentNameParam,status:'pending',created_at:new Date().toISOString()});closeBkModal();toast('Request sent ✓');loadBookingRequests();}catch(e){toast('Error: '+e.message);}}
+
+// RATINGS
+async function loadRatings(){
+  const el=document.getElementById('ratings-list');
+  try{
+    const rows=await api('/rest/v1/talent_ratings?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.desc&limit=20')||[];
+    if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No ratings yet</div>';return;}
+    const avg=rows.reduce((s,r)=>s+(r.rating||0),0)/rows.length;
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">${[1,2,3,4,5].map(i=>`<span class="star${i<=Math.round(avg)?'':' empty'}">★</span>`).join('')}<span style="font-size:16px;font-weight:500">${avg.toFixed(1)}</span><span style="font-size:13px;color:var(--muted)">${rows.length} review${rows.length!==1?'s':''}</span></div>`+rows.map(r=>`<div class="card" style="padding:12px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">${[1,2,3,4,5].map(i=>`<span class="star${i<=r.rating?'':' empty'}" style="font-size:13px">★</span>`).join('')}<span style="font-size:12px;font-weight:500;margin-left:2px">${r.guest_name||'Guest'}</span><span style="font-size:11px;color:var(--muted);margin-left:auto">${r.created_at?new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''}</span></div>${r.review?`<div style="font-size:13px;line-height:1.5;color:var(--text)">${r.review}</div>`:''}</div>`).join('');
+  }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Ratings unavailable</div>';}
+}
+
+// MESSAGES
+async function loadTalentMessages(){
+  const el=document.getElementById('talent-msgs-list');
+  try{
+    const rows=await api('/rest/v1/internal_messages?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*&order=created_at.asc')||[];
+    if(!rows.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">No messages yet</div>';return;}
+    el.innerHTML=rows.map(m=>{const me=m.from_role==='talent';return`<div style="display:flex;justify-content:${me?'flex-end':'flex-start'}"><div style="max-width:80%;background:${me?'var(--br)':'var(--white)'};color:${me?'#fff':'var(--text)'};border:1px solid ${me?'var(--br)':'var(--border)'};border-radius:12px;padding:9px 13px"><div style="font-size:10px;opacity:.6;margin-bottom:3px">${me?'You':'Office'} · ${m.created_at?new Date(m.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):''}</div><div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div></div></div>`;}).join('');
+    el.scrollTop=el.scrollHeight;
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Could not load messages</div>';}
+}
+async function sendTalentMsg(){const inp=document.getElementById('talent-msg-input');const txt=inp.value.trim();if(!txt)return;try{await api('/rest/v1/internal_messages','POST',{talent_id:talentId,talent_name:talentNameParam,from_role:'talent',from_name:talentNameParam,message:txt,created_at:new Date().toISOString()});inp.value='';inp.style.height='44px';await loadTalentMessages();}catch(e){toast('Send failed: '+e.message);}}
+
+
+// Prevent bfcache from restoring stale authenticated state after logout
+window.addEventListener('pageshow', function(e){
+  if(e.persisted){
+    var m=localStorage.getItem('bc_me');
+    if(!m) location.replace('/login.html');
   }
-}
+});
 
-function renderIdPreviews(idList, containerEl) {
-  // idList: [{name, url, type}]
-  containerEl.innerHTML = '';
-  (idList || []).forEach(f => {
-    const isPdf = (f.type || '').includes('pdf') || (f.name || '').toLowerCase().endsWith('.pdf');
-    const card = document.createElement('div');
-    card.className = 'id-preview-item';
-    if (isPdf) {
-      card.innerHTML = `<div class="id-preview-pdf"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><span>${f.name||'PDF'}</span></div><div class="id-preview-label">${f.name||'PDF'}</div>`;
-      card.onclick = () => window.open(f.url, '_blank');
-    } else {
-      card.innerHTML = `<img src="${f.url}" alt="${f.name||'ID'}"/><div class="id-preview-label">${f.name||'ID'}</div>`;
-      card.onclick = () => openLightbox(f.url);
-    }
-    containerEl.appendChild(card);
-  });
-}
-
-function openLightbox(url) {
-  const lb = document.getElementById('id-lightbox');
-  document.getElementById('id-lightbox-img').src = url;
-  lb.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-function closeLightbox() {
-  document.getElementById('id-lightbox').style.display = 'none';
-  document.getElementById('id-lightbox-img').src = '';
-  document.body.style.overflow = '';
-}
-
-function showFiles(input, listId){
-  document.getElementById(listId).innerHTML=Array.from(input.files).map(f=>`<div class="file-item">✓ ${f.name} <span style="margin-left:auto;font-size:11px;opacity:.7">${(f.size/1024).toFixed(0)}KB</span></div>`).join('');
-}
-
-// ── Check check-in status ──
-let CI_RECORD = null;
-(async()=>{
-  const d=await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+me.id+'&select=*&order=checked_in_at.desc&limit=1');
-  if(d&&d.length){
-    CI_RECORD=d[0];
-    document.getElementById('ci-done').style.display='flex';
-    document.getElementById('ci-form').style.display='none';
-  }
-})();
-
-async function getPropId(){
-  const d=await api('/rest/v1/properties?name=ilike.'+encodeURIComponent('%'+(me.prop||'')+'%')+'&select=id');
-  return d&&d[0]?d[0].id:null;
-}
-
-// ── SUBMIT CHECK-IN ──
-async function submitCheckin(){
-  const name   = document.getElementById('ci-name').value.trim();
-  const addr   = document.getElementById('ci-address').value.trim();
-  const email  = document.getElementById('ci-email').value.trim();
-  const mobile = document.getElementById('ci-mobile').value.trim();
-  const dob    = document.getElementById('ci-dob').value;
-  const from   = document.getElementById('ci-from').value.trim();
-  const to     = document.getElementById('ci-to').value.trim();
-  const arrDate= document.getElementById('ci-arr-date').value;
-  const arrTime= document.getElementById('ci-arr-time').value;
-  const depDate= document.getElementById('ci-dep-date').value;
-  const depTime= document.getElementById('ci-dep-time').value;
-  const guests = parseInt(document.getElementById('ci-guests').value)||1;
-  const payment= document.querySelector('input[name="payment"]:checked')?.value||'';
-  const decl   = document.getElementById('ci-declaration').checked;
-  const files  = document.getElementById('ci-files').files;
-
-  const isEdit=!!(CI_RECORD&&CI_RECORD.id);
-  if(!name||!addr||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
-  if(!files.length&&!uploadedIdUrls.length&&!(CI_RECORD?.form_data?.id_proofs?.length)){toast('Please upload ID proof');return;}
-  if(!payment){toast('Please select payment mode');return;}
-  if(!decl){toast('Please accept the declaration');return;}
-
-  const btn = document.getElementById('ci-btn');
-  btn.disabled=true;
-
-  let id_proofs=[];
-  if(uploadedIdUrls.length){
-    id_proofs = uploadedIdUrls.map(f=>({name:f.name, url:f.url, type:f.type}));
-  } else if(isEdit){
-    id_proofs=CI_RECORD.form_data?.id_proofs||[];
-  }
-
-  const sbOpen = document.getElementById('section-b').classList.contains('open');
-  const passport_docs=[];
-  if(sbOpen){
-    const pf=document.getElementById('fb-passport-file').files[0];
-    if(pf){
-      btn.textContent='Reading passport…';
-      const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(pf);});
-      passport_docs.push({name:pf.name,type:pf.type,data});
-    }
-  }
-
-  btn.textContent='Saving…';
-
-  const form_data = {
-    organisation: document.getElementById('ci-org').value.trim(),
-    permanent_address: addr,
-    email, mobile, dob,
-    arrival_date: arrDate, arrival_time: arrTime,
-    departure_date: depDate, departure_time: depTime,
-    payment_mode: payment,
-    dietary: document.getElementById('ci-dietary').value.trim(),
-    special_occasion: document.getElementById('ci-occasion').value.trim(),
-    comfort_requests: document.getElementById('ci-comfort').value.trim(),
-    declaration: true,
-    is_foreign: sbOpen,
-    id_proofs,
-  };
-
-  if(sbOpen){
-    form_data.foreign = {
-      name_caps:        document.getElementById('fb-name').value.trim(),
-      nationality:      document.getElementById('fb-nationality').value.trim(),
-      passport_no:      document.getElementById('fb-passport-no').value.trim(),
-      passport_date:    document.getElementById('fb-passport-date').value,
-      passport_place:   document.getElementById('fb-passport-place').value.trim(),
-      passport_docs,
-      india_address:    document.getElementById('fb-india-addr').value.trim(),
-      india_arrival:    document.getElementById('fb-india-arrival').value,
-      employed_india:   document.querySelector('input[name="employed"]:checked')?.value||'',
-      duration_india:   document.getElementById('fb-duration').value.trim(),
-      arrived_from:     document.getElementById('fb-arrived').value.trim(),
-      reg_cert:         document.getElementById('fb-reg-cert').value.trim(),
-      purpose:          document.querySelector('input[name="purpose"]:checked')?.value||'',
-      checkout_date:    document.getElementById('fb-checkout-date').value,
-      checkout_time:    document.getElementById('fb-checkout-time').value,
-      proceed_address:  document.getElementById('fb-proceed-addr').value.trim(),
-    };
-  }
-
-  const payload={
-    guest_profile_id: me.id,
-    guest_name: name,
-    property_name: me.prop,
-    travelled_from: from,
-    travelling_to: to,
-    num_guests: guests,
-    id_proof_urls: id_proofs.map(f=>f.url||f.name),
-    form_data,
-  };
-  try {
-    if(isEdit){
-      await api('/rest/v1/guest_checkins?id=eq.'+CI_RECORD.id,'PATCH',payload);
-      CI_RECORD={...CI_RECORD,...payload,form_data};
-    } else {
-      payload.checked_in_at=new Date().toISOString();
-      const rec=await api('/rest/v1/guest_checkins','POST',payload);
-      CI_RECORD=(rec&&rec[0])||{guest_name:name};
-    }
-    btn.disabled=false;
-    btn.textContent='Submit registration';
-    document.getElementById('ci-done').style.display='flex';
-    document.getElementById('ci-form').style.display='none';
-    toast(isEdit?'Registration updated ✓':'Registration complete ✓');
-  } catch(err) {
-    btn.disabled=false;
-    btn.textContent='Submit registration';
-    toast('Save failed: '+(err.message||'Please try again'));
-    console.error('submitCheckin error:', err);
-    return;
-  }
-}
-
-// ── Welcome banner ──
-function dismissBanner(){
-  const b = document.getElementById('welcome-banner');
-  b.style.transition = 'opacity .4s';
-  b.style.opacity = '0';
-  setTimeout(() => b.style.display = 'none', 400);
-}
-
-// ── Final Bill ──
-async function loadFinalBill(){
-  document.getElementById('bill-loading').style.display='block';
-  document.getElementById('bill-content').style.display='none';
-  document.getElementById('bill-none').style.display='none';
-  try {
-    const data = await api('/rest/v1/guest_final_bills?guest_profile_id=eq.'+me.id+'&select=*&order=created_at.desc&limit=1');
-    document.getElementById('bill-loading').style.display='none';
-    if(!data || !data.length){ document.getElementById('bill-none').style.display='block'; return; }
-    const bill = data[0];
-    document.getElementById('bill-content').style.display='block';
-    document.getElementById('bill-guest-name').textContent = bill.guest_name || me.name || '—';
-    document.getElementById('bill-property').textContent = bill.property_name || me.prop || '—';
-    const fmt = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    document.getElementById('bill-checkin').textContent  = fmt(bill.check_in_date);
-    document.getElementById('bill-checkout').textContent = fmt(bill.check_out_date);
-    if(bill.check_in_date && bill.check_out_date){
-      const diff = Math.round((new Date(bill.check_out_date)-new Date(bill.check_in_date))/(1000*60*60*24));
-      document.getElementById('bill-nights').textContent = diff > 0 ? diff+' night'+(diff!==1?'s':'') : '—';
-    }
-    const items = bill.line_items || [];
-    if(items.length){
-      document.getElementById('bill-items').innerHTML = items.map(i=>`
-        <div class="bill-line">
-          <span>${i.description||'Item'}</span>
-          <span style="font-weight:500">${bill.currency||'₹'} ${Number(i.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2})}</span>
-        </div>`).join('');
-    }
-    const total = bill.total_amount != null ? bill.total_amount : (items.reduce((s,i)=>s+Number(i.amount||0),0)||null);
-    document.getElementById('bill-total').textContent = total != null ? (bill.currency||'₹')+' '+Number(total).toLocaleString('en-IN',{minimumFractionDigits:2}) : '—';
-    const statusMap = {paid:'bdg-g', pending:'bdg-a', overdue:'bdg-r', waived:'bdg-g'};
-    const st = (bill.payment_status||'pending').toLowerCase();
-    const badge = document.getElementById('bill-status-badge');
-    badge.textContent = bill.payment_status || 'Pending';
-    badge.className = 'bdg ' + (statusMap[st]||'bdg-a');
-    document.getElementById('bill-remarks').textContent = bill.remarks || '';
-  } catch(e){
-    document.getElementById('bill-loading').style.display='none';
-    document.getElementById('bill-none').style.display='block';
-  }
-}
+// Background preloads
+loadProfile();
+loadProperties();
 </script>
 
-
 <!-- MESSAGING FAB -->
-<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:16px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
+<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:14px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
 </a>
@@ -892,5 +554,5 @@ async function loadFinalBill(){
     }).catch(function(){});
 })();
 </script>
-
+</body>
 </html>
