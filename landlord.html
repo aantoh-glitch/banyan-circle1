@@ -250,6 +250,16 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .content::-webkit-scrollbar-track{background:transparent}
 .content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
+/* ─── MODAL ─── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:16px;padding:24px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.modal-actions .btn-p{width:auto}
+
+/* ─── ASSETS PAGE HEADER ─── */
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 
 </style>
 </head>
@@ -335,8 +345,14 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <!-- ── ASSETS ── -->
 <div class="pg" id="pg-assets">
   <div class="pg-head">
-    <div class="pg-title">Assets</div>
-    <div class="pg-sub" id="asset-pg-sub">Items managed by Office &amp; staff</div>
+    <div>
+      <div class="pg-title">Assets</div>
+      <div class="pg-sub" id="asset-pg-sub">Items managed by Office &amp; staff</div>
+    </div>
+    <button class="btn-p" id="asset-add-btn" onclick="openAddAssetModal()" style="display:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Asset
+    </button>
   </div>
   <div class="btn-row">
     <button class="btn-p" id="asset-tab-active" onclick="switchAssetTab('active')">Active</button>
@@ -463,6 +479,62 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   <img id="asset-lightbox-img" src="" alt="asset"/>
 </div>
 
+<!-- Add Asset Modal (admin only) -->
+<div class="modal" id="modal-add-asset">
+  <div class="modal-card">
+    <div class="modal-title" id="aa-modal-title">Add Asset</div>
+    <input type="hidden" id="aa-edit-id"/>
+    <div class="fg">
+      <label class="fl">Item name</label>
+      <input class="fc" id="aa-item" placeholder="e.g. Iron, TV, Mattress"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Quantity</label>
+      <input class="fc" id="aa-qty" type="number" min="1" value="1"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Owner</label>
+      <select class="fc" id="aa-owner">
+        <option value="">— Select owner —</option>
+        <option value="Landlord">Landlord</option>
+        <option value="Heritance">Heritance</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Photo</label>
+      <div style="display:inline-block" onclick="document.getElementById('aa-photo-input').click()">
+        <div id="aa-photo-placeholder" style="width:80px;height:80px;border-radius:10px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span style="font-size:11px;color:var(--muted)">Upload</span>
+        </div>
+        <img id="aa-photo-preview" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:none" alt="preview"/>
+      </div>
+      <input type="file" id="aa-photo-input" style="display:none" accept="image/*" onchange="previewAssetPhoto(this)"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="document.getElementById('modal-add-asset').classList.remove('on')">Cancel</button>
+      <button class="btn-p" id="aa-save-btn" onclick="saveAssetAdmin()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Asset Modal (admin only) -->
+<div class="modal" id="modal-remove-asset">
+  <div class="modal-card">
+    <div class="modal-title">Remove Asset</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px">Removing <strong id="ra-item-name"></strong>. This will be logged in removal history.</p>
+    <div class="fg">
+      <label class="fl">Reason (optional)</label>
+      <input class="fc" id="ra-reason" placeholder="e.g. Broken, Lost, Replaced…"/>
+    </div>
+    <input type="hidden" id="ra-asset-id"/>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="document.getElementById('modal-remove-asset').classList.remove('on')">Cancel</button>
+      <button class="btn-p" id="ra-confirm-btn" onclick="confirmRemoveAsset()" style="background:#A32D2D">Remove</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /app -->
 <div class="toast" id="toast"></div>
 
@@ -471,7 +543,8 @@ const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
-if (!me || me.role !== 'landlord') { location.href='/index.html'; throw new Error('No auth'); }
+const IS_ADMIN_VIEW = new URLSearchParams(location.search).get('viewer') === 'admin';
+if (!me || (me.role !== 'landlord' && !IS_ADMIN_VIEW)) { location.href='/index.html'; throw new Error('No auth'); }
 const PROP = me.prop || me.property_name;
 
 // Top bar
@@ -517,6 +590,88 @@ function goPage(id, btn) {
   if (id==='assets')      loadLandlordAssets('active');
   if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html';
 if (id==='pne')         loadPne();
+}
+
+// ── ADMIN ASSET CONTROLS ──
+if (IS_ADMIN_VIEW) {
+  document.getElementById('asset-add-btn').style.display = 'inline-flex';
+}
+
+let _assetPhotoFile = null;
+
+function openAddAssetModal() {
+  document.getElementById('aa-edit-id').value = '';
+  document.getElementById('aa-modal-title').textContent = 'Add Asset';
+  document.getElementById('aa-item').value = '';
+  document.getElementById('aa-qty').value = '1';
+  document.getElementById('aa-owner').value = '';
+  document.getElementById('aa-photo-input').value = '';
+  document.getElementById('aa-photo-preview').style.display = 'none';
+  document.getElementById('aa-photo-placeholder').style.display = 'flex';
+  _assetPhotoFile = null;
+  document.getElementById('modal-add-asset').classList.add('on');
+}
+
+function previewAssetPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  _assetPhotoFile = file;
+  const url = URL.createObjectURL(file);
+  const prev = document.getElementById('aa-photo-preview');
+  prev.src = url; prev.style.display = 'block';
+  document.getElementById('aa-photo-placeholder').style.display = 'none';
+}
+
+async function saveAssetAdmin() {
+  const btn = document.getElementById('aa-save-btn');
+  const item = document.getElementById('aa-item').value.trim();
+  const qty = parseInt(document.getElementById('aa-qty').value) || 1;
+  const owner = document.getElementById('aa-owner').value;
+  const editId = document.getElementById('aa-edit-id').value;
+  if (!item) { toast('Enter an item name', true); return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  let photoUrl = null;
+  if (_assetPhotoFile) {
+    const fname = (PROP||'prop').replace(/\s+/g,'_')+'_'+Date.now()+'.jpg';
+    try {
+      const up = await fetch(SB+'/storage/v1/object/asset-photos/'+fname, {
+        method:'POST', headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':_assetPhotoFile.type||'image/jpeg','x-upsert':'true'}, body:_assetPhotoFile
+      });
+      if (up.ok) photoUrl = SB+'/storage/v1/object/public/asset-photos/'+fname;
+    } catch(e) {}
+  }
+  try {
+    if (editId) {
+      const body = {}; if (photoUrl) body.photo_url = photoUrl;
+      await api('/rest/v1/assets?id=eq.'+editId, 'PATCH', body);
+    } else {
+      await api('/rest/v1/assets', 'POST', {property_name:PROP, name:item, quantity:qty, owner:owner||null, photo_url:photoUrl, removed:false});
+    }
+    toast('✓ Saved');
+    document.getElementById('modal-add-asset').classList.remove('on');
+    loadLandlordAssets('active');
+  } catch(e) { toast('Error — '+e.message, true); }
+  btn.disabled = false; btn.textContent = 'Save';
+}
+
+function openRemoveAssetModal(id, name) {
+  document.getElementById('ra-asset-id').value = id;
+  document.getElementById('ra-item-name').textContent = name;
+  document.getElementById('ra-reason').value = '';
+  document.getElementById('modal-remove-asset').classList.add('on');
+}
+
+async function confirmRemoveAsset() {
+  const btn = document.getElementById('ra-confirm-btn');
+  const id = document.getElementById('ra-asset-id').value;
+  const reason = document.getElementById('ra-reason').value.trim() || null;
+  btn.disabled = true; btn.textContent = 'Removing…';
+  try {
+    await api('/rest/v1/assets?id=eq.'+id, 'PATCH', {removed:true, removed_at:new Date().toISOString(), removed_reason:reason});
+    toast('Item removed');
+    document.getElementById('modal-remove-asset').classList.remove('on');
+    loadLandlordAssets('active');
+  } catch(e) { toast('Error — '+e.message, true); }
+  btn.disabled = false; btn.textContent = 'Remove';
 }
 
 // ── DESCRIPTION ──
@@ -739,12 +894,14 @@ async function loadLandlordAssets(tab) {
     el.innerHTML = '<div class="empty">Loading…</div>';
     const data = await api('/rest/v1/assets?property_name=eq.'+encodeURIComponent(PROP)+'&removed=eq.false&order=created_at.asc') || [];
     if (!data.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📦</div>No assets logged yet</div>'; return; }
-    el.innerHTML = `<table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Photo</th></tr></thead><tbody>
+    el.innerHTML = `<table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Qty</th>${IS_ADMIN_VIEW?'<th>Owner</th>':''}<th>Photo</th>${IS_ADMIN_VIEW?'<th></th>':''}</tr></thead><tbody>
       ${data.map((a,i)=>`<tr>
         <td style="color:var(--faint);font-size:11px">${i+1}</td>
         <td style="font-weight:500">${esc(a.name)}</td>
         <td>${a.quantity??1}</td>
+        ${IS_ADMIN_VIEW?`<td style="font-size:12px;color:var(--muted)">${a.owner?esc(a.owner):'—'}</td>`:''}
         <td>${a.photo_url?`<img src="${a.photo_url}" onclick="openAssetLightbox('${a.photo_url}')" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer"/>`:'<span style="color:var(--faint);font-size:11px">—</span>'}</td>
+        ${IS_ADMIN_VIEW?`<td style="text-align:right"><button onclick="openRemoveAssetModal('${a.id}','${esc(a.name).replace(/'/g,"\\'")}'); event.stopPropagation()" style="padding:5px 11px;background:#FCEBEB;color:#A32D2D;border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit">Remove</button></td>`:''}
       </tr>`).join('')}
     </tbody></table>`;
   } else {
