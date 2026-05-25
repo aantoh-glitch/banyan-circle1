@@ -14,7 +14,7 @@
   --nav-h:60px;--top-h:52px;
 }
 html{height:100%}
-body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;position:fixed;width:100%}
+body{height:100%;font-family:'DM Sans',sans-serif;color:var(--text);}
 
 /* TOP BAR */
 .top-bar{
@@ -87,7 +87,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 /* CARDS */
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
-.section-hdg{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;margin:0 0 14px;padding-bottom:10px;border-bottom:1.5px solid var(--border)}
+.section-hdg{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;margin:0 0 12px;padding-bottom:8px;border-bottom:1.5px solid var(--border)}
 
 /* BOOKING STATUS CARDS */
 .booking-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
@@ -108,7 +108,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:3px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-day-hdr{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:4px 0}
-.cal-day{border:1px solid var(--border);border-radius:7px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;background:var(--white);transition:opacity .1s}
+.cal-day{border:1px solid var(--border);border-radius:7px;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;background:var(--white);transition:opacity .1s}
 .cal-day:active{opacity:.7}
 .cal-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
 .cal-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
@@ -154,9 +154,103 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .earn-card{background:var(--white);border-radius:10px;border:1px solid var(--border);padding:14px}
 .earn-amount{font-family:'Playfair Display',serif;font-size:24px;font-weight:500}
 .earn-label{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ===== MOBILE FRAME ===== */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+}
+.phone-frame {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  background: var(--bg, #F9F8F6);
+  border-radius: 48px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 10px #2a2a2a,
+    0 0 0 12px #444,
+    0 40px 80px rgba(0,0,0,.7);
+  flex-shrink: 0;
+}
+.phone-frame .top-bar,
+.phone-frame .bottom-nav,
+.phone-frame .panel,
+.phone-frame #panel-messages,
+.phone-frame .toast,
+.phone-frame .modal-backdrop,
+.phone-frame #msg-fab {
+  position: absolute !important;
+}
+/* Notch */
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 34px;
+  background: #1a1a1a;
+  border-radius: 0 0 20px 20px;
+  z-index: 9999;
+}
+/* Reposition top-bar to account for notch */
+.phone-frame .top-bar {
+  top: 34px !important;
+}
+.phone-frame .panel,
+.phone-frame #panel-messages {
+  top: calc(34px + var(--top-h)) !important;
+}
+
+
+/* Fix modal to fill phone frame, not viewport */
+.phone-frame .modal-backdrop {
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.phone-frame .modal-sheet {
+  max-height: 80%;
+}
+/* Fix msg-fab position */
+.phone-frame #msg-fab {
+  bottom: 74px !important;
+  right: 14px !important;
+}
+/* Status bar indicator */
+.phone-statusbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text, #2C2C2A);
+  z-index: 9998;
+  pointer-events: none;
+}
+.phone-statusbar .time { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; }
+.phone-statusbar .icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+
 </style>
 </head>
 <body>
+<div class="phone-frame">
+<div class="phone-statusbar">
+  <span class="time">9:41</span>
+  <span class="icons">●●● 5G 🔋</span>
+</div>
 
 <!-- TOP BAR -->
 <div class="top-bar">
@@ -554,6 +648,7 @@ loadProperties();
     }).catch(function(){});
 })();
 </script>
+</div>
 </body>
 </html>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
