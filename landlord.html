@@ -296,7 +296,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <div class="fg"><label class="fl">Address</label><input class="fc" id="edit-prop-addr" type="text" placeholder="Address"/></div>
       <div class="fg"><label class="fl">Property Type</label><input class="fc" id="edit-prop-type" type="text" placeholder="e.g. Residential"/></div>
       <div class="fg"><label class="fl">Bedrooms</label><input class="fc" id="edit-prop-beds" type="number" placeholder="Number of bedrooms"/></div>
-      <div class="fg"><label class="fl">Rent Amount</label><input class="fc" id="edit-prop-rent" type="number" placeholder="Monthly rent"/></div>
       <div class="fg"><label class="fl">Description</label><textarea class="fc" id="edit-prop-desc" placeholder="Property description&hellip;"></textarea></div>
       <button class="btn-p" onclick="saveDescription()">Save Changes</button>
     </div>
@@ -705,14 +704,12 @@ async function loadDescription() {
       <div class="card-row"><span class="card-label">Address</span><span class="card-value">${esc(p.address||'—')}</span></div>
       <div class="card-row"><span class="card-label">Type</span><span class="card-value">${esc(p.property_type||'Residential')}</span></div>
       ${p.bedrooms?`<div class="card-row"><span class="card-label">Bedrooms</span><span class="card-value">${p.bedrooms}</span></div>`:''}
-      ${p.rent_amount?`<div class="card-row"><span class="card-label">Rent</span><span class="card-value">${fmt(p.rent_amount)}</span></div>`:''}
     </div>
   `;
   document.getElementById('edit-prop-name').value = p.name||'';
   document.getElementById('edit-prop-addr').value = p.address||'';
   document.getElementById('edit-prop-type').value = p.property_type||'';
   document.getElementById('edit-prop-beds').value = p.bedrooms||'';
-  document.getElementById('edit-prop-rent').value = p.rent_amount||'';
   document.getElementById('edit-prop-desc').value = p.description||'';
 }
 
@@ -986,7 +983,6 @@ async function saveDescription() {
   const a = document.getElementById('edit-prop-addr').value.trim(); if (a) update.address = a;
   const t = document.getElementById('edit-prop-type').value.trim(); if (t) update.property_type = t;
   const b = document.getElementById('edit-prop-beds').value;        if (b) update.bedrooms = parseInt(b);
-  const r = document.getElementById('edit-prop-rent').value;        if (r) update.rent_amount = parseFloat(r);
   const d = document.getElementById('edit-prop-desc').value.trim(); if (d) update.description = d;
   await api('/rest/v1/properties?name=eq.'+encodeURIComponent(PROP), 'PATCH', update);
   toast('Property details saved ✓');
