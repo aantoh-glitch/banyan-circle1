@@ -105,6 +105,14 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <body>
 <div class="shell">
 
+  <!-- Property selector — shown to admin when no ?property= in URL -->
+  <div id="prop-banner" style="display:none;background:#8B3520;padding:12px 16px;align-items:center;gap:10px">
+    <span style="font-size:13px;color:#fff;font-weight:500;flex-shrink:0">Property:</span>
+    <select id="prop-select" onchange="switchProp(this.value)" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:#1E1C18;outline:none">
+      <option value="">Select property…</option>
+    </select>
+  </div>
+
   <!-- Read-only notice (shown to landlord, hidden to admin) -->
   <div class="readonly-notice" id="readonly-notice" style="display:none">
     <span style="font-size:16px">🔒</span>
@@ -221,7 +229,7 @@ const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 const params = new URLSearchParams(location.search);
-const PROPERTY = decodeURIComponent(params.get('property') || '');
+let PROPERTY = decodeURIComponent(params.get('property') || '');
 const IS_ADMIN = params.get('viewer') === 'admin';
 const IS_EMBEDDED = window !== window.top;
 
@@ -235,8 +243,39 @@ function notifyResize() {
   try { window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*'); } catch(e) {}
 }
 
+async function loadPropSelect() {
+  try {
+    const h = {apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json'};
+    const r = await fetch(SB + '/rest/v1/landlords?select=property_name&order=property_name.asc', {headers: h});
+    const rows = await r.json().catch(() => []);
+    const sel = document.getElementById('prop-select');
+    (rows || []).forEach(function(row) {
+      const o = document.createElement('option');
+      o.value = row.property_name; o.textContent = row.property_name;
+      sel.appendChild(o);
+    });
+  } catch(e) { console.warn('Could not load property list', e); }
+}
+
+function switchProp(val) {
+  PROPERTY = val;
+  document.getElementById('hdr-title').textContent = val || 'Assets';
+  document.getElementById('hdr-sub').textContent = val ? 'Asset inventory' : 'Select a property above';
+  if (val) {
+    document.getElementById('add-btn').style.display = 'inline-flex';
+    loadAssets();
+    loadRemoved();
+  }
+}
+
 if (!PROPERTY) {
-  document.getElementById('hdr-sub').textContent = 'No property specified';
+  if (IS_ADMIN) {
+    document.getElementById('prop-banner').style.display = 'flex';
+    document.getElementById('hdr-sub').textContent = 'Select a property above';
+    loadPropSelect();
+  } else {
+    document.getElementById('hdr-sub').textContent = 'No property specified';
+  }
 } else {
   document.getElementById('hdr-title').textContent = PROPERTY;
   document.getElementById('hdr-sub').textContent = 'Asset inventory';

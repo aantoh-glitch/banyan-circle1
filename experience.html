@@ -144,6 +144,14 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <body>
 <div class="app">
 
+  <!-- Property selector — shown only when no ?property= in URL (admin direct access) -->
+  <div id="prop-banner" style="display:none;background:var(--br);padding:12px 16px;align-items:center;gap:10px">
+    <span style="font-size:13px;color:#fff;font-weight:500;flex-shrink:0">Property:</span>
+    <select id="prop-select" onchange="switchProp(this.value)" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);outline:none">
+      <option value="">Select property…</option>
+    </select>
+  </div>
+
   <!-- HEADER -->
   <div class="top-bar">
     <button class="top-back" onclick="history.back()" title="Back">
@@ -151,7 +159,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     </button>
     <div class="top-titles">
       <div class="top-label">Experience</div>
-      <div class="top-prop" id="header-prop">Loading…</div>
+      <div class="top-prop" id="header-prop">Select a property…</div>
     </div>
   </div>
 
@@ -234,17 +242,41 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-// Catch property from URL param only — no login required
-const PROP = new URLSearchParams(window.location.search).get('property') || null;
+// Catch property from URL param, session, or landlords table (admin direct access)
+let PROP = new URLSearchParams(window.location.search).get('property') || null;
 const _me = JSON.parse(localStorage.getItem('bc_me')||'null');
 const IS_READ_ONLY = _me && _me.role === 'landlord';
+const _isAdmin = _me && ['owner','admin','manager','staff','office'].includes(_me.role);
 
-if (!PROP) {
-  document.getElementById('header-prop').textContent = 'No property specified';
-  throw new Error('No property');
+async function loadPropSelect() {
+  try {
+    const rows = await api('/rest/v1/landlords?select=property_name&order=property_name.asc') || [];
+    const sel = document.getElementById('prop-select');
+    rows.forEach(function(r) {
+      const o = document.createElement('option');
+      o.value = r.property_name; o.textContent = r.property_name;
+      sel.appendChild(o);
+    });
+  } catch(e) { console.warn('Could not load property list', e); }
 }
 
-document.getElementById('header-prop').textContent = PROP;
+function switchProp(val) {
+  PROP = val;
+  document.getElementById('header-prop').textContent = val || 'Select a property…';
+  if (val) { ['property','beyond','banyan_circle'].forEach(loadSection); }
+}
+
+if (!PROP) {
+  if (_isAdmin) {
+    document.getElementById('prop-banner').style.display = 'flex';
+    loadPropSelect();
+  } else {
+    document.getElementById('header-prop').textContent = 'No property specified';
+  }
+} else {
+  document.getElementById('header-prop').textContent = PROP;
+}
+
 if (IS_READ_ONLY) {
   // Hide all add buttons
   document.querySelectorAll('.add-btn').forEach(btn => btn.style.display = 'none');
@@ -300,73 +332,55 @@ async function loadSection(section) {
     <div class="entry-card">
       <div class="entry-content">${esc(e.content || '')}</div>
       ${!IS_READ_ONLY ? `<button class="delete-btn" onclick="confirmDelete('${esc(e.id)}','${esc(section)}')" title="Delete">
-        <svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+        <svg viewBox="0 0 24 24" width="14" height="14"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
       </button>` : ''}
     </div>
   `).join('');
 }
 
-// ── SUBMIT ──
+// ── SUBMIT ENTRY ──
 async function submitEntry(section) {
-  const input = document.getElementById('input-' + section);
-  const content = input.value.trim();
-  if (!content) { toast('Please enter some text first', true); return; }
-
-  const btn = document.querySelector('#form-' + section + ' .btn-submit');
-  btn.textContent = 'Saving…';
-  btn.disabled = true;
-
-  const result = await api('/rest/v1/experiences', 'POST', {
-    property_name: PROP,
-    section: section,
-    content: content
-  });
-
-  btn.textContent = 'Save';
-  btn.disabled = false;
-
-  if (!result) {
-    toast('Failed to save. Check table exists.', true);
-    return;
+  const inp = document.getElementById('input-' + section);
+  const val = (inp.value || '').trim();
+  if (!val) { toast('Please enter some text.', true); return; }
+  if (!PROP) { toast('No property selected.', true); return; }
+  const res = await api('/rest/v1/experiences', 'POST', { property_name: PROP, section: section, content: val });
+  if (res) {
+    inp.value = '';
+    document.getElementById('form-' + section).classList.remove('open');
+    toast('Saved!');
+    loadSection(section);
+  } else {
+    toast('Could not save. Try again.', true);
   }
-
-  input.value = '';
-  toggleForm(section);
-  loadSection(section);
-  toast('Saved ✓');
 }
 
 // ── DELETE ──
-let _deleteId = null, _deleteSection = null;
-
+let _pendingDeleteId = null;
+let _pendingDeleteSection = null;
 function confirmDelete(id, section) {
-  _deleteId = id;
-  _deleteSection = section;
+  _pendingDeleteId = id;
+  _pendingDeleteSection = section;
   document.getElementById('confirm-overlay').classList.add('open');
   document.getElementById('confirm-delete-btn').onclick = doDelete;
 }
-
 function closeConfirm() {
   document.getElementById('confirm-overlay').classList.remove('open');
-  _deleteId = null; _deleteSection = null;
+  _pendingDeleteId = null;
+  _pendingDeleteSection = null;
 }
-
 async function doDelete() {
-  if (!_deleteId) return;
-  const btn = document.getElementById('confirm-delete-btn');
-  btn.textContent = 'Deleting…'; btn.disabled = true;
-  const result = await api('/rest/v1/experiences?id=eq.' + encodeURIComponent(_deleteId), 'DELETE');
-  btn.textContent = 'Delete'; btn.disabled = false;
-  const section = _deleteSection;
+  if (!_pendingDeleteId) return;
+  await api('/rest/v1/experiences?id=eq.' + _pendingDeleteId, 'DELETE');
   closeConfirm();
-  loadSection(section);
-  toast('Deleted');
+  toast('Deleted.');
+  loadSection(_pendingDeleteSection);
 }
 
-// ── BOOT ──
-loadSection('property');
-loadSection('beyond');
-loadSection('banyan_circle');
+// ── INIT ──
+if (PROP) {
+  ['property', 'beyond', 'banyan_circle'].forEach(loadSection);
+}
 </script>
 </body>
 </html>

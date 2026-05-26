@@ -81,6 +81,14 @@ select.fc{cursor:pointer}
 <body>
 <div class="wrap">
 
+  <!-- Property selector — shown only when admin has no property in session/URL -->
+  <div id="prop-banner" style="display:none;background:var(--br);padding:12px 16px;margin:-16px -16px 16px;align-items:center;gap:10px">
+    <span style="font-size:13px;color:#fff;font-weight:500;flex-shrink:0">Property:</span>
+    <select id="prop-select" onchange="switchProp(this.value)" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);outline:none">
+      <option value="">Select property…</option>
+    </select>
+  </div>
+
   <!-- READ-ONLY NOTICE for landlord -->
   <div class="readonly-notice" id="readonly-notice" style="display:none">
     <span style="font-size:16px">🔒</span>
@@ -145,12 +153,36 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const IS_ADMIN = new URLSearchParams(location.search).get('viewer') === 'admin';
 
 // ── Property ──
-const me   = JSON.parse(localStorage.getItem('bc_me') || 'null');
-const PROP = (me && (me.prop || me.property_name)) || new URLSearchParams(location.search).get('prop') || '';
+const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+let PROP = (me && (me.prop || me.property_name)) || new URLSearchParams(location.search).get('prop') || '';
+
+async function loadPropSelect() {
+  try {
+    const h = {apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json'};
+    const r = await fetch(SB + '/rest/v1/landlords?select=property_name&order=property_name.asc', {headers: h});
+    const rows = await r.json().catch(() => []);
+    const sel = document.getElementById('prop-select');
+    (rows || []).forEach(function(row) {
+      const o = document.createElement('option');
+      o.value = row.property_name; o.textContent = row.property_name;
+      sel.appendChild(o);
+    });
+    if (PROP) sel.value = PROP;
+  } catch(e) { console.warn('Could not load property list', e); }
+}
+
+function switchProp(val) {
+  PROP = val;
+  if (val) loadDocs();
+}
 
 // Apply UI mode
 if (IS_ADMIN) {
   document.getElementById('doc-add-btn').style.display = 'block';
+  if (!PROP) {
+    document.getElementById('prop-banner').style.display = 'flex';
+    loadPropSelect();
+  }
 } else {
   document.getElementById('readonly-notice').style.display = 'flex';
 }
@@ -182,210 +214,110 @@ function toast(msg, err) {
   t.style.display = 'block';
   setTimeout(() => t.style.display = 'none', 2400);
 }
-function notifyResize() {
+
+// ── LOAD DOCS ──
+async function loadDocs() {
+  const list = document.getElementById('doc-list');
+  if (!PROP) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div>Select a property above to view documents.</div>';
+    return;
+  }
+  list.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>Loading documents…</div>';
   try {
-    window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*');
-  } catch(e) {}
+    const data = await api('/rest/v1/property_documents?property_name=eq.' + encodeURIComponent(PROP) + '&order=created_at.desc') || [];
+    if (!data.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>No documents uploaded yet.</div>';
+      return;
+    }
+    list.innerHTML = data.map(d => `
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px">${esc(d.title || d.name || 'Untitled')}</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+              <span class="bdg bdg-b">${esc(d.doc_type || d.type || 'Document')}</span>
+              <span style="font-size:11px;color:var(--faint)">${fmtDate(d.created_at)}</span>
+            </div>
+            ${d.notes ? `<div style="font-size:12px;color:var(--muted);margin-bottom:6px">${esc(d.notes)}</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+            ${d.file_url ? `<a class="btn-view" href="${esc(d.file_url)}" target="_blank">View</a>` : ''}
+            ${IS_ADMIN ? `<button class="btn-del2" onclick="deleteDoc('${esc(d.id)}')">✕</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load documents.</div>';
+  }
 }
 
-// ── Form show / hide ──
+// ── SHOW / HIDE FORM ──
 function showForm() {
-  if (!IS_ADMIN) return;
-  document.getElementById('doc-name').value  = '';
-  document.getElementById('doc-type').value  = 'Lease';
-  document.getElementById('doc-file').value  = '';
-  document.getElementById('doc-notes').value = '';
-  document.getElementById('upload-bar').style.display = 'none';
-  document.getElementById('upload-bar-fill').style.width = '0%';
   document.getElementById('doc-form').style.display = 'block';
   document.getElementById('doc-add-btn').style.display = 'none';
-  notifyResize();
 }
 function hideForm() {
   document.getElementById('doc-form').style.display = 'none';
-  if (IS_ADMIN) document.getElementById('doc-add-btn').style.display = 'block';
-  notifyResize();
+  document.getElementById('doc-add-btn').style.display = 'block';
+  document.getElementById('doc-name').value = '';
+  document.getElementById('doc-type').value = 'Lease';
+  document.getElementById('doc-file').value = '';
+  document.getElementById('doc-notes').value = '';
 }
 
-// ── Upload & save ──
+// ── SAVE DOC ──
 async function saveDoc() {
-  if (!IS_ADMIN) return;
-
   const title = document.getElementById('doc-name').value.trim();
   const type  = document.getElementById('doc-type').value;
-  const notes = document.getElementById('doc-notes').value.trim();
   const file  = document.getElementById('doc-file').files[0];
-  const btn   = document.getElementById('doc-save-btn');
-  const bar   = document.getElementById('upload-bar');
-  const fill  = document.getElementById('upload-bar-fill');
-
-  if (!title) { toast('Document title is required', true); return; }
-  if (!file)  { toast('Please choose a file to upload', true); return; }
-  if (file.size > 20 * 1024 * 1024) { toast('File exceeds 20 MB limit', true); return; }
-  if (!PROP)  { toast('Property not identified — please log in again', true); return; }
-
-  btn.disabled    = true;
-  btn.textContent = 'Uploading…';
-  bar.style.display = 'block';
-
-  // Animate progress (indeterminate-style crawl)
-  let prog = 0;
-  const tick = setInterval(() => {
-    prog = Math.min(prog + 3, 80);
-    fill.style.width = prog + '%';
-  }, 120);
-
+  const notes = document.getElementById('doc-notes').value.trim();
+  if (!title) { toast('Please enter a document title.', true); return; }
+  if (!file)  { toast('Please select a file to upload.', true); return; }
+  if (!PROP)  { toast('No property selected.', true); return; }
+  const btn = document.getElementById('doc-save-btn');
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  const bar = document.getElementById('upload-bar');
+  const fill = document.getElementById('upload-bar-fill');
+  bar.style.display = 'block'; fill.style.width = '20%';
   try {
-    const safeProp    = PROP.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
-    const safeFile    = file.name.replace(/\s+/g, '_');
-    const storagePath = safeProp + '/' + Date.now() + '_' + safeFile;
-
-    const upRes = await fetch(
-      SB + '/storage/v1/object/property-docs/' + storagePath,
-      {
-        method: 'POST',
-        headers: {
-          apikey: KEY,
-          Authorization: 'Bearer ' + KEY,
-          'Content-Type': file.type || 'application/octet-stream',
-          'x-upsert': 'true'
-        },
-        body: file
-      }
-    );
-
-    clearInterval(tick);
-    if (!upRes.ok) {
-      const e = await upRes.json().catch(() => ({}));
-      throw new Error(e.message || e.error || ('Upload failed: HTTP ' + upRes.status));
-    }
-
-    fill.style.width = '100%';
-
-    const fileUrl = SB + '/storage/v1/object/public/property-docs/' + storagePath;
-
-    await api('/rest/v1/property_documents', 'POST', {
-      property_name: PROP,
-      title,
-      doc_type:     type,
-      file_url:     fileUrl,
-      notes:        notes || null,
-      storage_path: storagePath,
-      uploaded_by:  IS_ADMIN ? 'OFFICE' : (me && me.name) || 'Landlord'
+    const ext = file.name.split('.').pop();
+    const fname = PROP.replace(/\s+/g,'_') + '_' + Date.now() + '.' + ext;
+    const path = fname;
+    const upRes = await fetch(SB + '/storage/v1/object/property-docs/' + path, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+      body: file
     });
-
-    toast('Document uploaded ✓');
+    fill.style.width = '70%';
+    if (!upRes.ok) { const e = await upRes.text(); throw new Error('Upload failed: ' + e); }
+    const file_url = SB + '/storage/v1/object/public/property-docs/' + path;
+    fill.style.width = '90%';
+    await api('/rest/v1/property_documents', 'POST', {
+      property_name: PROP, title, doc_type: type, notes: notes || null, file_url
+    });
+    fill.style.width = '100%';
+    setTimeout(() => { bar.style.display = 'none'; fill.style.width = '0'; }, 500);
+    toast('Document uploaded!');
     hideForm();
     loadDocs();
-  } catch(err) {
-    clearInterval(tick);
-    toast(err.message || 'Upload failed', true);
+  } catch(e) {
+    toast('Upload failed: ' + e.message, true);
   } finally {
-    btn.disabled    = false;
-    btn.textContent = 'Upload';
-    setTimeout(() => { bar.style.display = 'none'; fill.style.width = '0%'; }, 800);
+    btn.disabled = false; btn.textContent = 'Upload';
   }
 }
 
-// ── Remove ──
-async function removeDoc(id, storagePath) {
-  if (!IS_ADMIN) return;
-  if (!confirm('Remove this document? This cannot be undone.')) return;
-  try {
-    await api('/rest/v1/property_documents?id=eq.' + id, 'DELETE');
-    // Best-effort storage cleanup
-    if (storagePath) {
-      fetch(SB + '/storage/v1/object/property-docs/' + storagePath, {
-        method: 'DELETE',
-        headers: {apikey: KEY, Authorization: 'Bearer ' + KEY}
-      }).catch(() => {});
-    }
-    toast('Document removed');
-    loadDocs();
-  } catch(err) {
-    toast(err.message || 'Could not remove', true);
-  }
+// ── DELETE DOC ──
+async function deleteDoc(id) {
+  if (!confirm('Delete this document?')) return;
+  await api('/rest/v1/property_documents?id=eq.' + id, 'DELETE');
+  toast('Deleted.');
+  loadDocs();
 }
 
-// ── Badge map ──
-const TYPE_BADGES = {
-  Lease:'bdg-b', License:'bdg-g', Certificate:'bdg-g',
-  Insurance:'bdg-a', Permit:'bdg-a', NOC:'bdg-b',
-  Agreement:'bdg-b', Tax:'bdg-a', Other:'bdg-a'
-};
-
-// ── Load & render ──
-async function loadDocs() {
-  const el = document.getElementById('doc-list');
-  el.innerHTML = '<div class="empty"><div style="font-size:22px;margin-bottom:6px">⏳</div>Loading…</div>';
-
-  if (!PROP) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Property not identified.<br>Please log in again.</div>';
-    notifyResize();
-    return;
-  }
-
-  let docs = [];
-  try {
-    docs = await api(
-      '/rest/v1/property_documents?property_name=eq.' + encodeURIComponent(PROP) +
-      '&order=uploaded_at.desc'
-    ) || [];
-  } catch(err) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load documents.<br><span style="font-size:11px;opacity:.7">' + esc(err.message) + '</span></div>';
-    notifyResize();
-    return;
-  }
-
-  if (!docs.length) {
-    el.innerHTML = IS_ADMIN
-      ? '<div class="empty"><div class="empty-icon">📄</div>No documents uploaded yet.<br>Tap <strong>+ Upload Document</strong> to get started.</div>'
-      : '<div class="empty"><div class="empty-icon">📄</div>No documents have been shared for this property yet.</div>';
-    notifyResize();
-    return;
-  }
-
-  el.innerHTML = docs.map(d => {
-    const badge = TYPE_BADGES[d.doc_type] || 'bdg-b';
-    // Escape for safe use in onclick attribute strings
-    const safeId   = (d.id || '').replace(/'/g, "\\'");
-    const safePath = (d.storage_path || '').replace(/'/g, "\\'");
-
-    const viewBtn = d.file_url
-      ? `<button class="btn-view" onclick="window.open('${esc(d.file_url)}','_blank')">View ↗</button>`
-      : `<span style="font-size:12px;color:var(--faint)">No file URL</span>`;
-
-    const delBtn = IS_ADMIN
-      ? `<button class="btn-del2" onclick="removeDoc('${safeId}','${safePath}')" title="Remove document">Remove</button>`
-      : '';
-
-    return `
-      <div class="card" style="padding:14px">
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="width:38px;height:38px;background:var(--b-l);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">📄</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:500;font-size:14px;margin-bottom:3px">${esc(d.title || d.doc_type || 'Document')}</div>
-            <div style="font-size:11px;color:var(--faint);margin-bottom:8px">
-              <span class="bdg ${badge}">${esc(d.doc_type || 'Other')}</span>
-              &ensp;${fmtDate(d.uploaded_at)}
-              ${d.uploaded_by ? `<span style="opacity:.7"> · ${esc(d.uploaded_by)}</span>` : ''}
-            </div>
-            ${d.notes ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px">${esc(d.notes)}</div>` : ''}
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              ${viewBtn}
-              ${delBtn}
-            </div>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
-  notifyResize();
-}
-
-// ── Init ──
-loadDocs();
-window.addEventListener('load', notifyResize);
+// ── INIT ──
+if (PROP) loadDocs();
 </script>
 </body>
 </html>

@@ -721,7 +721,7 @@ renderMonthLabel();
 async function loadEntityLists() {
   try {
     const [propLogins, staff, talents] = await Promise.all([
-      api('/rest/v1/property_logins?select=property_name&order=property_name.asc'),
+      api('/rest/v1/landlords?select=property_name&order=property_name.asc'),
       api('/rest/v1/staff?select=name&order=name.asc'),
       api('/rest/v1/talents?select=name&order=name.asc').catch(() => [])
     ]);

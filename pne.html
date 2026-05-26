@@ -139,7 +139,7 @@ var isGuest=(me&&me.role==='guest');
 
 async function loadPropSelect(){
   try{
-    var rows=await api('/rest/v1/property_logins?select=property_name&order=property_name.asc')||[];
+    var rows=await api('/rest/v1/landlords?select=property_name&order=property_name.asc')||[];
     var sel=document.getElementById('prop-select');
     rows.forEach(function(r){
       var o=document.createElement('option');
