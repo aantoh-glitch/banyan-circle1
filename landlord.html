@@ -1216,10 +1216,15 @@ async function saveUtilityBill() {
   var month = _utilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
   var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month };
   if (_utilityStatus==='paid') body.paid_date = pd;
-  var res = await api('/rest/v1/utility_payments','POST',body);
+  // Use raw fetch so we can treat any 2xx as success
+  var r = await fetch(SB+'/rest/v1/utility_payments', {
+    method:'POST',
+    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'}
+    ,body:JSON.stringify(body)
+  });
   btn.disabled=false; btn.textContent='Submit';
-  if (res) { closeUtilityModal(); toast('Utility bill added ✓'); loadPayments(); }
-  else     { toast('Could not save — check connection', true); }
+  if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); loadPayments(); }
+  else { var e=await r.text(); toast('Error: '+e, true); }
 }
 </script>
 </body></html>
