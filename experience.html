@@ -377,6 +377,15 @@ async function doDelete() {
   loadSection(_pendingDeleteSection);
 }
 
+// ── HIDE HEADER WHEN EMBEDDED IN IFRAME ──
+if (window.self !== window.top) {
+  var tb = document.querySelector('.top-bar');
+  if (tb) tb.style.display = 'none';
+  // Remove top padding offset so content fills from top
+  var cont = document.querySelector('.content');
+  if (cont) cont.style.paddingTop = '16px';
+}
+
 // ── INIT ──
 if (PROP) {
   ['property', 'beyond', 'banyan_circle'].forEach(loadSection);

@@ -357,14 +357,20 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <!-- ── DOCUMENTS ── -->
 <div class="pg" id="pg-documents" style="padding:0">
   <iframe id="iframe-documents" src="document.html"
-    style="width:100%;height:calc(100vh - 70px);border:none;display:block;"></iframe>
+    style="width:100%;height:calc(100dvh - 130px);border:none;display:block;"></iframe>
 </div>
 
 
 <!-- ── PNE ── -->
 <div class="pg" id="pg-pne" style="padding:0">
   <iframe id="iframe-pne" src=""
-    style="width:100%;height:calc(100vh - 70px);border:none;display:block;"></iframe>
+    style="width:100%;height:calc(100dvh - 130px);border:none;display:block;"></iframe>
+</div>
+
+<!-- ── EXPERIENCE ── -->
+<div class="pg" id="pg-exp" style="padding:0">
+  <iframe id="iframe-exp" src=""
+    style="width:100%;height:calc(100dvh - 130px);border:none;display:block;"></iframe>
 </div>
 
 </div><!-- /content -->
@@ -395,7 +401,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     <span>PNE</span>
   </button>
-  <button class="nav-btn" id="nb-exp" onclick="location.href='experience.html?property='+encodeURIComponent(PROP)">
+  <button class="nav-btn" id="nb-exp" onclick="goPage('exp',this)">
     <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
     <span>EXP</span>
   </button>
@@ -520,6 +526,7 @@ function goPage(id, btn) {
   if (id==='assets')      document.getElementById('iframe-assets').src = 'assets.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='pne')         document.getElementById('iframe-pne').src = 'pne.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
+  if (id==='exp')         document.getElementById('iframe-exp').src = 'experience.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
 }
 
 // ── ADMIN ASSET CONTROLS ──
