@@ -328,9 +328,15 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- ── UPCOMING PAYMENTS ── -->
 <div class="pg" id="pg-payments">
-  <div class="pg-head">
-    <div class="pg-title">Upcoming Payments</div>
-    <div class="pg-sub">Pending utility bills &amp; dues</div>
+  <div class="pg-head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px">
+    <div>
+      <div class="pg-title">Upcoming Payments</div>
+      <div class="pg-sub">Pending utility bills &amp; dues</div>
+    </div>
+    <button onclick="openAddUtilityModal()" style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Utility Bill
+    </button>
   </div>
   <div id="payments-list">
     <div class="empty"><div class="empty-icon">🧾</div>Loading…</div>
@@ -512,6 +518,44 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <div class="modal-actions">
       <button class="btn-sec" onclick="document.getElementById('modal-remove-asset').classList.remove('on')">Cancel</button>
       <button class="btn-p" id="ra-confirm-btn" onclick="confirmRemoveAsset()" style="background:#A32D2D">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Utility Bill Modal -->
+<div class="modal" id="modal-add-utility">
+  <div class="modal-card">
+    <div class="modal-title">Add Utility Bill</div>
+    <div class="fg">
+      <label class="fl">Item / Utility Type</label>
+      <input class="fc" id="ub-item" placeholder="e.g. Electricity, Water, Gas…"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Amount (₹)</label>
+      <input class="fc" id="ub-amount" type="number" min="0" placeholder="0"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Status</label>
+      <div style="display:flex;gap:8px">
+        <button id="ub-btn-pending" onclick="setUtilityStatus('pending')"
+          style="flex:1;padding:10px;border-radius:var(--radius-sm);border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">
+          ⏳ Pending
+        </button>
+        <button id="ub-btn-paid" onclick="setUtilityStatus('paid')"
+          style="flex:1;padding:10px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s">
+          ✅ Paid
+        </button>
+      </div>
+    </div>
+    <div id="ub-date-section" style="display:none">
+      <div class="fg">
+        <label class="fl">Date of Payment</label>
+        <input class="fc" id="ub-paid-date" type="date"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="document.getElementById('modal-add-utility').classList.remove('on')">Cancel</button>
+      <button class="btn-p" id="ub-save-btn" onclick="saveUtilityBill()">Submit</button>
     </div>
   </div>
 </div>
@@ -855,7 +899,92 @@ async function loadPayments() {
   }
 }
 
-// ── ASSETS ──
+// ── ADD UTILITY BILL MODAL ──
+let _utilityStatus = 'pending';
+
+function openAddUtilityModal() {
+  document.getElementById('ub-item').value = '';
+  document.getElementById('ub-amount').value = '';
+  document.getElementById('ub-paid-date').value = '';
+  document.getElementById('ub-date-section').style.display = 'none';
+  setUtilityStatus('pending');
+  document.getElementById('modal-add-utility').classList.add('on');
+  setTimeout(()=>document.getElementById('ub-item').focus(), 50);
+}
+
+function setUtilityStatus(status) {
+  _utilityStatus = status;
+  const pBtn = document.getElementById('ub-btn-pending');
+  const dBtn = document.getElementById('ub-btn-paid');
+  const dateSection = document.getElementById('ub-date-section');
+  if (status === 'pending') {
+    pBtn.style.border = '2px solid var(--a)';
+    pBtn.style.background = 'var(--a-l)';
+    pBtn.style.color = '#5A3006';
+    pBtn.style.fontWeight = '600';
+    dBtn.style.border = '2px solid var(--border)';
+    dBtn.style.background = 'var(--bg)';
+    dBtn.style.color = 'var(--muted)';
+    dBtn.style.fontWeight = '500';
+    dateSection.style.display = 'none';
+  } else {
+    dBtn.style.border = '2px solid var(--g)';
+    dBtn.style.background = 'var(--g-l)';
+    dBtn.style.color = '#224509';
+    dBtn.style.fontWeight = '600';
+    pBtn.style.border = '2px solid var(--border)';
+    pBtn.style.background = 'var(--bg)';
+    pBtn.style.color = 'var(--muted)';
+    pBtn.style.fontWeight = '500';
+    dateSection.style.display = 'block';
+    // Default to today
+    if (!document.getElementById('ub-paid-date').value) {
+      document.getElementById('ub-paid-date').value = new Date().toISOString().slice(0,10);
+    }
+  }
+}
+
+async function saveUtilityBill() {
+  const btn = document.getElementById('ub-save-btn');
+  const item = document.getElementById('ub-item').value.trim();
+  const amount = parseFloat(document.getElementById('ub-amount').value);
+  const paidDate = document.getElementById('ub-paid-date').value;
+
+  if (!item) { toast('Enter a utility type', true); return; }
+  if (!amount || amount <= 0) { toast('Enter a valid amount', true); return; }
+  if (_utilityStatus === 'paid' && !paidDate) { toast('Select the date of payment', true); return; }
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  // Derive month from paid date or current month
+  const month = _utilityStatus === 'paid'
+    ? paidDate.slice(0, 7)
+    : new Date().toISOString().slice(0, 7);
+
+  const body = {
+    property_name: PROP,
+    utility_type: item,
+    amount: amount,
+    status: _utilityStatus,
+    month: month,
+  };
+  if (_utilityStatus === 'paid' && paidDate) {
+    body.paid_date = paidDate;
+  }
+
+  const res = await api('/rest/v1/utility_payments', 'POST', body);
+  btn.disabled = false; btn.textContent = 'Submit';
+
+  if (res) {
+    document.getElementById('modal-add-utility').classList.remove('on');
+    toast('Utility bill added ✓');
+    loadPayments();
+  } else {
+    toast('Could not save — check connection', true);
+  }
+}
+
+
 let currentAssetTab = 'active';
 
 function switchAssetTab(tab) {
