@@ -522,8 +522,10 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   </div>
 </div>
 
-<!-- Add Utility Bill Modal -->
-<div class="modal" id="modal-add-utility">
+</div><!-- /app -->
+
+<!-- Add Utility Bill Modal (outside .app so overflow:hidden doesn't clip it) -->
+<div class="modal" id="modal-add-utility" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
   <div class="modal-card">
     <div class="modal-title">Add Utility Bill</div>
     <div class="fg">
@@ -554,13 +556,11 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn-sec" onclick="document.getElementById('modal-add-utility').classList.remove('on')">Cancel</button>
+      <button class="btn-sec" onclick="closeAddUtilityModal()">Cancel</button>
       <button class="btn-p" id="ub-save-btn" onclick="saveUtilityBill()">Submit</button>
     </div>
   </div>
 </div>
-
-</div><!-- /app -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -908,8 +908,12 @@ function openAddUtilityModal() {
   document.getElementById('ub-paid-date').value = '';
   document.getElementById('ub-date-section').style.display = 'none';
   setUtilityStatus('pending');
-  document.getElementById('modal-add-utility').classList.add('on');
+  document.getElementById('modal-add-utility').style.display = 'flex';
   setTimeout(()=>document.getElementById('ub-item').focus(), 50);
+}
+
+function closeAddUtilityModal() {
+  document.getElementById('modal-add-utility').style.display = 'none';
 }
 
 function setUtilityStatus(status) {
@@ -976,7 +980,7 @@ async function saveUtilityBill() {
   btn.disabled = false; btn.textContent = 'Submit';
 
   if (res) {
-    document.getElementById('modal-add-utility').classList.remove('on');
+    document.getElementById('modal-add-utility').style.display = 'none';
     toast('Utility bill added ✓');
     loadPayments();
   } else {
