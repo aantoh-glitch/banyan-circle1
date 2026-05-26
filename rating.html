@@ -54,12 +54,12 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 .s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
 .btn-again{padding:11px 26px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
 
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="shell">
-<div class="hdr">
+<div class="hdr" id="page-hdr">
   <div class="hdr-logo" id="hdr-av">G</div>
   <div class="hdr-info">
     <div class="hdr-name" id="hdr-name">Guest</div>
@@ -131,10 +131,15 @@ const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||
 
 // Auth
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
-if(!me || me.role !== 'guest'){ location.href='/index.html'; throw new Error('No auth'); }
-document.getElementById('hdr-name').textContent = me.name || 'Guest';
-document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
-document.getElementById('hdr-av').textContent = ini(me.name||'G');
+if(!me){ location.href='/index.html'; throw new Error('No auth'); }
+
+// Iframe-aware: hide internal header when inside the sheet
+const inIframe = (window.self !== window.top);
+if(inIframe) document.getElementById('page-hdr').style.display='none';
+
+if(document.getElementById('hdr-name')) document.getElementById('hdr-name').textContent = me.name || 'Guest';
+if(document.getElementById('hdr-prop')) document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
+if(document.getElementById('hdr-av'))  document.getElementById('hdr-av').textContent  = ini(me.name||'G');
 
 let selectedTalent = null;
 let starValue = 0;

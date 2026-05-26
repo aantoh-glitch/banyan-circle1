@@ -11,6 +11,7 @@
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+/* Header hidden when inside iframe sheet */
 .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
 .hdr-back{background:none;border:none;cursor:pointer;padding:6px;margin:-6px;border-radius:8px;color:var(--muted);display:flex;align-items:center}
 .hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -27,25 +28,21 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .fc:focus{border-color:var(--br)}
 textarea.fc{resize:none;min-height:90px;line-height:1.6}
 .fc::placeholder{color:rgba(0,0,0,.28)}
-
 /* Star rating */
 .stars{display:flex;gap:6px;flex-direction:row-reverse;justify-content:flex-end}
 .stars input{display:none}
 .stars label{cursor:pointer;font-size:32px;color:#d1cfc9;transition:color .15s}
 .stars label:hover,.stars label:hover~label,.stars input:checked~label{color:#E8A020}
-
 /* Staff card */
 .staff-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
 .staff-card-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--br);flex-shrink:0}
 .staff-name{font-size:15px;font-weight:500}
 .staff-role{font-size:12px;color:var(--muted);margin-top:1px}
-
 /* Submit */
 .sub-bar{position:sticky;bottom:0;padding:14px 16px;background:linear-gradient(transparent,var(--bg) 50%);margin:14px -16px -100px}
 .btn-sub{width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;background:var(--br);color:#fff}
 .btn-sub:disabled{opacity:.6;cursor:not-allowed}
-
 /* Success */
 .success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px;text-align:center;padding:32px}
 .s-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;background:var(--g-l)}
@@ -53,10 +50,7 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 .s-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
 .s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
 .btn-back{padding:11px 26px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
-
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-
-/* Mode banner for ops staff */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
 .mode-banner{background:var(--b-l);border-bottom:1px solid var(--b);padding:10px 16px;font-size:12px;color:var(--b);display:none;align-items:center;gap:8px}
 .mode-banner svg{width:14px;height:14px;stroke:var(--b);fill:none;stroke-width:2;flex-shrink:0}
 </style>
@@ -64,8 +58,8 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 <body>
 <div class="shell">
 
-  <div class="hdr">
-    <button class="hdr-back" onclick="history.back()">
+  <div class="hdr" id="page-hdr">
+    <button class="hdr-back" onclick="goBack()">
       <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
     </button>
     <div class="hdr-info">
@@ -74,31 +68,26 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
     </div>
   </div>
 
-  <!-- Ops-only info banner -->
   <div class="mode-banner" id="ops-banner">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     You're viewing this as staff — guests submit reviews from the Guest app.
   </div>
 
-  <!-- Review form -->
   <div class="pg" id="review-wrap">
-    <div class="pg-title">Staff Reviews</div>
+    <div class="pg-title">Rate Our Staff</div>
     <div class="pg-sub">Your honest feedback helps us recognise and improve our team.</div>
-
     <div id="staff-list"><div style="font-size:13px;color:var(--muted);padding:10px 0">Loading staff…</div></div>
-
     <div class="sub-bar">
       <button class="btn-sub" id="submit-btn" onclick="submitReviews()">Submit reviews</button>
     </div>
   </div>
 
-  <!-- Success state -->
   <div style="display:none;padding:18px 16px" id="review-success">
     <div class="success">
       <div class="s-icon"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>
       <div class="s-title">Thank you!</div>
       <div class="s-sub">Your feedback has been recorded. It means a lot to our team.</div>
-      <button class="btn-back" onclick="history.back()">Back</button>
+      <button class="btn-back" onclick="goBack()">Close</button>
     </div>
   </div>
 
@@ -106,14 +95,28 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-const isOps = me && (me.role === 'staff' || me.role === 'owner');
-const isGuest = me && me.role === 'guest';
+// Detect iframe context — hide the internal header, use parent to close
+var inIframe = (window.self !== window.top);
+if (inIframe) {
+  document.getElementById('page-hdr').style.display = 'none';
+}
 
+function goBack() {
+  if (inIframe) {
+    try { parent.closeRevSheet('staff-sheet', 'staff-backdrop'); } catch(e) {}
+  } else {
+    history.back();
+  }
+}
+
+var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me) { location.href = '/index.html'; throw new Error(); }
+
+var isOps  = me && (me.role === 'staff' || me.role === 'owner');
+var isGuest = me && me.role === 'guest';
 
 if (isOps) {
   document.getElementById('ops-banner').style.display = 'flex';
@@ -121,88 +124,89 @@ if (isOps) {
 }
 if (me.prop) document.getElementById('hdr-prop').textContent = me.prop;
 
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(function(){t.style.display='none';},2500); }
 
-async function api(path,method,body){
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
-  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+async function api(path, method, body){
+  var h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  var r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204)return null;
-  const json=await r.json().catch(()=>null);
-  if(!r.ok)throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  var json=await r.json().catch(function(){return null;});
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
   return json;
 }
 
-const ini = n => (n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+var ini = function(n){ return (n||'').split(' ').map(function(x){return x[0];}).join('').slice(0,2).toUpperCase()||'?'; };
 
-let staffData = [];
+var staffData = [];
 
 async function loadStaff(){
   try {
-    const rows = await api('/rest/v1/staff_profiles?select=id,name,role&order=name') || [];
+    // Table is "staff" — select id, name, role, filtered to active
+    var rows = await api('/rest/v1/staff?select=id,name,role&order=name') || [];
     staffData = rows;
-    const el = document.getElementById('staff-list');
-    if(!rows.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No staff profiles found.</div>';return;}
-    el.innerHTML = rows.map((s,i)=>`
-      <div class="staff-card" id="card-${s.id}">
-        <div class="staff-card-hdr">
-          <div class="avatar">${ini(s.name)}</div>
-          <div>
-            <div class="staff-name">${s.name}</div>
-            <div class="staff-role">${s.role||'Team member'}</div>
-          </div>
-        </div>
-        <div class="fg" style="margin-bottom:10px">
-          <label class="fl">Your rating<span>*</span></label>
-          <div class="stars" id="stars-${s.id}">
-            ${[5,4,3,2,1].map(v=>`
-              <input type="radio" name="star-${s.id}" id="s${s.id}-${v}" value="${v}"/>
-              <label for="s${s.id}-${v}" title="${v} star${v>1?'s':''}">★</label>
-            `).join('')}
-          </div>
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Comment <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-          <textarea class="fc" id="comment-${s.id}" placeholder="What stood out about ${s.name.split(' ')[0]}?"></textarea>
-        </div>
-      </div>
-    `).join('');
+    var el = document.getElementById('staff-list');
+    if(!rows.length){
+      el.innerHTML='<div style="font-size:13px;color:var(--muted)">No staff found.</div>';
+      return;
+    }
+    el.innerHTML = rows.map(function(s){
+      var initials = ini(s.name);
+      var stars = [5,4,3,2,1].map(function(v){
+        return '<input type="radio" name="star-' + s.id + '" id="s' + s.id + '-' + v + '" value="' + v + '"/>' +
+               '<label for="s' + s.id + '-' + v + '" title="' + v + ' star' + (v>1?'s':'') + '">&#9733;</label>';
+      }).join('');
+      var firstName = s.name ? s.name.split(' ')[0] : 'them';
+      return '<div class="staff-card" id="card-' + s.id + '">' +
+        '<div class="staff-card-hdr">' +
+          '<div class="avatar">' + initials + '</div>' +
+          '<div><div class="staff-name">' + s.name + '</div><div class="staff-role">' + (s.role||'Team member') + '</div></div>' +
+        '</div>' +
+        '<div class="fg" style="margin-bottom:10px">' +
+          '<label class="fl">Your rating<span>*</span></label>' +
+          '<div class="stars" id="stars-' + s.id + '">' + stars + '</div>' +
+        '</div>' +
+        '<div class="fg" style="margin-bottom:0">' +
+          '<label class="fl">Comment <span style="color:var(--muted);font-weight:400">(optional)</span></label>' +
+          '<textarea class="fc" id="comment-' + s.id + '" placeholder="What stood out about ' + firstName + '?"></textarea>' +
+        '</div>' +
+      '</div>';
+    }).join('');
   } catch(e){
-    document.getElementById('staff-list').innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load staff. Please try again.</div>';
+    document.getElementById('staff-list').innerHTML = '<div style="font-size:13px;color:var(--muted)">Could not load staff: ' + (e.message||'Please try again') + '</div>';
   }
 }
 
 async function submitReviews(){
-  if(isOps){toast('Guests submit reviews from the Guest app');return;}
-  const btn = document.getElementById('submit-btn');
+  if(isOps){ toast('Guests submit reviews from the Guest app'); return; }
+  var btn = document.getElementById('submit-btn');
 
-  // Collect only rated entries
-  const entries = [];
-  for(const s of staffData){
-    const checked = document.querySelector(`input[name="star-${s.id}"]:checked`);
-    if(!checked) continue;
+  var entries = [];
+  staffData.forEach(function(s){
+    var checked = document.querySelector('input[name="star-' + s.id + '"]:checked');
+    if(!checked) return;
     entries.push({
-      staff_id: s.id,
-      staff_name: s.name,
-      rating: parseInt(checked.value),
-      comment: document.getElementById('comment-'+s.id).value.trim()||null,
-      guest_name: me.name,
-      property_name: me.prop||null,
-      created_at: new Date().toISOString(),
+      staff_id:      s.id,
+      staff_name:    s.name,
+      rating:        parseInt(checked.value),
+      comment:       (document.getElementById('comment-' + s.id).value||'').trim() || null,
+      guest_name:    me.name,
+      property_name: me.prop || null,
+      created_at:    new Date().toISOString()
     });
-  }
+  });
 
-  if(!entries.length){toast('Please rate at least one staff member');return;}
+  if(!entries.length){ toast('Please rate at least one staff member'); return; }
 
-  btn.disabled=true; btn.textContent='Submitting…';
+  btn.disabled = true; btn.textContent = 'Submitting…';
   try {
-    for(const entry of entries){
-      await api('/rest/v1/staff_reviews','POST',entry);
+    for(var i=0; i<entries.length; i++){
+      await api('/rest/v1/staff_reviews', 'POST', entries[i]);
     }
-    document.getElementById('review-wrap').style.display='none';
-    document.getElementById('review-success').style.display='block';
+    document.getElementById('review-wrap').style.display = 'none';
+    document.getElementById('review-success').style.display = 'block';
   } catch(e){
-    btn.disabled=false; btn.textContent='Submit reviews';
-    toast('Error: '+(e.message||'Please try again'));
+    btn.disabled = false; btn.textContent = 'Submit reviews';
+    toast('Error: ' + (e.message||'Please try again'));
   }
 }
 
