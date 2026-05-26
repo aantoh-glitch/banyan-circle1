@@ -602,7 +602,20 @@ function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
 
 let PROPS=[];
-async function loadAllProperties(){ PROPS=await api('/rest/v1/properties?select=*&order=name')||[]; return PROPS; }
+async function loadAllProperties(){
+  const [fromProps, fromLandlords] = await Promise.all([
+    api('/rest/v1/properties?select=*&order=name').catch(()=>[]),
+    api('/rest/v1/landlords?select=property_name&order=property_name').catch(()=>[])
+  ]);
+  const propNames = new Set((fromProps||[]).map(p=>p.name));
+  const extras = (fromLandlords||[])
+    .map(l=>l.property_name).filter(Boolean)
+    .filter(n=>!propNames.has(n))
+    .filter((n,i,a)=>a.indexOf(n)===i)
+    .map(n=>({name:n}));
+  PROPS = [...(fromProps||[]), ...extras].sort((a,b)=>a.name.localeCompare(b.name));
+  return PROPS;
+}
 
 // PROPERTIES
 async function loadProperties(){
