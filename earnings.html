@@ -464,7 +464,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <div class="form-field">
       <label class="form-label">Assign to Head</label>
       <div class="assign-type-toggle">
-        <button class="assign-type-btn active" id="atbtn-landlord" onclick="selectEntityType('landlord')">Landlord</button>
+        <button class="assign-type-btn active" id="atbtn-landlord" onclick="selectEntityType('landlord')">Property</button>
         <button class="assign-type-btn" id="atbtn-staff" onclick="selectEntityType('staff')">Staff</button>
         <button class="assign-type-btn" id="atbtn-talent" onclick="selectEntityType('talent')">Talent</button>
       </div>
@@ -504,7 +504,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <div class="form-field">
       <label class="form-label">Assign to Head Type</label>
       <div class="assign-type-toggle">
-        <button class="assign-type-btn active" id="aatbtn-landlord" onclick="selectAssignType('landlord')">Landlord</button>
+        <button class="assign-type-btn active" id="aatbtn-landlord" onclick="selectAssignType('landlord')">Property</button>
         <button class="assign-type-btn" id="aatbtn-staff" onclick="selectAssignType('staff')">Staff</button>
         <button class="assign-type-btn" id="aatbtn-talent" onclick="selectAssignType('talent')">Talent</button>
       </div>
@@ -966,10 +966,11 @@ function selectEntityType(t) {
 function populateEntitySelect(selectId, type) {
   const sel = document.getElementById(selectId);
   const names = entityLists[type] || [];
+  const label = type === 'landlord' ? 'property' : type;
   sel.innerHTML = names.length
-    ? '<option value="">Select ' + type + '…</option>' +
+    ? '<option value="">Select ' + label + '…</option>' +
       names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')
-    : '<option value="">No ' + type + 's found</option>';
+    : '<option value="">No ' + label + 's found</option>';
 }
 
 async function submitEntry() {
