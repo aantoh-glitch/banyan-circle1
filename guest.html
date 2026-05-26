@@ -18,7 +18,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .hdr-name{font-size:15px;font-weight:500}
 .hdr-prop{font-size:12px;color:var(--muted)}
 .hdr-out{background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);font-family:inherit;padding:4px 8px;border-radius:6px}
-.bnav{background:var(--white);border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;max-width:430px;margin:0 auto}
+.bnav{background:var(--white);border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:500;max-width:430px;margin:0 auto}
 .bnt{flex:1;padding:10px 2px 8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:9px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
 .bnt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .bnt.on{color:var(--br)}
@@ -113,6 +113,19 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .pne-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .pne-sheet-body{flex:1;overflow:hidden}
 .pne-sheet-body iframe{width:100%;height:100%;border:none;display:block}
+
+/* ── Review slide-up sheets (footer always visible) ── */
+.rev-backdrop{position:fixed;top:0;left:0;right:0;bottom:62px;background:rgba(0,0,0,.45);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+.rev-backdrop.open{opacity:1;pointer-events:all}
+.rev-sheet{position:fixed;bottom:62px;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:430px;height:88vh;background:var(--bg);border-radius:20px 20px 0 0;z-index:201;transition:transform .36s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.18)}
+.rev-sheet.open{transform:translateX(-50%) translateY(0)}
+.rev-sheet-grab{width:36px;height:4px;background:var(--border);border-radius:999px;margin:10px auto 0;flex-shrink:0}
+.rev-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.rev-sheet-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
+.rev-sheet-close{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rev-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.rev-sheet-body{flex:1;overflow:hidden}
+.rev-sheet-body iframe{width:100%;height:100%;border:none;display:block}
 </style>
 </head>
 <body>
@@ -267,14 +280,14 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="pg" id="pg-reviews">
   <div class="pg-title">Reviews</div>
   <div class="pg-sub">Share your experience</div>
-  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='rating.html'">
+  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="openRevSheet('rating-sheet','rating-frame','Rate a Talent','rating.html')">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
     </div>
     <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate a Talent</div><div style="font-size:12px;color:var(--muted)">Share your experience with a talent</div></div>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
-  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='staff-review.html'">
+  <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="openRevSheet('staff-sheet','staff-frame','Rate Our Staff','staff-review.html')">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--br-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l.5 2 2 .5-2 .5-.5 2-.5-2-2-.5 2-.5z"/></svg>
     </div>
@@ -348,6 +361,33 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <button class="bnt" onclick="goPage('finalbill',this);loadFinalBill()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Final Bill</button>
   <button class="bnt" onclick="goPage('reviews',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Reviews</button>
 </nav>
+</div>
+
+
+<!-- ── RATE A TALENT SHEET ── -->
+<div class="rev-backdrop" id="rating-backdrop" onclick="closeRevSheet('rating-sheet','rating-backdrop')"></div>
+<div class="rev-sheet" id="rating-sheet">
+  <div class="rev-sheet-grab"></div>
+  <div class="rev-sheet-hdr">
+    <div class="rev-sheet-title">Rate a Talent</div>
+    <button class="rev-sheet-close" onclick="closeRevSheet('rating-sheet','rating-backdrop')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="rev-sheet-body"><iframe id="rating-frame" src="" title="Rate a Talent"></iframe></div>
+</div>
+
+<!-- ── RATE OUR STAFF SHEET ── -->
+<div class="rev-backdrop" id="staff-backdrop" onclick="closeRevSheet('staff-sheet','staff-backdrop')"></div>
+<div class="rev-sheet" id="staff-sheet">
+  <div class="rev-sheet-grab"></div>
+  <div class="rev-sheet-hdr">
+    <div class="rev-sheet-title">Rate Our Staff</div>
+    <button class="rev-sheet-close" onclick="closeRevSheet('staff-sheet','staff-backdrop')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="rev-sheet-body"><iframe id="staff-frame" src="" title="Rate Our Staff"></iframe></div>
 </div>
 
 <div class="pne-backdrop" id="pne-backdrop" onclick="closePne()"></div>
@@ -781,6 +821,23 @@ async function loadFinalBill(){
     document.getElementById('bill-none').style.display = 'block';
   }
 }
+
+// ── Review sheets ──
+function openRevSheet(sheetId, frameId, title, src) {
+  var frame = document.getElementById(frameId);
+  if (frame.getAttribute('data-src') !== src) {
+    frame.src = src;
+    frame.setAttribute('data-src', src);
+  }
+  var backdropId = sheetId === 'rating-sheet' ? 'rating-backdrop' : 'staff-backdrop';
+  document.getElementById(backdropId).classList.add('open');
+  document.getElementById(sheetId).classList.add('open');
+}
+function closeRevSheet(sheetId, backdropId) {
+  document.getElementById(sheetId).classList.remove('open');
+  document.getElementById(backdropId).classList.remove('open');
+}
+
 </script>
 
 <a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:16px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
