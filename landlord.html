@@ -523,44 +523,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 </div><!-- /app -->
-
-<!-- Add Utility Bill Modal (outside .app so overflow:hidden doesn't clip it) -->
-<div class="modal" id="modal-add-utility" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
-  <div class="modal-card">
-    <div class="modal-title">Add Utility Bill</div>
-    <div class="fg">
-      <label class="fl">Item / Utility Type</label>
-      <input class="fc" id="ub-item" placeholder="e.g. Electricity, Water, Gas…"/>
-    </div>
-    <div class="fg">
-      <label class="fl">Amount (₹)</label>
-      <input class="fc" id="ub-amount" type="number" min="0" placeholder="0"/>
-    </div>
-    <div class="fg">
-      <label class="fl">Status</label>
-      <div style="display:flex;gap:8px">
-        <button id="ub-btn-pending" onclick="setUtilityStatus('pending')"
-          style="flex:1;padding:10px;border-radius:var(--radius-sm);border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">
-          ⏳ Pending
-        </button>
-        <button id="ub-btn-paid" onclick="setUtilityStatus('paid')"
-          style="flex:1;padding:10px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s">
-          ✅ Paid
-        </button>
-      </div>
-    </div>
-    <div id="ub-date-section" style="display:none">
-      <div class="fg">
-        <label class="fl">Date of Payment</label>
-        <input class="fc" id="ub-paid-date" type="date"/>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeAddUtilityModal()">Cancel</button>
-      <button class="btn-p" id="ub-save-btn" onclick="saveUtilityBill()">Submit</button>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -899,96 +861,7 @@ async function loadPayments() {
   }
 }
 
-// ── ADD UTILITY BILL MODAL ──
-let _utilityStatus = 'pending';
-
-function openAddUtilityModal() {
-  document.getElementById('ub-item').value = '';
-  document.getElementById('ub-amount').value = '';
-  document.getElementById('ub-paid-date').value = '';
-  document.getElementById('ub-date-section').style.display = 'none';
-  setUtilityStatus('pending');
-  document.getElementById('modal-add-utility').style.display = 'flex';
-  setTimeout(()=>document.getElementById('ub-item').focus(), 50);
-}
-
-function closeAddUtilityModal() {
-  document.getElementById('modal-add-utility').style.display = 'none';
-}
-
-function setUtilityStatus(status) {
-  _utilityStatus = status;
-  const pBtn = document.getElementById('ub-btn-pending');
-  const dBtn = document.getElementById('ub-btn-paid');
-  const dateSection = document.getElementById('ub-date-section');
-  if (status === 'pending') {
-    pBtn.style.border = '2px solid var(--a)';
-    pBtn.style.background = 'var(--a-l)';
-    pBtn.style.color = '#5A3006';
-    pBtn.style.fontWeight = '600';
-    dBtn.style.border = '2px solid var(--border)';
-    dBtn.style.background = 'var(--bg)';
-    dBtn.style.color = 'var(--muted)';
-    dBtn.style.fontWeight = '500';
-    dateSection.style.display = 'none';
-  } else {
-    dBtn.style.border = '2px solid var(--g)';
-    dBtn.style.background = 'var(--g-l)';
-    dBtn.style.color = '#224509';
-    dBtn.style.fontWeight = '600';
-    pBtn.style.border = '2px solid var(--border)';
-    pBtn.style.background = 'var(--bg)';
-    pBtn.style.color = 'var(--muted)';
-    pBtn.style.fontWeight = '500';
-    dateSection.style.display = 'block';
-    // Default to today
-    if (!document.getElementById('ub-paid-date').value) {
-      document.getElementById('ub-paid-date').value = new Date().toISOString().slice(0,10);
-    }
-  }
-}
-
-async function saveUtilityBill() {
-  const btn = document.getElementById('ub-save-btn');
-  const item = document.getElementById('ub-item').value.trim();
-  const amount = parseFloat(document.getElementById('ub-amount').value);
-  const paidDate = document.getElementById('ub-paid-date').value;
-
-  if (!item) { toast('Enter a utility type', true); return; }
-  if (!amount || amount <= 0) { toast('Enter a valid amount', true); return; }
-  if (_utilityStatus === 'paid' && !paidDate) { toast('Select the date of payment', true); return; }
-
-  btn.disabled = true; btn.textContent = 'Saving…';
-
-  // Derive month from paid date or current month
-  const month = _utilityStatus === 'paid'
-    ? paidDate.slice(0, 7)
-    : new Date().toISOString().slice(0, 7);
-
-  const body = {
-    property_name: PROP,
-    utility_type: item,
-    amount: amount,
-    status: _utilityStatus,
-    month: month,
-  };
-  if (_utilityStatus === 'paid' && paidDate) {
-    body.paid_date = paidDate;
-  }
-
-  const res = await api('/rest/v1/utility_payments', 'POST', body);
-  btn.disabled = false; btn.textContent = 'Submit';
-
-  if (res) {
-    document.getElementById('modal-add-utility').style.display = 'none';
-    toast('Utility bill added ✓');
-    loadPayments();
-  } else {
-    toast('Could not save — check connection', true);
-  }
-}
-
-
+// ── ASSETS ──
 let currentAssetTab = 'active';
 
 function switchAssetTab(tab) {
@@ -1256,5 +1129,97 @@ loadDescription();
   if(!me)return;
   // Hide FAB when embedded in admin iframe
   if(window!==window.top){var f=document.getElementById("msg-fab");if(f)f.style.display="none";return;}
-  fetch(S+"/rest/v1/"+"messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+  .then(r=>r.json()).then(d=>{
+    if(!d||!d.length)return;
+    var b=document.getElementById("msg-fab-badge");
+    if(b){b.textContent=d.length;b.style.display="block";}
+  }).catch(()=>{});
+})();
+</script>
+
+<!-- ── ADD UTILITY BILL MODAL ── -->
+<div id="modal-add-utility" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;margin-bottom:16px">Add Utility Bill</div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Item / Utility Type</label>
+      <input id="ub-item" class="fc" placeholder="e.g. Electricity, Water, Gas…"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Amount (₹)</label>
+      <input id="ub-amount" class="fc" type="number" min="0" placeholder="0"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Status</label>
+      <div style="display:flex;gap:8px">
+        <button id="ub-btn-pending" onclick="setUtilityStatus('pending')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pending</button>
+        <button id="ub-btn-paid" onclick="setUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
+      </div>
+    </div>
+    <div id="ub-date-section" style="display:none;margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Date of Payment</label>
+      <input id="ub-paid-date" class="fc" type="date"/>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button onclick="closeUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button id="ub-save-btn" onclick="saveUtilityBill()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Submit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _utilityStatus = 'pending';
+
+function openAddUtilityModal() {
+  document.getElementById('ub-item').value = '';
+  document.getElementById('ub-amount').value = '';
+  document.getElementById('ub-paid-date').value = '';
+  document.getElementById('ub-date-section').style.display = 'none';
+  setUtilityStatus('pending');
+  var m = document.getElementById('modal-add-utility');
+  m.style.display = 'flex';
+  setTimeout(function(){ document.getElementById('ub-item').focus(); }, 80);
+}
+
+function closeUtilityModal() {
+  document.getElementById('modal-add-utility').style.display = 'none';
+}
+
+function setUtilityStatus(status) {
+  _utilityStatus = status;
+  var pBtn = document.getElementById('ub-btn-pending');
+  var dBtn = document.getElementById('ub-btn-paid');
+  var ds   = document.getElementById('ub-date-section');
+  if (status === 'pending') {
+    pBtn.style.border = '2px solid var(--a)'; pBtn.style.background = 'var(--a-l)'; pBtn.style.color = '#5A3006'; pBtn.style.fontWeight = '600';
+    dBtn.style.border = '2px solid var(--border)'; dBtn.style.background = 'var(--bg)'; dBtn.style.color = 'var(--muted)'; dBtn.style.fontWeight = '500';
+    ds.style.display = 'none';
+  } else {
+    dBtn.style.border = '2px solid var(--g)'; dBtn.style.background = 'var(--g-l)'; dBtn.style.color = '#224509'; dBtn.style.fontWeight = '600';
+    pBtn.style.border = '2px solid var(--border)'; pBtn.style.background = 'var(--bg)'; pBtn.style.color = 'var(--muted)'; pBtn.style.fontWeight = '500';
+    ds.style.display = 'block';
+    if (!document.getElementById('ub-paid-date').value) {
+      document.getElementById('ub-paid-date').value = new Date().toISOString().slice(0,10);
+    }
+  }
+}
+
+async function saveUtilityBill() {
+  var btn    = document.getElementById('ub-save-btn');
+  var item   = document.getElementById('ub-item').value.trim();
+  var amount = parseFloat(document.getElementById('ub-amount').value);
+  var pd     = document.getElementById('ub-paid-date').value;
+  if (!item)               { toast('Enter a utility type', true); return; }
+  if (!amount || amount<=0){ toast('Enter a valid amount', true); return; }
+  if (_utilityStatus==='paid' && !pd){ toast('Select payment date', true); return; }
+  btn.disabled=true; btn.textContent='Saving…';
+  var month = _utilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
+  var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month };
+  if (_utilityStatus==='paid') body.paid_date = pd;
+  var res = await api('/rest/v1/utility_payments','POST',body);
+  btn.disabled=false; btn.textContent='Submit';
+  if (res) { closeUtilityModal(); toast('Utility bill added ✓'); loadPayments(); }
+  else     { toast('Could not save — check connection', true); }
+}
+</script>
+</body></html>
