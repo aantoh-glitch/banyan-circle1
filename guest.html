@@ -689,6 +689,7 @@ async function submitCheckin(){
   var isEdit  = !!(CI_RECORD && CI_RECORD.id);
 
   if(!name||!addr||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
+  if(depDate <= arrDate){toast('Departure date must be after arrival date');return;}
 
   var hasProofs = uploadedIdProofs.length > 0 ||
     (isEdit && CI_RECORD.form_data && (CI_RECORD.form_data.id_proofs||[]).length > 0);
