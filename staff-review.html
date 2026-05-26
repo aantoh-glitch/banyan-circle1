@@ -142,7 +142,7 @@ var staffData = [];
 async function loadStaff(){
   try {
     // Table is "staff" — select id, name, role, filtered to active
-    var rows = await api('/rest/v1/staff?select=id,name,role&order=name') || [];
+    var rows = await api('/rest/v1/staff?select=id,name,designation&order=name') || [];
     staffData = rows;
     var el = document.getElementById('staff-list');
     if(!rows.length){
@@ -159,7 +159,7 @@ async function loadStaff(){
       return '<div class="staff-card" id="card-' + s.id + '">' +
         '<div class="staff-card-hdr">' +
           '<div class="avatar">' + initials + '</div>' +
-          '<div><div class="staff-name">' + s.name + '</div><div class="staff-role">' + (s.role||'Team member') + '</div></div>' +
+          '<div><div class="staff-name">' + s.name + '</div><div class="staff-role">' + (s.designation||'Team member') + '</div></div>' +
         '</div>' +
         '<div class="fg" style="margin-bottom:10px">' +
           '<label class="fl">Your rating<span>*</span></label>' +
