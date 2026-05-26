@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
@@ -42,8 +42,20 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .upload-zone:active{border-color:var(--br);background:var(--br-l)}
 .upload-zone svg{width:26px;height:26px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:8px}
 .upload-zone p{font-size:13px;color:var(--muted)}
-.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .file-item{background:var(--g-l);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--g);display:flex;align-items:center;gap:8px}
+.id-proof-card{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.id-proof-card img{width:100%;max-height:200px;object-fit:cover;display:block}
+.id-proof-card-footer{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--border)}
+.id-proof-card-name{font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:10px}
+.id-proof-del-btn{font-size:12px;font-weight:500;color:var(--r);background:var(--r-l);border:1px solid rgba(163,45,45,.25);border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.id-proof-del-btn:active{background:var(--r);color:#fff}
+.id-proof-pdf{display:flex;align-items:center;gap:10px;padding:14px;background:var(--b-l)}
+.id-proof-pdf svg{flex-shrink:0;stroke:var(--b);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.id-proof-pdf a{color:var(--b);font-size:13px;font-weight:500;text-decoration:none;word-break:break-all}
+.upload-progress{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.upload-spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--br);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
 .section-toggle{background:var(--bg);border-radius:10px;padding:14px 16px;font-size:14px;font-weight:500;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1.5px solid var(--border);margin-bottom:4px}
 .toggle-arrow{font-size:18px;color:var(--muted);transition:transform .2s}
 .section-body{display:none;padding-top:6px}
@@ -52,56 +64,26 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .btn-sub{width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .btn-sub:disabled{opacity:.6;cursor:not-allowed}
 .btn-br{background:var(--br);color:#fff}
-.btn-g{background:var(--g);color:#fff}
-.btn-a{background:var(--a);color:#fff}
 .success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;padding:32px}
 .s-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
 .s-icon svg{width:34px;height:34px;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .s-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
 .s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
-.btn-again{padding:11px 26px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
 .done-banner{background:var(--g-l);border-radius:10px;padding:13px 16px;font-size:13px;color:var(--g);display:none;align-items:center;gap:10px;margin-bottom:18px}
 .done-banner svg{width:16px;height:16px;stroke:var(--g);fill:none;stroke-width:2.5;flex-shrink:0}
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:12px}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
 .bdg-a{background:var(--a-l);color:var(--a)}.bdg-g{background:var(--g-l);color:var(--g)}.bdg-r{background:#FCEBEB;color:#791F1F}
-.lf-row{padding:11px 0;border-bottom:1px solid var(--border)}
-.lf-row:last-child{border-bottom:none}
-
-
-/* Request row */
-.req-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
-.req-row:last-child{border-bottom:none}
-
-.bnt.on .bnt-logo-img{filter:grayscale(0) sepia(1) saturate(5) hue-rotate(330deg) brightness(0.7) !important}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-.bk-log-row{display:flex;align-items:flex-start;gap:10px;padding:13px 0;border-bottom:1px solid var(--border)}
-.bk-log-row:last-child{border-bottom:none}
 .bk-edit-btn{font-size:12px;font-weight:500;color:var(--br);background:var(--br-l);border:1px solid rgba(153,60,29,.2);border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:opacity .15s}
-.bk-edit-btn:hover{opacity:.8}
-
-/* ── EXPERIENCE PAGE ── */
 .exp-section{margin-bottom:22px}
 .exp-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .exp-section-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:var(--text)}
-.exp-add-btn{display:flex;align-items:center;gap:5px;background:var(--br-l);border:1px solid rgba(153,60,29,.25);color:var(--br);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;transition:background .15s}
-.exp-add-btn:active{background:rgba(153,60,29,.18)}
-.exp-add-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .exp-entries{display:flex;flex-direction:column;gap:8px}
 .exp-entry{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:14px;color:var(--text);line-height:1.6}
 .exp-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
 .exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
 @keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.exp-form{background:var(--white);border:1px solid rgba(153,60,29,.25);border-radius:12px;padding:14px;margin-top:4px;display:none}
-.exp-form.open{display:block}
-.exp-form textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;resize:vertical;min-height:88px;line-height:1.6}
-.exp-form textarea:focus{border-color:var(--br);background:var(--white)}
-.exp-form-actions{display:flex;gap:8px;margin-top:10px}
-.exp-btn-save{flex:1;padding:10px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer}
-.exp-btn-save:active{background:#7a2e16}
-.exp-btn-cancel{padding:10px 16px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;cursor:pointer}
-
-/* Welcome banner */
 .welcome-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);cursor:pointer;padding:24px}
 .welcome-banner-inner{background:var(--white);border-radius:18px;padding:32px 28px;text-align:center;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.18);pointer-events:none}
 .welcome-banner-logo{width:56px;height:56px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
@@ -109,24 +91,17 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .welcome-banner-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);line-height:1.4;margin-bottom:10px}
 .welcome-banner-sub{font-size:13px;color:var(--muted);line-height:1.6}
 .welcome-banner-hint{margin-top:18px;font-size:11px;color:var(--muted);opacity:.7}
-
-/* Final bill page */
 .bill-line{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px}
 .bill-line:last-child{border-bottom:none}
 .bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
-.bill-section-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-
-/* ── Info buttons ── */
 .info-btn{width:100%;padding:14px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:14px;font-family:inherit;transition:all .18s;text-align:left}
-.info-btn:hover{border-color:var(--br);box-shadow:0 3px 14px rgba(153,60,29,.08)}
+.info-btn:hover{border-color:var(--br)}
 .info-btn-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .info-btn-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .info-btn-text{flex:1}
 .info-btn-title{font-size:15px;font-weight:500;color:var(--text)}
 .info-btn-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .info-btn-arrow{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-
-/* ── PNE Slide-up Sheet ── */
 .pne-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
 .pne-backdrop.open{opacity:1;pointer-events:all}
 .pne-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:430px;height:92vh;background:var(--bg);border-radius:20px 20px 0 0;z-index:301;transition:transform .36s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.18)}
@@ -138,13 +113,11 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .pne-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .pne-sheet-body{flex:1;overflow:hidden}
 .pne-sheet-body iframe{width:100%;height:100%;border:none;display:block}
-
 </style>
 </head>
 <body>
 <div class="shell">
 
-<!-- WELCOME BANNER -->
 <div class="welcome-banner" id="welcome-banner" onclick="dismissBanner()">
   <div class="welcome-banner-inner">
     <div class="welcome-banner-logo">
@@ -155,13 +128,13 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="welcome-banner-hint">Tap anywhere to continue</div>
   </div>
 </div>
+
 <div class="hdr">
   <div class="hdr-logo"><img src="/herit.jpg" onerror="this.style.display='none';this.parentNode.innerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;white&quot; width=&quot;18&quot; height=&quot;18&quot;><path d=&quot;M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z&quot;/></svg>'"/></div>
   <div class="hdr-info"><div class="hdr-name" id="hdr-name">Guest</div><div class="hdr-prop" id="hdr-prop">Banyan Circle</div></div>
   <button class="hdr-out" onclick="signOut()">Sign out</button>
 </div>
 
-<!-- CHECK-IN FORM -->
 <div class="pg on" id="pg-checkin">
   <div class="pg-title">Check-in</div>
   <div class="pg-sub">Register with Property by Heritance</div>
@@ -175,17 +148,16 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   </div>
 
   <div id="ci-form">
-    <!-- SECTION A -->
     <div class="sec-hdr">Section A — Guest Details</div>
 
     <div class="fg"><label class="fl">Guest name<span>*</span></label><input class="fc" id="ci-name" type="text"/></div>
     <div class="fg">
       <label class="fl">ID proof with photo<span>*</span></label>
-      <div class="upload-zone" onclick="document.getElementById('ci-files').click()">
+      <div class="upload-zone" id="ci-upload-zone" onclick="document.getElementById('ci-files').click()">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-        <p>Tap to upload · JPG, PNG or PDF · Multiple files</p>
+        <p>Tap to upload &middot; JPG, PNG or PDF &middot; Multiple files</p>
       </div>
-      <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="showFiles(this,'ci-file-list')"/>
+      <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="handleIdUpload(this)"/>
       <div class="file-list" id="ci-file-list"></div>
     </div>
     <div class="fg"><label class="fl">Organisation &amp; Designation</label><input class="fc" id="ci-org" type="text" placeholder="Company / Job title"/></div>
@@ -208,19 +180,17 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <label class="fl">Mode of payment<span>*</span></label>
       <div class="radio-group" id="ci-payment">
         <label class="radio-opt"><input type="radio" name="payment" value="Cash"/> Cash</label>
+        <label class="radio-opt"><input type="radio" name="payment" value="Cards"/> Cards</label>
         <label class="radio-opt"><input type="radio" name="payment" value="UPI"/> UPI</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="Net transfer"/> Net transfer</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="OTA"/> OTA</label>
       </div>
     </div>
     <div class="fg"><label class="fl">Any dietary preferences or allergies?</label><textarea class="fc" id="ci-dietary" placeholder="Vegetarian, nut allergy, etc."></textarea></div>
-    <div class="fg"><label class="fl">Any special occasion during your stay?</label><input class="fc" id="ci-occasion" type="text" placeholder="Birthday, anniversary, honeymoon…"/></div>
+    <div class="fg"><label class="fl">Any special occasion during your stay?</label><input class="fc" id="ci-occasion" type="text" placeholder="Birthday, anniversary, honeymoon..."/></div>
     <div class="fg"><label class="fl">Anything we can do to make your stay more comfortable?</label><textarea class="fc" id="ci-comfort" placeholder="Pillow preference, room temperature, etc."></textarea></div>
 
-    <!-- SECTION B (Foreign Passport) -->
     <div class="section-toggle" onclick="toggleSectionB(this)">
-      <span>Form B — Foreign Passport Holders</span>
-      <span class="toggle-arrow" id="sb-arrow">›</span>
+      <span>Form B &mdash; Foreign Passport Holders</span>
+      <span class="toggle-arrow" id="sb-arrow">&#8250;</span>
     </div>
     <div class="section-body" id="section-b">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;padding:10px 14px;background:var(--bg);border-radius:8px">Fill this section only if you hold a foreign passport</div>
@@ -260,7 +230,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
           <label class="radio-opt"><input type="radio" name="purpose" value="Medical"/> Medical</label>
           <label class="radio-opt"><input type="radio" name="purpose" value="Transit"/> Transit</label>
           <label class="radio-opt"><input type="radio" name="purpose" value="Remote working"/> Remote working</label>
-          <label class="radio-opt"><input type="radio" name="purpose" value="Visiting friends &amp; family"/> Visiting friends &amp; family</label>
+          <label class="radio-opt"><input type="radio" name="purpose" value="Visiting friends and family"/> Visiting friends &amp; family</label>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -270,7 +240,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <div class="fg"><label class="fl">Address proceeding to</label><textarea class="fc" id="fb-proceed-addr"></textarea></div>
     </div>
 
-    <!-- DECLARATION -->
     <div class="sec-hdr">Declaration</div>
     <label style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px;line-height:1.6;margin-bottom:18px">
       <input type="checkbox" id="ci-declaration" style="accent-color:var(--br);width:18px;height:18px;flex-shrink:0;margin-top:2px"/>
@@ -280,7 +249,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="sub-bar"><button class="btn-sub btn-br" id="ci-btn" onclick="submitCheckin()">Submit registration</button></div>
   </div>
 
-  <!-- PROPERTY INFORMATION — PNE button -->
   <div style="display:flex;flex-direction:column;gap:10px;margin-top:28px;padding-bottom:20px">
     <div class="sec-hdr" style="margin-top:0">Property Information</div>
     <button class="info-btn" onclick="openPne()">
@@ -294,119 +262,82 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <svg class="info-btn-arrow" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
     </button>
   </div>
-
 </div>
 
-<!-- REVIEWS PAGE -->
 <div class="pg" id="pg-reviews">
   <div class="pg-title">Reviews</div>
   <div class="pg-sub">Share your experience</div>
-
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='rating.html'">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
     </div>
-    <div style="flex:1">
-      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate a Talent</div>
-      <div style="font-size:12px;color:var(--muted)">Share your experience with a talent</div>
-    </div>
+    <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate a Talent</div><div style="font-size:12px;color:var(--muted)">Share your experience with a talent</div></div>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
-
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="location.href='staff-review.html'">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--br-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l.5 2 2 .5-2 .5-.5 2-.5-2-2-.5 2-.5z"/></svg>
     </div>
-    <div style="flex:1">
-      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate Our Staff</div>
-      <div style="font-size:12px;color:var(--muted)">Review the team who made your stay special</div>
-    </div>
+    <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate Our Staff</div><div style="font-size:12px;color:var(--muted)">Review the team who made your stay special</div></div>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
-
   <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;opacity:0.5;cursor:not-allowed">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--g-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
     </div>
-    <div style="flex:1">
-      <div style="font-size:15px;font-weight:500;margin-bottom:2px">Review the Property</div>
-      <div style="font-size:12px;color:var(--muted)">Coming soon — share your stay experience</div>
-    </div>
+    <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Review the Property</div><div style="font-size:12px;color:var(--muted)">Coming soon</div></div>
     <span class="bdg" style="background:var(--bg);color:var(--muted);border:1px solid var(--border);font-size:10px">Soon</span>
   </div>
 </div>
 
-<!-- FINAL BILL -->
 <div class="pg" id="pg-finalbill">
   <div class="pg-title">Final Bill</div>
   <div class="pg-sub">Your stay summary &amp; charges</div>
-
-  <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
-
+  <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill...</div>
   <div id="bill-content" style="display:none">
     <div class="card" style="padding:16px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Stay Summary</div>
-      <div class="bill-line"><span style="color:var(--muted)">Guest</span><span id="bill-guest-name" style="font-weight:500">—</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Property</span><span id="bill-property" style="font-weight:500">—</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Check-in</span><span id="bill-checkin">—</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Check-out</span><span id="bill-checkout">—</span></div>
-      <div class="bill-line" style="border:none"><span style="color:var(--muted)">Nights</span><span id="bill-nights">—</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Guest</span><span id="bill-guest-name" style="font-weight:500">--</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Property</span><span id="bill-property" style="font-weight:500">--</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Check-in</span><span id="bill-checkin">--</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Check-out</span><span id="bill-checkout">--</span></div>
+      <div class="bill-line" style="border:none"><span style="color:var(--muted)">Nights</span><span id="bill-nights">--</span></div>
     </div>
-
     <div class="card" style="padding:16px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Charges</div>
       <div id="bill-items"><div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges available yet.</div></div>
-      <div class="bill-total"><span>Total</span><span id="bill-total">—</span></div>
+      <div class="bill-total"><span>Total</span><span id="bill-total">--</span></div>
     </div>
-
     <div class="card" style="padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-      <div>
-        <div style="font-size:13px;font-weight:500;margin-bottom:2px">Payment Status</div>
-        <span class="bdg" id="bill-status-badge">Pending</span>
-      </div>
+      <div><div style="font-size:13px;font-weight:500;margin-bottom:2px">Payment Status</div><span class="bdg" id="bill-status-badge">Pending</span></div>
       <div style="margin-left:auto;font-size:12px;color:var(--muted)" id="bill-remarks"></div>
     </div>
-
     <div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0 4px">For queries, please contact the front desk.</div>
   </div>
-
   <div id="bill-none" style="display:none">
     <div class="success">
       <div class="s-icon" style="background:var(--br-l)">
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
       </div>
       <div class="s-title">No bill yet</div>
-      <div class="s-sub">Your final bill will appear here once it has been prepared by the property.</div>
+      <div class="s-sub">Your final bill will appear here once prepared by the property.</div>
     </div>
   </div>
 </div>
 
-<!-- EXPERIENCE PAGE -->
 <div class="pg" id="pg-experience">
   <div class="pg-title">Experience</div>
   <div class="pg-sub">Curated notes &amp; highlights for your stay</div>
-
-  <!-- Property -->
   <div class="exp-section">
-    <div class="exp-section-head">
-      <div class="exp-section-title">Property</div>
-    </div>
+    <div class="exp-section-head"><div class="exp-section-title">Property</div></div>
     <div class="exp-entries" id="exp-entries-property"><div class="exp-skeleton"></div></div>
   </div>
-
-  <!-- Beyond -->
   <div class="exp-section">
-    <div class="exp-section-head">
-      <div class="exp-section-title">Beyond</div>
-    </div>
+    <div class="exp-section-head"><div class="exp-section-title">Beyond</div></div>
     <div class="exp-entries" id="exp-entries-beyond"><div class="exp-skeleton"></div></div>
   </div>
-
-  <!-- Banyan Circle -->
   <div class="exp-section">
-    <div class="exp-section-head">
-      <div class="exp-section-title">Banyan Circle</div>
-    </div>
+    <div class="exp-section-head"><div class="exp-section-title">Banyan Circle</div></div>
     <div class="exp-entries" id="exp-entries-banyan_circle"><div class="exp-skeleton"></div></div>
   </div>
 </div>
@@ -419,51 +350,44 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </nav>
 </div>
 
-<!-- ── PNE SLIDE-UP SHEET ── -->
 <div class="pne-backdrop" id="pne-backdrop" onclick="closePne()"></div>
 <div class="pne-sheet" id="pne-sheet">
   <div class="pne-sheet-grab"></div>
   <div class="pne-sheet-hdr">
     <div class="pne-sheet-title">Property Rules, Notes &amp; Emergency Contacts</div>
-    <button class="pne-sheet-close" onclick="closePne()">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <button class="pne-sheet-close" onclick="closePne()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
-  <div class="pne-sheet-body">
-    <iframe id="pne-frame" src="" title="Property Rules, Notes & Emergency Contacts"></iframe>
-  </div>
+  <div class="pne-sheet-body"><iframe id="pne-frame" src="" title="Property Rules, Notes and Emergency Contacts"></iframe></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || me.role !== 'guest') { location.href = '/index.html'; throw new Error(); }
 
 document.getElementById('hdr-name').textContent = me.name;
 document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
-
-// Pre-fill name and dates
 document.getElementById('ci-name').value = me.name || '';
 if(me.check_in) document.getElementById('ci-arr-date').value = me.check_in;
 if(me.check_out) document.getElementById('ci-dep-date').value = me.check_out;
 
 function signOut() { localStorage.removeItem('bc_me'); location.href = '/index.html'; }
-function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(function(){t.style.display='none';},2500); }
 
 function goPage(id, btn) {
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.bnt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.bnt').forEach(function(b){b.classList.remove('on');});
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='finalbill')  loadFinalBill();
+  if(id==='finalbill') loadFinalBill();
 }
 
-// ── EXPERIENCE ──
-let expLoaded = false;
+// EXPERIENCE
+var expLoaded = false;
 function expLoad() {
   if (expLoaded) return;
   expLoaded = true;
@@ -471,36 +395,30 @@ function expLoad() {
   expLoadSection('beyond');
   expLoadSection('banyan_circle');
 }
-
 function expEsc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 async function expLoadSection(section) {
-  const el = document.getElementById('exp-entries-' + section);
+  var el = document.getElementById('exp-entries-' + section);
   try {
-    const prop = me.prop || '';
-    const data = await api('/rest/v1/experiences?property_name=eq.' + encodeURIComponent(prop) + '&section=eq.' + encodeURIComponent(section) + '&order=created_at.desc') || [];
+    var prop = me.prop || '';
+    var data = await api('/rest/v1/experiences?property_name=eq.' + encodeURIComponent(prop) + '&section=eq.' + encodeURIComponent(section) + '&order=created_at.desc') || [];
     if (!data.length) {
       el.innerHTML = '<div class="exp-empty">No entries yet.</div>';
     } else {
-      el.innerHTML = data.map(e => `<div class="exp-entry">${expEsc(e.content||'')}</div>`).join('');
+      el.innerHTML = data.map(function(e){ return '<div class="exp-entry">' + expEsc(e.content||'') + '</div>'; }).join('');
     }
   } catch(e) {
     el.innerHTML = '<div class="exp-empty">Could not load entries.</div>';
   }
 }
 
-// ── PNE slide-up sheet ──
+// PNE
 function openPne() {
   var prop = (me && (me.prop || me.property_name)) || '';
   var src = prop ? 'pne.html?prop=' + encodeURIComponent(prop) : 'pne.html';
   var frame = document.getElementById('pne-frame');
-  // Only reload if src changed (avoids flicker on repeated opens)
-  if(frame.getAttribute('data-loaded-src') !== src) {
-    frame.src = src;
-    frame.setAttribute('data-loaded-src', src);
-  }
+  if(frame.getAttribute('data-loaded-src') !== src) { frame.src = src; frame.setAttribute('data-loaded-src', src); }
   document.getElementById('pne-backdrop').classList.add('open');
   document.getElementById('pne-sheet').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -512,245 +430,359 @@ function closePne() {
 }
 
 async function api(path, method, body) {
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
-  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  var h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  var r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204)return null;
-  const json=await r.json().catch(()=>null);
+  var json=await r.json().catch(function(){return null;});
   if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
   return json;
 }
 
-// ── Edit existing check-in ──
-function editCheckin(){
-  if(!CI_RECORD) return;
-  const fd=CI_RECORD.form_data||{};
-  document.getElementById('ci-name').value=CI_RECORD.guest_name||'';
-  document.getElementById('ci-address').value=fd.permanent_address||'';
-  document.getElementById('ci-email').value=fd.email||'';
-  document.getElementById('ci-mobile').value=fd.mobile||'';
-  document.getElementById('ci-dob').value=fd.dob||'';
-  document.getElementById('ci-org').value=fd.organisation||'';
-  document.getElementById('ci-from').value=CI_RECORD.travelled_from||'';
-  document.getElementById('ci-to').value=CI_RECORD.travelling_to||'';
-  document.getElementById('ci-arr-date').value=fd.arrival_date||'';
-  document.getElementById('ci-arr-time').value=fd.arrival_time||'';
-  document.getElementById('ci-dep-date').value=fd.departure_date||'';
-  document.getElementById('ci-dep-time').value=fd.departure_time||'';
-  document.getElementById('ci-guests').value=CI_RECORD.num_guests||1;
-  document.getElementById('ci-dietary').value=fd.dietary||'';
-  document.getElementById('ci-occasion').value=fd.special_occasion||'';
-  document.getElementById('ci-comfort').value=fd.comfort_requests||'';
-  if(fd.payment_mode){const r=document.querySelector(`input[name="payment"][value="${fd.payment_mode}"]`);if(r)r.checked=true;}
-  document.getElementById('ci-declaration').checked=!!fd.declaration;
-  const existing=(fd.id_proofs||[]).map(f=>f.name);
-  if(existing.length) document.getElementById('ci-file-list').innerHTML=`<div class="file-item">Existing: ${existing.join(', ')} <span style="margin-left:auto;font-size:11px;opacity:.7">Upload new to replace</span></div>`;
-  document.getElementById('ci-done').style.display='none';
-  document.getElementById('ci-form').style.display='block';
-  document.getElementById('ci-btn').textContent='Update registration';
+// ── ID PROOF: upload to Supabase Storage bucket "id-uploads" ──
+var uploadedIdProofs = [];
+
+async function uploadIdFile(file) {
+  var guestSlug = (me.name || 'guest').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  var ts = Date.now();
+  var safeName = file.name.replace(/\s+/g, '_');
+  var path = guestSlug + '/' + ts + '_' + safeName;
+
+  var res = await fetch(SB + '/storage/v1/object/id-uploads/' + path, {
+    method: 'POST',
+    headers: {
+      'apikey': KEY,
+      'Authorization': 'Bearer ' + KEY,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (!res.ok) {
+    var err = await res.json().catch(function(){return {};});
+    throw new Error(err.message || err.error || 'Upload failed (' + res.status + ')');
+  }
+  return {
+    name: file.name,
+    path: path,
+    url: SB + '/storage/v1/object/public/id-uploads/' + path
+  };
 }
 
-// ── Section B toggle ──
+function renderIdProofCard(proof, listEl) {
+  var card = document.createElement('div');
+  card.className = 'id-proof-card';
+  card.setAttribute('data-path', proof.path);
+
+  var isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(proof.name);
+  var isPdf   = /\.pdf$/i.test(proof.name);
+
+  if (isImage) {
+    var img = document.createElement('img');
+    img.src = proof.url;
+    img.alt = proof.name;
+    img.onerror = function(){ this.style.display='none'; };
+    card.appendChild(img);
+  } else if (isPdf) {
+    var pdfRow = document.createElement('div');
+    pdfRow.className = 'id-proof-pdf';
+    pdfRow.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><a href="' + proof.url + '" target="_blank">' + proof.name + '</a>';
+    card.appendChild(pdfRow);
+  } else {
+    var gen = document.createElement('div');
+    gen.style.cssText = 'padding:14px;font-size:13px;color:var(--muted)';
+    gen.textContent = proof.name;
+    card.appendChild(gen);
+  }
+
+  var footer = document.createElement('div');
+  footer.className = 'id-proof-card-footer';
+  var nameSpan = document.createElement('span');
+  nameSpan.className = 'id-proof-card-name';
+  nameSpan.textContent = proof.name;
+  var delBtn = document.createElement('button');
+  delBtn.className = 'id-proof-del-btn';
+  delBtn.textContent = 'Delete';
+  delBtn.onclick = function(){ deleteIdProof(proof.path, card); };
+  footer.appendChild(nameSpan);
+  footer.appendChild(delBtn);
+  card.appendChild(footer);
+  listEl.appendChild(card);
+}
+
+async function deleteIdProof(path, cardEl) {
+  try {
+    await fetch(SB + '/storage/v1/object/id-uploads/' + path, {
+      method: 'DELETE',
+      headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }
+    });
+  } catch(e) {}
+  uploadedIdProofs = uploadedIdProofs.filter(function(p){ return p.path !== path; });
+  if (cardEl && cardEl.parentNode) cardEl.parentNode.removeChild(cardEl);
+  toast('ID proof removed');
+}
+
+async function handleIdUpload(input) {
+  var files = Array.from(input.files);
+  if (!files.length) return;
+  var listEl = document.getElementById('ci-file-list');
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var progress = document.createElement('div');
+    progress.className = 'upload-progress';
+    progress.innerHTML = '<div class="upload-spinner"></div><span>Uploading ' + file.name + '...</span>';
+    listEl.appendChild(progress);
+    try {
+      var proof = await uploadIdFile(file);
+      uploadedIdProofs.push(proof);
+      listEl.removeChild(progress);
+      renderIdProofCard(proof, listEl);
+    } catch(err) {
+      listEl.removeChild(progress);
+      toast('Upload failed: ' + (err.message || 'Please try again'));
+    }
+  }
+  input.value = '';
+}
+
+function restoreIdProofPreviews(existingProofs) {
+  var listEl = document.getElementById('ci-file-list');
+  listEl.innerHTML = '';
+  uploadedIdProofs = [];
+  (existingProofs || []).forEach(function(p) {
+    if (p.url && p.path) {
+      uploadedIdProofs.push(p);
+      renderIdProofCard(p, listEl);
+    } else if (p.name) {
+      var pill = document.createElement('div');
+      pill.className = 'file-item';
+      pill.textContent = 'Existing: ' + p.name + ' (upload new to replace)';
+      listEl.appendChild(pill);
+    }
+  });
+}
+
+function showFiles(input, listId){
+  document.getElementById(listId).innerHTML = Array.from(input.files).map(function(f){
+    return '<div class="file-item">&#10003; ' + f.name + ' <span style="margin-left:auto;font-size:11px;opacity:.7">' + (f.size/1024).toFixed(0) + 'KB</span></div>';
+  }).join('');
+}
+
+// Edit existing check-in
+function editCheckin(){
+  if(!CI_RECORD) return;
+  var fd = CI_RECORD.form_data || {};
+  document.getElementById('ci-name').value     = CI_RECORD.guest_name || '';
+  document.getElementById('ci-address').value  = fd.permanent_address || '';
+  document.getElementById('ci-email').value    = fd.email || '';
+  document.getElementById('ci-mobile').value   = fd.mobile || '';
+  document.getElementById('ci-dob').value      = fd.dob || '';
+  document.getElementById('ci-org').value      = fd.organisation || '';
+  document.getElementById('ci-from').value     = CI_RECORD.travelled_from || '';
+  document.getElementById('ci-to').value       = CI_RECORD.travelling_to || '';
+  document.getElementById('ci-arr-date').value = fd.arrival_date || '';
+  document.getElementById('ci-arr-time').value = fd.arrival_time || '';
+  document.getElementById('ci-dep-date').value = fd.departure_date || '';
+  document.getElementById('ci-dep-time').value = fd.departure_time || '';
+  document.getElementById('ci-guests').value   = CI_RECORD.num_guests || 1;
+  document.getElementById('ci-dietary').value  = fd.dietary || '';
+  document.getElementById('ci-occasion').value = fd.special_occasion || '';
+  document.getElementById('ci-comfort').value  = fd.comfort_requests || '';
+  if(fd.payment_mode){
+    var r = document.querySelector('input[name="payment"][value="' + fd.payment_mode + '"]');
+    if(r) r.checked = true;
+  }
+  document.getElementById('ci-declaration').checked = !!fd.declaration;
+  restoreIdProofPreviews(fd.id_proofs || []);
+  document.getElementById('ci-done').style.display = 'none';
+  document.getElementById('ci-form').style.display = 'block';
+  document.getElementById('ci-btn').textContent = 'Update registration';
+}
+
 function toggleSectionB(el){
-  const body = document.getElementById('section-b');
-  const arrow = document.getElementById('sb-arrow');
+  var body  = document.getElementById('section-b');
+  var arrow = document.getElementById('sb-arrow');
   body.classList.toggle('open');
   arrow.style.transform = body.classList.contains('open') ? 'rotate(90deg)' : '';
 }
 
-function showFiles(input, listId){
-  document.getElementById(listId).innerHTML=Array.from(input.files).map(f=>`<div class="file-item">✓ ${f.name} <span style="margin-left:auto;font-size:11px;opacity:.7">${(f.size/1024).toFixed(0)}KB</span></div>`).join('');
-}
-
-// ── Check check-in status ──
-let CI_RECORD = null;
-(async()=>{
-  const d=await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+me.id+'&select=*&order=checked_in_at.desc&limit=1');
-  if(d&&d.length){
-    CI_RECORD=d[0];
-    document.getElementById('ci-done').style.display='flex';
-    document.getElementById('ci-form').style.display='none';
+var CI_RECORD = null;
+(async function(){
+  var d = await api('/rest/v1/guest_checkins?guest_profile_id=eq.' + me.id + '&select=*&order=checked_in_at.desc&limit=1');
+  if(d && d.length){
+    CI_RECORD = d[0];
+    document.getElementById('ci-done').style.display = 'flex';
+    document.getElementById('ci-form').style.display = 'none';
   }
 })();
 
-async function getPropId(){
-  const d=await api('/rest/v1/properties?name=ilike.'+encodeURIComponent('%'+(me.prop||'')+'%')+'&select=id');
-  return d&&d[0]?d[0].id:null;
-}
-
-// ── SUBMIT CHECK-IN ──
+// SUBMIT
 async function submitCheckin(){
-  const name   = document.getElementById('ci-name').value.trim();
-  const addr   = document.getElementById('ci-address').value.trim();
-  const email  = document.getElementById('ci-email').value.trim();
-  const mobile = document.getElementById('ci-mobile').value.trim();
-  const dob    = document.getElementById('ci-dob').value;
-  const from   = document.getElementById('ci-from').value.trim();
-  const to     = document.getElementById('ci-to').value.trim();
-  const arrDate= document.getElementById('ci-arr-date').value;
-  const arrTime= document.getElementById('ci-arr-time').value;
-  const depDate= document.getElementById('ci-dep-date').value;
-  const depTime= document.getElementById('ci-dep-time').value;
-  const guests = parseInt(document.getElementById('ci-guests').value)||1;
-  const payment= document.querySelector('input[name="payment"]:checked')?.value||'';
-  const decl   = document.getElementById('ci-declaration').checked;
-  const files  = document.getElementById('ci-files').files;
+  var name    = document.getElementById('ci-name').value.trim();
+  var addr    = document.getElementById('ci-address').value.trim();
+  var email   = document.getElementById('ci-email').value.trim();
+  var mobile  = document.getElementById('ci-mobile').value.trim();
+  var dob     = document.getElementById('ci-dob').value;
+  var from    = document.getElementById('ci-from').value.trim();
+  var to      = document.getElementById('ci-to').value.trim();
+  var arrDate = document.getElementById('ci-arr-date').value;
+  var arrTime = document.getElementById('ci-arr-time').value;
+  var depDate = document.getElementById('ci-dep-date').value;
+  var depTime = document.getElementById('ci-dep-time').value;
+  var guests  = parseInt(document.getElementById('ci-guests').value) || 1;
+  var payEl   = document.querySelector('input[name="payment"]:checked');
+  var payment = payEl ? payEl.value : '';
+  var decl    = document.getElementById('ci-declaration').checked;
+  var isEdit  = !!(CI_RECORD && CI_RECORD.id);
 
-  const isEdit=!!(CI_RECORD&&CI_RECORD.id);
   if(!name||!addr||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
-  if(!files.length&&!(CI_RECORD?.form_data?.id_proofs?.length)){toast('Please upload ID proof');return;}
+
+  var hasProofs = uploadedIdProofs.length > 0 ||
+    (isEdit && CI_RECORD.form_data && (CI_RECORD.form_data.id_proofs||[]).length > 0);
+  if(!hasProofs){toast('Please upload ID proof');return;}
   if(!payment){toast('Please select payment mode');return;}
   if(!decl){toast('Please accept the declaration');return;}
 
-  const btn = document.getElementById('ci-btn');
-  btn.disabled=true;
+  var btn = document.getElementById('ci-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
 
-  let id_proofs=[];
-  if(files.length){
-    for(let i=0;i<files.length;i++){
-      btn.textContent=`Reading ID ${i+1} of ${files.length}…`;
-      const file=files[i];
-      const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(file);});
-      id_proofs.push({name:file.name,type:file.type,data});
-    }
-  } else if(isEdit){
-    id_proofs=CI_RECORD.form_data?.id_proofs||[];
-  }
+  // Use pre-uploaded proofs; fall back to existing if editing and no new uploads
+  var id_proofs = uploadedIdProofs.length > 0
+    ? uploadedIdProofs
+    : (isEdit && CI_RECORD.form_data ? (CI_RECORD.form_data.id_proofs || []) : []);
 
-  const sbOpen = document.getElementById('section-b').classList.contains('open');
-  const passport_docs=[];
+  // Section B passport (still uses FileReader since it's one file, not bulk storage)
+  var sbOpen = document.getElementById('section-b').classList.contains('open');
+  var passport_docs = [];
   if(sbOpen){
-    const pf=document.getElementById('fb-passport-file').files[0];
+    var pf = document.getElementById('fb-passport-file').files[0];
     if(pf){
-      btn.textContent='Reading passport…';
-      const data=await new Promise(res=>{const fr=new FileReader();fr.onloadend=()=>res(fr.result);fr.readAsDataURL(pf);});
-      passport_docs.push({name:pf.name,type:pf.type,data});
+      btn.textContent = 'Reading passport...';
+      var pdata = await new Promise(function(res){var fr=new FileReader();fr.onloadend=function(){res(fr.result);};fr.readAsDataURL(pf);});
+      passport_docs.push({name:pf.name,type:pf.type,data:pdata});
     }
   }
 
-  btn.textContent='Saving…';
-
-  const form_data = {
-    organisation: document.getElementById('ci-org').value.trim(),
+  var form_data = {
+    organisation:      document.getElementById('ci-org').value.trim(),
     permanent_address: addr,
-    email, mobile, dob,
-    arrival_date: arrDate, arrival_time: arrTime,
-    departure_date: depDate, departure_time: depTime,
-    payment_mode: payment,
-    dietary: document.getElementById('ci-dietary').value.trim(),
-    special_occasion: document.getElementById('ci-occasion').value.trim(),
-    comfort_requests: document.getElementById('ci-comfort').value.trim(),
-    declaration: true,
-    is_foreign: sbOpen,
-    id_proofs,
+    email:             email,
+    mobile:            mobile,
+    dob:               dob,
+    arrival_date:      arrDate,
+    arrival_time:      arrTime,
+    departure_date:    depDate,
+    departure_time:    depTime,
+    payment_mode:      payment,
+    dietary:           document.getElementById('ci-dietary').value.trim(),
+    special_occasion:  document.getElementById('ci-occasion').value.trim(),
+    comfort_requests:  document.getElementById('ci-comfort').value.trim(),
+    declaration:       true,
+    is_foreign:        sbOpen,
+    id_proofs:         id_proofs
   };
 
   if(sbOpen){
     form_data.foreign = {
-      name_caps:        document.getElementById('fb-name').value.trim(),
-      nationality:      document.getElementById('fb-nationality').value.trim(),
-      passport_no:      document.getElementById('fb-passport-no').value.trim(),
-      passport_date:    document.getElementById('fb-passport-date').value,
-      passport_place:   document.getElementById('fb-passport-place').value.trim(),
-      passport_docs,
-      india_address:    document.getElementById('fb-india-addr').value.trim(),
-      india_arrival:    document.getElementById('fb-india-arrival').value,
-      employed_india:   document.querySelector('input[name="employed"]:checked')?.value||'',
-      duration_india:   document.getElementById('fb-duration').value.trim(),
-      arrived_from:     document.getElementById('fb-arrived').value.trim(),
-      reg_cert:         document.getElementById('fb-reg-cert').value.trim(),
-      purpose:          document.querySelector('input[name="purpose"]:checked')?.value||'',
-      checkout_date:    document.getElementById('fb-checkout-date').value,
-      checkout_time:    document.getElementById('fb-checkout-time').value,
-      proceed_address:  document.getElementById('fb-proceed-addr').value.trim(),
+      name_caps:       document.getElementById('fb-name').value.trim(),
+      nationality:     document.getElementById('fb-nationality').value.trim(),
+      passport_no:     document.getElementById('fb-passport-no').value.trim(),
+      passport_date:   document.getElementById('fb-passport-date').value,
+      passport_place:  document.getElementById('fb-passport-place').value.trim(),
+      passport_docs:   passport_docs,
+      india_address:   document.getElementById('fb-india-addr').value.trim(),
+      india_arrival:   document.getElementById('fb-india-arrival').value,
+      employed_india:  (document.querySelector('input[name="employed"]:checked')||{}).value||'',
+      duration_india:  document.getElementById('fb-duration').value.trim(),
+      arrived_from:    document.getElementById('fb-arrived').value.trim(),
+      reg_cert:        document.getElementById('fb-reg-cert').value.trim(),
+      purpose:         (document.querySelector('input[name="purpose"]:checked')||{}).value||'',
+      checkout_date:   document.getElementById('fb-checkout-date').value,
+      checkout_time:   document.getElementById('fb-checkout-time').value,
+      proceed_address: document.getElementById('fb-proceed-addr').value.trim()
     };
   }
 
-  const payload={
+  var payload = {
     guest_profile_id: me.id,
-    guest_name: name,
-    property_name: me.prop,
-    travelled_from: from,
-    travelling_to: to,
-    num_guests: guests,
-    id_proof_urls: id_proofs.map(f=>f.name),
-    form_data,
+    guest_name:       name,
+    property_name:    me.prop,
+    travelled_from:   from,
+    travelling_to:    to,
+    num_guests:       guests,
+    id_proof_urls:    id_proofs.map(function(f){ return f.url || f.name; }),
+    form_data:        form_data
   };
+
   try {
     if(isEdit){
-      await api('/rest/v1/guest_checkins?id=eq.'+CI_RECORD.id,'PATCH',payload);
-      CI_RECORD={...CI_RECORD,...payload,form_data};
+      await api('/rest/v1/guest_checkins?id=eq.' + CI_RECORD.id, 'PATCH', payload);
+      CI_RECORD = Object.assign({}, CI_RECORD, payload, {form_data: form_data});
     } else {
-      payload.checked_in_at=new Date().toISOString();
-      const rec=await api('/rest/v1/guest_checkins','POST',payload);
-      CI_RECORD=(rec&&rec[0])||{guest_name:name};
+      payload.checked_in_at = new Date().toISOString();
+      var rec = await api('/rest/v1/guest_checkins', 'POST', payload);
+      CI_RECORD = (rec && rec[0]) || {guest_name: name};
     }
-    btn.disabled=false;
-    btn.textContent='Submit registration';
-    document.getElementById('ci-done').style.display='flex';
-    document.getElementById('ci-form').style.display='none';
-    toast(isEdit?'Registration updated ✓':'Registration complete ✓');
+    btn.disabled = false;
+    btn.textContent = 'Submit registration';
+    document.getElementById('ci-done').style.display = 'flex';
+    document.getElementById('ci-form').style.display = 'none';
+    toast(isEdit ? 'Registration updated' : 'Registration complete');
   } catch(err) {
-    btn.disabled=false;
-    btn.textContent='Submit registration';
-    toast('Save failed: '+(err.message||'Please try again'));
-    console.error('submitCheckin error:', err);
-    return;
+    btn.disabled = false;
+    btn.textContent = 'Submit registration';
+    toast('Save failed: ' + (err.message || 'Please try again'));
   }
 }
 
-// ── Welcome banner ──
 function dismissBanner(){
-  const b = document.getElementById('welcome-banner');
+  var b = document.getElementById('welcome-banner');
   b.style.transition = 'opacity .4s';
   b.style.opacity = '0';
-  setTimeout(() => b.style.display = 'none', 400);
+  setTimeout(function(){ b.style.display = 'none'; }, 400);
 }
 
-// ── Final Bill ──
 async function loadFinalBill(){
-  document.getElementById('bill-loading').style.display='block';
-  document.getElementById('bill-content').style.display='none';
-  document.getElementById('bill-none').style.display='none';
+  document.getElementById('bill-loading').style.display = 'block';
+  document.getElementById('bill-content').style.display = 'none';
+  document.getElementById('bill-none').style.display = 'none';
   try {
-    const data = await api('/rest/v1/guest_final_bills?guest_profile_id=eq.'+me.id+'&select=*&order=created_at.desc&limit=1');
-    document.getElementById('bill-loading').style.display='none';
-    if(!data || !data.length){ document.getElementById('bill-none').style.display='block'; return; }
-    const bill = data[0];
-    document.getElementById('bill-content').style.display='block';
-    document.getElementById('bill-guest-name').textContent = bill.guest_name || me.name || '—';
-    document.getElementById('bill-property').textContent = bill.property_name || me.prop || '—';
-    const fmt = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var data = await api('/rest/v1/guest_final_bills?guest_profile_id=eq.' + me.id + '&select=*&order=created_at.desc&limit=1');
+    document.getElementById('bill-loading').style.display = 'none';
+    if(!data || !data.length){ document.getElementById('bill-none').style.display = 'block'; return; }
+    var bill = data[0];
+    document.getElementById('bill-content').style.display = 'block';
+    document.getElementById('bill-guest-name').textContent = bill.guest_name || me.name || '--';
+    document.getElementById('bill-property').textContent   = bill.property_name || me.prop || '--';
+    var fmt = function(d){ return d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '--'; };
     document.getElementById('bill-checkin').textContent  = fmt(bill.check_in_date);
     document.getElementById('bill-checkout').textContent = fmt(bill.check_out_date);
     if(bill.check_in_date && bill.check_out_date){
-      const diff = Math.round((new Date(bill.check_out_date)-new Date(bill.check_in_date))/(1000*60*60*24));
-      document.getElementById('bill-nights').textContent = diff > 0 ? diff+' night'+(diff!==1?'s':'') : '—';
+      var diff = Math.round((new Date(bill.check_out_date)-new Date(bill.check_in_date))/(1000*60*60*24));
+      document.getElementById('bill-nights').textContent = diff > 0 ? diff + ' night' + (diff !== 1 ? 's' : '') : '--';
     }
-    const items = bill.line_items || [];
+    var items = bill.line_items || [];
     if(items.length){
-      document.getElementById('bill-items').innerHTML = items.map(i=>`
-        <div class="bill-line">
-          <span>${i.description||'Item'}</span>
-          <span style="font-weight:500">${bill.currency||'₹'} ${Number(i.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2})}</span>
-        </div>`).join('');
+      document.getElementById('bill-items').innerHTML = items.map(function(i){
+        return '<div class="bill-line"><span>' + (i.description||'Item') + '</span><span style="font-weight:500">' + (bill.currency||'Rs.') + ' ' + Number(i.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span></div>';
+      }).join('');
     }
-    const total = bill.total_amount != null ? bill.total_amount : (items.reduce((s,i)=>s+Number(i.amount||0),0)||null);
-    document.getElementById('bill-total').textContent = total != null ? (bill.currency||'₹')+' '+Number(total).toLocaleString('en-IN',{minimumFractionDigits:2}) : '—';
-    const statusMap = {paid:'bdg-g', pending:'bdg-a', overdue:'bdg-r', waived:'bdg-g'};
-    const st = (bill.payment_status||'pending').toLowerCase();
-    const badge = document.getElementById('bill-status-badge');
+    var total = bill.total_amount != null ? bill.total_amount : (items.reduce(function(s,i){return s+Number(i.amount||0);},0)||null);
+    document.getElementById('bill-total').textContent = total != null ? (bill.currency||'Rs.') + ' ' + Number(total).toLocaleString('en-IN',{minimumFractionDigits:2}) : '--';
+    var statusMap = {paid:'bdg-g',pending:'bdg-a',overdue:'bdg-r',waived:'bdg-g'};
+    var st = (bill.payment_status||'pending').toLowerCase();
+    var badge = document.getElementById('bill-status-badge');
     badge.textContent = bill.payment_status || 'Pending';
-    badge.className = 'bdg ' + (statusMap[st]||'bdg-a');
+    badge.className   = 'bdg ' + (statusMap[st]||'bdg-a');
     document.getElementById('bill-remarks').textContent = bill.remarks || '';
   } catch(e){
-    document.getElementById('bill-loading').style.display='none';
-    document.getElementById('bill-none').style.display='block';
+    document.getElementById('bill-loading').style.display = 'none';
+    document.getElementById('bill-none').style.display = 'block';
   }
 }
 </script>
 
-
-<!-- MESSAGING FAB -->
 <a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:16px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
@@ -760,15 +792,12 @@ async function loadFinalBill(){
   var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
   var me=JSON.parse(localStorage.getItem("bc_me")||"null");
   if(!me)return;
-  fetch(S+"/rest/v1/"+"messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
-    .then(function(r){return r.json()})
+  fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
+    .then(function(r){return r.json();})
     .then(function(d){
-      if(d&&d.length){
-        var b=document.getElementById("msg-fab-badge");
-        if(b){b.textContent=d.length>9?"9+":d.length;b.style.display="block"}
-      }
+      if(d&&d.length){var b=document.getElementById("msg-fab-badge");if(b){b.textContent=d.length>9?"9+":d.length;b.style.display="block";}}
     }).catch(function(){});
 })();
 </script>
-
+</body>
 </html>
