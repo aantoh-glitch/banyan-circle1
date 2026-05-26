@@ -59,6 +59,12 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .no-photo svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .photo-input{display:none}
 
+/* Photo cell wrapper */
+.photo-cell{display:flex;flex-direction:column;align-items:center;gap:5px}
+.dl-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--white);color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;text-decoration:none}
+.dl-btn:hover{border-color:var(--br);color:var(--br)}
+.dl-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
 /* Remove button */
 .btn-remove{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
 .btn-remove:hover{background:#f5d0d0}
@@ -100,6 +106,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
 /* Read-only notice */
 .readonly-notice{display:flex;align-items:center;gap:8px;background:#FBF0E0;border:1px solid #E8D0AA;border-radius:10px;padding:9px 14px;margin:16px 24px 0;font-size:12px;color:#5A3006}
+
+/* Download full list button */
+.btn-dl-full{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:var(--white);color:var(--text);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.btn-dl-full:hover{border-color:var(--br);color:var(--br);box-shadow:0 2px 8px rgba(153,60,29,.12)}
+.btn-dl-full svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -156,6 +167,14 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
           <div class="empty">Loading removed items…</div>
         </div>
       </div>
+    </div>
+
+    <!-- Download full list button -->
+    <div style="display:flex;justify-content:center;margin-top:8px">
+      <button class="btn-dl-full" id="dl-full-btn" onclick="downloadFullList()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Full Asset List
+      </button>
     </div>
   </div>
 
@@ -334,7 +353,13 @@ async function loadAssets() {
         <td style="font-size:12px;color:var(--muted)">${a.owner ? esc(a.owner) : '—'}</td>
         <td>
           ${a.photo_url
-            ? `<img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>`
+            ? `<div class="photo-cell">
+                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>
+                <button class="dl-btn" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Save
+                </button>
+               </div>`
             : IS_ADMIN
               ? `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.name)}')">
                   <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -377,7 +402,13 @@ async function loadRemoved() {
         <td class="qty">${a.quantity ?? 1}</td>
         <td>
           ${a.photo_url
-            ? `<img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>`
+            ? `<div class="photo-cell">
+                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>
+                <button class="dl-btn" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Save
+                </button>
+               </div>`
             : '<span style="font-size:11px;color:var(--muted)">—</span>'}
         </td>
         <td style="font-size:12px;color:var(--muted)">${a.owner ? esc(a.owner) : '—'}</td>
@@ -531,8 +562,138 @@ function toast(msg) {
   setTimeout(() => t.style.display = 'none', 3000);
 }
 
+// ── Download photo ──
+async function downloadPhoto(url, name) {
+  try {
+    const res = await fetch(url, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY } });
+    if (!res.ok) throw new Error('Fetch failed');
+    const blob = await res.blob();
+    const ext = url.split('.').pop().split('?')[0] || 'jpg';
+    const fname = (name || 'asset').replace(/[^a-z0-9_\-]/gi, '_') + '.' + ext;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fname;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch(e) {
+    toast('Download failed — ' + e.message);
+  }
+}
+
+// ── Download full list as PDF ──
+async function downloadFullList() {
+  const btn = document.getElementById('dl-full-btn');
+  if (!PROPERTY) { toast('No property selected'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Preparing PDF…';
+
+  try {
+    // Fetch all assets (active + removed) for this property
+    const [active, removed] = await Promise.all([
+      api(`/rest/v1/assets?property_name=eq.${encodeURIComponent(PROPERTY)}&removed=eq.false&order=created_at.asc`),
+      api(`/rest/v1/assets?property_name=eq.${encodeURIComponent(PROPERTY)}&removed=eq.true&order=removed_at.desc`)
+    ]);
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const pageW = doc.internal.pageSize.getWidth();
+    const brand = [153/255, 60/255, 29/255]; // --br colour
+
+    // Header bar
+    doc.setFillColor(...brand);
+    doc.rect(0, 0, pageW, 22, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Asset Inventory', 14, 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(PROPERTY, pageW - 14, 14, { align: 'right' });
+
+    // Date sub-line
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(8);
+    doc.text('Generated: ' + new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }), 14, 29);
+
+    // ── Active assets table ──
+    doc.setTextColor(30, 30, 24);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('Active Assets', 14, 38);
+
+    const activeRows = (active || []).map((a, i) => [
+      i + 1,
+      a.name || '—',
+      a.quantity ?? 1,
+      a.owner || '—'
+    ]);
+
+    doc.autoTable({
+      startY: 41,
+      head: [['#', 'Item', 'Qty', 'Owner']],
+      body: activeRows.length ? activeRows : [['', 'No active assets', '', '']],
+      theme: 'grid',
+      headStyles: { fillColor: brand, textColor: 255, fontSize: 9, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 9, textColor: [30, 30, 24] },
+      alternateRowStyles: { fillColor: [249, 248, 246] },
+      columnStyles: { 0: { cellWidth: 12 }, 2: { cellWidth: 14 }, 3: { cellWidth: 30 } },
+      margin: { left: 14, right: 14 }
+    });
+
+    // ── Removed log table ──
+    const afterActive = doc.lastAutoTable.finalY + 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 24);
+    doc.text('Removed Assets Log', 14, afterActive);
+
+    const removedRows = (removed || []).map((a, i) => [
+      i + 1,
+      a.name || '—',
+      a.quantity ?? 1,
+      a.owner || '—',
+      a.removed_at ? new Date(a.removed_at).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '—',
+      a.removed_reason || '—'
+    ]);
+
+    doc.autoTable({
+      startY: afterActive + 3,
+      head: [['#', 'Item', 'Qty', 'Owner', 'Removed On', 'Reason']],
+      body: removedRows.length ? removedRows : [['', 'No removed items', '', '', '', '']],
+      theme: 'grid',
+      headStyles: { fillColor: [163, 45, 45], textColor: 255, fontSize: 9, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 9, textColor: [30, 30, 24] },
+      alternateRowStyles: { fillColor: [252, 235, 235] },
+      columnStyles: { 0: { cellWidth: 12 }, 2: { cellWidth: 14 }, 3: { cellWidth: 28 }, 4: { cellWidth: 30 } },
+      margin: { left: 14, right: 14 }
+    });
+
+    // Footer on each page
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= pageCount; p++) {
+      doc.setPage(p);
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 155);
+      doc.text(`Page ${p} of ${pageCount}`, pageW / 2, doc.internal.pageSize.getHeight() - 6, { align: 'center' });
+    }
+
+    const fname = PROPERTY.replace(/[^a-z0-9]/gi, '_') + '_assets.pdf';
+    doc.save(fname);
+    toast('✓ PDF downloaded');
+  } catch(e) {
+    console.error(e);
+    toast('PDF generation failed — ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Full Asset List';
+}
+
 // Boot
 if (PROPERTY) loadAssets();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>
