@@ -606,7 +606,8 @@ const NEGATIVE_HEADS = ['Deduction','Loss'];
 ═══════════════════════════════════════════ */
 const params  = new URLSearchParams(window.location.search);
 const viewRole = (params.get('role') || 'admin').toLowerCase();
-const viewName = params.get('name') || '';
+let   viewName = params.get('name') || '';
+const viewProp = params.get('property') || ''; // property-portal mode: resolve to landlord name
 
 const isAdmin = (viewRole === 'admin' || viewRole === 'office');
 
@@ -618,7 +619,7 @@ const BACK_MAP = {
   admin:    '/admin.html',
   office:   '/admin.html',
 };
-document.getElementById('back-btn').style.display = BACK_MAP[viewRole] ? 'flex' : 'none';
+document.getElementById('back-btn').style.display = (!isAdmin && BACK_MAP[viewRole]) ? 'flex' : 'none';
 
 /* Identity strip */
 const roleLabels = {admin:'Admin',office:'Admin',landlord:'Landlord',staff:'Staff',talent:'Talent'};
@@ -719,12 +720,12 @@ renderMonthLabel();
 ═══════════════════════════════════════════ */
 async function loadEntityLists() {
   try {
-    const [landlords, staff, talents] = await Promise.all([
-      api('/rest/v1/landlords?select=name&order=name.asc'),
+    const [propLogins, staff, talents] = await Promise.all([
+      api('/rest/v1/property_logins?select=property_name&order=property_name.asc'),
       api('/rest/v1/staff?select=name&order=name.asc'),
       api('/rest/v1/talents?select=name&order=name.asc').catch(() => [])
     ]);
-    entityLists.landlord = (landlords || []).map(r => r.name).filter(Boolean);
+    entityLists.landlord = (propLogins || []).map(r => r.property_name).filter(Boolean);
     entityLists.staff    = (staff    || []).map(r => r.name).filter(Boolean);
     entityLists.talent   = (talents  || []).map(r => r.name).filter(Boolean);
   } catch(e) {
@@ -739,9 +740,14 @@ async function loadEntries() {
   let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
 
   if (!isAdmin) {
-    // Non-admin: filter to own name
+    // Property-portal mode: property name IS the entity name
+    if (viewProp && !viewName) {
+      viewName = viewProp;
+      document.getElementById('id-name').textContent = viewName;
+    }
+    // Non-admin: filter to own property name
     path += '&entity_name=eq.' + encodeURIComponent(viewName);
-    path += '&entity_type=eq.' + encodeURIComponent(viewRole);
+    path += '&entity_type=eq.landlord';
   }
 
   try {

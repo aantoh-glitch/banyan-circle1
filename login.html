@@ -183,9 +183,9 @@ function avClass(role){
 async function loadPeople() {
   let people = DEFAULTS;
   try {
-    const [staff, landlords, talents] = await Promise.all([
+    const [staff, propLogins, talents] = await Promise.all([
       api('/rest/v1/staff?select=id,name,designation,pin&order=name'),
-      api('/rest/v1/landlords?select=id,name,pin,property_name&order=name'),
+      api('/rest/v1/property_logins?select=id,property_name,pin,landlord_name&order=property_name'),
       api('/rest/v1/talents?select=id,name,pin,category&order=name'),
     ]);
     const merged = [];
@@ -195,9 +195,9 @@ async function loadPeople() {
         role: (s.designation==='Owner' || s.designation==='Manager') ? 'owner' : 'staff'
       })));
     }
-    if (landlords && landlords.length) {
-      merged.push(...landlords.map(l => ({
-        id: l.id, name: l.name, pin: l.pin, role: 'landlord', prop: l.property_name
+    if (propLogins && propLogins.length) {
+      merged.push(...propLogins.map(l => ({
+        id: l.id, name: l.property_name, pin: l.pin, role: 'landlord', prop: l.property_name, landlord: l.landlord_name
       })));
     }
     if (talents && talents.length) {
@@ -210,7 +210,10 @@ async function loadPeople() {
   document.getElementById('people-list').innerHTML = people.map(p =>
     `<button class="person" onclick='selectPerson(${JSON.stringify(p)})'>
       <div class="pav ${avClass(p.role)}">${ini(p.name)}</div>
-      <div class="pname">${p.name}${p.role==='landlord'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Landlord · ${p.prop||''}</span>`:''}${p.role==='talent'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Talent · ${p.category||''}</span>`:''}</div>
+      <div>
+        <div class="pname">${p.name}${p.role==='talent'?` <span style="font-size:11px;color:var(--muted);margin-left:6px">Talent · ${p.category||''}</span>`:''}</div>
+        ${p.role==='landlord' && p.landlord ? `<div style="font-size:11px;color:var(--muted)">${p.landlord}</div>` : ''}
+      </div>
     </button>`).join('');
 }
 loadPeople();

@@ -69,8 +69,6 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
   <span style="font-size:13px;color:#fff;font-weight:500;flex-shrink:0">Property:</span>
   <select id="prop-select" onchange="switchProp(this.value)" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);outline:none">
     <option value="">Select property…</option>
-    <option value="Villa 21">Villa 21</option>
-    <option value="19A Link Heritage">19A Link Heritage</option>
   </select>
 </div>
 
@@ -139,10 +137,23 @@ var isAdmin=(me&&(me.role==='owner'||me.role==='staff'||me.role==='manager'||me.
 var isLandlord=(me&&me.role==='landlord');
 var isGuest=(me&&me.role==='guest');
 
+async function loadPropSelect(){
+  try{
+    var rows=await api('/rest/v1/property_logins?select=property_name&order=property_name.asc')||[];
+    var sel=document.getElementById('prop-select');
+    rows.forEach(function(r){
+      var o=document.createElement('option');
+      o.value=r.property_name; o.textContent=r.property_name;
+      sel.appendChild(o);
+    });
+    if(PROP) sel.value=PROP;
+  }catch(e){console.warn('Could not load property list',e);}
+}
+
 window.addEventListener('DOMContentLoaded',function(){
   if(!_urlProp && !isGuest){
     document.getElementById('prop-banner').style.display='flex';
-    if(PROP) document.getElementById('prop-select').value=PROP;
+    loadPropSelect();
   } else {
     document.getElementById('prop-banner').style.display='none';
   }
