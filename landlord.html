@@ -1223,8 +1223,56 @@ async function saveUtilityBill() {
     ,body:JSON.stringify(body)
   });
   btn.disabled=false; btn.textContent='Submit';
-  if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); loadPayments(); }
+  if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog(); }
   else { var e=await r.text(); toast('Error: '+e, true); }
+}
+
+async function refreshUtilityLog() {
+  var ftEl = document.getElementById('util-full-table');
+  var plEl = document.getElementById('payments-list');
+  if (!ftEl) return;
+  ftEl.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    var r = await fetch(SB+'/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=month.desc', {
+      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Accept':'application/json'}
+    });
+    var data = r.ok ? await r.json() : [];
+    if (!Array.isArray(data)) data = [];
+    // Pending cards
+    var pending = data.filter(function(u){ return u.status !== 'paid'; });
+    if (!pending.length) {
+      plEl.innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">✅</div>All payments are up to date!</div></div>';
+    } else {
+      plEl.innerHTML = pending.map(function(u){
+        return '<div class="payment-card">'
+          +'<div class="payment-dot" style="background:'+(u.status==='pending'?'var(--a)':'var(--r)')+'"></div>'
+          +'<div class="payment-info">'
+            +'<div class="payment-name">'+(u.utility_type||'Utility')+'</div>'
+            +'<div class="payment-date">'+(u.month||'—')+' · <span class="bdg bdg-a">'+u.status+'</span></div>'
+          +'</div>'
+          +'<div class="payment-amt">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</div>'
+        +'</div>';
+      }).join('');
+    }
+    // Full table
+    if (!data.length) {
+      ftEl.innerHTML = '<div class="empty">No utility payments logged yet</div>';
+    } else {
+      var rows = data.map(function(u){
+        var badge = u.status==='paid' ? 'bdg-g' : 'bdg-a';
+        return '<tr>'
+          +'<td style="font-size:12px">'+(u.month||'—')+'</td>'
+          +'<td>'+(u.utility_type||'—')+'</td>'
+          +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
+          +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
+          +'</tr>';
+      }).join('');
+      ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+  } catch(e) {
+    ftEl.innerHTML = '<div class="empty">Could not load payments</div>';
+    console.error('refreshUtilityLog error:', e);
+  }
 }
 </script>
 </body></html>
