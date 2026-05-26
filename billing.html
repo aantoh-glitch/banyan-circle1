@@ -52,10 +52,13 @@ body{padding:28px 32px 60px}
 .bill-total-row{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:12px 8px 0;margin-top:2px;border-top:2px solid var(--text)}
 .bill-total-label{font-size:14px;color:var(--muted);font-weight:500}
 .bill-total-val{font-size:22px;font-weight:600;font-family:'Playfair Display',serif;color:var(--text)}
-.pay-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:9px;overflow:hidden;width:fit-content;margin-bottom:8px}
-.pay-btn{padding:9px 20px;background:var(--white);border:none;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
-.pay-btn:first-child{border-right:1px solid var(--border)}
-.pay-btn.on{background:var(--br);color:#fff}
+.bill-deduct-row{border-top:1px dashed var(--border);padding-top:10px;margin-top:6px}
+.bill-deduct-row .bill-total-label{color:var(--muted);font-weight:400}
+.bill-deduct-input{width:100px;text-align:right;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:15px;font-family:'Playfair Display',serif;font-weight:600;color:var(--g);background:var(--white);outline:none}
+.bill-deduct-input:focus{border-color:var(--g)}
+.bill-pending-row{border-top:2px solid var(--text);padding-top:12px;margin-top:8px}
+.bill-pending-row .bill-total-label{color:var(--text);font-weight:700;font-size:15px}
+.bill-pending-row .bill-total-val{color:var(--r)}
 .method-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .method-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
 .method-btn.on{border-color:var(--g);background:var(--g-l);color:var(--g);font-weight:500}
@@ -111,21 +114,34 @@ body{padding:28px 32px 60px}
     </button>
   </div>
 
+  <!-- Totals summary -->
   <div class="bill-total-row">
     <span class="bill-total-label">Grand Total</span>
     <span class="bill-total-val" id="grand-total">₹0</span>
   </div>
 
+  <div class="bill-total-row bill-deduct-row" id="already-paid-row">
+    <span class="bill-total-label">
+      Already Paid
+      <span id="pay-method-tag" style="font-size:11px;margin-left:6px;color:var(--g)"></span>
+    </span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:15px;color:var(--g);font-weight:600">−</span>
+      <input type="number" class="bill-deduct-input" id="amount-paid" min="0" step="1" placeholder="0" oninput="calcPending()"/>
+    </div>
+  </div>
+
+  <div class="bill-total-row bill-pending-row">
+    <span class="bill-total-label">Pending Payment</span>
+    <span class="bill-total-val" id="pending-total">₹0</span>
+  </div>
+
   <hr class="bill-divider"/>
 
-  <!-- Payment -->
-  <div class="fg">
-    <label class="fl">Payment Status <span style="color:var(--r)">*</span></label>
-    <div class="pay-toggle">
-      <button class="pay-btn on" id="pay-pending-btn" onclick="setPayStatus('pending')">Pending</button>
-      <button class="pay-btn" id="pay-paid-btn" onclick="setPayStatus('paid')">Already Paid</button>
-    </div>
-    <div class="method-row" id="method-row" style="display:none">
+  <!-- Payment method — visible when amount-paid > 0 -->
+  <div class="fg" id="method-row-fg" style="display:none">
+    <label class="fl">Payment Method <span style="color:var(--r)">*</span></label>
+    <div class="method-row" id="method-row">
       <button class="method-btn" id="m-cash" onclick="setPayMethod('cash')">Cash</button>
       <button class="method-btn" id="m-card" onclick="setPayMethod('card')">Card</button>
       <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
@@ -155,7 +171,6 @@ body{padding:28px 32px 60px}
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-var payStatus  = 'pending';
 var payMethod  = '';
 var GUESTS     = [];
 var EDIT_BILL  = null;
@@ -271,7 +286,20 @@ function calcTotal() {
   var sum = 0;
   totals.forEach(function(t){ sum += parseFloat(t.value) || 0; });
   document.getElementById('grand-total').textContent = fmtF(sum);
+  calcPending();
   return sum;
+}
+
+function calcPending() {
+  var totals = document.querySelectorAll('[id$="-tot"]');
+  var sum = 0;
+  totals.forEach(function(t){ sum += parseFloat(t.value) || 0; });
+  var paid = parseFloat(document.getElementById('amount-paid').value) || 0;
+  var pending = Math.max(0, sum - paid);
+  document.getElementById('pending-total').textContent = fmtF(pending);
+  // Show/hide payment method row
+  document.getElementById('method-row-fg').style.display = paid > 0 ? '' : 'none';
+  if (paid === 0) { payMethod = ''; document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');}); }
 }
 
 function removeRow(rid) {
@@ -295,18 +323,12 @@ function getItems() {
 }
 
 // ── Payment ──
-function setPayStatus(s) {
-  payStatus = s;
-  document.getElementById('pay-pending-btn').classList.toggle('on', s==='pending');
-  document.getElementById('pay-paid-btn').classList.toggle('on', s==='paid');
-  document.getElementById('method-row').style.display = s==='paid' ? 'flex' : 'none';
-  if (s==='pending') { payMethod=''; document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');}); }
-}
-
 function setPayMethod(m) {
   payMethod = m;
   document.querySelectorAll('.method-btn').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('m-'+m).classList.add('on');
+  var labels = {cash:'Cash', card:'Card', upi:'UPI'};
+  document.getElementById('pay-method-tag').textContent = m ? '· ' + (labels[m]||m) : '';
 }
 
 // ── Save ──
@@ -315,11 +337,14 @@ async function saveBill() {
   if (!gid) { toast('Please select a guest'); return; }
   var items = getItems();
   if (!items.length) { toast('Add at least one item'); return; }
-  if (payStatus==='paid' && !payMethod) { toast('Select payment method (Cash / Card / UPI)'); return; }
+  var amountPaid = parseFloat(document.getElementById('amount-paid').value) || 0;
+  if (amountPaid > 0 && !payMethod) { toast('Select payment method (Cash / Card / UPI)'); return; }
 
   var g = GUESTS.find(function(x){ return x.id === gid; });
   var infoBox = document.getElementById('guest-info');
   var subtotal = calcTotal();
+
+  var payStatus = amountPaid >= subtotal ? 'paid' : amountPaid > 0 ? 'partial' : 'pending';
 
   var body = {
     guest_profile_id : gid,
@@ -330,6 +355,7 @@ async function saveBill() {
     guest_email      : infoBox.getAttribute('data-email')||'',
     items            : items,
     subtotal         : subtotal,
+    amount_paid      : amountPaid || null,
     payment_status   : payStatus,
     payment_method   : payMethod || null,
     remarks          : document.getElementById('bill-remarks').value.trim()||null,
@@ -367,7 +393,12 @@ function cancelEdit() {
   document.getElementById('items-body').innerHTML = '';
   rowCount = 0;
   document.getElementById('grand-total').textContent = '₹0';
-  setPayStatus('pending');
+  document.getElementById('amount-paid').value = '';
+  document.getElementById('pending-total').textContent = '₹0';
+  document.getElementById('pay-method-tag').textContent = '';
+  document.getElementById('method-row-fg').style.display = 'none';
+  payMethod = '';
+  document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
   document.getElementById('bill-remarks').value = '';
 }
 
@@ -387,8 +418,9 @@ function editBill(bill) {
   (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate); });
 
   // Payment
-  setPayStatus(bill.payment_status || 'pending');
+  document.getElementById('amount-paid').value = bill.amount_paid || '';
   if (bill.payment_method) setPayMethod(bill.payment_method);
+  calcPending();
 
   document.getElementById('bill-remarks').value = bill.remarks || '';
   window.scrollTo({top:0, behavior:'smooth'});
@@ -406,10 +438,13 @@ async function loadBills() {
       '<th>Status</th><th></th>' +
       '</tr></thead><tbody>' +
       data.map(function(b){
-        var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
+        var statusCls = b.payment_status==='paid' ? 'bdg-g' : b.payment_status==='partial' ? 'bdg-a' : 'bdg-a';
+        var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
         var statusLbl = b.payment_status==='paid'
-          ? 'Paid' + (b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '')
-          : 'Pending';
+          ? 'Paid' + methodStr
+          : b.payment_status==='partial'
+            ? 'Part paid' + methodStr + (b.amount_paid ? ' (' + fmt(b.amount_paid) + ')' : '')
+            : 'Pending';
         var items = b.items || [];
         var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
         return '<tr>' +
@@ -456,11 +491,16 @@ function downloadBillPdf(b) {
       '</tr>';
   }).join('');
 
+  var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
   var statusStr = b.payment_status==='paid'
-    ? 'Paid' + (b.payment_method ? ' (' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) + ')' : '')
-    : 'Pending Payment';
+    ? 'Paid' + methodStr
+    : b.payment_status==='partial'
+      ? 'Part Paid' + methodStr
+      : 'Pending Payment';
   var statusColor = b.payment_status==='paid' ? '#27500A' : '#633806';
   var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
+  var amtPaid     = parseFloat(b.amount_paid) || 0;
+  var pendingAmt  = Math.max(0, (parseFloat(b.subtotal)||0) - amtPaid);
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
@@ -494,7 +534,9 @@ function downloadBillPdf(b) {
     '<hr/>' +
     '<table><thead><tr><th>Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
     itemRows +
-    '<tr class="total-row"><td colspan="3">Total</td><td style="text-align:right">₹' + Number(b.subtotal||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
+    '<tr class="total-row"><td colspan="3">Grand Total</td><td style="text-align:right">₹' + Number(b.subtotal||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
+    (amtPaid > 0 ? '<tr><td colspan="3" style="color:#3B6D11;font-size:13px;border-top:1px dashed #ddd">Already Paid' + methodStr + '</td><td style="text-align:right;color:#3B6D11;font-weight:600;border-top:1px dashed #ddd">− ₹' + amtPaid.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' : '') +
+    (amtPaid > 0 ? '<tr><td colspan="3" style="font-weight:700;font-size:14px;border-top:2px solid #2C2C2A">Pending Payment</td><td style="text-align:right;font-weight:700;font-size:14px;color:#A32D2D;border-top:2px solid #2C2C2A">₹' + pendingAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' : '') +
     '</tbody></table>' +
     '<div class="status-pill">' + statusStr + '</div>' +
     (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +

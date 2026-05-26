@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS bills (
   items             JSONB       DEFAULT '[]'::jsonb,
   -- Each item: {"name":"...","qty":1,"rate":0,"total":0}
   subtotal          NUMERIC(10,2) DEFAULT 0,
-  payment_status    TEXT        DEFAULT 'pending',  -- 'paid' | 'pending'
+  amount_paid       NUMERIC(10,2),                  -- partial or full payment received
+  payment_status    TEXT        DEFAULT 'pending',  -- 'paid' | 'partial' | 'pending'
   payment_method    TEXT,                           -- 'cash' | 'card' | 'upi'
   remarks           TEXT,
   created_by        TEXT        DEFAULT 'OFFICE',
