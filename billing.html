@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Banyan Circle — Billing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+body{padding:28px 32px 60px}
+.pg-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:20px}
+.card-ttl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.section-hdg{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+.btn-p{padding:10px 20px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-del{padding:5px 11px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-del:hover{background:var(--r);color:#fff}
+.btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit:hover{background:var(--br-l);color:var(--br)}
+.btn-pdf{padding:5px 11px;background:var(--b-l);color:var(--b);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-pdf:hover{background:var(--b);color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
+.guest-info-box{background:var(--bg);border-radius:10px;padding:16px 18px;margin-bottom:16px;border:1px solid var(--border)}
+.guest-info-name{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:4px}
+.guest-info-addr{font-size:13px;color:var(--muted);line-height:1.65}
+.guest-info-meta{display:flex;gap:18px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.guest-info-meta span strong{color:var(--text)}
+.bill-divider{border:none;border-top:2px solid var(--border);margin:20px 0}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:10px}
+.items-table th{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:7px 8px;border-bottom:2px solid var(--border);background:var(--bg);text-align:left}
+.items-table td{padding:5px 4px;border-bottom:1px solid var(--border);vertical-align:middle}
+.items-table tr:last-child td{border-bottom:none}
+.items-table td input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.items-table td input:focus{border-color:var(--br)}
+.del-row{padding:5px 8px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.del-row:hover{background:var(--r);color:#fff}
+.bill-total-row{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:12px 8px 0;margin-top:2px;border-top:2px solid var(--text)}
+.bill-total-label{font-size:14px;color:var(--muted);font-weight:500}
+.bill-total-val{font-size:22px;font-weight:600;font-family:'Playfair Display',serif;color:var(--text)}
+.pay-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:9px;overflow:hidden;width:fit-content;margin-bottom:8px}
+.pay-btn{padding:9px 20px;background:var(--white);border:none;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+.pay-btn:first-child{border-right:1px solid var(--border)}
+.pay-btn.on{background:var(--br);color:#fff}
+.method-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.method-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.method-btn.on{border-color:var(--g);background:var(--g-l);color:var(--g);font-weight:500}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 24px;border-radius:999px;font-size:13px;z-index:9999;display:none;white-space:nowrap}
+.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
+</head>
+<body>
+
+<div class="pg-title">Billing</div>
+<div class="pg-sub">Create and manage guest bills</div>
+
+<!-- ─── BILL CREATOR ─── -->
+<div class="card">
+  <div class="card-ttl" id="form-ttl">New Bill</div>
+  <input type="hidden" id="edit-id"/>
+
+  <div class="fg">
+    <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
+      <option value="">— choose a guest —</option>
+    </select>
+  </div>
+
+  <!-- Guest info — revealed on selection -->
+  <div class="guest-info-box" id="guest-info" style="display:none">
+    <div class="guest-info-name" id="ginfo-name">—</div>
+    <div class="guest-info-addr" id="ginfo-addr" style="white-space:pre-line"></div>
+    <div class="guest-info-meta" id="ginfo-meta"></div>
+  </div>
+
+  <hr class="bill-divider"/>
+
+  <!-- Items table -->
+  <div class="card-ttl" style="margin-bottom:10px">Itemised Charges</div>
+  <table class="items-table" id="items-table">
+    <thead>
+      <tr>
+        <th style="width:40%">Item / Description</th>
+        <th style="width:13%;text-align:center">Qty</th>
+        <th style="width:18%;text-align:right">Rate (₹)</th>
+        <th style="width:20%;text-align:right">Total (₹)</th>
+        <th style="width:9%"></th>
+      </tr>
+    </thead>
+    <tbody id="items-body"></tbody>
+  </table>
+  <div style="margin-bottom:18px">
+    <button class="btn-sec" onclick="addItemRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add item
+    </button>
+  </div>
+
+  <div class="bill-total-row">
+    <span class="bill-total-label">Grand Total</span>
+    <span class="bill-total-val" id="grand-total">₹0</span>
+  </div>
+
+  <hr class="bill-divider"/>
+
+  <!-- Payment -->
+  <div class="fg">
+    <label class="fl">Payment Status <span style="color:var(--r)">*</span></label>
+    <div class="pay-toggle">
+      <button class="pay-btn on" id="pay-pending-btn" onclick="setPayStatus('pending')">Pending</button>
+      <button class="pay-btn" id="pay-paid-btn" onclick="setPayStatus('paid')">Already Paid</button>
+    </div>
+    <div class="method-row" id="method-row" style="display:none">
+      <button class="method-btn" id="m-cash" onclick="setPayMethod('cash')">Cash</button>
+      <button class="method-btn" id="m-card" onclick="setPayMethod('card')">Card</button>
+      <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
+    </div>
+  </div>
+
+  <div class="fg">
+    <label class="fl">Remarks</label>
+    <input class="fc" id="bill-remarks" type="text" placeholder="e.g. Paid at checkout, discount applied…"/>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:6px;align-items:center">
+    <button class="btn-p" id="save-btn" onclick="saveBill()">Create Bill</button>
+    <button class="btn-sec" id="cancel-btn" onclick="cancelEdit()" style="display:none">Cancel edit</button>
+  </div>
+</div>
+
+<!-- ─── BILL LOG ─── -->
+<div class="section-hdg">Bill Log</div>
+<div class="card">
+  <div id="bill-log">Loading…</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+var payStatus  = 'pending';
+var payMethod  = '';
+var GUESTS     = [];
+var EDIT_BILL  = null;
+
+async function api(path, method, body) {
+  var h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
+  var r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  var json = await r.json().catch(function(){return null;});
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display='none'; }, 2600);
+}
+
+var fmt = function(n){ return '₹'+Math.round(n||0).toLocaleString('en-IN'); };
+var fmtF = function(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+var fmtDate = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; };
+
+// ── Init ──
+async function init() {
+  await loadGuests();
+  await loadBills();
+}
+
+async function loadGuests() {
+  try {
+    var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
+    GUESTS = data;
+    var sel = document.getElementById('bill-guest-select');
+    sel.innerHTML = '<option value="">— choose a guest —</option>' +
+      data.map(function(g){
+        var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
+          (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
+        return '<option value="' + g.id + '">' + label + '</option>';
+      }).join('');
+  } catch(e) {
+    document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
+  }
+}
+
+async function onGuestSelect() {
+  var gid = document.getElementById('bill-guest-select').value;
+  if (!gid) {
+    document.getElementById('guest-info').style.display = 'none';
+    return;
+  }
+  var g = GUESTS.find(function(x){ return x.id === gid; });
+  if (!g) return;
+
+  // Try to fetch latest check-in for address
+  var addr = '', mobile = '', email = '';
+  try {
+    var ci = await api('/rest/v1/guest_checkins?guest_profile_id=eq.' + gid + '&select=form_data&order=checked_in_at.desc&limit=1');
+    if (ci && ci.length && ci[0].form_data) {
+      var fd = ci[0].form_data;
+      addr   = fd.permanent_address || '';
+      mobile = fd.mobile || '';
+      email  = fd.email  || '';
+    }
+  } catch(e) {}
+
+  document.getElementById('ginfo-name').textContent = g.name;
+  document.getElementById('ginfo-addr').textContent  = addr || 'No address on file';
+  var meta = '';
+  if (g.property_name) meta += '<span><strong>' + esc(g.property_name) + '</strong></span>';
+  if (g.check_in)  meta += '<span>Check-in: <strong>' + fmtDate(g.check_in) + '</strong></span>';
+  if (g.check_out) meta += '<span>Check-out: <strong>' + fmtDate(g.check_out) + '</strong></span>';
+  if (mobile)      meta += '<span>📱 ' + esc(mobile) + '</span>';
+  if (email)       meta += '<span>✉ ' + esc(email) + '</span>';
+  document.getElementById('ginfo-meta').innerHTML = meta;
+  document.getElementById('guest-info').style.display = 'block';
+
+  // Pre-fill guest details for when saving
+  document.getElementById('guest-info').setAttribute('data-addr', addr);
+  document.getElementById('guest-info').setAttribute('data-mobile', mobile);
+  document.getElementById('guest-info').setAttribute('data-email', email);
+}
+
+// ── Items ──
+var rowCount = 0;
+function addItemRow(name, qty, rate) {
+  rowCount++;
+  var rid = 'row-' + rowCount;
+  var tr = document.createElement('tr');
+  tr.id = rid;
+  var tot = (parseFloat(qty)||0) * (parseFloat(rate)||0);
+  tr.innerHTML =
+    '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:180px"/></td>' +
+    '<td style="text-align:center"><input type="number" min="1" value="' + (qty||1) + '" oninput="calcRowTotal(this);calcTotal()" style="width:70px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" min="0" step="0.01" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:100px;text-align:right"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:110px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td style="text-align:center"><button class="del-row" onclick="removeRow(\'' + rid + '\')">✕</button></td>';
+  document.getElementById('items-body').appendChild(tr);
+  calcTotal();
+}
+
+function calcRowTotal(input) {
+  var tr = input.closest('tr');
+  var inputs = tr.querySelectorAll('input');
+  var qty  = parseFloat(inputs[1].value) || 0;
+  var rate = parseFloat(inputs[2].value) || 0;
+  inputs[3].value = (qty * rate).toFixed(2);
+}
+
+function calcTotal() {
+  var totals = document.querySelectorAll('[id$="-tot"]');
+  var sum = 0;
+  totals.forEach(function(t){ sum += parseFloat(t.value) || 0; });
+  document.getElementById('grand-total').textContent = fmtF(sum);
+  return sum;
+}
+
+function removeRow(rid) {
+  var tr = document.getElementById(rid);
+  if (tr) tr.remove();
+  calcTotal();
+}
+
+function getItems() {
+  var items = [];
+  var rows = document.querySelectorAll('#items-body tr');
+  rows.forEach(function(tr){
+    var inputs = tr.querySelectorAll('input');
+    var name  = inputs[0].value.trim();
+    var qty   = parseFloat(inputs[1].value) || 0;
+    var rate  = parseFloat(inputs[2].value) || 0;
+    var total = parseFloat(inputs[3].value) || 0;
+    if (name) items.push({name:name, qty:qty, rate:rate, total:total});
+  });
+  return items;
+}
+
+// ── Payment ──
+function setPayStatus(s) {
+  payStatus = s;
+  document.getElementById('pay-pending-btn').classList.toggle('on', s==='pending');
+  document.getElementById('pay-paid-btn').classList.toggle('on', s==='paid');
+  document.getElementById('method-row').style.display = s==='paid' ? 'flex' : 'none';
+  if (s==='pending') { payMethod=''; document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');}); }
+}
+
+function setPayMethod(m) {
+  payMethod = m;
+  document.querySelectorAll('.method-btn').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('m-'+m).classList.add('on');
+}
+
+// ── Save ──
+async function saveBill() {
+  var gid = document.getElementById('bill-guest-select').value;
+  if (!gid) { toast('Please select a guest'); return; }
+  var items = getItems();
+  if (!items.length) { toast('Add at least one item'); return; }
+  if (payStatus==='paid' && !payMethod) { toast('Select payment method (Cash / Card / UPI)'); return; }
+
+  var g = GUESTS.find(function(x){ return x.id === gid; });
+  var infoBox = document.getElementById('guest-info');
+  var subtotal = calcTotal();
+
+  var body = {
+    guest_profile_id : gid,
+    guest_name       : g ? g.name : '',
+    property_name    : g ? (g.property_name||'') : '',
+    guest_address    : infoBox.getAttribute('data-addr')||'',
+    guest_mobile     : infoBox.getAttribute('data-mobile')||'',
+    guest_email      : infoBox.getAttribute('data-email')||'',
+    items            : items,
+    subtotal         : subtotal,
+    payment_status   : payStatus,
+    payment_method   : payMethod || null,
+    remarks          : document.getElementById('bill-remarks').value.trim()||null,
+    updated_at       : new Date().toISOString()
+  };
+
+  var btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    if (EDIT_BILL) {
+      await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
+      toast('Bill updated ✓');
+    } else {
+      await api('/rest/v1/bills', 'POST', body);
+      toast('Bill created ✓');
+    }
+    cancelEdit();
+    await loadBills();
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = EDIT_BILL ? 'Update Bill' : 'Create Bill';
+}
+
+function cancelEdit() {
+  EDIT_BILL = null;
+  document.getElementById('edit-id').value = '';
+  document.getElementById('form-ttl').textContent = 'New Bill';
+  document.getElementById('save-btn').textContent = 'Create Bill';
+  document.getElementById('cancel-btn').style.display = 'none';
+  document.getElementById('bill-guest-select').value = '';
+  document.getElementById('guest-info').style.display = 'none';
+  document.getElementById('items-body').innerHTML = '';
+  rowCount = 0;
+  document.getElementById('grand-total').textContent = '₹0';
+  setPayStatus('pending');
+  document.getElementById('bill-remarks').value = '';
+}
+
+function editBill(bill) {
+  EDIT_BILL = bill;
+  document.getElementById('form-ttl').textContent = 'Edit Bill — ' + (bill.guest_name||'');
+  document.getElementById('save-btn').textContent = 'Update Bill';
+  document.getElementById('cancel-btn').style.display = '';
+
+  // Set guest
+  document.getElementById('bill-guest-select').value = bill.guest_profile_id || '';
+  onGuestSelect();
+
+  // Items
+  document.getElementById('items-body').innerHTML = '';
+  rowCount = 0;
+  (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate); });
+
+  // Payment
+  setPayStatus(bill.payment_status || 'pending');
+  if (bill.payment_method) setPayMethod(bill.payment_method);
+
+  document.getElementById('bill-remarks').value = bill.remarks || '';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ── Load log ──
+async function loadBills() {
+  var el = document.getElementById('bill-log');
+  el.innerHTML = 'Loading…';
+  try {
+    var data = await api('/rest/v1/bills?select=*&order=created_at.desc') || [];
+    if (!data.length) { el.innerHTML = '<div class="empty">No bills yet</div>'; return; }
+    el.innerHTML = '<table class="tbl"><thead><tr>' +
+      '<th>Guest</th><th>Property</th><th>Date</th><th style="text-align:right">Total</th>' +
+      '<th>Status</th><th></th>' +
+      '</tr></thead><tbody>' +
+      data.map(function(b){
+        var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
+        var statusLbl = b.payment_status==='paid'
+          ? 'Paid' + (b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '')
+          : 'Pending';
+        var items = b.items || [];
+        var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
+        return '<tr>' +
+          '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
+          '<td>' + esc(b.property_name||'—') + '</td>' +
+          '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + fmtDate(b.created_at) + '</td>' +
+          '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;font-size:15px">' + fmtF(b.subtotal) + '</td>' +
+          '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
+          '<td style="text-align:right;white-space:nowrap">' +
+            '<button class="btn-edit" onclick=\'editBill(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' style="margin-right:4px">Edit</button>' +
+            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px">Remove</button>' +
+            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\'>PDF</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table>';
+  } catch(e) {
+    el.innerHTML = '<div class="empty">Could not load bills — ensure billing-tables.sql has been run in Supabase.</div>';
+  }
+}
+
+async function deleteBill(id, name) {
+  if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
+  try {
+    await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
+    toast(name + ' bill removed');
+    loadBills();
+  } catch(e) { toast('Error: ' + e.message); }
+}
+
+// ── PDF ──
+function downloadBillPdf(b) {
+  var items = b.items || [];
+  var name  = b.guest_name || 'Guest';
+  var dt    = new Date(b.created_at || Date.now());
+  var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
+
+  var itemRows = items.map(function(i){
+    return '<tr>' +
+      '<td>' + esc(i.name||'Item') + '</td>' +
+      '<td style="text-align:center">' + (i.qty||1) + '</td>' +
+      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+      '<td style="text-align:right;font-weight:600">₹' + Number(i.total||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var statusStr = b.payment_status==='paid'
+    ? 'Paid' + (b.payment_method ? ' (' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) + ')' : '')
+    : 'Pending Payment';
+  var statusColor = b.payment_status==='paid' ? '#27500A' : '#633806';
+  var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}' +
+    'h1{font-size:22px;color:#993C1D;margin-bottom:2px}' +
+    '.sub{font-size:11px;color:#888;margin-bottom:24px}' +
+    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
+    '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}' +
+    '.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}' +
+    '.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}' +
+    '.guest-detail{font-size:12px;color:#666;line-height:1.6}' +
+    'hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}' +
+    'table{width:100%;border-collapse:collapse}' +
+    'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
+    'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}' +
+    '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}' +
+    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:' + statusBg + ';color:' + statusColor + ';margin-top:16px}' +
+    '.remarks{font-size:12px;color:#888;margin-top:8px}' +
+    '.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}' +
+    '@media print{body{padding:18px 24px}}' +
+    '</style></head><body>' +
+    '<div class="hdr">' +
+      '<div><h1>Banyan Circle</h1><div class="sub">Properties by Heritance</div></div>' +
+      '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.created_at) + '</div></div>' +
+    '</div>' +
+    '<div class="guest-card">' +
+      '<div class="guest-name">' + esc(b.guest_name||'Guest') + '</div>' +
+      '<div class="guest-detail">' + esc(b.guest_address||'').replace(/\n/g,'<br/>') + '</div>' +
+      (b.guest_mobile||b.guest_email ? '<div class="guest-detail" style="margin-top:4px">' + [b.guest_mobile, b.guest_email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ') + '</div>' : '') +
+    '</div>' +
+    '<hr/>' +
+    '<table><thead><tr><th>Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+    itemRows +
+    '<tr class="total-row"><td colspan="3">Total</td><td style="text-align:right">₹' + Number(b.subtotal||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
+    '</tbody></table>' +
+    '<div class="status-pill">' + statusStr + '</div>' +
+    (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
+    '<div class="footer">Thank you for staying with Banyan Circle · For queries contact the front desk</div>' +
+    '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
+    '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html'});
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Start
+init();
+</script>
+</body>
+</html>

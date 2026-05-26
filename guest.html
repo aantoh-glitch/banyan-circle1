@@ -306,26 +306,39 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="pg" id="pg-finalbill">
   <div class="pg-title">Final Bill</div>
   <div class="pg-sub">Your stay summary &amp; charges</div>
-  <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill...</div>
+  <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
   <div id="bill-content" style="display:none">
+    <!-- Guest / stay header -->
     <div class="card" style="padding:16px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Stay Summary</div>
       <div class="bill-line"><span style="color:var(--muted)">Guest</span><span id="bill-guest-name" style="font-weight:500">--</span></div>
       <div class="bill-line"><span style="color:var(--muted)">Property</span><span id="bill-property" style="font-weight:500">--</span></div>
+      <div class="bill-line"><span style="color:var(--muted)">Address</span><span id="bill-address" style="font-size:13px;text-align:right;max-width:62%">--</span></div>
       <div class="bill-line"><span style="color:var(--muted)">Check-in</span><span id="bill-checkin">--</span></div>
-      <div class="bill-line"><span style="color:var(--muted)">Check-out</span><span id="bill-checkout">--</span></div>
-      <div class="bill-line" style="border:none"><span style="color:var(--muted)">Nights</span><span id="bill-nights">--</span></div>
+      <div class="bill-line" style="border:none"><span style="color:var(--muted)">Check-out</span><span id="bill-checkout">--</span></div>
     </div>
+    <!-- Itemised charges -->
     <div class="card" style="padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Charges</div>
-      <div id="bill-items"><div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges available yet.</div></div>
+      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Charges</div>
+      <div id="bill-items"></div>
       <div class="bill-total"><span>Total</span><span id="bill-total">--</span></div>
     </div>
-    <div class="card" style="padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-      <div><div style="font-size:13px;font-weight:500;margin-bottom:2px">Payment Status</div><span class="bdg" id="bill-status-badge">Pending</span></div>
-      <div style="margin-left:auto;font-size:12px;color:var(--muted)" id="bill-remarks"></div>
+    <!-- Payment status -->
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px">Payment Status</div>
+          <span class="bdg" id="bill-status-badge">Pending</span>
+        </div>
+        <div style="margin-left:auto;font-size:12px;color:var(--muted);text-align:right" id="bill-remarks"></div>
+      </div>
     </div>
-    <div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0 4px">For queries, please contact the front desk.</div>
+    <!-- Download -->
+    <button onclick="downloadGuestBillPdf()" style="width:100%;padding:14px;border:none;border-radius:12px;background:var(--br);color:#fff;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Bill PDF
+    </button>
+    <div style="font-size:12px;color:var(--muted);text-align:center;padding:4px 0">For queries, please contact the front desk.</div>
   </div>
   <div id="bill-none" style="display:none">
     <div class="success">
@@ -783,43 +796,107 @@ function dismissBanner(){
   setTimeout(function(){ b.style.display = 'none'; }, 400);
 }
 
+var GUEST_BILL = null;
 async function loadFinalBill(){
   document.getElementById('bill-loading').style.display = 'block';
   document.getElementById('bill-content').style.display = 'none';
   document.getElementById('bill-none').style.display = 'none';
   try {
-    var data = await api('/rest/v1/guest_final_bills?guest_profile_id=eq.' + me.id + '&select=*&order=created_at.desc&limit=1');
+    var data = await api('/rest/v1/bills?guest_profile_id=eq.' + me.id + '&select=*&order=created_at.desc&limit=1');
     document.getElementById('bill-loading').style.display = 'none';
     if(!data || !data.length){ document.getElementById('bill-none').style.display = 'block'; return; }
     var bill = data[0];
+    GUEST_BILL = bill;
     document.getElementById('bill-content').style.display = 'block';
+    var fmtD = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '--'; };
+    var fmtA = function(n){ return '₹' + Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); };
     document.getElementById('bill-guest-name').textContent = bill.guest_name || me.name || '--';
     document.getElementById('bill-property').textContent   = bill.property_name || me.prop || '--';
-    var fmt = function(d){ return d ? new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '--'; };
-    document.getElementById('bill-checkin').textContent  = fmt(bill.check_in_date);
-    document.getElementById('bill-checkout').textContent = fmt(bill.check_out_date);
-    if(bill.check_in_date && bill.check_out_date){
-      var diff = Math.round((new Date(bill.check_out_date)-new Date(bill.check_in_date))/(1000*60*60*24));
-      document.getElementById('bill-nights').textContent = diff > 0 ? diff + ' night' + (diff !== 1 ? 's' : '') : '--';
-    }
-    var items = bill.line_items || [];
+    document.getElementById('bill-address').textContent    = bill.guest_address || '--';
+    document.getElementById('bill-checkin').textContent    = fmtD(me.check_in);
+    document.getElementById('bill-checkout').textContent   = fmtD(me.check_out);
+    // Itemised charges
+    var items = bill.items || [];
     if(items.length){
       document.getElementById('bill-items').innerHTML = items.map(function(i){
-        return '<div class="bill-line"><span>' + (i.description||'Item') + '</span><span style="font-weight:500">' + (bill.currency||'Rs.') + ' ' + Number(i.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span></div>';
+        var desc = i.name || 'Item';
+        if((i.qty||0) > 1) desc += ' <span style="color:var(--muted);font-size:12px">× ' + i.qty + ' @ ₹' + Number(i.rate||0).toLocaleString('en-IN') + '</span>';
+        return '<div class="bill-line"><span style="flex:1">' + desc + '</span><span style="font-weight:500;flex-shrink:0;margin-left:12px">' + fmtA(i.total) + '</span></div>';
       }).join('');
+    } else {
+      document.getElementById('bill-items').innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges on record.</div>';
     }
-    var total = bill.total_amount != null ? bill.total_amount : (items.reduce(function(s,i){return s+Number(i.amount||0);},0)||null);
-    document.getElementById('bill-total').textContent = total != null ? (bill.currency||'Rs.') + ' ' + Number(total).toLocaleString('en-IN',{minimumFractionDigits:2}) : '--';
-    var statusMap = {paid:'bdg-g',pending:'bdg-a',overdue:'bdg-r',waived:'bdg-g'};
+    document.getElementById('bill-total').textContent = fmtA(bill.subtotal);
+    var statusMap = {paid:'bdg-g', pending:'bdg-a'};
     var st = (bill.payment_status||'pending').toLowerCase();
     var badge = document.getElementById('bill-status-badge');
-    badge.textContent = bill.payment_status || 'Pending';
+    var methodLabel = bill.payment_method ? ' · ' + bill.payment_method.charAt(0).toUpperCase()+bill.payment_method.slice(1) : '';
+    badge.textContent = st==='paid' ? 'Paid' + methodLabel : 'Pending Payment';
     badge.className   = 'bdg ' + (statusMap[st]||'bdg-a');
     document.getElementById('bill-remarks').textContent = bill.remarks || '';
   } catch(e){
     document.getElementById('bill-loading').style.display = 'none';
     document.getElementById('bill-none').style.display = 'block';
   }
+}
+
+function downloadGuestBillPdf(){
+  var b = GUEST_BILL;
+  if(!b){ toast('No bill loaded'); return; }
+  var name = b.guest_name || me.name || 'Guest';
+  var dt   = new Date(b.created_at || Date.now());
+  var ref  = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
+  var fmtA = function(n){ return '₹' + Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var fmtD = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; };
+  var esc  = function(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+
+  var items = b.items || [];
+  var itemRows = items.map(function(i){
+    return '<tr><td>' + esc(i.name||'Item') + '</td>' +
+      '<td style="text-align:center">' + (i.qty||1) + '</td>' +
+      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+      '<td style="text-align:right;font-weight:600">₹' + Number(i.total||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+  }).join('');
+  var statusStr = b.payment_status==='paid'
+    ? 'Paid' + (b.payment_method ? ' (' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) + ')' : '')
+    : 'Pending Payment';
+  var statusColor = b.payment_status==='paid' ? '#27500A' : '#633806';
+  var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
+    '*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#2C2C2A;padding:36px 44px;font-size:13px}' +
+    'h1{font-size:21px;color:#993C1D}' +
+    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #993C1D;padding-bottom:14px;margin-bottom:18px}' +
+    '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}' +
+    '.guest-card{background:#F9F8F6;border-radius:8px;padding:13px 16px;margin-bottom:18px;border:1px solid #e5e5e5}' +
+    '.guest-name{font-size:16px;font-weight:700;margin-bottom:3px}' +
+    '.guest-detail{font-size:12px;color:#666;line-height:1.6}' +
+    'hr{border:none;border-top:1.5px solid #e5e5e5;margin:16px 0}' +
+    'table{width:100%;border-collapse:collapse}th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:6px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
+    'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}' +
+    '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:11px}' +
+    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:'+statusBg+';color:'+statusColor+';margin-top:14px}' +
+    '.footer{margin-top:28px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:12px}' +
+    '@media print{body{padding:16px 22px}}' +
+    '</style></head><body>' +
+    '<div class="hdr"><div><h1>Banyan Circle</h1><div style="font-size:11px;color:#888;margin-top:2px">Properties by Heritance</div></div>' +
+    '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + esc(b.property_name||'') + '</div><div>' + fmtD(b.created_at) + '</div></div></div>' +
+    '<div class="guest-card"><div class="guest-name">' + esc(b.guest_name||name) + '</div>' +
+    '<div class="guest-detail">' + esc(b.guest_address||'').replace(/\n/g,'<br/>') + '</div>' +
+    (b.guest_mobile||b.guest_email ? '<div class="guest-detail" style="margin-top:3px">' + [b.guest_mobile,b.guest_email].filter(Boolean).map(esc).join(' · ') + '</div>' : '') +
+    '<div class="guest-detail" style="margin-top:4px">Check-in: ' + fmtD(me.check_in) + ' &nbsp;·&nbsp; Check-out: ' + fmtD(me.check_out) + '</div></div>' +
+    '<hr/>' +
+    '<table><thead><tr><th>Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+    itemRows +
+    '<tr class="total-row"><td colspan="3">Total</td><td style="text-align:right">' + fmtA(b.subtotal) + '</td></tr></tbody></table>' +
+    '<div class="status-pill">' + statusStr + '</div>' +
+    (b.remarks ? '<div style="font-size:12px;color:#888;margin-top:8px">Note: ' + esc(b.remarks) + '</div>' : '') +
+    '<div class="footer">Thank you for staying with Banyan Circle · For queries contact the front desk</div>' +
+    '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
+    '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html'});
+  window.open(URL.createObjectURL(blob), '_blank');
 }
 
 // ── Review sheets ──
