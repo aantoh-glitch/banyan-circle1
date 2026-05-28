@@ -170,47 +170,89 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- PANEL: PROFILE -->
 <div class="panel" id="panel-profile">
-  <div class="prof-header">
-    <div class="prof-avatar-lg" id="prof-avatar-lg">?</div>
-    <div style="flex:1;min-width:0">
-      <div style="font-family:'Playfair Display',serif;font-size:17px" id="prof-heading">My Profile</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">ID: <span id="prof-id-display"></span></div>
+
+  <!-- VIEW MODE -->
+  <div id="profile-view">
+    <div style="background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px">
+      <div id="view-photo-banner" style="height:130px;background:var(--br-l);display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <div class="prof-avatar-lg" id="prof-avatar-lg" style="width:72px;height:72px;font-size:28px">?</div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;margin-bottom:2px" id="view-name">—</div>
+        <div style="font-size:13px;color:var(--br);font-weight:500;margin-bottom:4px" id="view-talent-name"></div>
+        <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:10px" id="view-tagline"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px" id="view-badges"></div>
+      </div>
     </div>
-    <span id="save-status" style="font-size:12px;color:var(--g);display:none;flex-shrink:0">✓ Saved</span>
+
+    <div class="card" id="view-about-card" style="display:none">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px">About</div>
+      <div style="font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap" id="view-desc"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px">Details</div>
+      <div id="view-details-rows" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <div class="card" id="view-links-card" style="display:none">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px">Links</div>
+      <div id="view-links-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <div class="card" id="view-venues-card" style="display:none">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">Properties</div>
+      <div id="view-venues-list" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+    </div>
+
+    <div style="padding-bottom:10px">
+      <button class="btn-sec" onclick="openEditMode()" style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <span style="font-size:16px">✏️</span> Edit Profile
+      </button>
+    </div>
   </div>
 
-  <div class="fg"><label class="fl">Name *</label><input class="fc" id="p-name" placeholder="Your full name"/></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
-    <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
+  <!-- EDIT MODE -->
+  <div id="profile-edit" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <button onclick="closeEditMode()" style="width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text)">‹</button>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500">Edit Profile</div>
+      <span id="save-status" style="font-size:12px;color:var(--g);display:none;margin-left:auto;flex-shrink:0">✓ Saved</span>
+    </div>
+    <div class="fg"><label class="fl">Name *</label><input class="fc" id="p-name" placeholder="Your full name"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
+    </div>
+    <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
+    <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
+    <div class="fg">
+      <label class="fl">Category</label>
+      <select class="fc" id="p-cat">
+        <option value="">Select a category</option>
+        <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
+        <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
+        <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
+        <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
+      </select>
+    </div>
+    <div id="cat-others-fg" class="fg" style="display:none"><label class="fl">Please specify</label><input class="fc" id="p-cat-other" placeholder="Your talent category"/></div>
+    <div class="fg"><label class="fl">Name your talent</label><input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/></div>
+    <div class="fg"><label class="fl">Tagline</label><input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/></div>
+    <div class="fg"><label class="fl">Describe your talent</label><textarea class="fc" id="p-desc" placeholder="Describe the experience you create…"></textarea></div>
+    <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
+    <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
+    <div class="fg"><label class="fl">Your photo</label><input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/><div id="p-photo-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
+    <div class="fg"><label class="fl">Biodata / CV (PDF or Word)</label><input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/><div id="p-bio-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
+    <div class="fg">
+      <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
+      <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div style="padding-bottom:10px">
+      <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
+    </div>
   </div>
-  <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
-  <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
-  <div class="fg">
-    <label class="fl">Category</label>
-    <select class="fc" id="p-cat">
-      <option value="">Select a category</option>
-      <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
-      <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
-      <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
-      <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
-    </select>
-  </div>
-  <div id="cat-others-fg" class="fg" style="display:none"><label class="fl">Please specify</label><input class="fc" id="p-cat-other" placeholder="Your talent category"/></div>
-  <div class="fg"><label class="fl">Name your talent</label><input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/></div>
-  <div class="fg"><label class="fl">Tagline</label><input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/></div>
-  <div class="fg"><label class="fl">Describe your talent</label><textarea class="fc" id="p-desc" placeholder="Describe the experience you create…"></textarea></div>
-  <div class="fg"><label class="fl">Instagram</label><input class="fc" id="p-instagram" type="url" placeholder="https://instagram.com/…"/></div>
-  <div class="fg"><label class="fl">Demo / performance video</label><input class="fc" id="p-performance" type="url" placeholder="https://youtube.com/…"/></div>
-  <div class="fg"><label class="fl">Your photo</label><input class="fc" id="p-photo" type="file" accept="image/*" style="padding:8px"/><div id="p-photo-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
-  <div class="fg"><label class="fl">Biodata / CV (PDF or Word)</label><input class="fc" id="p-bio" type="file" accept=".pdf,.doc,.docx" style="padding:8px"/><div id="p-bio-current" style="margin-top:5px;font-size:12px;color:var(--muted)"></div></div>
-  <div class="fg">
-    <div class="fl" style="margin-bottom:10px">Properties where you can facilitate</div>
-    <div id="p-venues" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-  </div>
-  <div style="padding-bottom:10px">
-    <button class="btn-p" onclick="saveProfile()" id="save-btn">Save profile</button>
-  </div>
+
 </div>
 
 <!-- PANEL: SCHEDULE -->
@@ -345,7 +387,6 @@ if(!_me){location.replace('/login.html');throw new Error('Not authenticated');}
 document.getElementById('top-name').textContent=talentNameParam;
 document.getElementById('top-avatar').textContent=ini(talentNameParam);
 document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
-document.getElementById('prof-id-display').textContent=talentId;
 
 function signOut(){localStorage.removeItem('bc_me');location.replace('/login.html');}
 
@@ -369,9 +410,72 @@ function showPanel(id){
 
 // PROFILE
 let profileExists=false;
+let _profileData=null;
+
 document.getElementById('p-cat').addEventListener('change',function(){
   document.getElementById('cat-others-fg').style.display=this.value==='Others'?'':'none';
 });
+
+function openEditMode(){
+  document.getElementById('profile-view').style.display='none';
+  document.getElementById('profile-edit').style.display='';
+  document.getElementById('panel-profile').scrollTop=0;
+}
+function closeEditMode(){
+  document.getElementById('profile-edit').style.display='none';
+  document.getElementById('profile-view').style.display='';
+  if(_profileData) renderProfileView(_profileData);
+  document.getElementById('panel-profile').scrollTop=0;
+}
+
+function renderProfileView(d){
+  // Avatar / photo
+  const av=document.getElementById('prof-avatar-lg');
+  const banner=document.getElementById('view-photo-banner');
+  if(d.photo_url){
+    banner.innerHTML=`<img src="${d.photo_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<div class=prof-avatar-lg style=width:72px;height:72px;font-size:28px>${ini(d.name||talentNameParam)}</div>'"/>`;
+  } else {
+    av.textContent=ini(d.name||talentNameParam);
+  }
+  // Name / talent / tagline
+  document.getElementById('view-name').textContent=d.name||talentNameParam;
+  document.getElementById('view-talent-name').textContent=d.talent_name||'';
+  document.getElementById('view-tagline').textContent=d.tagline?'"'+d.tagline+'"':'';
+  // Badges
+  const badges=[];
+  if(d.category) badges.push(d.category==='Others'&&d.category_other?d.category_other:d.category);
+  if(d.location) badges.push('📍 '+d.location);
+  document.getElementById('view-badges').innerHTML=badges.map(b=>`<span style="font-size:12px;padding:4px 10px;border-radius:999px;background:var(--br-l);color:var(--br);font-weight:500">${b}</span>`).join('');
+  // About
+  const aboutCard=document.getElementById('view-about-card');
+  if(d.description){aboutCard.style.display='';document.getElementById('view-desc').textContent=d.description;}
+  else aboutCard.style.display='none';
+  // Details rows
+  const details=[];
+  if(d.age) details.push(['🎂','Age',d.age]);
+  if(d.phone) details.push(['📞','Phone',d.phone]);
+  if(d.email) details.push(['✉️','Email',d.email]);
+  if(d.bio_url) details.push(['📄','CV / Biodata',`<a href="${d.bio_url}" target="_blank" style="color:var(--br);text-decoration:none">Download ↗</a>`]);
+  document.getElementById('view-details-rows').innerHTML=details.length
+    ? details.map(([icon,label,val])=>`<div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:16px;flex-shrink:0;margin-top:1px">${icon}</span><div><div style="font-size:11px;color:var(--muted);margin-bottom:1px">${label}</div><div style="font-size:14px">${val}</div></div></div>`).join('')
+    : '<div style="font-size:13px;color:var(--muted)">No details added yet.</div>';
+  // Links
+  const links=[];
+  if(d.instagram) links.push(['📸','Instagram',d.instagram]);
+  if(d.performance_link) links.push(['🎬','Demo Video',d.performance_link]);
+  const linksCard=document.getElementById('view-links-card');
+  if(links.length){
+    linksCard.style.display='';
+    document.getElementById('view-links-rows').innerHTML=links.map(([icon,label,url])=>`<a href="${url}" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)"><span style="font-size:18px">${icon}</span><div style="flex:1"><div style="font-size:13px;font-weight:500">${label}</div><div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">${url}</div></div><span style="color:var(--br);font-size:14px">↗</span></a>`).join('');
+  } else linksCard.style.display='none';
+  // Venues
+  const venuesCard=document.getElementById('view-venues-card');
+  if(d.venues&&d.venues.length){
+    venuesCard.style.display='';
+    document.getElementById('view-venues-list').innerHTML=d.venues.map(v=>`<span style="font-size:12px;padding:5px 10px;border-radius:8px;background:var(--g-l);color:var(--g);font-weight:500;border:1px solid #86C860">${v}</span>`).join('');
+  } else venuesCard.style.display='none';
+}
+
 function fillForm(d){
   document.getElementById('p-name').value=d.name||'';
   document.getElementById('p-age').value=d.age||'';
@@ -393,8 +497,16 @@ function fillForm(d){
 async function loadProfile(){
   try{
     const rows=await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId)+'&select=*')||[];
-    if(rows.length){profileExists=true;fillForm(rows[0]);document.getElementById('prof-heading').textContent='Edit Profile';document.getElementById('save-btn').textContent='Update profile';}
-    else{document.getElementById('p-name').value=talentNameParam;}
+    if(rows.length){
+      profileExists=true;
+      _profileData=rows[0];
+      fillForm(rows[0]);
+      renderProfileView(rows[0]);
+      document.getElementById('save-btn').textContent='Update profile';
+    } else {
+      document.getElementById('p-name').value=talentNameParam;
+      renderProfileView({name:talentNameParam});
+    }
   }catch(e){console.error(e);}
 }
 let ALL_PROPS=[];
@@ -418,9 +530,11 @@ async function saveProfile(){
     if(profileExists){await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);}
     else{await api('/rest/v1/talent_profiles','POST',body);profileExists=true;}
     await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name});
-    document.getElementById('prof-heading').textContent='Edit Profile';
     if(pf) document.getElementById('p-photo-current').innerHTML=`Current: <a href="${body.photo_url}" target="_blank" style="color:var(--br)">View photo</a>`;
     if(bf) document.getElementById('p-bio-current').innerHTML=`Current: <a href="${body.bio_url}" target="_blank" style="color:var(--br)">Download ${body.bio_name}</a>`;
+    _profileData=Object.assign(_profileData||{},body);
+    renderProfileView(_profileData);
+    closeEditMode();
     const s=document.getElementById('save-status');s.style.display='';setTimeout(()=>s.style.display='none',2500);
     toast('Profile saved ✓');btn.textContent='Update profile';
   }catch(e){alert('Error: '+e.message);btn.textContent='Save profile';}
