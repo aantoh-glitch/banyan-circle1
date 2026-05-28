@@ -562,15 +562,15 @@ async function renderSchedule(){
   for(let d=1;d<=dim;d++){
     const ds=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const e=scheduleData[ds];const st=e?.status||'';
-    const cls=st==='busy'?'cal-day busy':st==='available'?'cal-day available':'cal-day';
+    const cls=(st==='busy'||st==='free')?'cal-day busy':st==='available'?'cal-day available':'cal-day';
     const isT=ds===today;
-    let lbl=st==='busy'?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
+    let lbl=(st==='busy'||st==='free')?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
     h+=`<div class="${cls}${isT?' today-ring':''}" onclick="openDayModal('${ds}')"><div class="cal-day-num" style="${isT?'color:var(--br)':''}">${d}</div>${lbl}</div>`;
   }
   grid.innerHTML=h;
 }
 function setModalStatus(s){modalStatus=s;document.getElementById('btn-busy').className='stgl-btn'+(s==='busy'?' busy-on':'');document.getElementById('btn-avail').className='stgl-btn'+(s==='available'?' avail-on':'');document.getElementById('time-fields').style.display=s==='available'?'':'none';}
-function openDayModal(ds){modalDateStr=ds;const e=scheduleData[ds];const d=new Date(ds+'T00:00:00');document.getElementById('modal-date').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();document.getElementById('modal-title').textContent=e?'Edit day status':'Set day status';document.getElementById('modal-start').value=e?.time_start?.slice(0,5)||'09:00';document.getElementById('modal-end').value=e?.time_end?.slice(0,5)||'17:00';document.getElementById('modal-remove-btn').style.display=e?'':'none';setModalStatus(e?.status||'available');document.getElementById('day-modal').style.display='flex';}
+function openDayModal(ds){modalDateStr=ds;const e=scheduleData[ds];const d=new Date(ds+'T00:00:00');document.getElementById('modal-date').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();document.getElementById('modal-title').textContent=e?'Edit day status':'Set day status';document.getElementById('modal-start').value=e?.time_start?.slice(0,5)||'09:00';document.getElementById('modal-end').value=e?.time_end?.slice(0,5)||'17:00';document.getElementById('modal-remove-btn').style.display=e?'':'none';setModalStatus((e?.status==='free')?'busy':(e?.status||'available'));document.getElementById('day-modal').style.display='flex';}
 function closeDayModal(){document.getElementById('day-modal').style.display='none';modalDateStr=null;}
 async function saveDaySlot(){
   try{
@@ -580,9 +580,9 @@ async function saveDaySlot(){
       if(en<=s){toast('End must be after start');return;}
       await apiUpsert({talent_id:talentId,date:modalDateStr,status:'available',time_start:s,time_end:en});
     } else {
-      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'busy',time_start:null,time_end:null});
+      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'free',time_start:null,time_end:null});
     }
-  }catch(e){toast('Error: '+e.message);return;}
+  }catch(e){toast('ERR: '+e.message);console.error('saveDaySlot error',e);return;}
   closeDayModal();await renderSchedule();toast('Saved ✓');
 }
 async function apiUpsert(payload){
@@ -605,8 +605,11 @@ async function apiUpsert(payload){
     });
   }
   if(r.status===204||r.status===200||r.status===201) return null;
-  const json=await r.json().catch(()=>null);
-  throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  const txt=await r.text().catch(()=>'');
+  console.error('apiUpsert failed',r.status, txt);
+  let json=null;try{json=JSON.parse(txt);}catch(e){}
+  const msg=(json&&(json.message||json.hint||json.details||json.error))||txt||('HTTP '+r.status);
+  throw new Error(msg);
 }
 async function removeDay(){try{await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+modalDateStr,'DELETE');closeDayModal();await renderSchedule();toast('Removed');}catch(e){toast('Error: '+e.message);}}
 
