@@ -224,7 +224,7 @@ async function loadDocs() {
   }
   list.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>Loading documents…</div>';
   try {
-    const data = await api('/rest/v1/property_documents?property_name=eq.' + encodeURIComponent(PROP) + '&order=created_at.desc') || [];
+    const data = await api('/rest/v1/property_documents?property_name=eq.' + encodeURIComponent(PROP) + '&order=id.desc') || [];
     if (!data.length) {
       list.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>No documents uploaded yet.</div>';
       return;
