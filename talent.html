@@ -117,8 +117,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .cal-day-status{font-size:8px;font-weight:500}
 
 /* MODAL SHEET */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
-.modal-sheet{background:var(--white);border-radius:18px 18px 0 0;padding:12px 18px 32px;width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
+.modal-sheet{background:var(--white);border-radius:18px 18px 0 0;padding:12px 18px calc(var(--nav-h) + 16px);width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 16px}
 .modal-title{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:4px}
 .modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
@@ -319,7 +319,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- DAY MODAL -->
 <div class="modal-backdrop" id="day-modal" style="display:none" onclick="if(event.target===this)closeDayModal()">
-  <div class="modal-sheet">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="modal-title" id="modal-title">Set day status</div>
     <div class="modal-sub" id="modal-date"></div>
@@ -343,7 +343,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- BOOKING REQUEST MODAL -->
 <div class="modal-backdrop" id="bk-modal" style="display:none" onclick="if(event.target===this)closeBkModal()">
-  <div class="modal-sheet">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="sheet-handle"></div>
     <div class="modal-title" style="margin-bottom:16px">Request a Booking</div>
     <div class="fg"><label class="fl">Property / Event</label><input class="fc" id="bk-property" placeholder="e.g. Banyan Circle — Morjim"/></div>
@@ -580,7 +580,7 @@ async function saveDaySlot(){
       if(en<=s){toast('End must be after start');return;}
       await apiUpsert({talent_id:talentId,date:modalDateStr,status:'available',time_start:s,time_end:en});
     } else {
-      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'busy',time_start:'00:00',time_end:'00:00'});
+      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'busy',time_start:null,time_end:null});
     }
   }catch(e){toast('Error: '+e.message);return;}
   closeDayModal();await renderSchedule();toast('Saved ✓');
