@@ -1014,7 +1014,10 @@ async function saveUtilityBill() {
     var proof_url = null;
     if (file) {
       btn.textContent='Uploading receipt…';
-      var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+      // Sanitise filename — strip spaces and special chars to avoid path issues
+      var safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var propSlug = (PROP||'prop').replace(/[^a-zA-Z0-9-]/g,'_');
+      var path = propSlug + '/' + Date.now() + '_' + safeFileName;
       var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
         method:'POST',
         headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
@@ -1024,7 +1027,9 @@ async function saveUtilityBill() {
         proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
       } else {
         var ue = await up.text();
-        toast('Receipt upload failed: '+ue, true);
+        var errEl = document.getElementById('ub-error');
+        errEl.textContent = 'Receipt upload failed ('+up.status+'): '+ue;
+        errEl.style.display = 'block';
         btn.disabled=false; btn.textContent='Submit';
         return;
       }
@@ -1182,7 +1187,9 @@ async function saveEditUtility() {
     var proof_url = null;
     if (file) {
       btn.textContent='Uploading receipt…';
-      var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+      var safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var propSlug = (PROP||'prop').replace(/[^a-zA-Z0-9-]/g,'_');
+      var path = propSlug + '/' + Date.now() + '_' + safeFileName;
       var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
         method:'POST',
         headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
@@ -1191,7 +1198,8 @@ async function saveEditUtility() {
       if (up.ok) {
         proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
       } else {
-        toast('Receipt upload failed', true);
+        var ue = await up.text();
+        toast('Receipt upload failed ('+up.status+'): '+ue, true);
         btn.disabled=false; btn.textContent='Save';
         return;
       }
