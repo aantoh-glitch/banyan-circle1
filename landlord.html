@@ -326,24 +326,20 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   </div>
 </div>
 
-<!-- ── UPCOMING PAYMENTS ── -->
+<!-- ── UTILITY PAYMENTS ── -->
 <div class="pg" id="pg-payments">
-  <div class="pg-head">
-    <div class="pg-title">Upcoming Payments</div>
-    <div class="pg-sub">Pending utility bills &amp; dues</div>
-  </div>
-  <div id="payments-list">
-    <div class="empty"><div class="empty-icon">🧾</div>Loading…</div>
-  </div>
-  <div class="card" style="margin-top:8px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="card-ttl" style="margin-bottom:0">All Utility Payments</div>
-      <button onclick="openAddUtilityModal()" style="display:inline-flex;align-items:center;gap:5px;padding:7px 13px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Utility Bill
-      </button>
+  <div class="pg-head" style="margin-bottom:14px">
+    <div>
+      <div class="pg-title">Utility Payments</div>
+      <div class="pg-sub">All bills &amp; receipts for this property</div>
     </div>
-    <div class="tbl-wrap" id="util-full-table"><div class="empty">Loading…</div></div>
+    <button onclick="openAddUtilityModal()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 15px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Utility Bill
+    </button>
+  </div>
+  <div class="card" style="padding:14px">
+    <div class="tbl-wrap" id="util-full-table"><div class="empty"><div class="empty-icon">🧾</div>Loading…</div></div>
   </div>
 </div>
 
@@ -478,6 +474,7 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 const IS_ADMIN_VIEW = new URLSearchParams(location.search).get('viewer') === 'admin';
 if (!me || (me.role !== 'landlord' && !IS_ADMIN_VIEW)) { location.href='/index.html'; throw new Error('No auth'); }
+if (IS_ADMIN_VIEW) document.querySelector('.top-bar').style.display = 'none';
 const PROP = me.prop || me.property_name;
 
 // Top bar
@@ -764,39 +761,9 @@ async function sendMsg() {
   loadMsgs();
 }
 
-// ── UPCOMING PAYMENTS ──
+// ── UTILITY PAYMENTS ──
 async function loadPayments() {
-  const data = await api('/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=month.desc') || [];
-  const el = document.getElementById('payments-list');
-  const pending = data.filter(u=>u.status!=='paid');
-  if (!pending.length) {
-    el.innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">✅</div>All payments are up to date!</div></div>';
-  } else {
-    el.innerHTML = pending.map(u=>{
-      const isPending = u.status==='pending';
-      return `<div class="payment-card">
-        <div class="payment-dot" style="background:${isPending?'var(--a)':'var(--r)'}"></div>
-        <div class="payment-info">
-          <div class="payment-name">${esc(u.utility_type||'Utility')}</div>
-          <div class="payment-date">${u.month||'—'} · <span class="bdg bdg-a">${u.status}</span></div>
-        </div>
-        <div class="payment-amt">${fmt(u.amount)}</div>
-      </div>`;
-    }).join('');
-  }
-  const ftEl = document.getElementById('util-full-table');
-  if (!data.length) {
-    ftEl.innerHTML = '<div class="empty">No utility payments logged yet</div>';
-  } else {
-    ftEl.innerHTML = `<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>
-      ${data.map(u=>`<tr>
-        <td style="font-size:12px">${u.month||'—'}</td>
-        <td>${esc(u.utility_type||'—')}</td>
-        <td style="font-weight:500">${fmt(u.amount)}</td>
-        <td><span class="bdg ${u.status==='paid'?'bdg-g':'bdg-a'}">${u.status}</span></td>
-      </tr>`).join('')}
-    </tbody></table>`;
-  }
+  refreshUtilityLog();
 }
 
 // ── ASSETS ──
@@ -975,6 +942,10 @@ loadDescription();
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Date of Payment</label>
       <input id="ub-paid-date" class="fc" type="date"/>
     </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Receipt / Proof (optional)</label>
+      <input id="ub-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <button onclick="closeUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
       <button id="ub-save-btn" onclick="saveUtilityBill()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Submit</button>
@@ -989,6 +960,7 @@ function openAddUtilityModal() {
   document.getElementById('ub-item').value = '';
   document.getElementById('ub-amount').value = '';
   document.getElementById('ub-paid-date').value = '';
+  document.getElementById('ub-receipt-file').value = '';
   document.getElementById('ub-date-section').style.display = 'none';
   setUtilityStatus('pending');
   var m = document.getElementById('modal-add-utility');
@@ -1024,18 +996,42 @@ async function saveUtilityBill() {
   var item   = document.getElementById('ub-item').value.trim();
   var amount = parseFloat(document.getElementById('ub-amount').value);
   var pd     = document.getElementById('ub-paid-date').value;
+  var file   = document.getElementById('ub-receipt-file').files[0];
   if (!item)               { toast('Enter a utility type', true); return; }
   if (!amount || amount<=0){ toast('Enter a valid amount', true); return; }
   if (_utilityStatus==='paid' && !pd){ toast('Select payment date', true); return; }
   btn.disabled=true; btn.textContent='Saving…';
+
+  // Upload receipt if provided
+  var proof_url = null;
+  if (file) {
+    btn.textContent='Uploading receipt…';
+    var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+    var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
+      method:'POST',
+      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+      body:file
+    });
+    if (up.ok) {
+      proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
+    } else {
+      var ue = await up.text();
+      toast('Receipt upload failed: '+ue, true);
+      btn.disabled=false; btn.textContent='Submit';
+      return;
+    }
+  }
+
   var month = _utilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
   var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month };
-  if (_utilityStatus==='paid') body.paid_date = pd;
-  // Use raw fetch so we can treat any 2xx as success
+  if (_utilityStatus==='paid') body.paid_on = pd;
+  if (proof_url) body.proof_url = proof_url;
+
+  btn.textContent='Saving…';
   var r = await fetch(SB+'/rest/v1/utility_payments', {
     method:'POST',
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'}
-    ,body:JSON.stringify(body)
+    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(body)
   });
   btn.disabled=false; btn.textContent='Submit';
   if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog(); }
@@ -1044,53 +1040,41 @@ async function saveUtilityBill() {
 
 async function refreshUtilityLog() {
   var ftEl = document.getElementById('util-full-table');
-  var plEl = document.getElementById('payments-list');
   if (!ftEl) return;
   ftEl.innerHTML = '<div class="empty">Loading…</div>';
   try {
-    var r = await fetch(SB+'/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=month.desc', {
+    var r = await fetch(SB+'/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=month.desc,created_at.desc', {
       headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Accept':'application/json'}
     });
-    var data = r.ok ? await r.json() : [];
+    if (!r.ok) { ftEl.innerHTML = '<div class="empty">Could not load payments ('+r.status+')</div>'; return; }
+    var data = await r.json();
     if (!Array.isArray(data)) data = [];
-    // Pending cards
-    var pending = data.filter(function(u){ return u.status !== 'paid'; });
-    if (!pending.length) {
-      plEl.innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">✅</div>All payments are up to date!</div></div>';
-    } else {
-      plEl.innerHTML = pending.map(function(u){
-        return '<div class="payment-card">'
-          +'<div class="payment-dot" style="background:'+(u.status==='pending'?'var(--a)':'var(--r)')+'"></div>'
-          +'<div class="payment-info">'
-            +'<div class="payment-name">'+(u.utility_type||'Utility')+'</div>'
-            +'<div class="payment-date">'+(u.month||'—')+' · <span class="bdg bdg-a">'+u.status+'</span></div>'
-          +'</div>'
-          +'<div class="payment-amt">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</div>'
-        +'</div>';
-      }).join('');
-    }
-    // Full table with Edit + Delete
     if (!data.length) {
-      ftEl.innerHTML = '<div class="empty">No utility payments logged yet</div>';
-    } else {
-      var rows = data.map(function(u){
-        var badge = u.status==='paid' ? 'bdg-g' : 'bdg-a';
-        var pd = u.paid_date ? u.paid_date : '';
-        return '<tr>'
-          +'<td style="font-size:12px">'+(u.month||'—')+'</td>'
-          +'<td>'+(u.utility_type||'—')+'</td>'
-          +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
-          +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
-          +'<td style="text-align:right;white-space:nowrap">'
-            +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+pd+'\')" '
-              +'style="padding:4px 10px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>'
-            +'<button onclick="deleteUtility(\''+u.id+'\')" '
-              +'style="padding:4px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>'
-          +'</td>'
-        +'</tr>';
-      }).join('');
-      ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+      ftEl.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div>No utility bills logged yet</div>';
+      return;
     }
+    var rows = data.map(function(u){
+      var badge   = u.status==='paid' ? 'bdg-g' : 'bdg-a';
+      var paid_on = u.paid_on || '';
+      var proofBtn = u.proof_url
+        ? '<a href="'+u.proof_url+'" target="_blank" download style="display:inline-flex;align-items:center;gap:3px;padding:4px 9px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;margin-right:4px">⬇ Receipt</a>'
+        : '<span style="font-size:11px;color:var(--faint);margin-right:4px">—</span>';
+      return '<tr>'
+        +'<td style="font-size:12px;color:var(--muted)">'+(u.month||'—')+'</td>'
+        +'<td style="font-weight:500">'+(u.utility_type||'—')+'</td>'
+        +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
+        +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
+        +'<td style="font-size:11px;color:var(--muted)">'+(paid_on ? new Date(paid_on).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—')+'</td>'
+        +'<td style="text-align:right;white-space:nowrap">'
+          +proofBtn
+          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+paid_on+'\',\''+encodeURIComponent(u.proof_url||'')+'\'" '
+            +'style="padding:4px 10px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>'
+          +'<button onclick="deleteUtility(\''+u.id+'\')" '
+            +'style="padding:4px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>'
+        +'</td>'
+      +'</tr>';
+    }).join('');
+    ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
   } catch(e) {
     ftEl.innerHTML = '<div class="empty">Could not load payments</div>';
     console.error('refreshUtilityLog error:', e);
@@ -1098,13 +1082,23 @@ async function refreshUtilityLog() {
 }
 
 // ── EDIT UTILITY ──
-function openEditUtility(id, itemEnc, amount, status, paidDate) {
+function openEditUtility(id, itemEnc, amount, status, paidDate, proofUrlEnc) {
   var item = decodeURIComponent(itemEnc);
-  document.getElementById('eu-id').value      = id;
-  document.getElementById('eu-item').value    = item;
-  document.getElementById('eu-amount').value  = amount;
+  var existingProof = proofUrlEnc ? decodeURIComponent(proofUrlEnc) : '';
+  document.getElementById('eu-id').value        = id;
+  document.getElementById('eu-item').value      = item;
+  document.getElementById('eu-amount').value    = amount;
   document.getElementById('eu-paid-date').value = paidDate || '';
-  // set status toggle
+  document.getElementById('eu-receipt-file').value = '';
+  // Show existing receipt link if any
+  var existingEl = document.getElementById('eu-existing-receipt');
+  if (existingProof) {
+    existingEl.innerHTML = '<a href="'+existingProof+'" target="_blank" style="font-size:12px;color:var(--b)">⬇ View current receipt</a>';
+    existingEl.style.display = 'block';
+  } else {
+    existingEl.innerHTML = '';
+    existingEl.style.display = 'none';
+  }
   setEditUtilityStatus(status);
   document.getElementById('modal-edit-utility').style.display = 'flex';
 }
@@ -1138,12 +1132,34 @@ async function saveEditUtility() {
   var item   = document.getElementById('eu-item').value.trim();
   var amount = parseFloat(document.getElementById('eu-amount').value);
   var pd     = document.getElementById('eu-paid-date').value;
+  var file   = document.getElementById('eu-receipt-file').files[0];
   if (!item)                { toast('Enter a utility type', true); return; }
   if (!amount || amount<=0) { toast('Enter a valid amount', true); return; }
   if (_editUtilityStatus==='paid' && !pd) { toast('Select payment date', true); return; }
   btn.disabled=true; btn.textContent='Saving…';
+
+  // Upload new receipt if provided
+  var proof_url = null;
+  if (file) {
+    btn.textContent='Uploading receipt…';
+    var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+    var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
+      method:'POST',
+      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+      body:file
+    });
+    if (up.ok) {
+      proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
+    } else {
+      toast('Receipt upload failed', true);
+      btn.disabled=false; btn.textContent='Save';
+      return;
+    }
+  }
+
   var month = _editUtilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
-  var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month, paid_date: _editUtilityStatus==='paid' ? pd : null };
+  var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month, paid_on: _editUtilityStatus==='paid' ? pd : null };
+  if (proof_url) body.proof_url = proof_url;
   var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
     method:'PATCH',
     headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
@@ -1189,6 +1205,11 @@ async function deleteUtility(id) {
     <div id="eu-date-section" style="display:none;margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Date of Payment</label>
       <input id="eu-paid-date" class="fc" type="date"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Replace Receipt (optional)</label>
+      <div id="eu-existing-receipt" style="display:none;margin-bottom:6px"></div>
+      <input id="eu-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <button onclick="closeEditUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
