@@ -1006,42 +1006,45 @@ async function saveUtilityBill() {
   if (_utilityStatus==='paid' && !pd){ toast('Select payment date', true); return; }
   btn.disabled=true; btn.textContent='Saving…';
 
-  // Upload receipt if provided
-  var proof_url = null;
-  if (file) {
-    btn.textContent='Uploading receipt…';
-    var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
-    var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
-      method:'POST',
-      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
-      body:file
-    });
-    if (up.ok) {
-      proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
-    } else {
-      var ue = await up.text();
-      toast('Receipt upload failed: '+ue, true);
-      btn.disabled=false; btn.textContent='Submit';
-      return;
-    }
-  }
-
-  var month = _utilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
-  var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month };
-  if (_utilityStatus==='paid') body.paid_on = pd;
-  if (proof_url) body.proof_url = proof_url;
-
-  btn.textContent='Saving…';
   try {
-  var r = await fetch(SB+'/rest/v1/utility_payments', {
-    method:'POST',
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body:JSON.stringify(body)
-  });
-  btn.disabled=false; btn.textContent='Submit';
-  if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog(); }
-  else { var e=await r.text(); toast('Error: '+e, true); }
-  } catch(err) { btn.disabled=false; btn.textContent='Submit'; toast('Error: '+err.message, true); }
+    // Upload receipt if provided
+    var proof_url = null;
+    if (file) {
+      btn.textContent='Uploading receipt…';
+      var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+      var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
+        method:'POST',
+        headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+        body:file
+      });
+      if (up.ok) {
+        proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
+      } else {
+        var ue = await up.text();
+        toast('Receipt upload failed: '+ue, true);
+        btn.disabled=false; btn.textContent='Submit';
+        return;
+      }
+    }
+
+    var month = _utilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
+    var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month, paid_on: _utilityStatus==='paid' ? pd : null };
+    if (proof_url) body.proof_url = proof_url;
+
+    btn.textContent='Saving…';
+    var r = await fetch(SB+'/rest/v1/utility_payments', {
+      method:'POST',
+      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(body)
+    });
+    btn.disabled=false; btn.textContent='Submit';
+    if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog(); }
+    else { var e=await r.text(); toast('Error: '+e, true); }
+  } catch(err) {
+    btn.disabled=false; btn.textContent='Submit';
+    toast('Error: '+(err.message||'Could not save'), true);
+    console.error('saveUtilityBill error:', err);
+  }
 }
 
 async function refreshUtilityLog() {
@@ -1059,9 +1062,12 @@ async function refreshUtilityLog() {
       ftEl.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div>No utility bills logged yet</div>';
       return;
     }
+    // Store row data for event delegation
+    window._utilRows = {};
     var rows = data.map(function(u){
       var badge   = u.status==='paid' ? 'bdg-g' : 'bdg-a';
       var paid_on = u.paid_on || '';
+      window._utilRows[u.id] = u;
       var proofBtn = u.proof_url
         ? '<a href="'+u.proof_url+'" target="_blank" download style="display:inline-flex;align-items:center;gap:3px;padding:4px 9px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;margin-right:4px">⬇ Receipt</a>'
         : '<span style="font-size:11px;color:var(--faint);margin-right:4px">—</span>';
@@ -1073,14 +1079,24 @@ async function refreshUtilityLog() {
         +'<td style="font-size:11px;color:var(--muted)">'+fmtDate(paid_on)+'</td>'
         +'<td style="text-align:right;white-space:nowrap">'
           +proofBtn
-          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+esc(paid_on)+'\',\''+encodeURIComponent(u.proof_url||'')+'\'" '
+          +'<button data-util-edit="'+u.id+'" '
             +'style="padding:4px 10px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>'
-          +'<button onclick="deleteUtility(\''+u.id+'\')" '
+          +'<button data-util-del="'+u.id+'" '
             +'style="padding:4px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>'
         +'</td>'
       +'</tr>';
     }).join('');
     ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+    // Delegated click handler for Edit / Delete
+    ftEl.onclick = function(e) {
+      var editBtn = e.target.closest('[data-util-edit]');
+      var delBtn  = e.target.closest('[data-util-del]');
+      if (editBtn) {
+        var u = window._utilRows[editBtn.getAttribute('data-util-edit')];
+        if (u) openEditUtility(u.id, u.utility_type||'', u.amount||0, u.status||'pending', u.paid_on||'', u.proof_url||'');
+      }
+      if (delBtn) { deleteUtility(delBtn.getAttribute('data-util-del')); }
+    };
   } catch(e) {
     ftEl.innerHTML = '<div class="empty">Could not load payments</div>';
     console.error('refreshUtilityLog error:', e);
@@ -1088,25 +1104,28 @@ async function refreshUtilityLog() {
 }
 
 // ── EDIT UTILITY ──
-function openEditUtility(id, itemEnc, amount, status, paidDate, proofUrlEnc) {
-  var item = decodeURIComponent(itemEnc);
-  var existingProof = proofUrlEnc ? decodeURIComponent(proofUrlEnc) : '';
-  document.getElementById('eu-id').value        = id;
-  document.getElementById('eu-item').value      = item;
-  document.getElementById('eu-amount').value    = amount;
-  document.getElementById('eu-paid-date').value = paidDate || '';
-  document.getElementById('eu-receipt-file').value = '';
-  // Show existing receipt link if any
-  var existingEl = document.getElementById('eu-existing-receipt');
-  if (existingProof) {
-    existingEl.innerHTML = '<a href="'+existingProof+'" target="_blank" style="font-size:12px;color:var(--b)">⬇ View current receipt</a>';
-    existingEl.style.display = 'block';
-  } else {
-    existingEl.innerHTML = '';
-    existingEl.style.display = 'none';
+function openEditUtility(id, item, amount, status, paidDate, proofUrl) {
+  try {
+    document.getElementById('eu-id').value        = id;
+    document.getElementById('eu-item').value      = item;
+    document.getElementById('eu-amount').value    = amount;
+    document.getElementById('eu-paid-date').value = paidDate || '';
+    document.getElementById('eu-receipt-file').value = '';
+    // Show existing receipt link if any
+    var existingEl = document.getElementById('eu-existing-receipt');
+    if (proofUrl) {
+      existingEl.innerHTML = '<a href="'+proofUrl+'" target="_blank" style="font-size:12px;color:var(--b)">⬇ View current receipt</a>';
+      existingEl.style.display = 'block';
+    } else {
+      existingEl.innerHTML = '';
+      existingEl.style.display = 'none';
+    }
+    setEditUtilityStatus(status);
+    document.getElementById('modal-edit-utility').style.display = 'flex';
+  } catch(err) {
+    console.error('openEditUtility error:', err);
+    toast('Could not open edit form', true);
   }
-  setEditUtilityStatus(status);
-  document.getElementById('modal-edit-utility').style.display = 'flex';
 }
 
 function closeEditUtilityModal() {
@@ -1144,36 +1163,42 @@ async function saveEditUtility() {
   if (_editUtilityStatus==='paid' && !pd) { toast('Select payment date', true); return; }
   btn.disabled=true; btn.textContent='Saving…';
 
-  // Upload new receipt if provided
-  var proof_url = null;
-  if (file) {
-    btn.textContent='Uploading receipt…';
-    var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
-    var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
-      method:'POST',
-      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
-      body:file
-    });
-    if (up.ok) {
-      proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
-    } else {
-      toast('Receipt upload failed', true);
-      btn.disabled=false; btn.textContent='Save';
-      return;
+  try {
+    // Upload new receipt if provided
+    var proof_url = null;
+    if (file) {
+      btn.textContent='Uploading receipt…';
+      var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+      var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
+        method:'POST',
+        headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+        body:file
+      });
+      if (up.ok) {
+        proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
+      } else {
+        toast('Receipt upload failed', true);
+        btn.disabled=false; btn.textContent='Save';
+        return;
+      }
     }
-  }
 
-  var month = _editUtilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
-  var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month, paid_on: _editUtilityStatus==='paid' ? pd : null };
-  if (proof_url) body.proof_url = proof_url;
-  var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
-    method:'PATCH',
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body:JSON.stringify(body)
-  });
-  btn.disabled=false; btn.textContent='Save';
-  if (r && r.ok) { closeEditUtilityModal(); toast('Updated ✓'); refreshUtilityLog(); }
-  else { toast('Could not update', true); }
+    var month = _editUtilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
+    var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month, paid_on: _editUtilityStatus==='paid' ? pd : null };
+    if (proof_url) body.proof_url = proof_url;
+    var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
+      method:'PATCH',
+      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(body)
+    });
+    btn.disabled=false; btn.textContent='Save';
+    if (r && r.ok) { closeEditUtilityModal(); toast('Updated ✓'); refreshUtilityLog(); }
+    else { var e=await r.text(); toast('Error: '+e, true); }
+  } catch(err) {
+    btn.disabled=false; btn.textContent='Save';
+    toast('Error: '+(err.message||'Could not save'), true);
+    console.error('saveEditUtility error:', err);
+  }
 }
 
 // ── DELETE UTILITY ──
