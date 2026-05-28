@@ -88,15 +88,58 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .nav-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;display:block}
 a.nav-btn{text-decoration:none;color:var(--faint)}
 
-.bottom-nav.seven{
-  flex-wrap:wrap;
-  padding-top:6px;
+/* ─── OTHERS TRAY ─── */
+.others-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);
+  z-index:55;opacity:0;pointer-events:none;
+  transition:opacity .25s ease;
 }
-.bottom-nav.seven .nav-btn{
-  flex:0 0 25%;
-  padding:4px 0;
-  font-size:9px;
+.others-overlay.open{opacity:1;pointer-events:all}
+.others-tray{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+  width:100%;max-width:430px;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-radius:20px 20px 0 0;
+  z-index:58;
+  padding:0 0 max(24px,env(safe-area-inset-bottom));
+  transition:transform .3s cubic-bezier(.32,0,.25,1);
+  box-shadow:0 -8px 40px rgba(0,0,0,.14);
 }
+.others-tray.open{transform:translateX(-50%) translateY(0)}
+.tray-handle{
+  width:36px;height:4px;background:var(--border-strong);
+  border-radius:2px;margin:12px auto 16px;
+}
+.tray-label{
+  font-size:10px;font-weight:500;color:var(--faint);
+  text-transform:uppercase;letter-spacing:.8px;
+  padding:0 20px 12px;
+}
+.tray-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;padding:0 12px;
+}
+.tray-btn{
+  display:flex;flex-direction:column;align-items:center;
+  gap:6px;background:none;border:none;cursor:pointer;
+  font-family:inherit;color:var(--faint);
+  font-size:10px;font-weight:500;letter-spacing:.2px;
+  padding:14px 4px;border-radius:12px;
+  transition:background .15s,color .15s;
+}
+.tray-btn:active{background:var(--bg)}
+.tray-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.tray-btn.on{color:var(--br)}
+.tray-btn.on svg{stroke:var(--br)}
+.tray-icon-wrap{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--bg);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,border-color .15s;
+}
+.tray-btn.on .tray-icon-wrap{background:var(--br-l);border-color:var(--br-mid)}
+.tray-btn span{white-space:nowrap}
 
 /* ─── CARDS ─── */
 .card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
@@ -369,8 +412,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 </div><!-- /content -->
 
-<!-- BOTTOM NAV — 8 tabs in 2 rows of 4 -->
-<nav class="bottom-nav seven">
+<!-- BOTTOM NAV — 4 primary tabs -->
+<nav class="bottom-nav" id="bottom-nav">
   <button class="nav-btn on" id="nb-description" onclick="goPage('description',this)">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
     <span>Description</span>
@@ -383,23 +426,52 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     <span>Payments</span>
   </button>
-  <button class="nav-btn" id="nb-assets" onclick="goPage('assets',this)">
-    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-    <span>Assets</span>
-  </button>
-  <button class="nav-btn" id="nb-documents" onclick="goPage('documents',this)">
-    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-    <span>Documents</span>
-  </button>
-  <button class="nav-btn" id="nb-pne" onclick="goPage('pne',this)">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    <span>PNE</span>
-  </button>
-  <button class="nav-btn" id="nb-exp" onclick="goPage('exp',this)">
-    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-    <span>EXP</span>
+  <button class="nav-btn" id="nb-others" onclick="openOthersTray()">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+    <span>Others</span>
   </button>
 </nav>
+
+<!-- OTHERS OVERLAY -->
+<div class="others-overlay" id="others-overlay" onclick="closeOthersTray()"></div>
+
+<!-- OTHERS SLIDE-UP TRAY -->
+<div class="others-tray" id="others-tray">
+  <div class="tray-handle"></div>
+  <div class="tray-label">More</div>
+  <div class="tray-grid">
+    <button class="tray-btn" id="nb-messages" onclick="goPageFromTray('messages',this)">
+      <div class="tray-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <span>Messages</span>
+    </button>
+    <button class="tray-btn" id="nb-assets" onclick="goPageFromTray('assets',this)">
+      <div class="tray-icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      </div>
+      <span>Assets</span>
+    </button>
+    <button class="tray-btn" id="nb-documents" onclick="goPageFromTray('documents',this)">
+      <div class="tray-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      </div>
+      <span>Documents</span>
+    </button>
+    <button class="tray-btn" id="nb-pne" onclick="goPageFromTray('pne',this)">
+      <div class="tray-icon-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      </div>
+      <span>PNE</span>
+    </button>
+    <button class="tray-btn" id="nb-exp" onclick="goPageFromTray('exp',this)">
+      <div class="tray-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </div>
+      <span>EXP</span>
+    </button>
+  </div>
+</div>
 
 <!-- Asset lightbox -->
 <div id="asset-lightbox" onclick="closeAssetLightbox()">
@@ -508,11 +580,19 @@ const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',m
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── NAVIGATION ──
+// Tray pages set — used to highlight "Others" btn when a tray page is active
+const TRAY_PAGES = new Set(['messages','assets','documents','pne','exp']);
+
 function goPage(id, btn) {
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tray-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
-  btn.classList.add('on');
+  if (btn) btn.classList.add('on');
+  // If a tray page is active, highlight Others button
+  if (TRAY_PAGES.has(id)) {
+    document.getElementById('nb-others').classList.add('on');
+  }
   document.querySelector('.content').scrollTop = 0;
   if (id==='description') loadDescription();
   if (id==='earnings')    document.getElementById('iframe-earnings').src = IS_ADMIN_VIEW ? ('earnings.html?role=landlord&name=' + encodeURIComponent(PROP || '') + '&property=' + encodeURIComponent(PROP || '')) : ('earnings.html?role=landlord&name=' + encodeURIComponent(me.name || ''));
@@ -522,6 +602,26 @@ function goPage(id, btn) {
   if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='pne')         document.getElementById('iframe-pne').src = 'pne.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='exp')         document.getElementById('iframe-exp').src = 'experience.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
+}
+
+function openOthersTray() {
+  document.getElementById('others-overlay').classList.add('open');
+  document.getElementById('others-tray').classList.add('open');
+}
+
+function closeOthersTray() {
+  document.getElementById('others-overlay').classList.remove('open');
+  document.getElementById('others-tray').classList.remove('open');
+}
+
+function goPageFromTray(id, btn) {
+  closeOthersTray();
+  // Highlight tray btn
+  document.querySelectorAll('.tray-btn').forEach(b=>b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  goPage(id, null);
+  // Keep Others highlighted in main nav
+  document.getElementById('nb-others').classList.add('on');
 }
 
 // ── ADMIN ASSET CONTROLS ──
