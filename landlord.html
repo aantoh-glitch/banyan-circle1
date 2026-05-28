@@ -1032,6 +1032,7 @@ async function saveUtilityBill() {
   if (proof_url) body.proof_url = proof_url;
 
   btn.textContent='Saving…';
+  try {
   var r = await fetch(SB+'/rest/v1/utility_payments', {
     method:'POST',
     headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
@@ -1040,6 +1041,7 @@ async function saveUtilityBill() {
   btn.disabled=false; btn.textContent='Submit';
   if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog(); }
   else { var e=await r.text(); toast('Error: '+e, true); }
+  } catch(err) { btn.disabled=false; btn.textContent='Submit'; toast('Error: '+err.message, true); }
 }
 
 async function refreshUtilityLog() {
@@ -1068,10 +1070,10 @@ async function refreshUtilityLog() {
         +'<td style="font-weight:500">'+(u.utility_type||'—')+'</td>'
         +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
         +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
-        +'<td style="font-size:11px;color:var(--muted)">'+(paid_on ? new Date(paid_on).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—')+'</td>'
+        +'<td style="font-size:11px;color:var(--muted)">'+(paid_on ? (function(d){var p=d.split('-');return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});})(paid_on) : '—')+'</td>'
         +'<td style="text-align:right;white-space:nowrap">'
           +proofBtn
-          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+paid_on+'\',\''+encodeURIComponent(u.proof_url||'')+'\'" '
+          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+esc(paid_on)+'\',\''+encodeURIComponent(u.proof_url||'')+'\'" '
             +'style="padding:4px 10px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>'
           +'<button onclick="deleteUtility(\''+u.id+'\')" '
             +'style="padding:4px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>'
