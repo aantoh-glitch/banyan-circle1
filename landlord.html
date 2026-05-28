@@ -911,11 +911,15 @@ loadDescription();
   if(!me)return;
   // Hide FAB when embedded in admin iframe
   if(window!==window.top){var f=document.getElementById("msg-fab");if(f)f.style.display="none";return;}
-  .then(r=>r.json()).then(d=>{
+  // Fetch unread message count for badge
+  var prop=encodeURIComponent(me.prop||me.property_name||"");
+  fetch(S+"/rest/v1/guest_complaints?property_name=eq."+prop+"&status=eq.open&select=id",{
+    headers:{apikey:K,"Authorization":"Bearer "+K}
+  }).then(function(r){return r.json();}).then(function(d){
     if(!d||!d.length)return;
     var b=document.getElementById("msg-fab-badge");
     if(b){b.textContent=d.length;b.style.display="block";}
-  }).catch(()=>{});
+  }).catch(function(){});
 })();
 </script>
 
@@ -934,8 +938,8 @@ loadDescription();
     <div style="margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Status</label>
       <div style="display:flex;gap:8px">
-        <button id="ub-btn-pending" onclick="setUtilityStatus('pending')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pending</button>
-        <button id="ub-btn-paid" onclick="setUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
+        <button type="button" id="ub-btn-pending" onclick="setUtilityStatus('pending')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pending</button>
+        <button type="button" id="ub-btn-paid" onclick="setUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
       </div>
     </div>
     <div id="ub-date-section" style="display:none;margin-bottom:13px">
@@ -947,8 +951,8 @@ loadDescription();
       <input id="ub-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-      <button onclick="closeUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
-      <button id="ub-save-btn" onclick="saveUtilityBill()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Submit</button>
+      <button type="button" onclick="closeUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button type="button" id="ub-save-btn" onclick="saveUtilityBill()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Submit</button>
     </div>
   </div>
 </div>
@@ -1198,8 +1202,8 @@ async function deleteUtility(id) {
     <div style="margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Status</label>
       <div style="display:flex;gap:8px">
-        <button id="eu-btn-pending" onclick="setEditUtilityStatus('pending')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pending</button>
-        <button id="eu-btn-paid" onclick="setEditUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
+        <button type="button" id="eu-btn-pending" onclick="setEditUtilityStatus('pending')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pending</button>
+        <button type="button" id="eu-btn-paid" onclick="setEditUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
       </div>
     </div>
     <div id="eu-date-section" style="display:none;margin-bottom:13px">
@@ -1212,8 +1216,8 @@ async function deleteUtility(id) {
       <input id="eu-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-      <button onclick="closeEditUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
-      <button id="eu-save-btn" onclick="saveEditUtility()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Save</button>
+      <button type="button" onclick="closeEditUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button type="button" id="eu-save-btn" onclick="saveEditUtility()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Save</button>
     </div>
   </div>
 </div>
