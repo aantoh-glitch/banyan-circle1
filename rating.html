@@ -147,18 +147,28 @@ let starValue = 0;
 // Load talents
 async function loadTalents(){
   try{
-    const rows = await api('/rest/v1/talents?select=id,name,category&order=name') || [];
+    const rows = await api('/rest/v1/talents?select=id,name,category,venues&order=name') || [];
     const el = document.getElementById('talent-list');
     if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents found</div>'; return; }
-    el.innerHTML = rows.map(t => `
+    // Filter by guest's property if available; fallback to all
+    const guestProp = (me.prop||me.property_name||'').trim();
+    const filtered = guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.includes(guestProp)) : rows;
+    const display = filtered.length ? filtered : rows;
+    el.innerHTML = display.map(t => {
+      const propBadges = Array.isArray(t.venues) && t.venues.length
+        ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${t.venues.map(v=>`<span style="font-size:10px;padding:2px 7px;border-radius:6px;background:var(--br-l);color:var(--br);font-weight:500;border:1px solid var(--br)">${v}</span>`).join('')}</div>`
+        : '';
+      return `
       <div class="talent-card" id="tc-${t.id}" onclick="selectTalent(${JSON.stringify(t).replace(/"/g,'&quot;')})">
         <div class="talent-av">${ini(t.name)}</div>
         <div class="talent-info">
           <div class="talent-name">${t.name}</div>
           <div class="talent-cat">${t.category||''}</div>
+          ${propBadges}
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="check-${t.id}"><polyline points="20,6 9,17 4,12"/></svg>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch(e){ document.getElementById('talent-list').innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>'; }
 }
 

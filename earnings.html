@@ -24,6 +24,7 @@
 }
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding-bottom:80px}
+.shell.embedded{padding-bottom:16px}
 
 /* HEADER */
 .hdr{
@@ -608,6 +609,7 @@ const params  = new URLSearchParams(window.location.search);
 const viewRole = (params.get('role') || 'admin').toLowerCase();
 let   viewName = params.get('name') || '';
 const viewProp = params.get('property') || ''; // property-portal mode: resolve to landlord name
+const isEmbedded = params.get('embedded') === '1';
 
 const isAdmin = (viewRole === 'admin' || viewRole === 'office');
 
@@ -619,7 +621,11 @@ const BACK_MAP = {
   admin:    '/admin.html',
   office:   '/admin.html',
 };
-document.getElementById('back-btn').style.display = (!isAdmin && BACK_MAP[viewRole]) ? 'flex' : 'none';
+document.getElementById('back-btn').style.display = (!isAdmin && !isEmbedded && BACK_MAP[viewRole]) ? 'flex' : 'none';
+
+/* Identity strip — hide when embedded (parent page already shows identity) */
+const idStrip = document.querySelector('.id-strip');
+if (isEmbedded && idStrip) idStrip.style.display = 'none';
 
 /* Identity strip */
 const roleLabels = {admin:'Admin',office:'Admin',landlord:'Landlord',staff:'Staff',talent:'Talent'};
@@ -630,6 +636,13 @@ document.getElementById('id-name').textContent = isAdmin
   ? 'All Earnings'
   : (viewName || 'Unknown');
 if (!isAdmin) document.getElementById('readonly-tag').style.display = '';
+
+/* Embedded mode — compact shell, no back button chrome */
+if (isEmbedded) {
+  document.querySelector('.shell').classList.add('embedded');
+  const hdr = document.querySelector('.hdr');
+  if (hdr) hdr.style.display = 'none';
+}
 
 /* Show admin controls */
 if (isAdmin) {
@@ -1257,6 +1270,16 @@ async function init() {
   await loadEntries();
 }
 init();
+
+// ── Auto-resize: tell parent iframe how tall we are ──
+function notifyHeight() {
+  const h = document.documentElement.scrollHeight;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'earnings-height', height: h }, '*');
+  }
+}
+const _ro = new ResizeObserver(() => notifyHeight());
+_ro.observe(document.body);
 </script>
 </body>
 </html>

@@ -287,18 +287,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- PANEL: EARNINGS -->
-<div class="panel" id="panel-earnings">
-  <div class="section-hdg">Earnings</div>
-  <div class="earn-grid">
-    <div class="earn-card"><div class="earn-amount" id="earn-total">—</div><div class="earn-label">Total Earned</div></div>
-    <div class="earn-card"><div class="earn-amount" id="earn-month">—</div><div class="earn-label">This Month</div></div>
-  </div>
-  <div class="card"><div style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">Earnings appear once bookings are confirmed and processed by the office.</div></div>
-  <div style="margin-top:8px;padding-bottom:10px">
-    <a href="documents.html" class="btn-sec" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
-      <span style="font-size:16px">📄</span> Documents
-    </a>
-  </div>
+<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden">
+  <iframe id="iframe-earnings" src="" style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -396,7 +386,12 @@ const loaders={
   schedule:()=>renderSchedule(),
 
   ratings:()=>loadRatings(),
-  earnings:()=>{},
+  earnings:()=>{
+    const fr=document.getElementById('iframe-earnings');
+    if(!fr.src||fr.src==='about:blank'||fr.src===window.location.href){
+      fr.src='earnings.html?role=talent&name='+encodeURIComponent(talentNameParam)+'&embedded=1';
+    }
+  },
   profile:()=>{}
 };
 function showPanel(id){
@@ -511,7 +506,8 @@ async function loadProfile(){
 }
 let ALL_PROPS=[];
 async function loadProperties(){
-  ALL_PROPS=await api('/rest/v1/properties?select=name&order=name')||[];
+  const landlords=await api('/rest/v1/landlords?select=property_name&order=property_name')||[];
+  ALL_PROPS=landlords.filter(l=>l.property_name).map(l=>({name:l.property_name}));
   document.getElementById('p-venues').innerHTML=ALL_PROPS.map(p=>`<label class="opt-label"><input type="checkbox" name="venue" value="${p.name}"/> ${p.name}</label>`).join('');
 }
 function setVenueChecks(arr){document.querySelectorAll('[name="venue"]').forEach(cb=>{cb.checked=arr.includes(cb.value);});}
