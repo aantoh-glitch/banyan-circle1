@@ -950,6 +950,7 @@ loadDescription();
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Receipt / Proof (optional)</label>
       <input id="ub-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
     </div>
+    <div id="ub-error" style="display:none;margin-top:10px;padding:10px 12px;background:#FBEBEB;color:#9B2626;border-radius:8px;font-size:12px;word-break:break-word"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <button type="button" onclick="closeUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
       <button type="button" id="ub-save-btn" onclick="saveUtilityBill()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Submit</button>
@@ -966,6 +967,8 @@ function openAddUtilityModal() {
   document.getElementById('ub-paid-date').value = '';
   document.getElementById('ub-receipt-file').value = '';
   document.getElementById('ub-date-section').style.display = 'none';
+  document.getElementById('ub-error').style.display = 'none';
+  document.getElementById('ub-error').textContent = '';
   setUtilityStatus('pending');
   var m = document.getElementById('modal-add-utility');
   m.style.display = 'flex';
@@ -1038,11 +1041,22 @@ async function saveUtilityBill() {
       body:JSON.stringify(body)
     });
     btn.disabled=false; btn.textContent='Submit';
-    if (r && r.ok) { closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog(); }
-    else { var e=await r.text(); toast('Error: '+e, true); }
+    if (r && r.ok) {
+      document.getElementById('ub-error').style.display = 'none';
+      closeUtilityModal(); toast('Utility bill added ✓'); refreshUtilityLog();
+    } else {
+      var eText = await r.text();
+      var errEl = document.getElementById('ub-error');
+      errEl.textContent = 'Error (HTTP '+r.status+'): '+eText;
+      errEl.style.display = 'block';
+      toast('Could not save — see error above', true);
+    }
   } catch(err) {
     btn.disabled=false; btn.textContent='Submit';
-    toast('Error: '+(err.message||'Could not save'), true);
+    var errEl = document.getElementById('ub-error');
+    errEl.textContent = 'Error: '+(err.message||String(err));
+    errEl.style.display = 'block';
+    toast('Could not save — see error above', true);
     console.error('saveUtilityBill error:', err);
   }
 }
