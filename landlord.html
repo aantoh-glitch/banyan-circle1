@@ -1076,7 +1076,7 @@ async function refreshUtilityLog() {
         +'<td style="font-weight:500">'+(u.utility_type||'—')+'</td>'
         +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
         +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
-        +'<td style="font-size:11px;color:var(--muted)">'+fmtDate(paid_on)+'</td>'
+        +'<td style="font-size:11px;color:var(--muted)">'+(paid_on ? new Date(paid_on).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—')+'</td>'
         +'<td style="text-align:right;white-space:nowrap">'
           +proofBtn
           +'<button data-util-edit="'+u.id+'" '
