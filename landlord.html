@@ -1070,7 +1070,7 @@ async function refreshUtilityLog() {
         +'<td style="font-weight:500">'+(u.utility_type||'—')+'</td>'
         +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
         +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
-        +'<td style="font-size:11px;color:var(--muted)">'+(paid_on ? (function(d){var p=d.split('-');return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});})(paid_on) : '—')+'</td>'
+        +'<td style="font-size:11px;color:var(--muted)">'+fmtDate(paid_on)+'</td>'
         +'<td style="text-align:right;white-space:nowrap">'
           +proofBtn
           +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+esc(paid_on)+'\',\''+encodeURIComponent(u.proof_url||'')+'\'" '
