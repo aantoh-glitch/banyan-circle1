@@ -133,7 +133,7 @@
     <div class="main-header">
       <div>
         <div class="main-title">Availability Calendar</div>
-        <div class="main-subtitle" id="activePropertyLabel">All Properties</div>
+        <div class="main-subtitle" id="activePropertyLabel"></div>
       </div>
       <div class="header-actions">
         <button class="btn btn-ghost" onclick="triggerSync()">↻ Sync Now</button>
@@ -284,6 +284,19 @@ let currentYear = new Date().getFullYear();
 let activeProperty = 'all';
 let selectedBookingId = null;
 
+// ─── URL PARAMS ───────────────────────────────────────────────────────────────
+const _urlParams = new URLSearchParams(window.location.search);
+const _viewerParam = _urlParams.get('viewer');
+const _propertyParam = _urlParams.get('property');
+
+// Hide sidebar when embedded in landlord view
+if (_viewerParam === 'landlord') {
+  document.addEventListener('DOMContentLoaded', function() {
+    const sb = document.querySelector('.sidebar');
+    if (sb) sb.style.display = 'none';
+  });
+}
+
 // ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
@@ -296,17 +309,27 @@ let bookings   = [];
 async function loadPropertiesFromSupabase() {
   try {
     const res = await fetch(
-      SB + '/rest/v1/landlords?select=property_name&order=property_name',
+      SB + '/rest/v1/landlords?select=property_name,airbnb_ical_url,bookingcom_ical_url&order=property_name',
       { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
     );
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) return;
-    // Deduplicate property names
+    // Deduplicate property names (keep first occurrence to preserve iCal URLs)
     const seen = new Set();
     properties = data
-      .map(l => l.property_name).filter(Boolean)
-      .filter(n => { if (seen.has(n)) return false; seen.add(n); return true; })
-      .map((name, i) => ({ id: 'p_' + i, name, color: COLORS[i % COLORS.length], airbnbUrl: '', bookingUrl: '' }));
+      .filter(l => { if (!l.property_name || seen.has(l.property_name)) return false; seen.add(l.property_name); return true; })
+      .map((l, i) => ({ id: 'p_' + i, name: l.property_name, color: COLORS[i % COLORS.length], airbnbUrl: l.airbnb_ical_url || '', bookingUrl: l.bookingcom_ical_url || '' }));
+    // Auto-select property from URL param
+    if (_propertyParam) {
+      const match = properties.find(p => p.name.toLowerCase() === _propertyParam.toLowerCase());
+      if (match) {
+        activeProperty = match.id;
+        document.getElementById('activePropertyLabel').textContent = match.name;
+      }
+    }
+    if (!document.getElementById('activePropertyLabel').textContent) {
+      document.getElementById('activePropertyLabel').textContent = 'All Properties';
+    }
     renderSidebar(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
   } catch(e) {
     showToast('Could not load properties from Supabase', 'error');
@@ -487,14 +510,27 @@ function openEditProperty(id) {
   document.getElementById('editBookingUrl').value = p.bookingUrl || '';
   document.getElementById('editPropertyModal').classList.add('open');
 }
-function saveEditProperty() {
+async function saveEditProperty() {
   const id = document.getElementById('editPropId').value;
   const p = properties.find(x => x.id === id);
   if (!p) return;
   p.airbnbUrl = document.getElementById('editAirbnbUrl').value.trim();
   p.bookingUrl = document.getElementById('editBookingUrl').value.trim();
   closeModal('editPropertyModal');
-  showToast(`iCal URLs saved for "${p.name}"`);
+  // Persist to Supabase landlords table
+  try {
+    await fetch(
+      SB + '/rest/v1/landlords?property_name=eq.' + encodeURIComponent(p.name),
+      {
+        method: 'PATCH',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ airbnb_ical_url: p.airbnbUrl || null, bookingcom_ical_url: p.bookingUrl || null })
+      }
+    );
+    showToast(`iCal URLs saved for "${p.name}"`);
+  } catch(e) {
+    showToast('Saved locally — could not reach Supabase', 'error');
+  }
 }
 function openAddBooking() {
   populatePropertySelects();

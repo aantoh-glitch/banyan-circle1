@@ -436,7 +436,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <div class="rev-sheet-body"><iframe id="staff-frame" src="" title="Rate Our Staff"></iframe></div>
 </div>
 
-<div class="pne-backdrop" id="pne-backdrop" onclick="closePne()"></div>
+<div class="pne-backdrop" id="pne-backdrop"></div>
 <div class="pne-sheet" id="pne-sheet">
   <div class="pne-sheet-grab"></div>
   <div class="pne-sheet-hdr">
@@ -514,6 +514,11 @@ function closePne() {
   document.getElementById('pne-sheet').classList.remove('open');
   document.body.style.overflow = '';
 }
+(function(){
+  var bd = document.getElementById('pne-backdrop');
+  bd.addEventListener('click', closePne);
+  bd.addEventListener('touchend', function(e){ e.preventDefault(); closePne(); }, {passive:false});
+})();
 
 async function api(path, method, body) {
   var h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
