@@ -158,10 +158,11 @@ async function api(path, opts) {
   return r.json();
 }
 
-// Already logged in?
-const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+// Clear any stale session on login page load
+localStorage.removeItem('bc_me');
+
 function routeFor(role, user){
-  const u = user || me || {};
+  const u = user || {};
   if(role==='office')   return '/admin.html';
   if(role==='owner')    return '/owner.html';
   if(role==='landlord') return '/landlord.html';
@@ -169,7 +170,6 @@ function routeFor(role, user){
   if(role==='talent')   return '/talent.html?id='+encodeURIComponent(u.id||'')+'&name='+encodeURIComponent(u.name||'');
   return '/ops.html';
 }
-if (me) { location.replace(routeFor(me.role, me)); throw new Error('Already signed in'); }
 
 function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
 const ini = n => (n || '').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase() || '?';
