@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Banyan Circle — Guest</title>
 <meta name="theme-color" content="#993C1D"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,21 +13,21 @@
   --g:#445C36;--g-l:#E8F0E2;
   --a:#9A6B2A;--a-l:#F7EDD8;
   --b:#2D5986;--b-l:#E4EEF8;
-  --text:#261A0F;--muted:#7A6B58;
+  --text:#ffffff;--muted:rgba(255,255,255,0.65);
   --border:rgba(122,59,30,0.13);
   --bg:#F4EFE6;--white:#FFFDF8;
   --r:#8C2A2A;--r-l:#FAE8E8;
   --gold:#C4873A;--gold-l:#FBF0DC
 }
-html,body{min-height:100%;font-family:'Cormorant Garamond',serif;background:#DDA888;color:var(--text);font-size:17px;line-height:1.55}
+html,body{min-height:100%;font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;background:#DDA888;color:var(--text);font-size:17px;line-height:1.55}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 .hdr{background:#D4957A;border-bottom:none;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(74,32,16,0.12)}
 .hdr-logo{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center}
 .hdr-logo img{width:36px;height:36px;object-fit:contain}
 .hdr-info{flex:1}
-.hdr-name{font-size:17px;font-weight:500;color:#3A1A08}
-.hdr-prop{font-size:14px;color:rgba(58,26,8,.65)}
-.hdr-out{background:none;border:none;cursor:pointer;font-size:14px;color:rgba(58,26,8,.6);font-family:inherit;padding:4px 8px;border-radius:6px}
+.hdr-name{font-size:17px;font-weight:500;color:#ffffff}
+.hdr-prop{font-size:14px;color:rgba(255,255,255,0.65)}
+.hdr-out{background:none;border:none;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.6);font-family:inherit;padding:4px 8px;border-radius:6px}
 .bnav{background:#3A1A08;border-top:1px solid rgba(255,255,255,.08);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:500;max-width:430px;margin:0 auto;box-shadow:0 -2px 12px rgba(0,0,0,.25)}
 .bnt{flex:1;padding:10px 2px 8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:.3px;color:rgba(253,230,210,.5);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s}
 .bnt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
@@ -35,7 +35,7 @@ html,body{min-height:100%;font-family:'Cormorant Garamond',serif;background:#DDA
 .pg{display:none;padding:18px 16px 100px;background:#DDA888}
 .pg.on{display:block;animation:pgFadeIn .35s cubic-bezier(.4,0,.2,1)}
 @keyframes pgFadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-.pg-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;letter-spacing:.3px;margin-bottom:4px;color:var(--text)}
+.pg-title{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:26px;font-weight:500;letter-spacing:.3px;margin-bottom:4px;color:var(--text)}
 .pg-sub{font-size:15px;color:var(--muted);margin-bottom:20px;letter-spacing:.1px}
 .sec-hdr{font-size:13px;font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(196,135,58,.3)}
 .fg{margin-bottom:14px}
@@ -67,7 +67,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .upload-progress{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;font-size:15px;color:var(--muted);display:flex;align-items:center;gap:10px}
 .upload-spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--br);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.section-toggle{background:var(--white);border-radius:10px;padding:14px 16px;font-size:15px;font-family:'Cormorant Garamond',serif;font-weight:500;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1.5px solid var(--border);margin-bottom:4px;color:var(--text)}
+.section-toggle{background:var(--white);border-radius:10px;padding:14px 16px;font-size:15px;font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-weight:500;display:flex;justify-content:space-between;align-items:center;cursor:pointer;border:1.5px solid var(--border);margin-bottom:4px;color:var(--text)}
 .toggle-arrow{font-size:18px;color:var(--muted);transition:transform .2s}
 .section-body{display:none;padding-top:6px}
 .section-body.open{display:block}
@@ -78,7 +78,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .success{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;padding:32px}
 .s-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
 .s-icon svg{width:34px;height:34px;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.s-title{font-family:'Cormorant Garamond',serif;font-size:24px;margin-bottom:8px}
+.s-title{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:24px;margin-bottom:8px}
 .s-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
 .done-banner{background:#C8755A;border-radius:10px;padding:13px 16px;font-size:15px;color:#fdf0e4;display:none;align-items:center;gap:10px;margin-bottom:18px}
 .done-banner svg{width:16px;height:16px;stroke:#fdf0e4;fill:none;stroke-width:2.5;flex-shrink:0}
@@ -89,13 +89,13 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .bk-edit-btn{font-size:12px;font-weight:500;color:var(--br);background:var(--br-l);border:1px solid rgba(153,60,29,.2);border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:opacity .15s}
 .exp-section{margin-bottom:22px}
 .exp-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.exp-section-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text)}
+.exp-section-title{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:18px;font-weight:500;color:var(--text)}
 .exp-entries{display:flex;flex-direction:column;gap:8px}
 .exp-entry{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:16px;color:var(--text);line-height:1.6}
 .exp-empty{color:var(--muted);font-size:15px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
 .exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
 @keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.welcome-banner{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(160deg,#5a2e1a 0%,#7a3d22 40%,#6b3319 100%);cursor:pointer;padding:36px 24px 40px;font-family:'Cormorant Garamond',serif}
+.welcome-banner{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(160deg,#5a2e1a 0%,#7a3d22 40%,#6b3319 100%);cursor:pointer;padding:36px 24px 40px;font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif}
 .welcome-banner-mosaic{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,80px);gap:10px;width:100%;max-width:380px;margin-bottom:28px}
 .wb-cell{border-radius:40px;background:rgba(220,140,90,.18);overflow:hidden;display:flex;align-items:center;justify-content:center}
 .wb-cell.tall{grid-row:span 2}
@@ -103,9 +103,9 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .wb-cell.center img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .wb-cell.ph{background:rgba(200,120,70,.12);border:1.5px dashed rgba(224,120,64,.35)}
 .welcome-banner-inner{text-align:center;width:100%;max-width:380px;pointer-events:none}
-.welcome-banner-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#fdf0e4;line-height:1.3;margin-bottom:10px;letter-spacing:.4px}
-.welcome-banner-sub{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:rgba(253,230,210,.75);line-height:1.7;margin-bottom:24px;letter-spacing:.2px}
-.welcome-banner-hint{display:inline-block;background:#E07840;border-radius:24px;color:#fff;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;padding:13px 0;width:100%;letter-spacing:.5px}
+.welcome-banner-title{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:26px;font-weight:600;color:#fdf0e4;line-height:1.3;margin-bottom:10px;letter-spacing:.4px}
+.welcome-banner-sub{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:15px;font-weight:400;color:rgba(253,230,210,.75);line-height:1.7;margin-bottom:24px;letter-spacing:.2px}
+.welcome-banner-hint{display:inline-block;background:#E07840;border-radius:24px;color:#fff;font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:17px;font-weight:500;padding:13px 0;width:100%;letter-spacing:.5px}
 .bill-line{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);font-size:16px}
 .bill-line:last-child{border-bottom:none}
 .bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
@@ -123,7 +123,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .pne-sheet.open{transform:translateX(-50%) translateY(0)}
 .pne-sheet-grab{width:36px;height:4px;background:var(--border);border-radius:999px;margin:10px auto 0;flex-shrink:0}
 .pne-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--border)}
-.pne-sheet-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
+.pne-sheet-title{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
 .pne-sheet-close{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .pne-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .pne-sheet-body{flex:1;overflow:hidden}
@@ -136,7 +136,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .rev-sheet.open{transform:translateX(-50%) translateY(0)}
 .rev-sheet-grab{width:36px;height:4px;background:var(--border);border-radius:999px;margin:10px auto 0;flex-shrink:0}
 .rev-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--border)}
-.rev-sheet-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
+.rev-sheet-title{font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
 .rev-sheet-close{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .rev-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .rev-sheet-body{flex:1;overflow:hidden}
