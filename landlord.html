@@ -410,6 +410,12 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     style="width:100%;height:calc(100dvh - 130px);border:none;display:block;"></iframe>
 </div>
 
+<!-- ── BOOKINGS ── -->
+<div class="pg" id="pg-bookings" style="padding:0">
+  <iframe id="iframe-bookings" src=""
+    style="width:100%;height:calc(100dvh - 130px);border:none;display:block;"></iframe>
+</div>
+
 </div><!-- /content -->
 
 <!-- BOTTOM NAV — 4 primary tabs -->
@@ -463,6 +469,12 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
         <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
       </div>
       <span>EXP</span>
+    </button>
+    <button class="tray-btn" id="nb-bookings" onclick="goPageFromTray('bookings',this)">
+      <div class="tray-icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <span>Bookings</span>
     </button>
   </div>
 </div>
@@ -575,7 +587,7 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ── NAVIGATION ──
 // Tray pages set — used to highlight "Others" btn when a tray page is active
-const TRAY_PAGES = new Set(['assets','documents','pne','exp']);
+const TRAY_PAGES = new Set(['assets','documents','pne','exp','bookings']);
 
 function goPage(id, btn) {
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
@@ -596,6 +608,7 @@ function goPage(id, btn) {
   if (id==='documents')   document.getElementById('iframe-documents').src = 'document.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='pne')         document.getElementById('iframe-pne').src = 'pne.html?prop=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='exp')         document.getElementById('iframe-exp').src = 'experience.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
+  if (id==='bookings')    document.getElementById('iframe-bookings').src = 'booking.html?property=' + encodeURIComponent(PROP) + '&viewer=landlord&readonly=true';
 }
 
 function openOthersTray() {
