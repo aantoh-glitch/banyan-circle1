@@ -95,35 +95,17 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .exp-empty{color:var(--muted);font-size:15px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
 .exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
 @keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.welcome-banner{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(26,14,6,.62);backdrop-filter:blur(4px);cursor:pointer;padding:24px}
-.welcome-banner-inner{
-  background:var(--white);
-  border-radius:20px;
-  padding:34px 30px 28px;
-  text-align:center;
-  max-width:340px;
-  pointer-events:none;
-  position:relative;
-  /* gradient border */
-  border:2px solid transparent;
-  background-clip:padding-box;
-  box-shadow:0 0 0 2px var(--white),0 0 0 4px var(--gold),0 0 0 6px rgba(196,135,58,.25),0 16px 48px rgba(0,0,0,.22);
-}
-.welcome-banner-inner::before{
-  content:'';
-  position:absolute;
-  inset:-6px;
-  border-radius:24px;
-  background:linear-gradient(135deg,rgba(196,135,58,.5) 0%,rgba(122,59,30,.7) 40%,rgba(196,135,58,.5) 100%);
-  z-index:-1;
-  filter:blur(8px);
-  opacity:.6;
-}
-.welcome-banner-logo{width:72px;height:72px;border-radius:50%;margin:0 auto 18px;overflow:hidden;box-shadow:0 0 18px 6px rgba(200,160,80,.55),0 0 40px 12px rgba(200,140,50,.28)}
-.welcome-banner-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.welcome-banner-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:10px;letter-spacing:.3px}
-.welcome-banner-sub{font-size:16px;color:var(--muted);line-height:1.7}
-.welcome-banner-hint{margin-top:20px;font-size:13px;color:var(--gold);opacity:.8;letter-spacing:.5px;text-transform:uppercase;font-weight:500}
+.welcome-banner{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(160deg,#5a2e1a 0%,#7a3d22 40%,#6b3319 100%);cursor:pointer;padding:36px 24px 40px;font-family:'Cormorant Garamond',serif}
+.welcome-banner-mosaic{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,80px);gap:10px;width:100%;max-width:380px;margin-bottom:28px}
+.wb-cell{border-radius:40px;background:rgba(220,140,90,.18);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.wb-cell.tall{grid-row:span 2}
+.wb-cell.center{background:#E07840;box-shadow:0 0 0 3px #f0a878,0 0 0 6px rgba(224,120,64,.3)}
+.wb-cell.center img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.wb-cell.ph{background:rgba(200,120,70,.12);border:1.5px dashed rgba(224,120,64,.35)}
+.welcome-banner-inner{text-align:center;width:100%;max-width:380px;pointer-events:none}
+.welcome-banner-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#fdf0e4;line-height:1.3;margin-bottom:10px;letter-spacing:.4px}
+.welcome-banner-sub{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:rgba(253,230,210,.75);line-height:1.7;margin-bottom:24px;letter-spacing:.2px}
+.welcome-banner-hint{display:inline-block;background:#E07840;border-radius:24px;color:#fff;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;padding:13px 0;width:100%;letter-spacing:.5px}
 .bill-line{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);font-size:16px}
 .bill-line:last-child{border-bottom:none}
 .bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
@@ -165,13 +147,20 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="shell">
 
 <div class="welcome-banner" id="welcome-banner" onclick="dismissBanner()">
+  <div class="welcome-banner-mosaic">
+    <div class="wb-cell tall ph"></div>
+    <div class="wb-cell ph"></div>
+    <div class="wb-cell tall ph"></div>
+    <div class="wb-cell center"><img src="H.jpg" alt="Heritance"></div>
+    <div class="wb-cell ph"></div>
+    <div class="wb-cell ph"></div>
+    <div class="wb-cell ph"></div>
+    <div class="wb-cell tall ph"></div>
+  </div>
   <div class="welcome-banner-inner">
-    <div class="welcome-banner-logo">
-      <img src="H.jpg" alt="Heritance">
-    </div>
-    <div class="welcome-banner-title">Welcome to Properties by Heritance</div>
-    <div class="welcome-banner-sub">We hope you have a pleasant experience.</div>
-    <div class="welcome-banner-hint">Tap anywhere to continue</div>
+    <div class="welcome-banner-title">Welcome! Discover our Banyan tree experiences.</div>
+    <div class="welcome-banner-sub">We guarantee warm hospitality and unforgettable stays with Properties by Heritance.</div>
+    <div class="welcome-banner-hint">Get started</div>
   </div>
 </div>
 
