@@ -95,15 +95,18 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .exp-entry{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:16px;color:var(--text);line-height:1.6}
 .exp-empty{color:var(--muted);font-size:15px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
 .exp-skeleton{height:52px;background:linear-gradient(90deg,#EDE8DF 25%,rgba(107,66,38,0.1) 50%,#EDE8DF 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
+@keyframes btnGlow{0%,100%{box-shadow:0 0 0 2px #FAF8F4,0 0 18px 4px rgba(250,248,244,0.55),0 0 40px 8px rgba(250,248,244,0.25)}50%{box-shadow:0 0 0 2px #FAF8F4,0 0 28px 8px rgba(250,248,244,0.8),0 0 60px 16px rgba(250,248,244,0.4)}}
 @keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.welcome-banner{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;background:url('Screen2.JPG') center center/cover no-repeat;cursor:pointer;padding:0 24px 80px;font-family:'Roboto', sans-serif;transform-origin:center center;transition:transform .55s cubic-bezier(.6,0,.2,1),opacity .45s .05s}
+.welcome-banner{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;background:none;overflow:hidden;cursor:pointer;padding:0 24px 80px;font-family:'Roboto', sans-serif;transform-origin:center center;transition:transform .55s cubic-bezier(.6,0,.2,1),opacity .45s .05s}
+.welcome-banner::after{content:'';position:absolute;inset:-10%;background:url('Screen2.JPG') center center/cover no-repeat;z-index:-1;animation:kenBurns 16s ease-in-out infinite}
+@keyframes kenBurns{0%{transform:scale(1) translate(0,0)}40%{transform:scale(1.08) translate(-1.5%,1%)}60%{transform:scale(1.08) translate(-1.5%,1%)}100%{transform:scale(1) translate(0,0)}}
 .welcome-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.1) 60%,rgba(0,0,0,0.25) 100%)}
 .welcome-banner-logo{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.5),0 0 0 3px rgba(219,146,75,0.5)}
 .welcome-banner-logo img{width:100%;height:100%;object-fit:cover}
 .welcome-banner-inner{text-align:center;width:100%;max-width:380px;pointer-events:none}
 .welcome-banner-title{font-family:'Roboto', sans-serif;font-size:26px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:10px;letter-spacing:.4px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 2px 6px rgba(0,0,0,0.8)}
 .welcome-banner-sub{font-family:'Roboto', sans-serif;font-size:15px;font-weight:400;color:#fff;line-height:1.7;margin-bottom:24px;letter-spacing:.2px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 4px rgba(0,0,0,0.9)}
-.welcome-banner-hint{display:inline-block;background:#6B4226;border-radius:24px;color:#FAF8F4;font-family:'Roboto', sans-serif;font-size:17px;font-weight:700;padding:15px 0;width:100%;letter-spacing:.5px;box-shadow:0 0 0 2px #FAF8F4,0 4px 20px rgba(107,66,38,0.5);text-shadow:none}
+.welcome-banner-hint{display:inline-block;background:#6B4226;border-radius:24px;color:#FAF8F4;font-family:'Roboto', sans-serif;font-size:17px;font-weight:700;padding:15px 0;width:100%;letter-spacing:.5px;box-shadow:0 0 0 2px #FAF8F4,0 0 18px 4px rgba(250,248,244,0.55),0 0 40px 8px rgba(250,248,244,0.25);text-shadow:none;animation:btnGlow 2s ease-in-out infinite}
 .bill-line{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);font-size:16px}
 .bill-line:last-child{border-bottom:none}
 .bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-size:16px;font-weight:600;border-top:2px solid var(--text);margin-top:4px}
