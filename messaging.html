@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Banyan Circle — Messages</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#993C1D;--br-l:#FAECE7;--br-d:#712B13;
+  --g:#3B6D11;--g-l:#EAF3DE;
+  --a:#854F0B;--a-l:#FAEEDA;
+  --b:#185FA5;--b-l:#E6F1FB;
+  --r:#A32D2D;--r-l:#FCEBEB;
+  --text:#2C2C2A;--muted:#5F5E5A;--faint:#9E9C97;
+  --border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:680px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--white)}
+/* ── TOP BAR ── */
+.top-bar{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.back-btn{background:none;border:none;cursor:pointer;padding:4px 8px 4px 0;color:var(--muted);display:flex;align-items:center;gap:6px;font-family:inherit;font-size:13px}
+.back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.top-title{font-family:'Playfair Display',serif;font-size:18px;flex:1}
+.compose-btn{display:flex;align-items:center;gap:6px;background:var(--br);color:#fff;border:none;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.compose-btn svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.compose-btn:hover{background:var(--br-d)}
+/* ── FILTER TABS ── */
+.filter-bar{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--white);overflow-x:auto;flex-wrap:nowrap}
+.ftab{padding:5px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
+.ftab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.ftab-in.on{background:var(--g-l);border-color:var(--g);color:var(--g)}
+.ftab-out.on{background:var(--r-l);border-color:var(--r);color:var(--r)}
+/* ── INBOX ── */
+.inbox{flex:1;overflow-y:auto}
+.inbox-empty{text-align:center;padding:60px 24px;color:var(--muted);font-size:14px}
+.inbox-empty svg{width:40px;height:40px;stroke:var(--faint);fill:none;stroke-width:1.5;margin:0 auto 14px;display:block}
+.msg-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.msg-row:hover{background:var(--bg)}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--br);flex-shrink:0;margin-top:6px}
+.unread-dot.read{background:transparent}
+.msg-body{flex:1;min-width:0}
+.msg-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.msg-topic{font-size:14px;font-weight:500;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-topic.bold{font-weight:700}
+.msg-date{font-size:11px;color:var(--faint);flex-shrink:0;white-space:nowrap}
+.msg-from{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.msg-preview{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.role-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.2px}
+.rb-admin,.rb-office{background:var(--br-l);color:var(--br)}
+.rb-talent{background:var(--b-l);color:#0C447C}
+.rb-landlord{background:var(--g-l);color:#27500A}
+.rb-guest{background:var(--a-l);color:#633806}
+.rb-staff{background:var(--b-l);color:#0C447C}
+.booking-pill{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;gap:4px;align-items:center;flex-shrink:0}
+.bp-pending{background:var(--a-l);color:var(--a)}
+.bp-accepted{background:var(--g-l);color:#27500A}
+.bp-rejected{background:var(--r-l);color:var(--r)}
+/* ── THREAD VIEW ── */
+.thread-view{display:none;flex-direction:column;overflow:hidden}
+.thread-view.on{display:flex;flex:1}
+.thread-hdr{background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.thread-meta{flex:1;min-width:0}
+.thread-topic{font-family:'Playfair Display',serif;font-size:16px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thread-parties{font-size:11px;color:var(--faint);margin-top:2px}
+.thread-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bubble-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:85%}
+.bubble-wrap.mine{align-items:flex-end;align-self:flex-end}
+.bubble-label{font-size:11px;color:var(--faint)}
+.bubble{background:var(--bg);border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:14px;line-height:1.6;word-break:break-word}
+.bubble-wrap.mine .bubble{background:var(--br);color:#fff;border-radius:14px 14px 4px 14px}
+.bubble-booking{margin-top:6px;font-size:12px;padding:5px 10px;background:var(--a-l);border-radius:8px;color:var(--a);font-weight:500;display:inline-block}
+.bubble-wrap.mine .bubble-booking{background:rgba(255,255,255,.22);color:#fff}
+/* ── BOOKING STATUS BANNER ── */
+.bk-banner{margin:0 16px 0;padding:13px 16px;border-radius:12px;font-size:14px;font-weight:500;display:none;align-items:center;gap:10px;flex-shrink:0}
+.bk-banner.on{display:flex}
+.bk-banner svg{width:18px;height:18px;flex-shrink:0;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.bk-accepted{background:var(--g-l);color:#27500A}.bk-accepted svg{stroke:#27500A}
+.bk-rejected{background:var(--r-l);color:var(--r)}.bk-rejected svg{stroke:var(--r)}
+.bk-pending{background:var(--a-l);color:var(--a)}.bk-pending svg{stroke:var(--a)}
+/* ── REPLY BAR ── */
+.reply-bar{border-top:1px solid var(--border);background:var(--white);padding:12px 16px;flex-shrink:0;display:flex;gap:10px;align-items:flex-end}
+.reply-input{flex:1;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);resize:none;min-height:44px;max-height:120px;outline:none;transition:border-color .15s}
+.reply-input:focus{border-color:var(--br)}
+.send-btn{background:var(--br);color:#fff;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;flex-shrink:0;white-space:nowrap}
+.send-btn:disabled{opacity:.5;cursor:not-allowed}
+/* ── BOOKING ACTION BAR (talent only) ── */
+.bk-action-bar{border-top:1px solid var(--border);background:var(--white);padding:14px 16px;flex-shrink:0}
+.bk-action-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.bk-action-btns{display:flex;gap:10px}
+.btn-accept{flex:1;padding:13px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn-accept:hover{opacity:.88}
+.btn-accept:disabled{opacity:.5;cursor:not-allowed}
+.btn-decline{flex:1;padding:13px;background:var(--white);color:var(--r);border:1.5px solid var(--r);border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.btn-decline:hover{background:var(--r-l)}
+/* ── DECLINE FORM ── */
+.decline-form{border-top:1px solid var(--border);background:var(--white);padding:14px 16px;flex-shrink:0;display:none}
+.decline-form.on{display:block}
+.decline-label{font-size:13px;font-weight:500;color:var(--r);margin-bottom:8px}
+.decline-textarea{width:100%;border:1.5px solid var(--r);border-radius:10px;padding:10px 13px;font-family:inherit;font-size:14px;color:var(--text);resize:none;min-height:80px;outline:none;line-height:1.6;background:var(--r-l)}
+.decline-actions{display:flex;gap:10px;margin-top:10px}
+.btn-confirm-decline{flex:1;padding:12px;background:var(--r);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-confirm-decline:disabled{opacity:.5;cursor:not-allowed}
+.btn-cancel-decline{padding:12px 18px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit}
+/* ── COMPOSE MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+@media(min-width:520px){.overlay{align-items:center}}
+.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:22px 20px 36px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
+@media(min-width:520px){.modal-sheet{border-radius:16px;padding:26px}}
+@keyframes slideUp{from{transform:translateY(32px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;letter-spacing:.2px;text-transform:uppercase}
+.fc{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;-webkit-appearance:none;transition:border-color .15s}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.btn-p{padding:10px 22px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:var(--br-d)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.booking-date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.leave-dur-btn{flex:1;padding:11px 10px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+.leave-dur-btn.leave-dur-on{background:var(--br-l);border-color:var(--br);color:var(--br)}
+/* ── RECIPIENT TOGGLE PILLS ── */
+.recip-toggle{display:flex;gap:8px;flex-wrap:wrap}
+.recip-pill{padding:8px 18px;border-radius:999px;border:1.5px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);font-family:inherit;color:var(--muted);transition:all .15s}
+.recip-pill:hover{border-color:var(--br);color:var(--br)}
+.recip-pill.on-talent{background:var(--b);border-color:var(--b);color:#fff}
+.recip-pill.on-landlord{background:var(--g);border-color:var(--g);color:#fff}
+.recip-pill.on-guest{background:var(--a);border-color:var(--a);color:#fff}
+.name-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:190px;overflow-y:auto}
+.name-item{padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;font-size:14px;background:var(--white);transition:all .15s;display:flex;align-items:center;gap:8px}
+.name-item:hover{border-color:var(--br);background:var(--br-l)}
+.name-item.selected{border-color:var(--br);background:var(--br-l);font-weight:500}
+.name-item svg{width:15px;height:15px;stroke:var(--br);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;display:none;flex-shrink:0}
+.name-item.selected svg{display:block}
+.name-loading{font-size:13px;color:var(--muted);padding:10px;text-align:center}
+/* ── MISC ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:500;display:none;white-space:nowrap}
+.loader{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- ─────────── INBOX VIEW ─────────── -->
+  <div id="view-inbox" style="display:flex;flex-direction:column;flex:1">
+    <div class="top-bar">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back
+      </button>
+      <div class="top-title">Messages</div>
+      <button class="compose-btn" onclick="openCompose()">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Compose
+      </button>
+    </div>
+    <div class="filter-bar" id="filter-bar">
+      <!-- Populated dynamically after login -->
+    </div>
+    <div class="inbox" id="inbox-list"><div class="loader">Loading messages…</div></div>
+  </div>
+  <!-- ─────────── THREAD VIEW ─────────── -->
+  <div id="view-thread" class="thread-view">
+    <div class="thread-hdr">
+      <button class="back-btn" onclick="closeThread()">
+        <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+      </button>
+      <div class="thread-meta">
+        <div class="thread-topic" id="thread-topic-title">—</div>
+        <div class="thread-parties" id="thread-parties"></div>
+      </div>
+      <!-- Booking status chip in header -->
+      <div id="thread-status-chip" style="display:none"></div>
+    </div>
+    <div class="thread-msgs" id="thread-msgs"></div>
+    <!-- Booking accepted / declined banner -->
+    <div class="bk-banner" id="bk-banner">
+      <svg id="bk-banner-icon" viewBox="0 0 24 24"></svg>
+      <span id="bk-banner-text"></span>
+    </div>
+    <!-- Talent: pending booking action bar -->
+    <div class="bk-action-bar" id="bk-action-bar" style="display:none">
+      <div class="bk-action-label">Respond to this booking</div>
+      <div class="bk-action-btns">
+        <button class="btn-accept" id="accept-btn" onclick="acceptBooking()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+          Accept
+        </button>
+        <button class="btn-decline" onclick="openDeclineForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Decline
+        </button>
+      </div>
+    </div>
+    <!-- Decline reason form -->
+    <div class="decline-form" id="decline-form">
+      <div class="decline-label">Reason for declining (optional)</div>
+      <textarea class="decline-textarea" id="decline-reason" placeholder="Let Property By Heritance know why you can't make it…" rows="3"></textarea>
+      <div class="decline-actions">
+        <button class="btn-cancel-decline" onclick="cancelDeclineForm()">Cancel</button>
+        <button class="btn-confirm-decline" id="confirm-decline-btn" onclick="confirmDecline()">Confirm Decline</button>
+      </div>
+    </div>
+    <!-- Normal reply bar -->
+    <div class="reply-bar" id="reply-bar">
+      <textarea class="reply-input" id="reply-input" rows="1" placeholder="Type a reply…" oninput="autoGrow(this)"></textarea>
+      <button class="send-btn" id="reply-btn" onclick="sendReply()">Send</button>
+    </div>
+  </div>
+</div>
+<!-- ─────────── COMPOSE MODAL ─────────── -->
+<div class="overlay" id="compose-overlay">
+  <div class="modal-sheet">
+    <div class="modal-ttl" id="compose-title">New Message</div>
+    <!-- Admin: toggle pills + name list -->
+    <div class="fg" id="fg-recip-toggle" style="display:none">
+      <div class="fl">To</div>
+      <div class="recip-toggle">
+        <button class="recip-pill" data-type="talent"   onclick="selectRecipType('talent',this)">Talent</button>
+        <button class="recip-pill" data-type="landlord" onclick="selectRecipType('landlord',this)">Landlord</button>
+        <button class="recip-pill" data-type="guest"    onclick="selectRecipType('guest',this)">Guest</button>
+      </div>
+      <div id="name-list-wrap" style="display:none;margin-top:12px">
+        <div id="name-list" class="name-list"></div>
+      </div>
+    </div>
+    <!-- Non-admin: fixed "To: Property By Heritance" -->
+    <div class="fg" id="fg-recip-fixed" style="display:none">
+      <div class="fl">To</div>
+      <div style="padding:11px 13px;background:var(--bg);border-radius:10px;font-size:14px;color:var(--muted);font-weight:500">Property By Heritance</div>
+    </div>
+    <div class="fg" id="fg-topic">
+      <label class="fl" for="compose-topic">Topic</label>
+      <select class="fc" id="compose-topic" onchange="onTopicChange()">
+        <option value="">— Select topic —</option>
+      </select>
+    </div>
+    <div id="booking-date-fields" style="display:none" class="fg">
+      <div class="booking-date-row">
+        <div><label class="fl">Date</label><input type="date" class="fc" id="booking-date"/></div>
+        <div><label class="fl">Time</label><input type="time" class="fc" id="booking-time"/></div>
+      </div>
+    </div>
+    <!-- Leave fields — shown only when topic = Leave -->
+    <div id="leave-fields" style="display:none">
+      <div class="fg">
+        <label class="fl">Leave date</label>
+        <input type="date" class="fc" id="leave-date"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Duration</label>
+        <div style="display:flex;gap:10px">
+          <button type="button" id="leave-half" class="leave-dur-btn" onclick="setLeaveDur('half')">
+            🌤 Half day
+          </button>
+          <button type="button" id="leave-full" class="leave-dur-btn leave-dur-on" onclick="setLeaveDur('full')">
+            ☀️ Full day
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl" for="compose-body">Message</label>
+      <textarea class="fc" id="compose-body" placeholder="Write your message…" rows="4"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeCompose()">Cancel</button>
+      <button class="btn-p" id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ────────────────────────────────
+   CONFIG
+──────────────────────────────── */
+var SUPA = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+var TOPICS = {
+  'admin-talent':   ['Booking Request', 'Payment Related', 'Other'],
+  'talent-admin':   ['Payment Related', 'Event Related', 'Others'],
+  'admin-landlord': ['General'],
+  'landlord-admin': ['General'],
+  'admin-guest':    ['General'],
+  'guest-admin':    ['Complaint', 'Request', 'Feedback', 'Book Banyan Circle'],
+  'staff-admin':    ['General', 'Leave'],
+};
+/* ────────────────────────────────
+   STATE
+──────────────────────────────── */
+var me = null, allMessages = [], currentFilter = 'all', currentThread = null;
+var selectedRecipType = null, selectedRecipName = null;
+var currentAdminRoleFilter = 'all'; // admin inbox role filter
+function isAdmin(){ return me && (me.role === 'admin' || me.role === 'office'); }
+function myRole(){ return isAdmin() ? 'admin' : me.role; }
+function amIRecipient(m){
+  return isAdmin()
+    ? (m.recipient_role === 'admin' || m.recipient_role === 'office')
+    : m.recipient_name === me.name;
+}
+function iMine(m){
+  return isAdmin()
+    ? (m.sender_role === 'admin' || m.sender_role === 'office')
+    : m.sender_name === me.name;
+}
+/* Display name for a role */
+function roleDisplayName(role){
+  if(role === 'admin' || role === 'office') return 'Property By Heritance';
+  if(role === 'talent') return 'Talent';
+  if(role === 'landlord') return 'Landlord';
+  if(role === 'guest') return 'Guest';
+  if(role === 'staff') return 'Staff';
+  return role;
+}
+/* ────────────────────────────────
+   API
+──────────────────────────────── */
+async function api(method, path, body){
+  var h = {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
+  if(method==='POST') h['Prefer']='return=representation';
+  if(method==='PATCH') h['Prefer']='return=minimal';
+  var r = await fetch(SUPA+'/rest/v1/'+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+  if(!r.ok){ var t=await r.text(); throw new Error(t); }
+  if(method==='GET'||method==='POST') return r.json();
+  return null;
+}
+/* ────────────────────────────────
+   INIT
+──────────────────────────────── */
+window.onload = function(){
+  me = JSON.parse(localStorage.getItem('bc_me')||'null');
+  if(!me){ window.location.href='index.html'; return; }
+  renderFilterBar();
+  loadInbox();
+};
+/* ────────────────────────────────
+   FILTER BAR
+──────────────────────────────── */
+function renderFilterBar(){
+  var bar = document.getElementById('filter-bar');
+  if(isAdmin()){
+    // Role-based filters for admin
+    var tabs = [
+      {key:'all',   label:'All'},
+      {key:'guest',    label:'Guest'},
+      {key:'talent',   label:'Talent'},
+      {key:'staff',    label:'Staff'},
+      {key:'landlord', label:'Landlord'},
+    ];
+    bar.innerHTML = tabs.map(function(t){
+      return '<button class="ftab'+(t.key==='all'?' on':'')+'" onclick="setAdminRoleFilter(\''+t.key+'\',this)">'+t.label+'</button>';
+    }).join('');
+  } else {
+    // Standard IN/OUT filter for non-admin
+    bar.innerHTML =
+      '<button class="ftab on" onclick="setFilter(\'all\',this)">All</button>'+
+      '<button class="ftab ftab-in" onclick="setFilter(\'in\',this)">'+
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg>'+
+        'IN</button>'+
+      '<button class="ftab ftab-out" onclick="setFilter(\'out\',this)">'+
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>'+
+        'OUT</button>';
+  }
+}
+function setAdminRoleFilter(role, btn){
+  currentAdminRoleFilter = role;
+  document.querySelectorAll('#filter-bar .ftab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderInbox();
+}
+/* ────────────────────────────────
+   INBOX
+──────────────────────────────── */
+async function loadInbox(){
+  try{
+    var q;
+    if(isAdmin()){
+      q = 'messages?or=(sender_role.eq.admin,recipient_role.eq.admin,sender_role.eq.office,recipient_role.eq.office)&order=created_at.desc';
+    } else {
+      var n = encodeURIComponent(me.name);
+      q = 'messages?or=(sender_name.eq.'+n+',recipient_name.eq.'+n+')&order=created_at.desc';
+    }
+    allMessages = await api('GET', q);
+    renderInbox();
+  } catch(e){
+    document.getElementById('inbox-list').innerHTML =
+      '<div class="inbox-empty">Could not load messages.<br><small style="color:var(--r)">'+esc(e.message)+'</small></div>';
+  }
+}
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('#filter-bar .ftab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderInbox();
+}
+function getThreads(msgs){
+  var map = {};
+  msgs.forEach(m=>{
+    var k = m.thread_id || m.id;
+    if(!map[k]) map[k]={key:k,msgs:[],latest:m,root:null};
+    map[k].msgs.push(m);
+    if(!m.thread_id) map[k].root = m;
+    if(new Date(m.created_at)>new Date(map[k].latest.created_at)) map[k].latest=m;
+  });
+  var threads = Object.values(map);
+  threads.forEach(t=>{ if(!t.root) t.root=t.msgs.reduce((a,b)=>new Date(a.created_at)<new Date(b.created_at)?a:b); });
+  threads.sort((a,b)=>new Date(b.latest.created_at)-new Date(a.latest.created_at));
+  return threads;
+}
+/* Get the "other party" role in a thread (the non-admin side) */
+function getOtherRole(thread){
+  var root = thread.root;
+  if(!root) return null;
+  // The other party is whoever isn't admin/office
+  var senderIsAdmin = (root.sender_role==='admin'||root.sender_role==='office');
+  return senderIsAdmin ? root.recipient_role : root.sender_role;
+}
+function renderInbox(){
+  var msgs = allMessages;
+  if(isAdmin()){
+    // Filter by other party's role
+    if(currentAdminRoleFilter !== 'all'){
+      // Pre-filter threads then reconstruct msg list isn't clean —
+      // we'll filter after building threads
+    }
+  } else {
+    if(currentFilter==='in')  msgs=msgs.filter(m=>amIRecipient(m));
+    else if(currentFilter==='out') msgs=msgs.filter(m=>iMine(m));
+  }
+  var threads = getThreads(msgs);
+  // Admin: apply role filter on threads
+  if(isAdmin() && currentAdminRoleFilter !== 'all'){
+    threads = threads.filter(function(t){ return getOtherRole(t) === currentAdminRoleFilter; });
+  }
+  var el = document.getElementById('inbox-list');
+  if(!threads.length){
+    el.innerHTML='<div class="inbox-empty"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>No messages yet</div>';
+    return;
+  }
+  var html = '';
+  threads.forEach(t=>{
+    var m = t.latest, root = t.root;
+    var hasUnread = t.msgs.some(msg => amIRecipient(msg) && !msg.read_by_recipient);
+    var mine = iMine(m);
+    var otherName  = mine ? m.recipient_name : m.sender_name;
+    var otherRole  = mine ? m.recipient_role : m.sender_role;
+    var myDisplay  = isAdmin() ? 'Property By Heritance' : me.name;
+    var fromLabel  = mine ? myDisplay+' → '+otherName : otherName+' → '+(isAdmin()?'Property By Heritance':me.name);
+    var preview    = (m.body||'').replace(/\n/g,' ');
+    // Booking status pill
+    var bkPill = '';
+    if(root && root.topic==='Booking Request'){
+      var st = root.booking_status || 'pending';
+      bkPill = '<span class="booking-pill bp-'+st+'">'
+        +(st==='accepted'?'✓ Accepted':st==='rejected'?'✗ Declined':'⏳ Pending')
+        +'</span>';
+    }
+    html += '<div class="msg-row" onclick="openThread(\''+t.key+'\')">'+
+      '<div class="unread-dot'+(hasUnread?'':' read')+'"></div>'+
+      '<div class="msg-body">'+
+        '<div class="msg-meta">'+
+          '<div class="msg-topic'+(hasUnread?' bold':'')+'">'+esc(m.topic)+'</div>'+
+          '<div class="msg-date">'+fmtDate(m.created_at)+'</div>'+
+        '</div>'+
+        '<div class="msg-from">'+esc(fromLabel)+
+          '<span class="role-badge rb-'+esc(otherRole)+'">'+esc(roleDisplayName(otherRole))+'</span>'+
+          (hasUnread?'<span style="color:var(--br);font-size:11px;font-weight:600">● New</span>':'')+
+          bkPill+
+        '</div>'+
+        '<div class="msg-preview">'+esc(preview.substring(0,80))+'</div>'+
+      '</div></div>';
+  });
+  el.innerHTML = html;
+}
+/* ────────────────────────────────
+   THREAD
+──────────────────────────────── */
+async function openThread(threadKey){
+  try{
+    var toMark = [];
+    allMessages.forEach(m=>{
+      if((m.thread_id===threadKey||m.id===threadKey) && amIRecipient(m) && !m.read_by_recipient){
+        m.read_by_recipient = true;
+        toMark.push(m.id);
+      }
+    });
+    renderInbox();
+    toMark.forEach(function(id){
+      api('PATCH','messages?id=eq.'+id,{read_by_recipient:true}).catch(function(){});
+    });
+    var threadMsgs = allMessages.filter(m=>m.thread_id===threadKey||m.id===threadKey);
+    threadMsgs.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    currentThread = {key:threadKey, msgs:threadMsgs};
+    var root = threadMsgs.find(m=>!m.thread_id) || threadMsgs[0];
+    document.getElementById('thread-topic-title').textContent = root.topic;
+    document.getElementById('thread-parties').textContent = root.sender_name+' → '+root.recipient_name;
+    renderThread(threadMsgs);
+    refreshBookingUI(root);
+    document.getElementById('view-inbox').style.display='none';
+    document.getElementById('view-thread').classList.add('on');
+    setTimeout(()=>{ var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight; },60);
+  } catch(e){ showToast('Error: '+e.message); }
+}
+function renderThread(msgs){
+  var el = document.getElementById('thread-msgs');
+  el.innerHTML = msgs.map(m=>{
+    var mine = iMine(m);
+    var senderLabel = mine ? 'You' : esc(m.sender_name);
+    return '<div class="bubble-wrap'+(mine?' mine':'')+'">'+
+      '<div class="bubble-label">'+senderLabel+' · '+fmtDate(m.created_at)+'</div>'+
+      '<div class="bubble">'+esc(m.body).replace(/\n/g,'<br>')+
+        (m.booking_datetime?'<div class="bubble-booking">📅 '+esc(m.booking_datetime)+'</div>':'')+
+      '</div></div>';
+  }).join('');
+}
+function refreshBookingUI(root){
+  var banner    = document.getElementById('bk-banner');
+  var actionBar = document.getElementById('bk-action-bar');
+  var decForm   = document.getElementById('decline-form');
+  var replyBar  = document.getElementById('reply-bar');
+  var chip      = document.getElementById('thread-status-chip');
+  banner.classList.remove('on','bk-accepted','bk-rejected','bk-pending');
+  actionBar.style.display = 'none';
+  decForm.classList.remove('on');
+  replyBar.style.display  = 'flex';
+  chip.style.display      = 'none';
+  if(!root || root.topic !== 'Booking Request') return;
+  var status = root.booking_status || 'pending';
+  if(status === 'accepted'){
+    banner.classList.add('on','bk-accepted');
+    document.getElementById('bk-banner-icon').innerHTML = '<polyline points="20,6 9,17 4,12"/>';
+    document.getElementById('bk-banner-text').textContent = 'Booking accepted by '+root.recipient_name;
+    showStatusChip(chip,'✓ Accepted','#27500A',getComputedStyle(document.documentElement).getPropertyValue('--g-l').trim()||'#EAF3DE');
+    replyBar.style.display='none';
+  } else if(status === 'rejected'){
+    banner.classList.add('on','bk-rejected');
+    document.getElementById('bk-banner-icon').innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    document.getElementById('bk-banner-text').textContent = 'Booking declined by '+root.recipient_name;
+    showStatusChip(chip,'✗ Declined','#A32D2D','#FCEBEB');
+    replyBar.style.display='none';
+  } else {
+    if(isAdmin()){
+      banner.classList.add('on','bk-pending');
+      document.getElementById('bk-banner-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>';
+      document.getElementById('bk-banner-text').textContent = 'Awaiting response from '+root.recipient_name;
+      showStatusChip(chip,'⏳ Pending','#633806','#FAEEDA');
+    } else if(me.role==='talent' && (root.sender_role==='admin'||root.sender_role==='office') && root.recipient_name===me.name){
+      actionBar.style.display = 'block';
+      replyBar.style.display  = 'none';
+    }
+  }
+}
+function showStatusChip(el, label, color, bg){
+  el.innerHTML = '<span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;background:'+bg+';color:'+color+'">'+label+'</span>';
+  el.style.display='block';
+}
+function closeThread(){
+  currentThread = null;
+  document.getElementById('view-thread').classList.remove('on');
+  document.getElementById('view-inbox').style.display='flex';
+  document.getElementById('bk-action-bar').style.display='none';
+  document.getElementById('decline-form').classList.remove('on');
+  document.getElementById('reply-bar').style.display='flex';
+  document.getElementById('bk-banner').classList.remove('on','bk-accepted','bk-rejected','bk-pending');
+  renderInbox();
+}
+/* ────────────────────────────────
+   REPLY
+──────────────────────────────── */
+async function sendReply(){
+  var body = document.getElementById('reply-input').value.trim();
+  if(!body||!currentThread) return;
+  var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
+  var iSentRoot = iMine(root);
+  var recipientName = iSentRoot ? root.recipient_name : root.sender_name;
+  var recipientRole = iSentRoot ? root.recipient_role : root.sender_role;
+  var topic = root.topic.startsWith('Re:') ? root.topic : 'Re: '+root.topic;
+  var payload = {
+    sender_name:me.name, sender_role:myRole(),
+    recipient_name:recipientName, recipient_role:recipientRole,
+    topic, body,
+    thread_id:currentThread.key, parent_id:root.id, read_by_recipient:false
+  };
+  try{
+    document.getElementById('reply-btn').disabled=true;
+    var saved = await api('POST','messages',payload);
+    var msg = Array.isArray(saved)?saved[0]:saved;
+    allMessages.unshift(msg);
+    currentThread.msgs.push(msg);
+    document.getElementById('reply-input').value='';
+    document.getElementById('reply-input').style.height='auto';
+    renderThread(currentThread.msgs);
+    var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
+  } catch(e){ showToast('Failed: '+e.message); }
+  finally{ document.getElementById('reply-btn').disabled=false; }
+}
+/* ────────────────────────────────
+   BOOKING ACCEPT / DECLINE
+──────────────────────────────── */
+async function acceptBooking(){
+  var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
+  var btn  = document.getElementById('accept-btn');
+  try{
+    btn.disabled = true;
+    btn.textContent = 'Accepting…';
+    await api('PATCH','messages?id=eq.'+root.id,{booking_status:'accepted'});
+    root.booking_status = 'accepted';
+    var reply = {
+      sender_name:me.name, sender_role:myRole(),
+      recipient_name:root.sender_name, recipient_role:root.sender_role,
+      topic:'Re: '+root.topic,
+      body:'Booking confirmed! I\'ll be available'+(root.booking_datetime?' on '+root.booking_datetime:'.')+' Looking forward to it.',
+      thread_id:currentThread.key, parent_id:root.id, read_by_recipient:false
+    };
+    var saved = await api('POST','messages',reply);
+    var msg = Array.isArray(saved)?saved[0]:saved;
+    allMessages.unshift(msg);
+    currentThread.msgs.push(msg);
+    renderThread(currentThread.msgs);
+    refreshBookingUI(root);
+    var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
+    showToast('Booking accepted ✓');
+  } catch(e){ showToast('Failed: '+e.message); btn.disabled=false; btn.textContent='Accept'; }
+}
+function openDeclineForm(){
+  document.getElementById('bk-action-bar').style.display='none';
+  document.getElementById('decline-form').classList.add('on');
+  document.getElementById('decline-reason').focus();
+}
+function cancelDeclineForm(){
+  document.getElementById('decline-form').classList.remove('on');
+  document.getElementById('bk-action-bar').style.display='block';
+}
+async function confirmDecline(){
+  var root   = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
+  var reason = document.getElementById('decline-reason').value.trim();
+  var btn    = document.getElementById('confirm-decline-btn');
+  try{
+    btn.disabled=true;
+    await api('PATCH','messages?id=eq.'+root.id,{booking_status:'rejected'});
+    root.booking_status = 'rejected';
+    var body = reason
+      ? 'Unable to accept this booking request. Reason: '+reason
+      : 'Unable to accept this booking request at the requested time. Apologies for any inconvenience.';
+    var reply = {
+      sender_name:me.name, sender_role:myRole(),
+      recipient_name:root.sender_name, recipient_role:root.sender_role,
+      topic:'Re: '+root.topic, body,
+      thread_id:currentThread.key, parent_id:root.id, read_by_recipient:false
+    };
+    var saved = await api('POST','messages',reply);
+    var msg = Array.isArray(saved)?saved[0]:saved;
+    allMessages.unshift(msg);
+    currentThread.msgs.push(msg);
+    document.getElementById('decline-form').classList.remove('on');
+    renderThread(currentThread.msgs);
+    refreshBookingUI(root);
+    var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
+    showToast('Booking declined');
+  } catch(e){ showToast('Failed: '+e.message); }
+  finally{ btn.disabled=false; }
+}
+/* ────────────────────────────────
+   COMPOSE
+──────────────────────────────── */
+function openCompose(){
+  selectedRecipType=null; selectedRecipName=null;
+  document.getElementById('compose-topic').innerHTML='<option value="">— Select topic —</option>';
+  document.getElementById('compose-body').value='';
+  document.getElementById('booking-date-fields').style.display='none';
+  document.getElementById('leave-fields').style.display='none';
+  document.getElementById('name-list-wrap').style.display='none';
+  document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
+  if(isAdmin()){
+    document.getElementById('fg-recip-toggle').style.display='block';
+    document.getElementById('fg-recip-fixed').style.display='none';
+    document.getElementById('compose-title').textContent='New Message';
+  } else {
+    document.getElementById('fg-recip-toggle').style.display='none';
+    document.getElementById('fg-recip-fixed').style.display='block';
+    populateTopics(me.role,'admin');
+    document.getElementById('compose-title').textContent='Message Property By Heritance';
+  }
+  document.getElementById('compose-overlay').classList.add('on');
+}
+async function selectRecipType(type, btn){
+  selectedRecipType=type; selectedRecipName=null;
+  document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
+  btn.className='recip-pill on-'+type;
+  populateTopics('admin',type);
+  var wrap=document.getElementById('name-list-wrap'), list=document.getElementById('name-list');
+  wrap.style.display='block';
+  list.innerHTML='<div class="name-loading">Loading…</div>';
+  try{
+    var rows=[];
+    if(type==='talent')   rows=await api('GET','talents?select=id,name,category&order=name');
+    else if(type==='landlord') rows=await api('GET','landlords?select=id,name,property_name&order=name');
+    else if(type==='guest')    rows=await api('GET','guest_profiles?select=id,name,property_name&order=name');
+    if(!rows.length){ list.innerHTML='<div class="name-loading">No '+type+'s found</div>'; return; }
+    list.innerHTML = rows.map(r=>{
+      var sub = r.category||r.property_name||'';
+      return '<div class="name-item" data-name="'+esc(r.name)+'" onclick="selectRecipName(this)">'+
+        '<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>'+
+        '<div><div style="font-size:14px">'+esc(r.name)+'</div>'+
+        (sub?'<div style="font-size:11px;color:var(--muted)">'+esc(sub)+'</div>':'')+
+        '</div></div>';
+    }).join('');
+  } catch(e){
+    list.innerHTML='<div class="name-loading" style="color:var(--r)">Could not load: '+esc(e.message)+'</div>';
+  }
+}
+function selectRecipName(el){
+  selectedRecipName = el.dataset.name;
+  document.querySelectorAll('.name-item').forEach(i=>i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function populateTopics(senderRole, recipientRole){
+  var topics = TOPICS[senderRole+'-'+recipientRole]||['General'];
+  var sel = document.getElementById('compose-topic');
+  sel.innerHTML = '<option value="">— Select topic —</option>';
+  topics.forEach(t=>sel.innerHTML+='<option value="'+esc(t)+'">'+esc(t)+'</option>');
+  document.getElementById('booking-date-fields').style.display='none';
+  document.getElementById('leave-fields').style.display='none';
+}
+var leaveDur = 'full';
+function setLeaveDur(val){
+  leaveDur = val;
+  document.getElementById('leave-half').classList.toggle('leave-dur-on', val==='half');
+  document.getElementById('leave-full').classList.toggle('leave-dur-on', val==='full');
+}
+function onTopicChange(){
+  var t = document.getElementById('compose-topic').value;
+  document.getElementById('booking-date-fields').style.display = t==='Booking Request' ? 'block' : 'none';
+  document.getElementById('leave-fields').style.display         = t==='Leave'           ? 'block' : 'none';
+  if(t==='Leave'){
+    if(!document.getElementById('leave-date').value){
+      document.getElementById('leave-date').value = new Date().toISOString().slice(0,10);
+    }
+    leaveDur='full';
+    document.getElementById('leave-half').classList.remove('leave-dur-on');
+    document.getElementById('leave-full').classList.add('leave-dur-on');
+  }
+}
+function closeCompose(){ document.getElementById('compose-overlay').classList.remove('on'); }
+async function sendMessage(){
+  var body  = document.getElementById('compose-body').value.trim();
+  var topic = document.getElementById('compose-topic').value;
+  if(!topic){ showToast('Please select a topic'); return; }
+  if(!body) { showToast('Please write a message'); return; }
+  var recipientName, recipientRole;
+  if(isAdmin()){
+    if(!selectedRecipType){ showToast('Please select a recipient type'); return; }
+    if(!selectedRecipName){ showToast('Please select a recipient');      return; }
+    recipientRole=selectedRecipType; recipientName=selectedRecipName;
+  } else {
+    recipientName='Admin'; recipientRole='admin';
+  }
+  var bookingDt=null;
+  if(topic==='Booking Request'){
+    var d=document.getElementById('booking-date').value, t=document.getElementById('booking-time').value;
+    if(!d||!t){ showToast('Please pick a date and time'); return; }
+    bookingDt=fmtBookingDate(d,t);
+  }
+  if(topic==='Leave'){
+    var ld=document.getElementById('leave-date').value;
+    if(!ld){ showToast('Please select a leave date'); return; }
+    var durLabel=leaveDur==='half'?'Half day':'Full day';
+    var fmtLd=new Date(ld+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var leavePrefix='Leave request: '+fmtLd+' ('+durLabel+')\n\n';
+    body=leavePrefix+body;
+  }
+  var payload={
+    sender_name:me.name, sender_role:myRole(),
+    recipient_name:recipientName, recipient_role:recipientRole,
+    topic, body, booking_datetime:bookingDt,
+    booking_status: topic==='Booking Request' ? 'pending' : null,
+    read_by_recipient:false
+  };
+  try{
+    document.getElementById('send-btn').disabled=true;
+    var saved=await api('POST','messages',payload);
+    var msg=Array.isArray(saved)?saved[0]:saved;
+    allMessages.unshift(msg);
+    closeCompose(); renderInbox(); showToast('Message sent ✓');
+  } catch(e){ showToast('Failed: '+e.message); }
+  finally{ document.getElementById('send-btn').disabled=false; }
+}
+/* ────────────────────────────────
+   HELPERS
+──────────────────────────────── */
+function goBack(){
+  if(document.referrer&&document.referrer!==window.location.href){ history.back(); return; }
+  var map={admin:'admin.html',office:'admin.html',talent:'talent.html',landlord:'landlord.html',guest:'guest.html'};
+  window.location.href = me?(map[me.role]||'index.html'):'index.html';
+}
+function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function fmtDate(iso){
+  var d=new Date(iso),now=new Date(),diff=now-d;
+  if(diff<60000)    return 'Just now';
+  if(diff<3600000)  return Math.floor(diff/60000)+'m ago';
+  if(diff<86400000) return Math.floor(diff/3600000)+'h ago';
+  if(diff<604800000)return d.toLocaleDateString('en-IN',{weekday:'short'});
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function fmtBookingDate(d,t){
+  var dt=new Date(d+'T'+t);
+  return dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+
+         ' at '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(t._to); t._to=setTimeout(()=>t.style.display='none',3000);
+}
+document.getElementById('compose-overlay').addEventListener('click',function(e){ if(e.target===this) closeCompose(); });
+</script>
+</body>
+</html>
