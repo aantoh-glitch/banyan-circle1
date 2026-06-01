@@ -499,7 +499,14 @@ async function openThread(threadKey){
     currentThread = {key:threadKey, msgs:threadMsgs};
     var root = threadMsgs.find(m=>!m.thread_id) || threadMsgs[0];
     document.getElementById('thread-topic-title').textContent = root.topic;
-    document.getElementById('thread-parties').textContent = root.sender_name+' → '+root.recipient_name;
+    var iSentRoot = iMine(root);
+    var myLabel   = isAdmin() ? 'Property By Heritance' : 'You';
+    var otherLabel = iSentRoot
+      ? (isAdmin() ? root.recipient_name : root.recipient_name)
+      : (isAdmin() ? root.sender_name    : root.sender_name);
+    document.getElementById('thread-parties').textContent = iSentRoot
+      ? myLabel+' → '+otherLabel
+      : otherLabel+' → '+myLabel;
     renderThread(threadMsgs);
     refreshBookingUI(root);
     document.getElementById('view-inbox').style.display='none';
