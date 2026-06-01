@@ -495,10 +495,14 @@ function clearBlockForm() {
 
 function populatePropertySelects() {
   const opts = properties.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  ['blockProperty','manualProperty'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = opts;
-  });
+  // When embedded in landlord view, block dropdown shows only the landlord's property
+  const blockOpts = _propertyParam
+    ? properties.filter(p => p.name.toLowerCase() === _propertyParam.toLowerCase()).map(p=>`<option value="${p.id}">${p.name}</option>`).join('')
+    : opts;
+  const blockEl = document.getElementById('blockProperty');
+  if (blockEl) blockEl.innerHTML = blockOpts;
+  const manualEl = document.getElementById('manualProperty');
+  if (manualEl) manualEl.innerHTML = opts;
   if (activeProperty !== 'all') document.getElementById('blockProperty').value = activeProperty;
 }
 
