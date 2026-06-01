@@ -449,8 +449,9 @@ async function loadInbox(){
       var n = encodeURIComponent(me.name);
       var r = encodeURIComponent(me.role);
       // Match messages where this user is sender OR where they are the named recipient
-      // Also include messages sent TO this role from admin where recipient_name matches
-      q = 'messages?or=(sender_name.eq.'+n+',and(recipient_name.eq.'+n+',recipient_role.eq.'+r+'))&order=created_at.desc';
+      // Also fetch admin/office → this role messages so landlords (and others) receive them;
+      // amIRecipient() enforces per-name privacy when rendering.
+      q = 'messages?or=(sender_name.eq.'+n+',and(recipient_name.eq.'+n+',recipient_role.eq.'+r+'),and(recipient_role.eq.'+r+',sender_role.eq.admin),and(recipient_role.eq.'+r+',sender_role.eq.office))&order=created_at.desc';
     }
     allMessages = await api('GET', q);
     renderInbox();
