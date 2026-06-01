@@ -10,7 +10,7 @@
   :root {
     --ink: #1a1a2e; --ink-soft: #4a4a6a; --ink-mute: #9898b8;
     --bg: #f7f6f2; --surface: #ffffff; --surface2: #f0efe9;
-    --airbnb: #FF5A5F; --booking: #003580; --blocked: #e8e4f0; --blocked-text: #6b6b9e;
+    --airbnb: #FF5A5F; --booking: #003580; --blocked: #fde8e8; --blocked-text: #c0392b;
     --accent: #c9a84c; --border: #e4e2d8; --radius: 12px;
     --terracotta: #5b8db8; --terracotta-dark: #4a7aa3; --terracotta-light: rgba(91,141,184,0.12);
   }
@@ -72,7 +72,7 @@
   .day-cell:hover:not(.empty):not(.today-cell) { background: var(--surface2); }
   .day-cell.empty { cursor: default; pointer-events: none; }
   .day-cell.today-cell { background: var(--terracotta); color: #fff; font-weight: 600; }
-  .day-cell.booked { background: #e8f4ee; color: #2d7a4f; font-weight: 600; }
+  .day-cell.booked { background: #fff0e0; color: #d97706; font-weight: 600; }
   .day-cell.blocked { background: var(--blocked); color: var(--blocked-text); font-weight: 500; }
 
   /* BOTTOM */
@@ -86,7 +86,7 @@
   .booking-source { padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
   .source-airbnb { background: #fff0f0; color: var(--airbnb); }
   .source-booking { background: #e8f0fc; color: var(--booking); }
-  .source-manual { background: #f0f8f0; color: #2d7a4f; }
+  .source-manual { background: #fff0e0; color: #d97706; }
   .booking-info { flex: 1; }
   .booking-guest { font-weight: 500; font-size: 13px; color: var(--ink); }
   .booking-dates { font-size: 12px; color: var(--ink-mute); margin-top: 1px; }
@@ -145,8 +145,8 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-dot" style="background:#2d7a4f"></div><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div></div>
-      <div class="stat-card"><div class="stat-dot" style="background:var(--accent)"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
+      <div class="stat-card"><div class="stat-dot" style="background:#d97706"></div><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div></div>
+      <div class="stat-card"><div class="stat-dot" style="background:#16a34a"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
     </div>
 
     <div class="calendar-container">
@@ -159,7 +159,7 @@
           </div>
         </div>
         <div class="calendar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#e8f4ee;border:1px solid #2d7a4f"></div>Booked</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--ink)"></div>Today</div>
         </div>
