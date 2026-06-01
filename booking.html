@@ -68,8 +68,7 @@
   .day-cell:hover:not(.empty):not(.today-cell) { background: var(--surface2); }
   .day-cell.empty { cursor: default; pointer-events: none; }
   .day-cell.today-cell { background: var(--terracotta); color: #fff; font-weight: 600; }
-  .day-cell.airbnb-booked { background: #fff0f0; color: var(--airbnb); font-weight: 600; }
-  .day-cell.booking-booked { background: #e8f0fc; color: var(--booking); font-weight: 600; }
+  .day-cell.booked { background: #e8f4ee; color: #2d7a4f; font-weight: 600; }
   .day-cell.blocked { background: var(--blocked); color: var(--blocked-text); font-weight: 500; }
 
   /* BOTTOM */
@@ -144,8 +143,7 @@
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div><div class="stat-sub">this month</div></div>
       <div class="stat-card"><div class="stat-label">Available</div><div class="stat-value" id="statAvailable">0</div><div class="stat-sub">days remaining</div></div>
-      <div class="stat-card"><div class="stat-label">Airbnb</div><div class="stat-value" id="statAirbnb" style="color:var(--airbnb)">0</div><div class="stat-sub">bookings</div></div>
-      <div class="stat-card"><div class="stat-label">Booking.com</div><div class="stat-value" id="statBooking" style="color:var(--booking)">0</div><div class="stat-sub">bookings</div></div>
+      <div class="stat-card" style="grid-column:span 2"><div class="stat-label">Total Bookings</div><div class="stat-value" id="statAirbnb">0</div><div class="stat-sub">this month</div></div>
     </div>
 
     <div class="calendar-container">
@@ -156,8 +154,7 @@
           <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
         </div>
         <div class="calendar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#fff0f0;border:1px solid #FF5A5F"></div>Airbnb</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e8f0fc;border:1px solid #003580"></div>Booking.com</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e8f4ee;border:1px solid #2d7a4f"></div>Booked</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--ink)"></div>Today</div>
         </div>
@@ -399,9 +396,8 @@ function renderCalendar() {
     let cls = 'day-cell';
     if (isToday) cls += ' today-cell';
     else if (b) {
-      if (b.source === 'airbnb') cls += ' airbnb-booked';
-      else if (b.source === 'booking') cls += ' booking-booked';
-      else if (b.source === 'blocked') cls += ' blocked';
+      if (b.source === 'blocked') cls += ' blocked';
+      else cls += ' booked';
     }
     cells += `<div class="${cls}" onclick="handleDayClick('${ds}')">${d}</div>`;
   }
@@ -457,12 +453,11 @@ function renderStats() {
   const year = now.getFullYear(), month = now.getMonth();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const todayS = now.toISOString().split('T')[0];
-  let bookedDays = new Set(), airbnbC = 0, bookingC = 0;
+  let bookedDays = new Set(), totalC = 0;
   bookings.forEach(b => {
     if (activeProperty !== 'all' && b.property !== activeProperty) return;
     if (b.source === 'blocked') return;
-    if (b.source === 'airbnb') airbnbC++;
-    if (b.source === 'booking') bookingC++;
+    totalC++;
     let d = new Date(b.start + 'T00:00:00');
     const end = new Date(b.end + 'T00:00:00');
     while (d <= end) {
@@ -476,8 +471,7 @@ function renderStats() {
   }).length;
   document.getElementById('statBooked').textContent = bookedDays.size;
   document.getElementById('statAvailable').textContent = remaining;
-  document.getElementById('statAirbnb').textContent = airbnbC;
-  document.getElementById('statBooking').textContent = bookingC;
+  document.getElementById('statAirbnb').textContent = totalC;
 }
 
 function blockDates() {
