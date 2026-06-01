@@ -497,7 +497,7 @@ async function openThread(threadKey){
     var threadMsgs = allMessages.filter(m=>m.thread_id===threadKey||m.id===threadKey);
     threadMsgs.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
     currentThread = {key:threadKey, msgs:threadMsgs};
-    var root = threadMsgs.find(m=>m.id===threadKey) || threadMsgs.find(m=>!m.thread_id) || threadMsgs[0];
+    var root = threadMsgs.find(m=>!m.thread_id) || threadMsgs[0];
     document.getElementById('thread-topic-title').textContent = root.topic;
     var iSentRoot = iMine(root);
     var myLabel   = isAdmin() ? 'Property By Heritance' : 'You';
