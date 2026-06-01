@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Heritance — Earnings</title>
 <meta name="theme-color" content="#1a1a18"/>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -22,7 +22,7 @@
   --red-l:#FFEBEE;
   --nav-h:60px;
 }
-html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding-bottom:80px}
 .shell.embedded{padding-bottom:16px}
 
@@ -42,7 +42,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 }
 .back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .hdr-title{
-  font-family:'EB Garamond',serif;
+  font-family:'Cormorant Garamond',serif;
   font-size:20px;font-weight:600;
   color:var(--text);
 }
@@ -141,7 +141,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .kpi-card.negative{border-top:3px solid var(--red)}
 .kpi-card.net{border-top:3px solid var(--br)}
 .kpi-val{
-  font-family:'EB Garamond',serif;
+  font-family:'Cormorant Garamond',serif;
   font-size:18px;font-weight:600;
   line-height:1.2;margin-bottom:3px;
 }
@@ -225,7 +225,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .negative .entry-head-chip{background:var(--red-l);color:var(--red)}
 .unassigned .entry-head-chip{background:#FFF8E1;color:#795548}
 .entry-amount{
-  font-family:'EB Garamond',serif;
+  font-family:'Cormorant Garamond',serif;
   font-size:22px;font-weight:600;line-height:1;
 }
 .positive .entry-amount{color:var(--green)}
@@ -305,7 +305,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   display:flex;align-items:center;justify-content:space-between;
 }
 .sheet-title{
-  font-family:'EB Garamond',serif;
+  font-family:'Cormorant Garamond',serif;
   font-size:22px;font-weight:600;
 }
 .sheet-close{
@@ -1258,4 +1258,254 @@ function onEditHeadChange() {
 function selectEditEntityType(t) {
   currentEditEntityType = t;
   ['landlord','staff','talent'].forEach(x => {
-    document.getEl
+    document.getElementById('eatbtn-' + x).classList.toggle('active', x === t);
+  });
+  populateEntitySelect('ef-entity-name', t);
+}
+
+function openEditSheet(id) {
+  const e = allEntries.find(x => x.id === id);
+  if (!e) return;
+  editingEntryId = id;
+
+  selectEditType(e.type || 'positive');
+  populateEditHeads();
+  document.getElementById('ef-head').value = e.head || '';
+  onEditHeadChange();
+
+  const et = ['landlord','staff','talent'].includes(e.entity_type) ? e.entity_type : 'landlord';
+  selectEditEntityType(et);
+
+  if (e.entity_name) {
+    const nameSel = document.getElementById('ef-entity-name');
+    const found = Array.from(nameSel.options).some(o => {
+      if (o.value === e.entity_name) { nameSel.value = e.entity_name; return true; }
+      return false;
+    });
+    if (!found) {
+      const opt = document.createElement('option');
+      opt.value = e.entity_name;
+      opt.textContent = e.entity_name;
+      nameSel.appendChild(opt);
+      nameSel.value = e.entity_name;
+    }
+  }
+
+  document.getElementById('ef-amount').value = e.amount || '';
+  document.getElementById('ef-pct').value = e.percentage || '';
+  document.getElementById('ef-date').value = e.entry_date || '';
+  document.getElementById('ef-notes').value = e.notes || '';
+
+  openSheetEl('edit-sheet');
+}
+
+async function submitEditEntry() {
+  const head   = document.getElementById('ef-head').value;
+  const amount = document.getElementById('ef-amount').value;
+  const pct    = document.getElementById('ef-pct').value;
+  const notes  = document.getElementById('ef-notes').value.trim();
+  const date   = document.getElementById('ef-date').value;
+  const entity = document.getElementById('ef-entity-name').value;
+  const isPct  = head === 'Percentage of Revenue';
+
+  if (!head)             { showToast('Select an earnings head'); return; }
+  if (!isPct && !amount) { showToast('Enter an amount'); return; }
+  if (isPct && !pct)     { showToast('Enter a percentage'); return; }
+  if (!date)             { showToast('Select a date'); return; }
+
+  const btn = document.getElementById('edit-submit-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await apiPatch('/rest/v1/earnings_log?id=eq.' + editingEntryId, {
+      type:        currentEditType,
+      head:        head,
+      amount:      amount ? parseFloat(amount) : null,
+      percentage:  pct    ? parseFloat(pct)    : null,
+      notes:       notes  || null,
+      entity_type: entity ? currentEditEntityType : null,
+      entity_name: entity || null,
+      entry_date:  date
+    });
+    closeSheet();
+    showToast('Entry updated ✓');
+    await loadEntries();
+  } catch(err) {
+    showToast('Error saving — check console');
+    console.error(err);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+}
+
+async function deleteEntry(id) {
+  if (!confirm('Delete this entry? This cannot be undone.')) return;
+  try {
+    const r = await fetch(SUPA_URL + '/rest/v1/earnings_log?id=eq.' + id, {
+      method: 'DELETE',
+      headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+    });
+    if (!r.ok) throw new Error(await r.text());
+    showToast('Entry deleted');
+    await loadEntries();
+  } catch(err) {
+    showToast('Error deleting — check console');
+    console.error(err);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SHEET CONTROL
+═══════════════════════════════════════════ */
+let activeSheet = null;
+function openSheetEl(id) {
+  activeSheet = id;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById(id).classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  ['add-sheet','assign-sheet','edit-sheet'].forEach(id => {
+    document.getElementById(id).classList.remove('open');
+  });
+  activeSheet = null;
+}
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+function fmtAmt(n) {
+  if (n >= 100000) return (n/100000).toFixed(1) + 'L₹';
+  if (n >= 1000)   return (n/1000).toFixed(1) + 'k₹';
+  return n.toLocaleString('en-IN') + '₹';
+}
+function fmtFull(n) {
+  if (!n && n !== 0) return '—';
+  return parseFloat(n).toLocaleString('en-IN',
+    { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + '₹';
+}
+
+/* ═══════════════════════════════════════════
+   DOWNLOAD PDF
+═══════════════════════════════════════════ */
+function downloadPDF() {
+  const entries = filteredEntries();
+  const label   = periodLabel();
+  const today   = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+
+  let pos = 0, neg = 0;
+  entries.forEach(e => {
+    const amt = parseFloat(e.amount) || 0;
+    if (e.type === 'positive') pos += amt; else neg += amt;
+  });
+  const net = pos - neg;
+
+  const rows = entries.map(e => {
+    const isPct = e.head === 'Percentage of Revenue';
+    const amtStr = isPct && e.percentage
+      ? parseFloat(e.percentage).toFixed(2) + '%'
+      : fmtFull(e.amount);
+    const entity = e.entity_name
+      ? `${esc(e.entity_name)} <span style="font-size:10px;color:#888">(${e.entity_type||''})</span>`
+      : '<span style="color:#aaa">Unassigned</span>';
+    return `<tr>
+      <td>${esc(e.head)}</td>
+      <td style="color:${e.type==='positive'?'#2E7D32':'#C62828'}">${e.type==='positive'?'Positive':'Negative'}</td>
+      <td style="text-align:right;font-weight:600">${amtStr}</td>
+      <td>${entity}</td>
+      <td>${fmtDate(e.entry_date)}</td>
+      <td style="font-size:11px;color:#888">${esc(e.notes||'')}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Earnings Report</title>
+  <style>
+    body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:36px;max-width:780px;margin:0 auto;font-size:13px}
+    h1{font-size:22px;color:#993C1D;margin:0 0 2px;font-family:Georgia,serif}
+    .sub{color:#777;font-size:12px;margin-bottom:28px}
+    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+    .kpi{background:#f8f6f3;border-radius:8px;padding:14px 16px;border-top:3px solid #ccc}
+    .kpi.pos{border-top-color:#2E7D32}.kpi.neg{border-top-color:#C62828}.kpi.net{border-top-color:#993C1D}
+    .kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#888;margin-bottom:5px}
+    .kpi-val{font-size:20px;font-weight:700}
+    .kpi.pos .kpi-val{color:#2E7D32}.kpi.neg .kpi-val{color:#C62828}.kpi.net .kpi-val{color:#993C1D}
+    h2{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#555;
+       margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid #ddd}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:#993C1D;color:#fff}
+    th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600}
+    td{padding:7px 10px;border-bottom:1px solid #eee;vertical-align:top}
+    tbody tr:nth-child(even){background:#faf8f5}
+    .footer{font-size:10px;color:#aaa;margin-top:28px;border-top:1px solid #eee;padding-top:10px;text-align:center}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <h1>Banyan Circle — Earnings Report</h1>
+  <div class="sub">Period: <strong>${label}</strong> &nbsp;·&nbsp; Generated ${today}</div>
+
+  <div class="kpis">
+    <div class="kpi pos"><div class="kpi-lbl">Income</div><div class="kpi-val">${fmtFull(pos)}</div></div>
+    <div class="kpi neg"><div class="kpi-lbl">Expense</div><div class="kpi-val">${fmtFull(neg)}</div></div>
+    <div class="kpi net"><div class="kpi-lbl">Net</div>
+      <div class="kpi-val" style="color:${net>=0?'#2E7D32':'#C62828'}">${fmtFull(Math.abs(net))}${net<0?' (deficit)':''}</div>
+    </div>
+  </div>
+
+  <h2>Entries (${entries.length})</h2>
+  ${entries.length ? `<table>
+    <thead><tr><th>Head</th><th>Type</th><th style="text-align:right">Amount</th><th>Assigned To</th><th>Date</th><th>Notes</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>` : '<p style="color:#aaa;font-size:13px">No entries for this period.</p>'}
+
+  <div class="footer">Banyan Circle · Earnings Report · ${label}</div>
+  <script>setTimeout(()=>window.print(),400);<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Allow pop-ups to download'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+function fmtDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-IN',
+    { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = 'none'; }, 2400);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+populateHeads();
+
+async function init() {
+  if (isAdmin) await loadEntityLists();
+  await loadEntries();
+}
+init();
+
+// ── Auto-resize: tell parent iframe how tall we are ──
+function notifyHeight() {
+  const h = document.documentElement.scrollHeight;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'earnings-height', height: h }, '*');
+  }
+}
+const _ro = new ResizeObserver(() => notifyHeight());
+_ro.observe(document.body);
+</script>
+</body>
+</html>
