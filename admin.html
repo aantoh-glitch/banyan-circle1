@@ -309,10 +309,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px">
       <div class="card-ttl" style="margin:0">All talents</div>
       <div style="display:flex;gap:8px">
-        <button class="btn-sec" onclick="openAdminBookingModal()" style="font-size:13px;display:flex;align-items:center;gap:6px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Request Booking
-        </button>
         <button class="btn-p" onclick="openTalentModal()">+ Add talent</button>
       </div>
     </div>
@@ -538,6 +534,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
       <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
     </select>
+  </div>
+  <div class="fg" id="mtal-venues-wrap">
+    <label class="fl">Venues <span style="color:var(--muted);font-weight:400">(select all that apply)</span></label>
+    <div id="mtal-venues-list" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;min-height:36px">
+      <span style="color:var(--muted);font-size:12px">Loading venues…</span>
+    </div>
   </div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-talent')">Cancel</button><button class="btn-p" onclick="saveTalent()">Save</button></div>
 </div></div>
@@ -1095,6 +1097,7 @@ function openTalentModal(){
   document.getElementById('mtal-ttl').textContent='Add talent';
   ['mtal-name','mtal-pin','mtal-desc'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-cat').value='Yoga';
+  loadVenuesForTalentModal([]);
   openModal('modal-talent');
 }
 function editTalentRow(t){
@@ -1104,18 +1107,49 @@ function editTalentRow(t){
   document.getElementById('mtal-pin').value=t.pin||'';
   document.getElementById('mtal-desc').value=t.short_desc||'';
   document.getElementById('mtal-cat').value=t.category||'Yoga';
+  const selected = t.venues ? (Array.isArray(t.venues) ? t.venues : t.venues.split(',').map(v=>v.trim()).filter(Boolean)) : [];
+  loadVenuesForTalentModal(selected);
   openModal('modal-talent');
 }
+async function loadVenuesForTalentModal(selectedVenues){
+  const el = document.getElementById('mtal-venues-list');
+  el.innerHTML = '<span style="color:var(--muted);font-size:12px">Loading…</span>';
+  try{
+    const rows = await api('/rest/v1/landlords?select=id,property_name&order=property_name') || [];
+    if(!rows.length){ el.innerHTML='<span style="color:var(--muted);font-size:12px">No venues found</span>'; return; }
+    el.innerHTML = rows.map(r=>{
+      const checked = selectedVenues.includes(r.property_name) ? 'checked' : '';
+      return \`<label style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);user-select:none">
+        <input type="checkbox" data-venue="\${r.property_name}" data-lid="\${r.id}" \${checked} style="accent-color:var(--br)"/> \${r.property_name}
+      </label>\`;
+    }).join('');
+  }catch(e){ el.innerHTML='<span style="color:var(--r);font-size:12px">Could not load venues</span>'; }
+}
+
 async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value};
+  // Collect selected venues
+  const venueCheckboxes = document.querySelectorAll('#mtal-venues-list input[type=checkbox]:checked');
+  const selectedVenues = Array.from(venueCheckboxes).map(cb=>cb.dataset.venue);
+  const selectedLids = Array.from(venueCheckboxes).map(cb=>cb.dataset.lid);
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,venues:selectedVenues.length?selectedVenues:null};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   try{
+    let talentId = id;
     if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
-    else await api('/rest/v1/talents','POST',body);
+    else{
+      const res = await api('/rest/v1/talents','POST',body);
+      if(res && res[0]) talentId = res[0].id;
+    }
+    // Write talent name into each selected landlord row (talent_name column)
+    if(selectedLids.length && talentId){
+      await Promise.all(selectedLids.map(lid=>
+        api('/rest/v1/landlords?id=eq.'+lid,'PATCH',{talent_name:name}).catch(()=>{})
+      ));
+    }
     closeModal('modal-talent'); toast('Saved'); loadTalentsPage();
   }catch(e){ alert('Save failed: '+e.message); }
 }
@@ -1528,5 +1562,6 @@ window.addEventListener('message',function(e){if(e.data&&e.data.type==='bc_resiz
 </div></div>
 
 <!-- MESSAGING FAB -->
-<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:24px;right:24px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-line
+<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:24px;right:24px;z-index:999;width:14px;height:14px;background:#D0021B;border-radius:50%;box-shadow:0 2px 6px rgba(208,2,27,.5);text-decoration:none;display:block" title="Messages"></a>
+</body>
+</html>
