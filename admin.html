@@ -67,6 +67,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .kpi-value{font-size:24px;font-weight:500;font-family:'Playfair Display',serif}
 
+.venue-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;margin:3px 4px 3px 0;user-select:none}
+.venue-pill.on{background:var(--br-l);border-color:#D85A30;color:var(--br)}
 .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all .15s;display:inline-block}
 .dot.on{background:var(--br);border-color:var(--br)}
 .dot.err{background:var(--r);border-color:var(--r)}
@@ -534,6 +536,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
       <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
     </select>
+  </div>
+  <div class="fg">
+    <label class="fl">Venues</label>
+    <div id="mtal-venues-wrap" style="min-height:36px;padding:4px 0">
+      <div style="font-size:12px;color:var(--muted)">Loading venues…</div>
+    </div>
   </div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-talent')">Cancel</button><button class="btn-p" onclick="saveTalent()">Save</button></div>
 </div></div>
@@ -1086,11 +1094,44 @@ async function loadTalentsPage(){
   </div>`;
 }
 
+// Render venue pills into the modal; preSelected is an array of property_name strings
+async function renderVenuePills(preSelected=[]) {
+  const wrap = document.getElementById('mtal-venues-wrap');
+  wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Loading venues…</div>';
+  let landlords = [];
+  try {
+    landlords = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+  } catch(e) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--r)">Could not load venues</div>';
+    return;
+  }
+  // Deduplicate property names
+  const names = [...new Set(landlords.map(l=>l.property_name).filter(Boolean))];
+  if (!names.length) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">No venues found — add a landlord first</div>';
+    return;
+  }
+  const sel = new Set(preSelected || []);
+  wrap.innerHTML = names.map(n => {
+    const on = sel.has(n) ? ' on' : '';
+    return `<span class="venue-pill${on}" data-venue="${n.replace(/"/g,'&quot;')}" onclick="toggleVenuePill(this)">${n}</span>`;
+  }).join('');
+}
+
+function toggleVenuePill(el) {
+  el.classList.toggle('on');
+}
+
+function getSelectedVenues() {
+  return Array.from(document.querySelectorAll('#mtal-venues-wrap .venue-pill.on')).map(el=>el.dataset.venue);
+}
+
 function openTalentModal(){
   document.getElementById('mtal-id').value='';
   document.getElementById('mtal-ttl').textContent='Add talent';
   ['mtal-name','mtal-pin','mtal-desc'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-cat').value='Yoga';
+  renderVenuePills([]);
   openModal('modal-talent');
 }
 function editTalentRow(t){
@@ -1100,18 +1141,28 @@ function editTalentRow(t){
   document.getElementById('mtal-pin').value=t.pin||'';
   document.getElementById('mtal-desc').value=t.short_desc||'';
   document.getElementById('mtal-cat').value=t.category||'Yoga';
+  renderVenuePills(Array.isArray(t.venues) ? t.venues : []);
   openModal('modal-talent');
 }
 async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value};
+  const venues = getSelectedVenues();
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,venues};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   try{
     if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
     else await api('/rest/v1/talents','POST',body);
+
+    // Write talent_name back to each selected landlord row
+    if(venues.length){
+      await Promise.all(venues.map(propName =>
+        api('/rest/v1/landlords?property_name=eq.'+encodeURIComponent(propName),'PATCH',{talent_name:name}).catch(()=>null)
+      ));
+    }
+
     closeModal('modal-talent'); toast('Saved'); loadTalentsPage();
   }catch(e){ alert('Save failed: '+e.message); }
 }
