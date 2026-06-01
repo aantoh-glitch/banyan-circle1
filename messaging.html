@@ -141,6 +141,11 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 .name-item.selected svg{display:block}
 .name-loading{font-size:13px;color:var(--muted);padding:10px;text-align:center}
 /* ── MISC ── */
+.bk-edit-bar{border-top:1px solid var(--border);background:var(--white);padding:10px 16px;flex-shrink:0;display:none;gap:10px;align-items:center}
+.bk-edit-bar.on{display:flex}
+.btn-edit-booking{flex:1;padding:11px;background:var(--white);color:var(--br);border:1.5px solid var(--br);border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.btn-edit-booking:hover{background:var(--br-l)}
+.btn-edit-booking svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:500;display:none;white-space:nowrap}
 .loader{text-align:center;padding:40px;color:var(--muted);font-size:14px}
 </style>
@@ -205,6 +210,13 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="btn-cancel-decline" onclick="cancelDeclineForm()">Cancel</button>
         <button class="btn-confirm-decline" id="confirm-decline-btn" onclick="confirmDecline()">Confirm Decline</button>
       </div>
+    </div>
+    <!-- Edit booking bar (admin, after accept/decline) -->
+    <div class="bk-edit-bar" id="bk-edit-bar">
+      <button class="btn-edit-booking" onclick="editBooking()">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Booking
+      </button>
     </div>
     <!-- Normal reply bar -->
     <div class="reply-bar" id="reply-bar">
@@ -543,11 +555,13 @@ function refreshBookingUI(root){
   var actionBar = document.getElementById('bk-action-bar');
   var decForm   = document.getElementById('decline-form');
   var replyBar  = document.getElementById('reply-bar');
+  var editBar   = document.getElementById('bk-edit-bar');
   var chip      = document.getElementById('thread-status-chip');
   banner.classList.remove('on','bk-accepted','bk-rejected','bk-pending');
   actionBar.style.display = 'none';
   decForm.classList.remove('on');
-  replyBar.style.display  = 'flex';
+  replyBar.style.display  = 'flex'; // always show chat
+  editBar.classList.remove('on');
   chip.style.display      = 'none';
   if(!root || root.topic !== 'Booking Request') return;
   var status = root.booking_status || 'pending';
@@ -556,13 +570,13 @@ function refreshBookingUI(root){
     document.getElementById('bk-banner-icon').innerHTML = '<polyline points="20,6 9,17 4,12"/>';
     document.getElementById('bk-banner-text').textContent = 'Booking accepted by '+root.recipient_name;
     showStatusChip(chip,'✓ Accepted','#27500A',getComputedStyle(document.documentElement).getPropertyValue('--g-l').trim()||'#EAF3DE');
-    replyBar.style.display='none';
+    if(isAdmin()) editBar.classList.add('on');
   } else if(status === 'rejected'){
     banner.classList.add('on','bk-rejected');
     document.getElementById('bk-banner-icon').innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
     document.getElementById('bk-banner-text').textContent = 'Booking declined by '+root.recipient_name;
     showStatusChip(chip,'✗ Declined','#A32D2D','#FCEBEB');
-    replyBar.style.display='none';
+    if(isAdmin()) editBar.classList.add('on');
   } else {
     if(isAdmin()){
       banner.classList.add('on','bk-pending');
@@ -571,7 +585,6 @@ function refreshBookingUI(root){
       showStatusChip(chip,'⏳ Pending','#633806','#FAEEDA');
     } else if(me.role==='talent' && (root.sender_role==='admin'||root.sender_role==='office') && root.recipient_name===me.name){
       actionBar.style.display = 'block';
-      replyBar.style.display  = 'none';
     }
   }
 }
@@ -586,6 +599,7 @@ function closeThread(){
   document.getElementById('bk-action-bar').style.display='none';
   document.getElementById('decline-form').classList.remove('on');
   document.getElementById('reply-bar').style.display='flex';
+  document.getElementById('bk-edit-bar').classList.remove('on');
   document.getElementById('bk-banner').classList.remove('on','bk-accepted','bk-rejected','bk-pending');
   renderInbox();
 }
@@ -801,6 +815,32 @@ function onTopicChange(){
   }
 }
 function closeCompose(){ document.getElementById('compose-overlay').classList.remove('on'); }
+function editBooking(){
+  if(!currentThread) return;
+  var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
+  selectedRecipType = root.recipient_role;
+  selectedRecipName = root.recipient_name;
+  document.getElementById('compose-body').value = '';
+  document.getElementById('booking-date-fields').style.display='block';
+  document.getElementById('leave-fields').style.display='none';
+  document.getElementById('fg-recip-toggle').style.display='block';
+  document.getElementById('fg-recip-fixed').style.display='none';
+  document.getElementById('compose-title').textContent = 'Edit Booking';
+  document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
+  var pill = document.querySelector('.recip-pill[data-type="'+root.recipient_role+'"]');
+  if(pill) pill.className='recip-pill on-'+root.recipient_role;
+  populateTopics('admin', root.recipient_role);
+  document.getElementById('compose-topic').value = 'Booking Request';
+  var wrap=document.getElementById('name-list-wrap'), list=document.getElementById('name-list');
+  wrap.style.display='block';
+  list.innerHTML='<div class="name-item selected" data-name="'+esc(root.recipient_name)+'">'+
+    '<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>'+
+    '<div><div style="font-size:14px">'+esc(root.recipient_name)+'</div></div></div>';
+  loadVenues().then(function(){
+    if(root.booking_venue) document.getElementById('booking-venue').value = root.booking_venue;
+  });
+  document.getElementById('compose-overlay').classList.add('on');
+}
 async function loadVenues(){
   var sel = document.getElementById('booking-venue');
   sel.innerHTML = '<option value="">Loading venues…</option>';
