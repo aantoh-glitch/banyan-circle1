@@ -997,6 +997,38 @@ async function sendMessage(){
     var saved=await api('POST','messages',payload);
     var msg=Array.isArray(saved)?saved[0]:saved;
     allMessages.unshift(msg);
+    // If editing a booking (Booking Request topic) and the booking is already accepted,
+    // sync the updated date/venue into talent_schedule
+    if(topic==='Booking Request' && bookingDt && recipientRole==='talent'){
+      var existingThread = currentThread && (currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0]);
+      var isAccepted = existingThread && existingThread.booking_status==='accepted';
+      if(isAccepted){
+        var schedEntry = parseBookingDateTime(bookingDt);
+        if(schedEntry){
+          var talentRecipId = null;
+          var talentRows = await api('GET','talents?name=eq.'+encodeURIComponent(recipientName)+'&select=id&limit=1');
+          talentRecipId = (talentRows && talentRows[0]) ? talentRows[0].id : null;
+          if(talentRecipId){
+            var schedPayload = {
+              talent_id: talentRecipId,
+              date: schedEntry.date,
+              status: 'booked',
+              time_start: schedEntry.time_start,
+              time_end: null,
+              venue: bookingVenue || null,
+              booked_by: me.name || 'Admin',
+              message_id: msg.id || (existingThread && existingThread.id)
+            };
+            var existing = await api('GET','talent_schedule?talent_id=eq.'+encodeURIComponent(talentRecipId)+'&date=eq.'+schedEntry.date+'&select=date&limit=1');
+            if(existing && existing.length){
+              await api('PATCH','talent_schedule?talent_id=eq.'+encodeURIComponent(talentRecipId)+'&date=eq.'+schedEntry.date, schedPayload);
+            } else {
+              await api('POST','talent_schedule', schedPayload);
+            }
+          }
+        }
+      }
+    }
     closeCompose(); renderInbox(); showToast('Message sent ✓');
   } catch(e){ showToast('Failed: '+e.message); }
   finally{ document.getElementById('send-btn').disabled=false; }
