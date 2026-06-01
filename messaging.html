@@ -246,6 +246,12 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <div><label class="fl">Date</label><input type="date" class="fc" id="booking-date"/></div>
         <div><label class="fl">Time</label><input type="time" class="fc" id="booking-time"/></div>
       </div>
+      <div style="margin-top:10px">
+        <label class="fl">Venue</label>
+        <select class="fc" id="booking-venue">
+          <option value="">— Loading venues… —</option>
+        </select>
+      </div>
     </div>
     <!-- Leave fields — shown only when topic = Leave -->
     <div id="leave-fields" style="display:none">
@@ -528,7 +534,7 @@ function renderThread(msgs){
     return '<div class="bubble-wrap'+(mine?' mine':'')+'">'+
       '<div class="bubble-label">'+senderLabel+' · '+fmtDate(m.created_at)+'</div>'+
       '<div class="bubble">'+esc(m.body).replace(/\n/g,'<br>')+
-        (m.booking_datetime?'<div class="bubble-booking">📅 '+esc(m.booking_datetime)+'</div>':'')+
+        (m.booking_datetime?'<div class="bubble-booking">📅 '+esc(m.booking_datetime)+(m.booking_venue?' · 📍 '+esc(m.booking_venue):'')+' </div>':'')+
       '</div></div>';
   }).join('');
 }
@@ -720,6 +726,7 @@ function openCompose(){
   document.getElementById('booking-date-fields').style.display='none';
   document.getElementById('leave-fields').style.display='none';
   document.getElementById('name-list-wrap').style.display='none';
+  document.getElementById('booking-venue').innerHTML='<option value="">— Select venue —</option>';
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
   if(isAdmin()){
     document.getElementById('fg-recip-toggle').style.display='block';
@@ -783,6 +790,7 @@ function onTopicChange(){
   var t = document.getElementById('compose-topic').value;
   document.getElementById('booking-date-fields').style.display = t==='Booking Request' ? 'block' : 'none';
   document.getElementById('leave-fields').style.display         = t==='Leave'           ? 'block' : 'none';
+  if(t==='Booking Request') loadVenues();
   if(t==='Leave'){
     if(!document.getElementById('leave-date').value){
       document.getElementById('leave-date').value = new Date().toISOString().slice(0,10);
@@ -793,6 +801,24 @@ function onTopicChange(){
   }
 }
 function closeCompose(){ document.getElementById('compose-overlay').classList.remove('on'); }
+async function loadVenues(){
+  var sel = document.getElementById('booking-venue');
+  sel.innerHTML = '<option value="">Loading venues…</option>';
+  try {
+    var rows = await api('GET','landlords?select=property_name&order=property_name');
+    // Deduplicate
+    var seen = {}, opts = ['<option value="">— Select venue —</option>'];
+    rows.forEach(function(r){
+      if(r.property_name && !seen[r.property_name]){
+        seen[r.property_name]=1;
+        opts.push('<option value="'+esc(r.property_name)+'">'+esc(r.property_name)+'</option>');
+      }
+    });
+    sel.innerHTML = opts.join('');
+  } catch(e){
+    sel.innerHTML = '<option value="">Could not load venues</option>';
+  }
+}
 async function sendMessage(){
   var body  = document.getElementById('compose-body').value.trim();
   var topic = document.getElementById('compose-topic').value;
@@ -806,11 +832,13 @@ async function sendMessage(){
   } else {
     recipientName='Admin'; recipientRole='admin';
   }
-  var bookingDt=null;
+  var bookingDt=null, bookingVenue=null;
   if(topic==='Booking Request'){
     var d=document.getElementById('booking-date').value, t=document.getElementById('booking-time').value;
     if(!d||!t){ showToast('Please pick a date and time'); return; }
     bookingDt=fmtBookingDate(d,t);
+    bookingVenue=document.getElementById('booking-venue').value||null;
+    if(!bookingVenue){ showToast('Please select a venue'); return; }
   }
   if(topic==='Leave'){
     var ld=document.getElementById('leave-date').value;
@@ -823,7 +851,7 @@ async function sendMessage(){
   var payload={
     sender_name:me.name, sender_role:myRole(),
     recipient_name:recipientName, recipient_role:recipientRole,
-    topic, body, booking_datetime:bookingDt,
+    topic, body, booking_datetime:bookingDt, booking_venue:bookingVenue,
     booking_status: topic==='Booking Request' ? 'pending' : null,
     read_by_recipient:false
   };
