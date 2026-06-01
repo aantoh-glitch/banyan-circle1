@@ -299,7 +299,7 @@ function myRole(){ return isAdmin() ? 'admin' : me.role; }
 function amIRecipient(m){
   return isAdmin()
     ? (m.recipient_role === 'admin' || m.recipient_role === 'office')
-    : m.recipient_name === me.name;
+    : (m.recipient_name === me.name && m.recipient_role === me.role);
 }
 function iMine(m){
   return isAdmin()
@@ -381,7 +381,10 @@ async function loadInbox(){
       q = 'messages?or=(sender_role.eq.admin,recipient_role.eq.admin,sender_role.eq.office,recipient_role.eq.office)&order=created_at.desc';
     } else {
       var n = encodeURIComponent(me.name);
-      q = 'messages?or=(sender_name.eq.'+n+',recipient_name.eq.'+n+')&order=created_at.desc';
+      var r = encodeURIComponent(me.role);
+      // Match messages where this user is sender OR where they are the named recipient
+      // Also include messages sent TO this role from admin where recipient_name matches
+      q = 'messages?or=(sender_name.eq.'+n+',and(recipient_name.eq.'+n+',recipient_role.eq.'+r+'))&order=created_at.desc';
     }
     allMessages = await api('GET', q);
     renderInbox();
