@@ -71,7 +71,24 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   border-radius:999px;padding:2px 8px;
 }
 
-/* MONTH NAV */
+/* PERIOD SELECTOR */
+.period-bar{
+  padding:0 20px;margin-bottom:12px;
+}
+.period-tabs{
+  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;padding-bottom:2px;
+}
+.period-tabs::-webkit-scrollbar{display:none}
+.ptab{
+  font-size:12px;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--border);background:var(--white);
+  cursor:pointer;font-family:inherit;color:var(--muted);
+  white-space:nowrap;flex-shrink:0;transition:all .15s;
+}
+.ptab.active{background:var(--text);color:var(--white);border-color:var(--text)}
+
+/* MONTH NAV (shown in month mode) */
 .month-nav{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 20px;margin-bottom:16px;
@@ -83,6 +100,33 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .month-nav button:active{border-color:var(--br);color:var(--br)}
 .month-label{font-size:14px;font-weight:500}
+
+/* CUSTOM RANGE */
+.custom-range{
+  display:none;align-items:center;gap:8px;
+  padding:0 20px;margin-bottom:16px;flex-wrap:wrap;
+}
+.custom-range.show{display:flex}
+.custom-range input{
+  flex:1;min-width:120px;padding:9px 12px;
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--bg);font-family:inherit;font-size:13px;
+  color:var(--text);outline:none;
+}
+.custom-range input:focus{border-color:var(--br);background:var(--white)}
+.custom-range span{font-size:13px;color:var(--muted)}
+
+/* DOWNLOAD BTN */
+.dl-btn{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;
+  background:var(--bg);color:var(--text);
+  border:1px solid var(--border);border-radius:999px;
+  padding:7px 14px;cursor:pointer;font-family:inherit;
+  white-space:nowrap;margin:0 20px 16px;
+  transition:all .15s;
+}
+.dl-btn:active{border-color:var(--br);color:var(--br)}
 
 /* KPI CARDS */
 .kpi-row{
@@ -368,25 +412,48 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <span class="readonly-tag" id="readonly-tag" style="display:none">Read-only</span>
   </div>
 
-  <!-- MONTH NAV -->
-  <div class="month-nav">
+  <!-- PERIOD TABS -->
+  <div class="period-bar">
+    <div class="period-tabs">
+      <button class="ptab active" id="ptab-month"   onclick="setPeriod('month')">Month</button>
+      <button class="ptab"        id="ptab-week"    onclick="setPeriod('week')">Week</button>
+      <button class="ptab"        id="ptab-quarter" onclick="setPeriod('quarter')">Quarter</button>
+      <button class="ptab"        id="ptab-custom"  onclick="setPeriod('custom')">Custom</button>
+    </div>
+  </div>
+
+  <!-- MONTH NAV (month mode only) -->
+  <div class="month-nav" id="month-nav">
     <button onclick="shiftMonth(-1)">‹</button>
     <div class="month-label" id="month-label">—</div>
     <button onclick="shiftMonth(1)">›</button>
   </div>
 
+  <!-- CUSTOM RANGE -->
+  <div class="custom-range" id="custom-range">
+    <input type="date" id="range-from" onchange="onCustomChange()"/>
+    <span>→</span>
+    <input type="date" id="range-to" onchange="onCustomChange()"/>
+  </div>
+
+  <!-- DOWNLOAD -->
+  <button class="dl-btn" onclick="downloadPDF()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Download PDF
+  </button>
+
   <!-- KPI ROW -->
   <div class="kpi-row">
     <div class="kpi-card positive">
-      <div class="kpi-val" id="kpi-pos">₹0</div>
-      <div class="kpi-lbl">Positive</div>
+      <div class="kpi-val" id="kpi-pos">0₹</div>
+      <div class="kpi-lbl">Income</div>
     </div>
     <div class="kpi-card negative">
-      <div class="kpi-val" id="kpi-neg">₹0</div>
-      <div class="kpi-lbl">Negative</div>
+      <div class="kpi-val" id="kpi-neg">0₹</div>
+      <div class="kpi-lbl">Expense</div>
     </div>
     <div class="kpi-card net">
-      <div class="kpi-val" id="kpi-net">₹0</div>
+      <div class="kpi-val" id="kpi-net">0₹</div>
       <div class="kpi-lbl">Net</div>
     </div>
   </div>
@@ -395,8 +462,8 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   <div class="filter-row">
     <div class="filter-tabs">
       <button class="ftab active" id="ftab-all" onclick="setFilter('all')">All</button>
-      <button class="ftab" id="ftab-positive" onclick="setFilter('positive')">Positive</button>
-      <button class="ftab" id="ftab-negative" onclick="setFilter('negative')">Negative</button>
+      <button class="ftab" id="ftab-positive" onclick="setFilter('positive')">Income</button>
+      <button class="ftab" id="ftab-negative" onclick="setFilter('negative')">Expense</button>
     </div>
     <button class="add-btn" id="add-entry-btn" onclick="openAddSheet()" style="display:none">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -452,7 +519,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <!-- AMOUNT + PERCENTAGE ROW -->
     <div class="form-row">
       <div class="form-field" id="amount-field">
-        <label class="form-label" id="amount-lbl">Amount (₹)</label>
+        <label class="form-label" id="amount-lbl">Amount</label>
         <input class="form-input" id="f-amount" type="number" min="0" placeholder="0.00"/>
       </div>
       <div class="form-field pct-field" id="pct-field">
@@ -550,7 +617,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <!-- AMOUNT + PERCENTAGE ROW -->
     <div class="form-row">
       <div class="form-field">
-        <label class="form-label" id="ef-amount-lbl">Amount (₹)</label>
+        <label class="form-label" id="ef-amount-lbl">Amount</label>
         <input class="form-input" id="ef-amount" type="number" min="0" placeholder="0.00"/>
       </div>
       <div class="form-field pct-field" id="epct-field">
@@ -660,6 +727,7 @@ let currentEntityType = 'landlord';
 let currentAssignType = 'landlord';
 let viewYear  = new Date().getFullYear();
 let viewMonth = new Date().getMonth();
+let currentPeriod = 'month'; // month|week|quarter|custom
 let allEntries = [];
 let entityLists = { landlord: [], staff: [], talent: [] }; // loaded once
 let assigningEntryId = null;
@@ -711,7 +779,85 @@ function goBack() {
 }
 
 /* ═══════════════════════════════════════════
-   MONTH
+   PERIOD SELECTOR
+═══════════════════════════════════════════ */
+function setPeriod(p) {
+  currentPeriod = p;
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  document.getElementById('ptab-' + p).classList.add('active');
+
+  const monthNav   = document.getElementById('month-nav');
+  const customRange = document.getElementById('custom-range');
+
+  if (p === 'month') {
+    monthNav.style.display = 'flex';
+    customRange.classList.remove('show');
+    renderMonthLabel();
+  } else if (p === 'custom') {
+    monthNav.style.display = 'none';
+    customRange.classList.add('show');
+    // default custom: first of current month → today
+    if (!document.getElementById('range-from').value) {
+      const now = new Date();
+      document.getElementById('range-from').value =
+        new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+      document.getElementById('range-to').value = todayStr();
+    }
+  } else {
+    monthNav.style.display = 'none';
+    customRange.classList.remove('show');
+  }
+  renderLog();
+  renderKPIs();
+}
+
+function onCustomChange() {
+  renderLog();
+  renderKPIs();
+}
+
+// Returns {from, to} as Date objects for the active period
+function getPeriodRange() {
+  const now = new Date();
+  if (currentPeriod === 'month') {
+    return {
+      from: new Date(viewYear, viewMonth, 1),
+      to:   new Date(viewYear, viewMonth + 1, 0)
+    };
+  } else if (currentPeriod === 'week') {
+    const day  = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const from = new Date(now.getFullYear(), now.getMonth(), diff);
+    const to   = new Date(from); to.setDate(from.getDate() + 6);
+    return { from, to };
+  } else if (currentPeriod === 'quarter') {
+    const q    = Math.floor(now.getMonth() / 3);
+    const from = new Date(now.getFullYear(), q * 3, 1);
+    const to   = new Date(now.getFullYear(), q * 3 + 3, 0);
+    return { from, to };
+  } else {
+    // custom
+    const fv = document.getElementById('range-from').value;
+    const tv = document.getElementById('range-to').value;
+    return {
+      from: fv ? new Date(fv) : new Date(now.getFullYear(), now.getMonth(), 1),
+      to:   tv ? new Date(tv) : now
+    };
+  }
+}
+
+function periodLabel() {
+  if (currentPeriod === 'month') {
+    return new Date(viewYear, viewMonth, 1)
+      .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  }
+  const { from, to } = getPeriodRange();
+  const fmt = d => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return fmt(from) + ' – ' + fmt(to);
+}
+
+/* ═══════════════════════════════════════════
+   MONTH NAV (month mode only)
 ═══════════════════════════════════════════ */
 function shiftMonth(d) {
   viewMonth += d;
@@ -778,11 +924,20 @@ async function loadEntries() {
 /* ═══════════════════════════════════════════
    FILTER HELPERS
 ═══════════════════════════════════════════ */
+function inPeriod(entryDate) {
+  if (!entryDate) return false;
+  const d = new Date(entryDate);
+  const { from, to } = getPeriodRange();
+  // compare date-only (strip time)
+  const ds = d.toISOString().slice(0,10);
+  const fs = from.toISOString().slice(0,10);
+  const ts = to.toISOString().slice(0,10);
+  return ds >= fs && ds <= ts;
+}
+
 function filteredEntries() {
   return allEntries.filter(e => {
-    if (!e.entry_date) return false;
-    const d = new Date(e.entry_date);
-    if (d.getFullYear() !== viewYear || d.getMonth() !== viewMonth) return false;
+    if (!inPeriod(e.entry_date)) return false;
     if (currentFilter !== 'all' && e.type !== currentFilter) return false;
     if (isAdmin && currentHeadFilter !== 'all') {
       if (currentHeadFilter === 'unassigned') {
@@ -798,11 +953,7 @@ function filteredEntries() {
    RENDER KPIs
 ═══════════════════════════════════════════ */
 function renderKPIs() {
-  const entries = allEntries.filter(e => {
-    if (!e.entry_date) return false;
-    const d = new Date(e.entry_date);
-    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
-  });
+  const entries = allEntries.filter(e => inPeriod(e.entry_date));
   let pos = 0, neg = 0;
   entries.forEach(e => {
     const amt = parseFloat(e.amount) || 0;
@@ -824,13 +975,9 @@ function renderLog() {
   const entries = filteredEntries();
   const wrap = document.getElementById('log-wrap');
 
-  // Count unassigned in current month (admin banner)
+  // Count unassigned in current period (admin banner)
   if (isAdmin) {
-    const monthEntries = allEntries.filter(e => {
-      if (!e.entry_date) return false;
-      const d = new Date(e.entry_date);
-      return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
-    });
+    const monthEntries = allEntries.filter(e => inPeriod(e.entry_date));
     const unassignedCount = monthEntries.filter(e => !e.entity_type || !e.entity_name).length;
     const existing = document.getElementById('unassigned-banner');
     if (existing) existing.remove();
@@ -845,9 +992,8 @@ function renderLog() {
 
   const lbl = document.getElementById('log-lbl');
   const fName = currentFilter === 'all' ? 'All Entries' :
-                currentFilter === 'positive' ? 'Positive Entries' : 'Negative Entries';
-  lbl.textContent = fName + ' — ' + new Date(viewYear, viewMonth, 1)
-    .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                currentFilter === 'positive' ? 'Income Entries' : 'Expense Entries';
+  lbl.textContent = fName + ' — ' + periodLabel();
 
   if (!entries.length) {
     wrap.innerHTML = '<div class="log-empty">No entries for this period.</div>';
@@ -963,7 +1109,7 @@ function onHeadChange() {
   const isPctHead = head === 'Percentage of Revenue';
   document.getElementById('pct-field').classList.toggle('show', isPctHead);
   document.getElementById('amount-lbl').textContent =
-    isPctHead ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
+    isPctHead ? 'Calculated Amount — optional' : 'Amount';
   document.getElementById('f-amount').placeholder =
     isPctHead ? '0.00 (leave blank if unknown)' : '0.00';
 }
@@ -1106,7 +1252,7 @@ function onEditHeadChange() {
   const isPct = head === 'Percentage of Revenue';
   document.getElementById('epct-field').classList.toggle('show', isPct);
   document.getElementById('ef-amount-lbl').textContent =
-    isPct ? 'Calculated Amount (₹) — optional' : 'Amount (₹)';
+    isPct ? 'Calculated Amount — optional' : 'Amount';
 }
 
 function selectEditEntityType(t) {
@@ -1231,14 +1377,94 @@ function todayStr() {
   return new Date().toISOString().split('T')[0];
 }
 function fmtAmt(n) {
-  if (n >= 100000) return '₹' + (n/100000).toFixed(1) + 'L';
-  if (n >= 1000)   return '₹' + (n/1000).toFixed(1) + 'k';
-  return '₹' + n.toLocaleString('en-IN');
+  if (n >= 100000) return (n/100000).toFixed(1) + 'L₹';
+  if (n >= 1000)   return (n/1000).toFixed(1) + 'k₹';
+  return n.toLocaleString('en-IN') + '₹';
 }
 function fmtFull(n) {
   if (!n && n !== 0) return '—';
-  return '₹' + parseFloat(n).toLocaleString('en-IN',
-    { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return parseFloat(n).toLocaleString('en-IN',
+    { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + '₹';
+}
+
+/* ═══════════════════════════════════════════
+   DOWNLOAD PDF
+═══════════════════════════════════════════ */
+function downloadPDF() {
+  const entries = filteredEntries();
+  const label   = periodLabel();
+  const today   = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+
+  let pos = 0, neg = 0;
+  entries.forEach(e => {
+    const amt = parseFloat(e.amount) || 0;
+    if (e.type === 'positive') pos += amt; else neg += amt;
+  });
+  const net = pos - neg;
+
+  const rows = entries.map(e => {
+    const isPct = e.head === 'Percentage of Revenue';
+    const amtStr = isPct && e.percentage
+      ? parseFloat(e.percentage).toFixed(2) + '%'
+      : fmtFull(e.amount);
+    const entity = e.entity_name
+      ? `${esc(e.entity_name)} <span style="font-size:10px;color:#888">(${e.entity_type||''})</span>`
+      : '<span style="color:#aaa">Unassigned</span>';
+    return `<tr>
+      <td>${esc(e.head)}</td>
+      <td style="color:${e.type==='positive'?'#2E7D32':'#C62828'}">${e.type==='positive'?'Positive':'Negative'}</td>
+      <td style="text-align:right;font-weight:600">${amtStr}</td>
+      <td>${entity}</td>
+      <td>${fmtDate(e.entry_date)}</td>
+      <td style="font-size:11px;color:#888">${esc(e.notes||'')}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Earnings Report</title>
+  <style>
+    body{font-family:'Helvetica Neue',Arial,sans-serif;color:#222;padding:36px;max-width:780px;margin:0 auto;font-size:13px}
+    h1{font-size:22px;color:#993C1D;margin:0 0 2px;font-family:Georgia,serif}
+    .sub{color:#777;font-size:12px;margin-bottom:28px}
+    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+    .kpi{background:#f8f6f3;border-radius:8px;padding:14px 16px;border-top:3px solid #ccc}
+    .kpi.pos{border-top-color:#2E7D32}.kpi.neg{border-top-color:#C62828}.kpi.net{border-top-color:#993C1D}
+    .kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#888;margin-bottom:5px}
+    .kpi-val{font-size:20px;font-weight:700}
+    .kpi.pos .kpi-val{color:#2E7D32}.kpi.neg .kpi-val{color:#C62828}.kpi.net .kpi-val{color:#993C1D}
+    h2{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#555;
+       margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid #ddd}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:#993C1D;color:#fff}
+    th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600}
+    td{padding:7px 10px;border-bottom:1px solid #eee;vertical-align:top}
+    tbody tr:nth-child(even){background:#faf8f5}
+    .footer{font-size:10px;color:#aaa;margin-top:28px;border-top:1px solid #eee;padding-top:10px;text-align:center}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <h1>Banyan Circle — Earnings Report</h1>
+  <div class="sub">Period: <strong>${label}</strong> &nbsp;·&nbsp; Generated ${today}</div>
+
+  <div class="kpis">
+    <div class="kpi pos"><div class="kpi-lbl">Income</div><div class="kpi-val">${fmtFull(pos)}</div></div>
+    <div class="kpi neg"><div class="kpi-lbl">Expense</div><div class="kpi-val">${fmtFull(neg)}</div></div>
+    <div class="kpi net"><div class="kpi-lbl">Net</div>
+      <div class="kpi-val" style="color:${net>=0?'#2E7D32':'#C62828'}">${fmtFull(Math.abs(net))}${net<0?' (deficit)':''}</div>
+    </div>
+  </div>
+
+  <h2>Entries (${entries.length})</h2>
+  ${entries.length ? `<table>
+    <thead><tr><th>Head</th><th>Type</th><th style="text-align:right">Amount</th><th>Assigned To</th><th>Date</th><th>Notes</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>` : '<p style="color:#aaa;font-size:13px">No entries for this period.</p>'}
+
+  <div class="footer">Banyan Circle · Earnings Report · ${label}</div>
+  <script>setTimeout(()=>window.print(),400);<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Allow pop-ups to download'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
 }
 function fmtDate(d) {
   if (!d) return '';
