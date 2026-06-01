@@ -396,6 +396,7 @@ function showPanel(id){
   document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   document.getElementById('nav-'+id).classList.add('active');
+  const prev=currentPanel;
   currentPanel=id;
   if(loaders[id]) loaders[id]();
 }
@@ -538,7 +539,13 @@ async function renderSchedule(){
   if(schedYear===undefined){schedYear=now.getFullYear();schedMonth=now.getMonth();}
   document.getElementById('month-label').textContent=MONTHS[schedMonth]+' '+schedYear;
   const ms=schedYear+'-'+String(schedMonth+1).padStart(2,'0');
-  try{const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+ms+'-01&date=lte.'+ms+'-31&select=date,status,time_start,time_end')||[];scheduleData={};rows.forEach(function(r){scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end};});}catch(e){console.error(e);}
+  try{
+    const lastDay=new Date(schedYear,schedMonth+1,0).getDate();
+    const endDate=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
+    const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+ms+'-01&date=lte.'+endDate+'&select=date,status,time_start,time_end')||[];
+    scheduleData={};
+    rows.forEach(function(r){scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end};});
+  }catch(e){console.error('renderSchedule fetch error',e);document.getElementById('sched-grid').innerHTML='<div style="grid-column:1/-1;font-size:13px;color:var(--r);padding:10px 0">Could not load schedule. Check connection.</div>';return;}
   const grid=document.getElementById('sched-grid');
   const firstDay=new Date(schedYear,schedMonth,1).getDay();
   const dim=new Date(schedYear,schedMonth+1,0).getDate();
