@@ -110,7 +110,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .cal-day-hdr{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:4px 0}
 .cal-day{border:1px solid var(--border);border-radius:7px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;background:var(--white);transition:opacity .1s}
 .cal-day:active{opacity:.7}
-.cal-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
+.cal-day.booked{background:#fff0f6;border-color:#d63384;border-width:2px}.cal-day.booked .cal-day-status{color:#d63384}.cal-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
 .cal-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
 .cal-day.today-ring{box-shadow:0 0 0 2px var(--br)}
 .cal-day-num{font-size:14px;font-weight:600;font-family:'Playfair Display',serif}
@@ -311,10 +311,11 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <div class="sheet-handle"></div>
     <div class="modal-title" id="modal-title">Set day status</div>
     <div class="modal-sub" id="modal-date"></div>
-    <div class="status-toggle">
+    <div id="booking-info-banner" style="display:none;background:var(--br-l,#fff7ed);border:1px solid var(--br);border-radius:8px;padding:12px 14px;margin-bottom:12px"></div>
+    <div id="stgl-wrap"><div class="status-toggle">
       <button class="stgl-btn" id="btn-busy" onclick="setModalStatus('busy')">&#128308; Busy</button>
       <button class="stgl-btn" id="btn-avail" onclick="setModalStatus('available')">&#128994; Available</button>
-    </div>
+    </div></div>
     <div id="time-fields">
       <div class="time-row">
         <div class="fg" style="margin:0"><label class="fl">From</label><input class="fc" type="time" id="modal-start" value="09:00"/></div>
@@ -322,7 +323,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       </div>
     </div>
     <div class="modal-btns">
-      <button class="btn-p" onclick="saveDaySlot()">Save</button>
+      <button class="btn-p" id="save-day-btn" onclick="saveDaySlot()">Save</button>
       <button class="btn-danger" id="modal-remove-btn" style="display:none" onclick="removeDay()">Remove status</button>
       <button class="btn-sec" onclick="closeDayModal()">Cancel</button>
     </div>
@@ -542,9 +543,9 @@ async function renderSchedule(){
   try{
     const lastDay=new Date(schedYear,schedMonth+1,0).getDate();
     const endDate=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
-    const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+ms+'-01&date=lte.'+endDate+'&select=date,status,time_start,time_end')||[];
+    const rows=await api('/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=gte.'+ms+'-01&date=lte.'+endDate+'&select=date,status,time_start,time_end,venue,booked_by,message_id')||[];
     scheduleData={};
-    rows.forEach(function(r){scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end};});
+    rows.forEach(function(r){scheduleData[r.date]={status:r.status,time_start:r.time_start,time_end:r.time_end,venue:r.venue,booked_by:r.booked_by,message_id:r.message_id};});
   }catch(e){console.error('renderSchedule fetch error',e);document.getElementById('sched-grid').innerHTML='<div style="grid-column:1/-1;font-size:13px;color:var(--r);padding:10px 0">Could not load schedule. Check connection.</div>';return;}
   const grid=document.getElementById('sched-grid');
   const firstDay=new Date(schedYear,schedMonth,1).getDay();
@@ -555,9 +556,9 @@ async function renderSchedule(){
   for(let d=1;d<=dim;d++){
     const ds=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const e=scheduleData[ds];const st=(e&&e.status)||'';
-    const cls=(st==='busy'||st==='free')?'cal-day busy':st==='available'?'cal-day available':'cal-day';
+    const cls=(st==='booked')?'cal-day booked':(st==='busy'||st==='free')?'cal-day busy':st==='available'?'cal-day available':'cal-day';
     const isT=ds===today;
-    let lbl=(st==='busy'||st==='free')?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
+    let lbl=(st==='booked')?'<div class="cal-day-status">Booked</div>':(st==='busy'||st==='free')?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
     h+='<div class="'+cls+(isT?' today-ring':'')+'" onclick="openDayModal(\''+ds+'\')"><div class="cal-day-num" style="'+(isT?'color:var(--br)':'')+'">'+d+'</div>'+lbl+'</div>';
   }
   grid.innerHTML=h;
@@ -568,11 +569,30 @@ function openDayModal(ds){
   const e=scheduleData[ds];
   const d=new Date(ds+'T00:00:00');
   document.getElementById('modal-date').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
-  document.getElementById('modal-title').textContent=e?'Edit day status':'Set day status';
-  document.getElementById('modal-start').value=(e&&e.time_start&&e.time_start.slice(0,5))||'09:00';
-  document.getElementById('modal-end').value=(e&&e.time_end&&e.time_end.slice(0,5))||'17:00';
-  document.getElementById('modal-remove-btn').style.display=e?'':'none';
-  setModalStatus((e&&e.status==='free')?'busy':((e&&e.status)||'available'));
+  // Show booking info banner if this day is a confirmed booking
+  var bookingBanner=document.getElementById('booking-info-banner');
+  if(e && e.status==='booked'){
+    document.getElementById('modal-title').textContent='Confirmed Booking';
+    bookingBanner.style.display='block';
+    bookingBanner.innerHTML='<div style="font-size:13px;font-weight:600;color:var(--br);margin-bottom:4px">📅 Confirmed Booking</div>'
+      +(e.venue?'<div style="font-size:13px;margin-bottom:2px">📍 '+e.venue+'</div>':'')
+      +(e.time_start?'<div style="font-size:13px;margin-bottom:2px">⏰ '+fmt12(e.time_start)+'</div>':'')
+      +(e.booked_by?'<div style="font-size:12px;color:var(--muted)">Booked by: '+e.booked_by+'</div>':'');
+    // Hide the editable fields — booked days are read-only
+    document.getElementById('stgl-wrap').style.display='none';
+    document.getElementById('time-fields').style.display='none';
+    document.getElementById('modal-remove-btn').style.display='none';
+    document.getElementById('save-day-btn').style.display='none';
+  } else {
+    document.getElementById('modal-title').textContent=e?'Edit day status':'Set day status';
+    bookingBanner.style.display='none';
+    document.getElementById('stgl-wrap').style.display='';
+    document.getElementById('save-day-btn').style.display='';
+    document.getElementById('modal-start').value=(e&&e.time_start&&e.time_start.slice(0,5))||'09:00';
+    document.getElementById('modal-end').value=(e&&e.time_end&&e.time_end.slice(0,5))||'17:00';
+    document.getElementById('modal-remove-btn').style.display=e?'':'none';
+    setModalStatus((e&&e.status==='free')?'busy':((e&&e.status)||'available'));
+  }
   document.getElementById('day-modal').style.display='flex';
 }
 function closeDayModal(){document.getElementById('day-modal').style.display='none';modalDateStr=null;}

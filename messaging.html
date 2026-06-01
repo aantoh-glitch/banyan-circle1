@@ -618,6 +618,37 @@ async function acceptBooking(){
     btn.textContent = 'Accepting…';
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:'accepted'});
     root.booking_status = 'accepted';
+    // Write confirmed booking into talent_schedule
+    if(root.booking_datetime && root.recipient_role === 'talent'){
+      var schedEntry = parseBookingDateTime(root.booking_datetime);
+      if(schedEntry){
+        var talentRecipId = root.recipient_id || null;
+        // Look up talent id by name if not stored directly on message
+        if(!talentRecipId){
+          var talentRows = await api('GET','talents?name=eq.'+encodeURIComponent(root.recipient_name)+'&select=id&limit=1');
+          talentRecipId = (talentRows && talentRows[0]) ? talentRows[0].id : null;
+        }
+        if(talentRecipId){
+          var schedPayload = {
+            talent_id: talentRecipId,
+            date: schedEntry.date,
+            status: 'booked',
+            time_start: schedEntry.time_start,
+            time_end: null,
+            venue: root.booking_venue || null,
+            booked_by: root.sender_name || 'Admin',
+            message_id: root.id
+          };
+          // Upsert — PATCH if exists, POST if not
+          var existing = await api('GET','talent_schedule?talent_id=eq.'+encodeURIComponent(talentRecipId)+'&date=eq.'+schedEntry.date+'&select=date&limit=1');
+          if(existing && existing.length){
+            await api('PATCH','talent_schedule?talent_id=eq.'+encodeURIComponent(talentRecipId)+'&date=eq.'+schedEntry.date, schedPayload);
+          } else {
+            await api('POST','talent_schedule', schedPayload);
+          }
+        }
+      }
+    }
     var reply = {
       sender_name:me.name, sender_role:myRole(),
       recipient_name:root.sender_name, recipient_role:root.sender_role,
@@ -814,6 +845,23 @@ function fmtDate(iso){
   if(diff<86400000) return Math.floor(diff/3600000)+'h ago';
   if(diff<604800000)return d.toLocaleDateString('en-IN',{weekday:'short'});
   return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+// Parses a human-readable booking_datetime string back to {date, time_start}
+// e.g. "Monday, 10 June 2026 at 02:00 pm" → {date:'2026-06-10', time_start:'14:00'}
+function parseBookingDateTime(str){
+  try{
+    // Try direct Date parse first (works if ISO-ish)
+    var dt = new Date(str);
+    if(isNaN(dt.getTime())){
+      // Fall back: strip day name, parse "10 June 2026 at 02:00 pm"
+      var clean = str.replace(/^[A-Za-z]+,\s*/,'').replace(' at ',' ');
+      dt = new Date(clean);
+    }
+    if(isNaN(dt.getTime())) return null;
+    var date = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+    var time_start = String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    return {date:date, time_start:time_start};
+  } catch(e){ return null; }
 }
 function fmtBookingDate(d,t){
   var dt=new Date(d+'T'+t);
