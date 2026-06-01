@@ -604,7 +604,7 @@ function goPage(id, btn) {
   }
   document.querySelector('.content').scrollTop = 0;
   if (id==='description') loadDescription();
-  if (id==='earnings')    document.getElementById('iframe-earnings').src = IS_ADMIN_VIEW ? ('earnings.html?role=landlord&name=' + encodeURIComponent(PROP || '') + '&property=' + encodeURIComponent(PROP || '')) : ('earnings.html?role=landlord&name=' + encodeURIComponent(me.name || ''));
+  if (id==='earnings')    document.getElementById('iframe-earnings').src = 'earnings.html?role=landlord&name=' + encodeURIComponent(PROP || '') + '&property=' + encodeURIComponent(PROP || '') + (IS_ADMIN_VIEW ? '' : '');
   if (id==='messages')    loadMsgs();
   if (id==='payments')    loadPayments();
   if (id==='assets')      document.getElementById('iframe-assets').src = 'assets.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
@@ -1268,4 +1268,97 @@ function setEditUtilityStatus(status) {
 }
 
 async function saveEditUtility() {
-  var 
+  var btn    = document.getElementById('eu-save-btn');
+  var id     = document.getElementById('eu-id').value;
+  var item   = document.getElementById('eu-item').value.trim();
+  var amount = parseFloat(document.getElementById('eu-amount').value);
+  var pd     = document.getElementById('eu-paid-date').value;
+  var file   = document.getElementById('eu-receipt-file').files[0];
+  if (!item)                { toast('Enter a utility type', true); return; }
+  if (!amount || amount<=0) { toast('Enter a valid amount', true); return; }
+  if (_editUtilityStatus==='paid' && !pd) { toast('Select payment date', true); return; }
+  btn.disabled=true; btn.textContent='Saving…';
+
+  var proof_url = null;
+  if (file) {
+    btn.textContent='Uploading receipt…';
+    var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
+    var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
+      method:'POST',
+      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+      body:file
+    });
+    if (up.ok) {
+      proof_url = SB+'/storage/v1/object/public/utility-uploads/'+path;
+    } else {
+      var ue = await up.text();
+      toast('Receipt upload failed: '+ue, true);
+      btn.disabled=false; btn.textContent='Save Changes';
+      return;
+    }
+  }
+
+  var month = _editUtilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
+  var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month };
+  if (_editUtilityStatus==='paid') body.paid_on = pd; else body.paid_on = null;
+  if (proof_url) body.proof_url = proof_url;
+
+  var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
+    method:'PATCH',
+    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(body)
+  });
+  btn.disabled=false; btn.textContent='Save Changes';
+  if (r && r.ok) { closeEditUtilityModal(); toast('Updated ✓'); refreshUtilityLog(); }
+  else { var e=await r.text(); toast('Error: '+e, true); }
+}
+
+async function deleteUtility(id) {
+  if (!confirm('Delete this utility bill?')) return;
+  var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
+    method:'DELETE',
+    headers:{apikey:KEY,'Authorization':'Bearer '+KEY}
+  });
+  if (r && r.ok) { toast('Deleted'); refreshUtilityLog(); }
+  else { toast('Delete failed', true); }
+}
+</script>
+
+<!-- ── EDIT UTILITY MODAL ── -->
+<div id="modal-edit-utility" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="font-family:'EB Garamond',serif;font-size:21px;font-weight:600;margin-bottom:16px">Edit Utility Bill</div>
+    <input type="hidden" id="eu-id"/>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Item / Utility Type</label>
+      <input id="eu-item" class="fc" placeholder="e.g. Electricity, Water, Gas…"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Amount (₹)</label>
+      <input id="eu-amount" class="fc" type="number" min="0" placeholder="0"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Status</label>
+      <div style="display:flex;gap:8px">
+        <button type="button" id="eu-btn-pending" onclick="setEditUtilityStatus('pending')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--a);background:var(--a-l);color:#5A3006;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pending</button>
+        <button type="button" id="eu-btn-paid" onclick="setEditUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
+      </div>
+    </div>
+    <div id="eu-date-section" style="display:none;margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Date of Payment</label>
+      <input id="eu-paid-date" class="fc" type="date"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Replace Receipt (optional)</label>
+      <div id="eu-existing-receipt" style="display:none;margin-bottom:6px"></div>
+      <input id="eu-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button type="button" onclick="closeEditUtilityModal()" style="padding:10px 16px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button type="button" id="eu-save-btn" onclick="saveEditUtility()" style="padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
