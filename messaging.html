@@ -53,6 +53,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .rb-landlord{background:var(--g-l);color:#27500A}
 .rb-guest{background:var(--a-l);color:#633806}
 .rb-staff{background:var(--b-l);color:#0C447C}
+.rb-ops{background:#F0F0EE;color:#3D3C39}
 .booking-pill{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;gap:4px;align-items:center;flex-shrink:0}
 .bp-pending{background:var(--a-l);color:var(--a)}
 .bp-accepted{background:var(--g-l);color:#27500A}
@@ -131,6 +132,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 .recip-pill.on-talent{background:var(--b);border-color:var(--b);color:#fff}
 .recip-pill.on-landlord{background:var(--g);border-color:var(--g);color:#fff}
 .recip-pill.on-guest{background:var(--a);border-color:var(--a);color:#fff}
+.recip-pill.on-ops{background:var(--muted);border-color:var(--muted);color:#fff}
 .name-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:190px;overflow-y:auto}
 .name-item{padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;font-size:14px;background:var(--white);transition:all .15s;display:flex;align-items:center;gap:8px}
 .name-item:hover{border-color:var(--br);background:var(--br-l)}
@@ -222,6 +224,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="recip-pill" data-type="talent"   onclick="selectRecipType('talent',this)">Talent</button>
         <button class="recip-pill" data-type="landlord" onclick="selectRecipType('landlord',this)">Landlord</button>
         <button class="recip-pill" data-type="guest"    onclick="selectRecipType('guest',this)">Guest</button>
+        <button class="recip-pill" data-type="ops"      onclick="selectRecipType('ops',this)">Ops</button>
       </div>
       <div id="name-list-wrap" style="display:none;margin-top:12px">
         <div id="name-list" class="name-list"></div>
@@ -286,6 +289,8 @@ var TOPICS = {
   'landlord-admin': ['General'],
   'admin-guest':    ['General'],
   'guest-admin':    ['Complaint', 'Request', 'Feedback', 'Book Banyan Circle'],
+  'admin-ops':      ['General', 'Task'],
+  'ops-admin':      ['General', 'Update', 'Leave'],
   'staff-admin':    ['General', 'Leave'],
 };
 /* ────────────────────────────────
@@ -313,6 +318,7 @@ function roleDisplayName(role){
   if(role === 'landlord') return 'Landlord';
   if(role === 'guest') return 'Guest';
   if(role === 'staff') return 'Staff';
+  if(role === 'ops') return 'Ops';
   return role;
 }
 /* ────────────────────────────────
@@ -347,8 +353,8 @@ function renderFilterBar(){
       {key:'all',   label:'All'},
       {key:'guest',    label:'Guest'},
       {key:'talent',   label:'Talent'},
-      {key:'staff',    label:'Staff'},
       {key:'landlord', label:'Landlord'},
+      {key:'ops',      label:'Ops'},
     ];
     bar.innerHTML = tabs.map(function(t){
       return '<button class="ftab'+(t.key==='all'?' on':'')+'" onclick="setAdminRoleFilter(\''+t.key+'\',this)">'+t.label+'</button>';
@@ -740,6 +746,7 @@ async function selectRecipType(type, btn){
     if(type==='talent')   rows=await api('GET','talents?select=id,name,category&order=name');
     else if(type==='landlord') rows=await api('GET','landlords?select=id,name,property_name&order=name');
     else if(type==='guest')    rows=await api('GET','guest_profiles?select=id,name,property_name&order=name');
+    else if(type==='ops')      rows=await api('GET','ops_profiles?select=id,name,role&order=name').catch(()=>api('GET','profiles?select=id,name&role=eq.ops&order=name').catch(()=>[]));
     if(!rows.length){ list.innerHTML='<div class="name-loading">No '+type+'s found</div>'; return; }
     list.innerHTML = rows.map(r=>{
       var sub = r.category||r.property_name||'';
