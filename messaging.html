@@ -888,6 +888,20 @@ async function submitEditResponse(){
     // Update booking status on root message
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:_editResponseStatus});
     root.booking_status = _editResponseStatus;
+    // If declined, remove the entry from talent_schedule
+    if(_editResponseStatus === 'rejected' && root.booking_datetime){
+      var schedEntry = parseBookingDateTime(root.booking_datetime);
+      if(schedEntry){
+        var talentId = root.recipient_id || null;
+        if(!talentId){
+          var tRows = await api('GET','talents?name=eq.'+encodeURIComponent(root.recipient_name)+'&select=id&limit=1');
+          talentId = (tRows && tRows[0]) ? tRows[0].id : null;
+        }
+        if(talentId){
+          await api('DELETE','talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+schedEntry.date);
+        }
+      }
+    }
     // Send a new reply with updated response
     var reply = {
       sender_name:me.name, sender_role:myRole(),
