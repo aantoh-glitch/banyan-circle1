@@ -341,10 +341,33 @@ async function loadPropertiesFromSupabase() {
       document.getElementById('activePropertyLabel').textContent = 'All Properties';
     }
     renderSidebar(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
+    loadBlockedDates(); // Load persisted blocked dates now that properties are mapped
   } catch(e) {
     showToast('Could not load properties from Supabase', 'error');
   }
 }
+
+// ─── LOAD BLOCKED DATES FROM SUPABASE ────────────────────────────────────────
+async function loadBlockedDates() {
+  try {
+    const res = await fetch(
+      SB + '/rest/v1/blocked_dates?select=id,property_name,start_date,end_date,reason&order=start_date',
+      { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
+    );
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+    data.forEach(row => {
+      const prop = properties.find(p => p.name === row.property_name);
+      if (!prop) return;
+      if (bookings.find(b => b.id === row.id)) return; // avoid duplicates on re-load
+      bookings.push({ id: row.id, guest: 'BLOCKED', property: prop.id, source: 'blocked', start: row.start_date, end: row.end_date, reason: row.reason || 'Blocked' });
+    });
+    renderCalendar(); renderBookings(); renderStats();
+  } catch(e) {
+    showToast('Could not load blocked dates', 'error');
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function triggerSync() {
   showToast('Sync not connected to a backend', 'error');
@@ -479,7 +502,7 @@ function renderStats() {
   // document.getElementById('statAirbnb').textContent = totalC; // element removed — stat card not in HTML
 }
 
-function blockDates() {
+async function blockDates() {
   const prop = document.getElementById('blockProperty').value;
   const start = document.getElementById('blockStart').value;
   const end = document.getElementById('blockEnd').value;
@@ -488,10 +511,27 @@ function blockDates() {
   if (end < start) { showToast('End must be after start','error'); return; }
   const conflict = bookings.find(b => b.property === prop && !(b.end < start || b.start > end));
   if (conflict) { showToast('Conflicts with existing booking','error'); return; }
-  bookings.push({ id:'b'+Date.now(), guest:'BLOCKED', property:prop, source:'blocked', start, end, reason: reason||'Blocked' });
-  clearBlockForm();
-  renderCalendar(); renderBookings(); renderStats();
-  showToast('Dates blocked');
+  const propName = properties.find(p => p.id === prop)?.name;
+  // Save to Supabase blocked_dates table
+  try {
+    const res = await fetch(SB + '/rest/v1/blocked_dates', {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ property_name: propName, start_date: start, end_date: end, reason: reason || null })
+    });
+    const saved = await res.json();
+    const sbId = Array.isArray(saved) ? saved[0]?.id : null;
+    bookings.push({ id: sbId || 'b'+Date.now(), guest:'BLOCKED', property:prop, source:'blocked', start, end, reason: reason||'Blocked' });
+    clearBlockForm();
+    renderCalendar(); renderBookings(); renderStats();
+    showToast('Dates blocked & saved');
+  } catch(e) {
+    // Save locally if Supabase fails
+    bookings.push({ id:'b'+Date.now(), guest:'BLOCKED', property:prop, source:'blocked', start, end, reason: reason||'Blocked' });
+    clearBlockForm();
+    renderCalendar(); renderBookings(); renderStats();
+    showToast('Saved locally — could not reach Supabase', 'error');
+  }
 }
 
 function clearBlockForm() {
