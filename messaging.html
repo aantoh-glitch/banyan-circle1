@@ -722,17 +722,6 @@ async function acceptBooking(){
         }
       }
     }
-    var reply = {
-      sender_name:me.name, sender_role:myRole(),
-      recipient_name:root.sender_name, recipient_role:root.sender_role,
-      topic:'Re: '+root.topic,
-      body:'Booking confirmed! I\'ll be available'+(root.booking_datetime?' on '+root.booking_datetime:'.')+' Looking forward to it.',
-      thread_id:currentThread.key, parent_id:root.id, read_by_recipient:false
-    };
-    var saved = await api('POST','messages',reply);
-    var msg = Array.isArray(saved)?saved[0]:saved;
-    allMessages.unshift(msg);
-    currentThread.msgs.push(msg);
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
     var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
@@ -750,25 +739,25 @@ function cancelDeclineForm(){
 }
 async function confirmDecline(){
   var root   = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
-  var reason = document.getElementById('decline-reason').value.trim();
   var btn    = document.getElementById('confirm-decline-btn');
   try{
     btn.disabled=true;
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:'rejected'});
     root.booking_status = 'rejected';
-    var body = reason
-      ? 'Unable to accept this booking request. Reason: '+reason
-      : 'Unable to accept this booking request at the requested time. Apologies for any inconvenience.';
-    var reply = {
-      sender_name:me.name, sender_role:myRole(),
-      recipient_name:root.sender_name, recipient_role:root.sender_role,
-      topic:'Re: '+root.topic, body,
-      thread_id:currentThread.key, parent_id:root.id, read_by_recipient:false
-    };
-    var saved = await api('POST','messages',reply);
-    var msg = Array.isArray(saved)?saved[0]:saved;
-    allMessages.unshift(msg);
-    currentThread.msgs.push(msg);
+    // Remove from talent_schedule
+    if(root.booking_datetime){
+      var schedEntry = parseBookingDateTime(root.booking_datetime);
+      if(schedEntry){
+        var talentId = root.recipient_id || null;
+        if(!talentId){
+          var tRows = await api('GET','talents?name=eq.'+encodeURIComponent(root.recipient_name)+'&select=id&limit=1');
+          talentId = (tRows && tRows[0]) ? tRows[0].id : null;
+        }
+        if(talentId){
+          await api('DELETE','talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+schedEntry.date);
+        }
+      }
+    }
     document.getElementById('decline-form').classList.remove('on');
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
@@ -879,8 +868,6 @@ function setEditStatus(val){
   document.getElementById('erb-decline').classList.toggle('active', val==='rejected');
 }
 async function submitEditResponse(){
-  var body = document.getElementById('edit-response-body').value.trim();
-  if(!body){ showToast('Please write a message'); return; }
   var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
   var btn  = document.getElementById('edit-response-send');
   try{
@@ -902,17 +889,6 @@ async function submitEditResponse(){
         }
       }
     }
-    // Send a new reply with updated response
-    var reply = {
-      sender_name:me.name, sender_role:myRole(),
-      recipient_name:root.sender_name, recipient_role:root.sender_role,
-      topic:'Re: '+root.topic, body,
-      thread_id:currentThread.key, parent_id:root.id, read_by_recipient:false
-    };
-    var saved = await api('POST','messages',reply);
-    var msg = Array.isArray(saved)?saved[0]:saved;
-    allMessages.unshift(msg);
-    currentThread.msgs.push(msg);
     closeEditResponse();
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
