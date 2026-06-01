@@ -45,15 +45,19 @@
   .btn-danger { background: #fee8e8; color: #c0392b; border: 1.5px solid #f5c6c6; }
 
   /* STATS */
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-  .stat-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; border: 1px solid var(--border); }
+  .stats-row { display: flex; gap: 10px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border-radius: var(--radius); padding: 12px 20px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: default; }
+  .stat-card .stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .stat-card .stat-label { font-size: 12px; letter-spacing: 0.5px; color: var(--ink-soft); font-weight: 500; margin: 0; }
+  .stat-card .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink); line-height: 1; margin-left: 4px; }
   .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-mute); font-weight: 600; margin-bottom: 8px; }
   .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--ink); line-height: 1; }
   .stat-sub { font-size: 11px; color: var(--ink-mute); margin-top: 4px; }
 
   /* CALENDAR */
   .calendar-container { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
-  .calendar-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .calendar-header { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .calendar-header-row1 { display: flex; align-items: center; justify-content: space-between; width: 100%; }
   .cal-nav-btn { width: 32px; height: 32px; border-radius: 6px; border: 1.5px solid var(--border); background: transparent; cursor: pointer; font-size: 16px; color: var(--ink-soft); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
   .cal-nav-btn:hover { background: var(--surface2); }
   .cal-month-label { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--ink); }
@@ -141,17 +145,18 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div><div class="stat-sub">this month</div></div>
-      <div class="stat-card"><div class="stat-label">Available</div><div class="stat-value" id="statAvailable">0</div><div class="stat-sub">days remaining</div></div>
-      <div class="stat-card" style="grid-column:span 2"><div class="stat-label">Total Bookings</div><div class="stat-value" id="statAirbnb">0</div><div class="stat-sub">this month</div></div>
+      <div class="stat-card"><div class="stat-dot" style="background:#2d7a4f"></div><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div></div>
+      <div class="stat-card"><div class="stat-dot" style="background:var(--accent)"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
     </div>
 
     <div class="calendar-container">
       <div class="calendar-header">
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
-          <div class="cal-month-label" id="calMonthLabel"></div>
-          <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+        <div class="calendar-header-row1">
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+            <div class="cal-month-label" id="calMonthLabel"></div>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+          </div>
         </div>
         <div class="calendar-legend">
           <div class="legend-item"><div class="legend-dot" style="background:#e8f4ee;border:1px solid #2d7a4f"></div>Booked</div>
