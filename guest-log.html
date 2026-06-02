@@ -238,7 +238,7 @@
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ8.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ0.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 const COLORS = ['#e85d75','#4a90d9','#2d9e6b','#c9a84c','#9b59b6','#e67e22'];
 
 let selectedDate = new Date().toISOString().split('T')[0];
@@ -248,9 +248,18 @@ let bookings = [];     // [{id, guest, property_name, source, start, end}]
 let activeSection = null; // 'checkin'|'checkout'|'staying'|null
 
 // ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
-const sbFetch = (path) => fetch(SB + path, {
-  headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
-}).then(r => r.json());
+const sbFetch = async (path) => {
+  const r = await fetch(SB + path, {
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json', 'Accept-Profile': 'public' }
+  });
+  const json = await r.json();
+  if (!r.ok) {
+    const msg = json?.message || json?.hint || JSON.stringify(json);
+    console.error('Supabase error', r.status, path, json);
+    throw new Error(`${r.status}: ${msg}`);
+  }
+  return json;
+};
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
@@ -260,7 +269,8 @@ async function init() {
     await loadProperties();
     await loadBookings();
   } catch(e) {
-    showToast('Could not reach Supabase', 'error');
+    console.error('Init error:', e);
+    showToast('Error: ' + e.message, 'error');
   }
   setLoading(false);
 }
@@ -453,7 +463,7 @@ async function reloadBookings() {
   document.getElementById('countCheckin').textContent  = '—';
   document.getElementById('countCheckout').textContent = '—';
   document.getElementById('countStaying').textContent  = '—';
-  try { await loadBookings(); } catch(e) { showToast('Could not reload bookings', 'error'); }
+  try { await loadBookings(); } catch(e) { showToast('Error: ' + e.message, 'error'); }
   setLoading(false);
 }
 
