@@ -267,7 +267,7 @@ async function init() {
 
 // ── LOAD PROPERTIES ───────────────────────────────────────────────────────────
 async function loadProperties() {
-  const data = await sbFetch('/rest/v1/landlords?select=property_name&order=property_name');
+  const data = await sbFetch('/rest/v1/guest_profiles?select=property_name&order=property_name');
   if (!Array.isArray(data)) return;
   const seen = new Set();
   properties = data
@@ -278,19 +278,18 @@ async function loadProperties() {
 
 // ── LOAD BOOKINGS ─────────────────────────────────────────────────────────────
 async function loadBookings() {
-  // Fetch bookings that could overlap selectedDate
-  // We fetch a window: start <= selectedDate AND end >= selectedDate
+  // Fetch guest_profiles that overlap selectedDate
   const data = await sbFetch(
-    `/rest/v1/bookings?select=id,guest_name,guest_phone,num_guests,property_name,source,check_in,check_out&check_in=lte.${selectedDate}&check_out=gte.${selectedDate}&order=check_in`
+    `/rest/v1/guest_profiles?select=id,name,mobile,property_name,check_in,check_out&check_in=lte.${selectedDate}&check_out=gte.${selectedDate}&order=check_in`
   );
   if (Array.isArray(data)) {
     bookings = data.map(r => ({
       id: r.id,
-      guest: r.guest_name || 'Guest',
-      phone: r.guest_phone || null,
-      num_guests: r.num_guests || null,
+      guest: r.name || 'Guest',
+      phone: r.mobile || null,
+      num_guests: null,
       property_name: r.property_name,
-      source: r.source || 'manual',
+      source: 'manual',
       start: r.check_in,
       end: r.check_out
     }));
