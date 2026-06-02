@@ -388,10 +388,7 @@ function getBookingForDate(dateS) {
 function renderSidebar() {
   const noProps = properties.length === 0;
   document.getElementById('propertyList').innerHTML =
-    (noProps ? `<div style="padding:12px 24px;font-size:12px;color:rgba(255,255,255,0.35);line-height:1.5;">No properties loaded yet.</div>` :
-    `<div class="property-card ${activeProperty==='all'?'active':''}" onclick="setActiveProperty('all')">
-      <div class="property-name">All Properties</div>
-    </div>`) +
+    (noProps ? `<div style="padding:12px 24px;font-size:12px;color:rgba(255,255,255,0.35);line-height:1.5;">No properties loaded yet.</div>` : '') +
     properties.map(p => `
       <div class="property-card ${activeProperty===p.id?'active':''}" onclick="setActiveProperty('${p.id}')">
         <div class="property-name">${p.name}</div>
