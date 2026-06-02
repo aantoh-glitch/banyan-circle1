@@ -216,7 +216,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     <div class="bk-banner" id="bk-banner">
       <svg id="bk-banner-icon" viewBox="0 0 24 24"></svg>
       <span id="bk-banner-text"></span>
-      <button class="bk-banner-edit" id="bk-banner-edit" onclick="editBooking()">
+      <button class="bk-banner-edit" id="bk-banner-edit" onclick="onEditBannerClick()">
         <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Edit
       </button>
@@ -244,13 +244,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="btn-confirm-decline" id="confirm-decline-btn" onclick="confirmDecline()">Confirm Decline</button>
       </div>
     </div>
-    <!-- Edit booking/leave bar (admin, after accept/decline) -->
-    <div class="bk-edit-bar" id="bk-edit-bar">
-      <button class="btn-edit-booking" onclick="editBooking()">
-        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        <span id="bk-edit-bar-label">Edit Booking</span>
-      </button>
-    </div>
+
     <!-- Normal reply bar -->
     <div class="reply-bar" id="reply-bar">
       <textarea class="reply-input" id="reply-input" rows="1" placeholder="Type a reply…" oninput="autoGrow(this)"></textarea>
@@ -618,14 +612,12 @@ function refreshBookingUI(root){
   var actionBar = document.getElementById('bk-action-bar');
   var decForm   = document.getElementById('decline-form');
   var replyBar  = document.getElementById('reply-bar');
-  var editBar   = document.getElementById('bk-edit-bar');
   var chip      = document.getElementById('thread-status-chip');
   var leaveStrip= document.getElementById('leave-hdr-strip');
   banner.classList.remove('on','bk-accepted','bk-rejected','bk-pending');
   actionBar.style.display = 'none';
   decForm.classList.remove('on');
   replyBar.style.display  = 'flex'; // always show chat
-  editBar.classList.remove('on');
   document.getElementById('bk-banner-edit').classList.remove('on');
   chip.style.display      = 'none';
   leaveStrip.classList.remove('on');
@@ -666,9 +658,7 @@ function refreshBookingUI(root){
     showStatusChip(chip, isLeave ? '✓ Approved' : '✓ Accepted','#27500A',getComputedStyle(document.documentElement).getPropertyValue('--g-l').trim()||'#EAF3DE');
     if(isLeave) setLeaveChip('✓ Approved','#27500A','#EAF3DE');
     if(isAdmin()){
-      editBar.classList.add('on');
       document.getElementById('bk-banner-edit').classList.add('on');
-      document.getElementById('bk-edit-bar-label').textContent = isLeave ? 'Edit Leave' : 'Edit Booking';
     }
     else if(me.role==='talent' && root.recipient_name===me.name){ document.getElementById('bk-banner-edit').classList.add('on'); }
   } else if(status === 'rejected'){
@@ -680,9 +670,7 @@ function refreshBookingUI(root){
     showStatusChip(chip,'✗ Declined','#A32D2D','#FCEBEB');
     if(isLeave) setLeaveChip('✗ Declined','#A32D2D','#FCEBEB');
     if(isAdmin()){
-      editBar.classList.add('on');
       document.getElementById('bk-banner-edit').classList.add('on');
-      document.getElementById('bk-edit-bar-label').textContent = isLeave ? 'Edit Leave' : 'Edit Booking';
     }
     else if(me.role==='talent' && root.recipient_name===me.name){ document.getElementById('bk-banner-edit').classList.add('on'); }
   } else {
@@ -716,7 +704,6 @@ function closeThread(){
   document.getElementById('bk-action-bar').style.display='none';
   document.getElementById('decline-form').classList.remove('on');
   document.getElementById('reply-bar').style.display='flex';
-  document.getElementById('bk-edit-bar').classList.remove('on');
   document.getElementById('bk-banner-edit').classList.remove('on');
   document.getElementById('bk-banner').classList.remove('on','bk-accepted','bk-rejected','bk-pending');
   document.getElementById('leave-hdr-strip').classList.remove('on');
@@ -955,13 +942,23 @@ function onTopicChange(){
 }
 function closeCompose(){ document.getElementById('compose-overlay').classList.remove('on'); }
 var _editResponseStatus = null;
+var _editResponseIsLeave = false;
 function openEditResponse(root){
   _editResponseStatus = root.booking_status || 'accepted';
+  _editResponseIsLeave = root && root.topic === 'Leave';
+  var sheet = document.querySelector('#edit-response-overlay .modal-ttl');
+  if(sheet) sheet.textContent = _editResponseIsLeave ? 'Edit Leave Decision' : 'Update Response';
+  var acceptBtn  = document.getElementById('erb-accept');
+  var declineBtn = document.getElementById('erb-decline');
+  if(_editResponseIsLeave){
+    acceptBtn.textContent  = '✓ Approve';
+    declineBtn.textContent = '✗ Decline';
+  } else {
+    acceptBtn.textContent  = '✓ Accept';
+    declineBtn.textContent = '✗ Decline';
+  }
   setEditStatus(_editResponseStatus);
-  // Pre-fill with their last reply
-  var myReplies = currentThread.msgs.filter(m=>iMine(m) && m.thread_id);
-  var lastReply = myReplies.length ? myReplies[myReplies.length-1] : null;
-  document.getElementById('edit-response-body').value = lastReply ? lastReply.body : '';
+  document.getElementById('edit-response-body').value = '';
   document.getElementById('edit-response-overlay').classList.add('on');
 }
 function closeEditResponse(){ document.getElementById('edit-response-overlay').classList.remove('on'); }
@@ -999,6 +996,16 @@ async function submitEditResponse(){
     showToast('Response updated ✓');
   } catch(e){ showToast('Failed: '+e.message); }
   finally{ btn.disabled=false; }
+}
+function onEditBannerClick(){
+  if(!currentThread) return;
+  var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
+  var isLeave = root && root.topic === 'Leave';
+  if(isLeave){
+    openEditResponse(root);
+  } else {
+    editBooking();
+  }
 }
 function editBooking(){
   if(!currentThread) return;
