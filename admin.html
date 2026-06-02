@@ -142,6 +142,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div style="display:flex;gap:8px;margin-bottom:18px">
     <button class="ptab on" id="gtab-profiles" onclick="setGuestTab('profiles',this)">Profiles</button>
     <button class="ptab" id="gtab-registrations" onclick="setGuestTab('registrations',this)">Submitted Registrations</button>
+    <button class="ptab" id="gtab-log" onclick="setGuestTab('log',this)">Guest Log</button>
   </div>
   <div id="g-profiles-view">
     <div class="card">
@@ -158,7 +159,113 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div id="guest-reg-list">Loading…</div>
     </div>
   </div>
-</div>
+
+  <!-- GUEST LOG inline panel -->
+  <div id="g-log-view" style="display:none">
+    <style>
+      /* ── Guest Log scoped styles ── */
+      #g-log-view { font-family:'DM Sans',sans-serif; }
+      .gl-topbar { background:#5b8db8; border-radius:12px 12px 0 0; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+      .gl-topbar-title { font-family:'Playfair Display',serif; font-size:20px; color:#fff; }
+      .gl-date-nav { display:flex; align-items:center; gap:8px; }
+      .gl-date-btn { width:32px; height:32px; border-radius:7px; border:1.5px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.1); color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+      .gl-date-btn:hover { background:rgba(255,255,255,0.2); }
+      .gl-date-display { font-family:'Playfair Display',serif; font-size:15px; font-weight:600; color:#fff; padding:6px 12px; border-radius:7px; border:1.5px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.1); cursor:pointer; position:relative; min-width:160px; text-align:center; }
+      .gl-date-picker { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+      .gl-today-btn { padding:5px 12px; border-radius:7px; border:1.5px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.8); font-size:13px; cursor:pointer; }
+      .gl-today-btn:hover { background:rgba(255,255,255,0.2); color:#fff; }
+
+      .gl-filter-bar { background:var(--white); border-bottom:1px solid var(--border); padding:10px 24px; display:flex; align-items:center; gap:8px; overflow-x:auto; scrollbar-width:none; }
+      .gl-filter-bar::-webkit-scrollbar { display:none; }
+      .gl-filter-label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:600; flex-shrink:0; }
+      .gl-prop-chip { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:500; cursor:pointer; flex-shrink:0; border:1.5px solid var(--border); background:var(--bg); color:var(--muted); transition:all .15s; }
+      .gl-prop-chip:hover { border-color:#5b8db8; color:#5b8db8; }
+      .gl-prop-chip.active { background:#5b8db8; color:#fff; border-color:#5b8db8; }
+      .gl-prop-chip.gl-all.active { background:#222; border-color:#222; }
+
+      .gl-summary-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:18px 24px 0; }
+      .gl-summary-card { background:var(--white); border:1.5px solid var(--border); border-radius:10px; padding:14px 18px; cursor:pointer; transition:all .15s; position:relative; overflow:hidden; }
+      .gl-summary-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+      .gl-summary-card.gl-ci::before { background:#2d9e6b; }
+      .gl-summary-card.gl-co::before { background:#d97706; }
+      .gl-summary-card.gl-st::before { background:#4a90d9; }
+      .gl-summary-card:hover { box-shadow:0 3px 12px rgba(0,0,0,.08); transform:translateY(-1px); }
+      .gl-summary-card.gl-active { box-shadow:0 0 0 2.5px #5b8db8; }
+      .gl-summary-card.gl-ci.gl-active  { box-shadow:0 0 0 2.5px #2d9e6b; }
+      .gl-summary-card.gl-co.gl-active  { box-shadow:0 0 0 2.5px #d97706; }
+      .gl-summary-card.gl-st.gl-active  { box-shadow:0 0 0 2.5px #4a90d9; }
+      .gl-card-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+      .gl-card-dot { width:7px; height:7px; border-radius:50%; }
+      .gl-card-label.gl-ci  { color:#1a6b3c; }
+      .gl-card-label.gl-co  { color:#92400e; }
+      .gl-card-label.gl-st  { color:#1e3a5f; }
+      .gl-card-count { font-family:'Playfair Display',serif; font-size:36px; line-height:1; color:var(--text); }
+      .gl-card-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+
+      .gl-sections { padding:14px 24px 20px; }
+      .gl-section { background:var(--white); border-radius:10px; border:1.5px solid var(--border); overflow:hidden; }
+      .gl-section-hdr { padding:13px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+      .gl-section-title { font-size:14px; font-weight:500; display:flex; align-items:center; gap:8px; }
+      .gl-section-bdg { padding:2px 9px; border-radius:10px; font-size:11px; font-weight:600; }
+      .gl-bdg-ci { background:#edf7f0; color:#1a6b3c; }
+      .gl-bdg-co { background:#fef3e8; color:#92400e; }
+      .gl-bdg-st { background:#eef4fb; color:#1e3a5f; }
+      .gl-guest-row { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; transition:background .12s; }
+      .gl-guest-row:last-child { border-bottom:none; }
+      .gl-guest-row:hover { background:var(--bg); }
+      .gl-avatar { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#fff; }
+      .gl-guest-name { font-size:13px; font-weight:500; color:var(--text); }
+      .gl-guest-dates { font-size:11px; color:var(--muted); margin-top:2px; }
+      .gl-guest-prop { margin-left:auto; font-size:11px; font-weight:600; padding:3px 9px; border-radius:6px; background:rgba(91,141,184,.1); color:#4a7aa3; white-space:nowrap; }
+      .gl-src { padding:3px 7px; border-radius:5px; font-size:10px; font-weight:600; }
+      .gl-src-airbnb   { background:#fff0f0; color:#FF5A5F; }
+      .gl-src-booking  { background:#e8f0fc; color:#003580; }
+      .gl-src-manual   { background:#fff0e0; color:#d97706; }
+      .gl-empty { padding:28px; text-align:center; color:var(--muted); font-size:13px; }
+    </style>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <!-- Top bar -->
+      <div class="gl-topbar">
+        <div class="gl-topbar-title">Guest Log</div>
+        <div class="gl-date-nav">
+          <button class="gl-date-btn" onclick="glShiftDate(-1)">&#8249;</button>
+          <div class="gl-date-display">
+            <input type="date" class="gl-date-picker" id="gl-date-picker" onchange="glOnDatePick(this.value)">
+            <span id="gl-date-label">—</span>
+          </div>
+          <button class="gl-date-btn" onclick="glShiftDate(1)">&#8250;</button>
+          <button class="gl-today-btn" onclick="glGoToday()">Today</button>
+        </div>
+      </div>
+      <!-- Property filter -->
+      <div class="gl-filter-bar" id="gl-filter-bar">
+        <span class="gl-filter-label">Property</span>
+        <button class="gl-prop-chip gl-all active" data-prop="all" onclick="glSetProperty('all')">All</button>
+      </div>
+      <!-- Summary cards -->
+      <div class="gl-summary-row">
+        <div class="gl-summary-card gl-ci" id="gl-card-ci" onclick="glToggleSection('checkin')">
+          <div class="gl-card-label gl-ci"><div class="gl-card-dot" style="background:#2d9e6b"></div>Check-ins Today</div>
+          <div class="gl-card-count" id="gl-count-ci">—</div>
+          <div class="gl-card-sub">arriving guests</div>
+        </div>
+        <div class="gl-summary-card gl-co" id="gl-card-co" onclick="glToggleSection('checkout')">
+          <div class="gl-card-label gl-co"><div class="gl-card-dot" style="background:#d97706"></div>Check-outs Today</div>
+          <div class="gl-card-count" id="gl-count-co">—</div>
+          <div class="gl-card-sub">departing guests</div>
+        </div>
+        <div class="gl-summary-card gl-st" id="gl-card-st" onclick="glToggleSection('staying')">
+          <div class="gl-card-label gl-st"><div class="gl-card-dot" style="background:#4a90d9"></div>Staying Tonight</div>
+          <div class="gl-card-count" id="gl-count-st">—</div>
+          <div class="gl-card-sub">mid-stay guests</div>
+        </div>
+      </div>
+      <!-- Guest sections -->
+      <div class="gl-sections" id="gl-sections"></div>
+    </div>
+  </div>
+</div><!-- /pg-guests -->
 
 
 <div class="pg" id="pg-docs">
@@ -821,8 +928,145 @@ function setGuestTab(tab,btn){
   btn.classList.add('on');
   document.getElementById('g-profiles-view').style.display=tab==='profiles'?'':'none';
   document.getElementById('g-registrations-view').style.display=tab==='registrations'?'':'none';
+  document.getElementById('g-log-view').style.display=tab==='log'?'':'none';
   if(tab==='registrations') loadGuestRegistrations();
+  if(tab==='log') glInit();
 }
+
+// ── GUEST LOG ──────────────────────────────────────────────────────────────────
+const GL_COLORS = ['#e85d75','#4a90d9','#2d9e6b','#c9a84c','#9b59b6','#e67e22'];
+let glDate = new Date().toISOString().split('T')[0];
+let glProp = 'all';
+let glProps = [];
+let glBookings = [];
+let glSection = null;
+let glInited = false;
+
+async function glInit(){
+  if(glInited){ glUpdateLabel(); return; }
+  glInited = true;
+  glUpdateLabel();
+  try{
+    await glLoadProps();
+    await glLoadBookings();
+  } catch(e){ toast('Guest Log: could not load data'); }
+}
+
+async function glLoadProps(){
+  const data = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+  const seen = new Set();
+  glProps = data
+    .filter(r=>r.property_name&&!seen.has(r.property_name)&&seen.add(r.property_name))
+    .map((r,i)=>({id:r.property_name,name:r.property_name,color:GL_COLORS[i%GL_COLORS.length]}));
+  glRenderFilterBar();
+}
+
+async function glLoadBookings(){
+  document.getElementById('gl-count-ci').textContent='—';
+  document.getElementById('gl-count-co').textContent='—';
+  document.getElementById('gl-count-st').textContent='—';
+  const data = await api(`/rest/v1/bookings?select=id,guest_name,guest_phone,num_guests,property_name,source,check_in,check_out&check_in=lte.${glDate}&check_out=gte.${glDate}&order=check_in`) || [];
+  glBookings = data.map(r=>({
+    id:r.id, guest:r.guest_name||'Guest', phone:r.guest_phone||null,
+    num_guests:r.num_guests||null, property_name:r.property_name,
+    source:r.source||'manual', start:r.check_in, end:r.check_out
+  }));
+  glRender();
+}
+
+function glComputeGroups(){
+  const filtered = glProp==='all' ? glBookings : glBookings.filter(b=>b.property_name===glProp);
+  return {
+    checkIns:  filtered.filter(b=>b.start===glDate),
+    checkOuts: filtered.filter(b=>b.end===glDate),
+    staying:   filtered.filter(b=>b.start<glDate&&b.end>glDate)
+  };
+}
+
+function glRender(){
+  const {checkIns,checkOuts,staying} = glComputeGroups();
+  document.getElementById('gl-count-ci').textContent = checkIns.length;
+  document.getElementById('gl-count-co').textContent = checkOuts.length;
+  document.getElementById('gl-count-st').textContent = staying.length;
+  ['ci','co','st'].forEach((s,i)=>{
+    const map=['checkin','checkout','staying'];
+    document.getElementById('gl-card-'+s).classList.toggle('gl-active',glSection===map[i]);
+  });
+  const container = document.getElementById('gl-sections');
+  if(!glSection){ container.innerHTML=''; return; }
+  const map = {checkin:{guests:checkIns,type:'checkin',label:'Check-ins',bdg:'gl-bdg-ci'},
+               checkout:{guests:checkOuts,type:'checkout',label:'Check-outs',bdg:'gl-bdg-co'},
+               staying:{guests:staying,type:'staying',label:'Staying Tonight',bdg:'gl-bdg-st'}};
+  const {guests,type,label,bdg} = map[glSection];
+  container.innerHTML = `
+    <div class="gl-section">
+      <div class="gl-section-hdr">
+        <div class="gl-section-title">${label}<span class="gl-section-bdg ${bdg}">${guests.length}</span></div>
+        <span style="font-size:11px;color:var(--muted)">${glFmtDate(glDate)}</span>
+      </div>
+      ${guests.length===0
+        ? '<div class="gl-empty">No guests in this category</div>'
+        : guests.map(g=>glGuestRow(g,type)).join('')}
+    </div>`;
+}
+
+function glGuestRow(g,type){
+  const prop = glProps.find(p=>p.id===g.property_name);
+  const color = prop?prop.color:'#9898b8';
+  const initial = (g.guest||'?').charAt(0).toUpperCase();
+  const srcClass = {airbnb:'gl-src-airbnb',booking:'gl-src-booking',manual:'gl-src-manual'}[g.source]||'gl-src-manual';
+  const srcLabel = {airbnb:'Airbnb',booking:'Booking',manual:'Direct'}[g.source]||g.source;
+  let dateHint='';
+  if(type==='checkin')  dateHint='Check-out '+glFmtDate(g.end);
+  if(type==='checkout') dateHint='Checked in '+glFmtDate(g.start);
+  if(type==='staying')  dateHint=glFmtDate(g.start)+' → '+glFmtDate(g.end);
+  return `<div class="gl-guest-row">
+    <div class="gl-avatar" style="background:${color}">${initial}</div>
+    <div style="flex:1;min-width:0">
+      <div class="gl-guest-name">${g.guest}</div>
+      <div class="gl-guest-dates">${dateHint}</div>
+      <div style="display:flex;gap:12px;margin-top:3px;flex-wrap:wrap">
+        ${g.phone?`<a href="tel:${g.phone}" style="color:var(--muted);text-decoration:none;font-size:11px">📞 ${g.phone}</a>`:''}
+        ${g.num_guests?`<span style="font-size:11px;color:var(--muted)">👥 ${g.num_guests} guest${g.num_guests>1?'s':''}</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+      <div class="gl-guest-prop">${g.property_name||'—'}</div>
+      <div class="gl-src ${srcClass}">${srcLabel}</div>
+    </div>
+  </div>`;
+}
+
+function glRenderFilterBar(){
+  const bar = document.getElementById('gl-filter-bar');
+  [...bar.querySelectorAll('.gl-prop-chip:not(.gl-all)')].forEach(el=>el.remove());
+  glProps.forEach(p=>{
+    const chip=document.createElement('button');
+    chip.className='gl-prop-chip'; chip.dataset.prop=p.id; chip.textContent=p.name;
+    chip.onclick=()=>glSetProperty(p.id);
+    bar.appendChild(chip);
+  });
+  glHighlightChip();
+}
+function glHighlightChip(){
+  document.querySelectorAll('#gl-filter-bar .gl-prop-chip').forEach(c=>{
+    c.classList.toggle('active',c.dataset.prop===glProp);
+  });
+}
+function glSetProperty(id){ glProp=id; glHighlightChip(); glRender(); }
+function glToggleSection(name){ glSection=glSection===name?null:name; glRender(); }
+function glFmtDate(s){ if(!s)return'—'; return new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function glUpdateLabel(){
+  const d=new Date(glDate+'T00:00:00');
+  const today=new Date().toISOString().split('T')[0];
+  const label=glDate===today?'Today · '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('gl-date-label').textContent=label;
+  document.getElementById('gl-date-picker').value=glDate;
+}
+function glShiftDate(delta){ const d=new Date(glDate+'T00:00:00'); d.setDate(d.getDate()+delta); glDate=d.toISOString().split('T')[0]; glUpdateLabel(); glLoadBookings(); }
+function glGoToday(){ glDate=new Date().toISOString().split('T')[0]; glUpdateLabel(); glLoadBookings(); }
+function glOnDatePick(val){ if(!val)return; glDate=val; glUpdateLabel(); glLoadBookings(); }
+
 
 async function deleteCheckin(id,btn){
   const name=btn.closest('tr').querySelector('td:first-child').textContent||'this guest';
