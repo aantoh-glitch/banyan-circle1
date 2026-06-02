@@ -369,31 +369,33 @@ async function loadAdminTasks(){
     ALL_TASKS = await api('/rest/v1/tasks?select=*&order=created_at.desc') || [];
   } catch(e){
     const isNoTable = e.message && (e.message.includes('relation') || e.message.includes('does not exist') || e.message.includes('42P01') || e.message.includes('404'));
-    document.getElementById('admin-tasks-list').innerHTML = `
-      <div class="empty">
-        <div style="font-size:22px;margin-bottom:8px">📋</div>
-        <div style="font-weight:500;margin-bottom:4px">${isNoTable ? 'Tasks table not created yet' : 'Could not load tasks'}</div>
-        <div style="font-size:12px;color:#A32D2D;margin-top:4px;margin-bottom:8px">${isNoTable ? '' : 'Error: '+e.message}</div>
-        ${isNoTable ? \`<div style="font-size:12px;max-width:420px;margin:0 auto 10px">Run this SQL in your <a href="https://supabase.com/dashboard" target="_blank" style="color:#993C1D">Supabase SQL editor</a>, then refresh:</div>
-        <pre style="text-align:left;background:#F9F8F6;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:14px;font-size:11px;line-height:1.7;max-width:520px;overflow:auto;margin:0 auto">CREATE TABLE tasks (
-  id           uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  work         text NOT NULL,
-  staff_id     uuid REFERENCES staff(id) ON DELETE SET NULL,
-  staff_name   text,
-  priority     text DEFAULT 'medium',
-  due_date     date,
-  notes        text,
-  acknowledged boolean DEFAULT false,
-  completed    boolean DEFAULT false,
-  created_at   timestamptz DEFAULT now()
-);
-
--- Disable RLS so the anon key can read/write
-ALTER TABLE tasks DISABLE ROW LEVEL SECURITY;
-
--- If table already exists, add the completed column:
-ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;</pre>\` : ''}
-      </div>`;
+    const sql = 'CREATE TABLE tasks (\n'
+      + '  id           uuid DEFAULT gen_random_uuid() PRIMARY KEY,\n'
+      + '  work         text NOT NULL,\n'
+      + '  staff_id     uuid REFERENCES staff(id) ON DELETE SET NULL,\n'
+      + '  staff_name   text,\n'
+      + '  priority     text DEFAULT \'medium\',\n'
+      + '  due_date     date,\n'
+      + '  notes        text,\n'
+      + '  acknowledged boolean DEFAULT false,\n'
+      + '  completed    boolean DEFAULT false,\n'
+      + '  created_at   timestamptz DEFAULT now()\n'
+      + ');\n\n'
+      + '-- Disable RLS (required for anon key)\n'
+      + 'ALTER TABLE tasks DISABLE ROW LEVEL SECURITY;\n\n'
+      + '-- If table already exists:\n'
+      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;';
+    const sqlBlock = isNoTable
+      ? '<div style="font-size:12px;max-width:420px;margin:0 auto 10px">Run this SQL in your <a href="https://supabase.com/dashboard" target="_blank" style="color:#993C1D">Supabase SQL editor</a>, then refresh:</div>'
+        + '<pre style="text-align:left;background:#F9F8F6;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:14px;font-size:11px;line-height:1.7;max-width:520px;overflow:auto;margin:0 auto">' + sql + '</pre>'
+      : '';
+    document.getElementById('admin-tasks-list').innerHTML =
+      '<div class="empty">'
+      + '<div style="font-size:22px;margin-bottom:8px">📋</div>'
+      + '<div style="font-weight:500;margin-bottom:4px">' + (isNoTable ? 'Tasks table not created yet' : 'Could not load tasks') + '</div>'
+      + '<div style="font-size:12px;color:#A32D2D;margin-top:4px;margin-bottom:8px">' + (isNoTable ? '' : 'Error: ' + e.message) + '</div>'
+      + sqlBlock
+      + '</div>';
     updateKpis([]);
     return;
   }
