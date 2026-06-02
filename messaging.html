@@ -970,30 +970,71 @@ function setEditStatus(val){
 async function submitEditResponse(){
   var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
   var btn  = document.getElementById('edit-response-send');
+  var isLeave = root && root.topic === 'Leave';
   try{
     btn.disabled = true;
-    // Update booking status on root message
+    // Update booking_status on root message
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:_editResponseStatus});
     root.booking_status = _editResponseStatus;
-    // If declined, remove the entry from talent_schedule
-    if(_editResponseStatus === 'rejected' && root.booking_datetime){
-      var schedEntry = parseBookingDateTime(root.booking_datetime);
-      if(schedEntry){
-        var talentId = root.recipient_id || null;
-        if(!talentId){
-          var tRows = await api('GET','talents?name=eq.'+encodeURIComponent(root.recipient_name)+'&select=id&limit=1');
-          talentId = (tRows && tRows[0]) ? tRows[0].id : null;
-        }
-        if(talentId){
-          await api('DELETE','talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+schedEntry.date);
+
+    if(isLeave){
+      if(_editResponseStatus === 'accepted'){
+        // Upsert into staff_leave
+        var leaveMatch = root.body && root.body.match(/\((Half day|Full day)\)/i);
+        var durRaw  = leaveMatch ? leaveMatch[1] : 'Full day';
+        var durKey  = durRaw.toLowerCase().replace(' ','_');
+        var startDt = root.start_date || null;
+        var endDt   = root.end_date   || startDt;
+        var leavePayload = {
+          staff_name:  root.sender_name,
+          staff_role:  root.sender_role,
+          start_date:  startDt,
+          end_date:    endDt,
+          duration:    durKey,
+          status:      'approved',
+          message_id:  root.id,
+          approved_by: me.name,
+          notes:       root.body
+        };
+        try{
+          var existing = await api('GET','staff_leave?message_id=eq.'+root.id+'&select=id&limit=1');
+          if(existing && existing.length){
+            await api('PATCH','staff_leave?message_id=eq.'+root.id, leavePayload);
+          } else {
+            await api('POST','staff_leave', leavePayload);
+          }
+        } catch(leaveErr){ console.warn('staff_leave upsert failed:',leaveErr.message); }
+      } else if(_editResponseStatus === 'rejected'){
+        // Remove from staff_leave if it was previously approved
+        try{
+          await api('DELETE','staff_leave?message_id=eq.'+root.id);
+        } catch(leaveErr){ console.warn('staff_leave delete failed:',leaveErr.message); }
+      }
+    } else {
+      // Booking Request — sync talent_schedule on decline
+      if(_editResponseStatus === 'rejected' && root.booking_datetime){
+        var schedEntry = parseBookingDateTime(root.booking_datetime);
+        if(schedEntry){
+          var talentId = root.recipient_id || null;
+          if(!talentId){
+            var tRows = await api('GET','talents?name=eq.'+encodeURIComponent(root.recipient_name)+'&select=id&limit=1');
+            talentId = (tRows && tRows[0]) ? tRows[0].id : null;
+          }
+          if(talentId){
+            await api('DELETE','talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+schedEntry.date);
+          }
         }
       }
     }
+
     closeEditResponse();
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
     var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
-    showToast('Response updated ✓');
+    var toastMsg = isLeave
+      ? (_editResponseStatus==='accepted' ? 'Leave approved ✓' : 'Leave declined')
+      : 'Response updated ✓';
+    showToast(toastMsg);
   } catch(e){ showToast('Failed: '+e.message); }
   finally{ btn.disabled=false; }
 }
