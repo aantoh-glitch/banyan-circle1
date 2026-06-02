@@ -207,7 +207,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     </div>
     <!-- Talent: pending booking action bar -->
     <div class="bk-action-bar" id="bk-action-bar" style="display:none">
-      <div class="bk-action-label">Respond to this booking</div>
+      <div class="bk-action-label" id="bk-action-label">Respond to this booking</div>
       <div class="bk-action-btns">
         <button class="btn-accept" id="accept-btn" onclick="acceptBooking()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
@@ -222,7 +222,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     <!-- Decline reason form -->
     <div class="decline-form" id="decline-form">
       <div class="decline-label">Reason for declining (optional)</div>
-      <textarea class="decline-textarea" id="decline-reason" placeholder="Let Property By Heritance know why you can't make it…" rows="3"></textarea>
+      <textarea class="decline-textarea" id="decline-reason" placeholder="Add a reason (optional)…" rows="3"></textarea>
       <div class="decline-actions">
         <button class="btn-cancel-decline" onclick="cancelDeclineForm()">Cancel</button>
         <button class="btn-confirm-decline" id="confirm-decline-btn" onclick="confirmDecline()">Confirm Decline</button>
@@ -611,28 +611,42 @@ function refreshBookingUI(root){
   editBar.classList.remove('on');
   document.getElementById('bk-banner-edit').classList.remove('on');
   chip.style.display      = 'none';
-  if(!root || root.topic !== 'Booking Request') return;
+  var isLeave   = root && root.topic === 'Leave';
+  var isBooking = root && root.topic === 'Booking Request';
+  if(!root || (!isBooking && !isLeave)) return;
   var status = root.booking_status || 'pending';
   if(status === 'accepted'){
     banner.classList.add('on','bk-accepted');
     document.getElementById('bk-banner-icon').innerHTML = '<polyline points="20,6 9,17 4,12"/>';
-    document.getElementById('bk-banner-text').textContent = 'Booking accepted by '+root.recipient_name;
-    showStatusChip(chip,'✓ Accepted','#27500A',getComputedStyle(document.documentElement).getPropertyValue('--g-l').trim()||'#EAF3DE');
-    if(isAdmin()){ editBar.classList.add('on'); document.getElementById('bk-banner-edit').classList.add('on'); }
+    document.getElementById('bk-banner-text').textContent = isLeave
+      ? 'Leave approved ✓'
+      : 'Booking accepted by '+root.recipient_name;
+    showStatusChip(chip, isLeave ? '✓ Approved' : '✓ Accepted','#27500A',getComputedStyle(document.documentElement).getPropertyValue('--g-l').trim()||'#EAF3DE');
+    if(isAdmin() && isBooking){ editBar.classList.add('on'); document.getElementById('bk-banner-edit').classList.add('on'); }
     else if(me.role==='talent' && root.recipient_name===me.name){ document.getElementById('bk-banner-edit').classList.add('on'); }
   } else if(status === 'rejected'){
     banner.classList.add('on','bk-rejected');
     document.getElementById('bk-banner-icon').innerHTML = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
-    document.getElementById('bk-banner-text').textContent = 'Booking declined by '+root.recipient_name;
+    document.getElementById('bk-banner-text').textContent = isLeave
+      ? 'Leave declined'
+      : 'Booking declined by '+root.recipient_name;
     showStatusChip(chip,'✗ Declined','#A32D2D','#FCEBEB');
-    if(isAdmin()){ editBar.classList.add('on'); document.getElementById('bk-banner-edit').classList.add('on'); }
+    if(isAdmin() && isBooking){ editBar.classList.add('on'); document.getElementById('bk-banner-edit').classList.add('on'); }
     else if(me.role==='talent' && root.recipient_name===me.name){ document.getElementById('bk-banner-edit').classList.add('on'); }
   } else {
+    // pending
     if(isAdmin()){
-      banner.classList.add('on','bk-pending');
-      document.getElementById('bk-banner-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>';
-      document.getElementById('bk-banner-text').textContent = 'Awaiting response from '+root.recipient_name;
-      showStatusChip(chip,'⏳ Pending','#633806','#FAEEDA');
+      if(isLeave){
+        // Show Approve / Decline action bar for leave requests
+        document.getElementById('bk-action-label').textContent = 'Respond to this leave request';
+        actionBar.style.display = 'block';
+        showStatusChip(chip,'⏳ Pending','#633806','#FAEEDA');
+      } else {
+        banner.classList.add('on','bk-pending');
+        document.getElementById('bk-banner-icon').innerHTML = '<circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>';
+        document.getElementById('bk-banner-text').textContent = 'Awaiting response from '+root.recipient_name;
+        showStatusChip(chip,'⏳ Pending','#633806','#FAEEDA');
+      }
     } else if(me.role==='talent' && (root.sender_role==='admin'||root.sender_role==='office') && root.recipient_name===me.name){
       actionBar.style.display = 'block';
     }
@@ -696,7 +710,7 @@ async function acceptBooking(){
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:'accepted'});
     root.booking_status = 'accepted';
     // Write confirmed booking into talent_schedule
-    if(root.booking_datetime && root.recipient_role === 'talent'){
+    if(root.topic === 'Booking Request' && root.booking_datetime && root.recipient_role === 'talent'){
       var schedEntry = parseBookingDateTime(root.booking_datetime);
       if(schedEntry){
         var talentRecipId = root.recipient_id || null;
@@ -728,38 +742,35 @@ async function acceptBooking(){
     }
     // Write leave record into staff_leave when topic = Leave
     if(root.topic === 'Leave'){
-      // Parse leave dates and duration from the message body prefix
-      // Format: "Leave request: <date> (Half day | Full day)\n\n..." (single day)
-      // or:     "Leave request: <startDate> – <endDate> (Half day | Full day)\n\n..."
-      var leaveMatch = root.body && root.body.match(/^Leave request: (.+?) \((Half day|Full day)\)/i);
-      if(leaveMatch){
-        var leavePayload = {
-          staff_name:  root.sender_name,
-          staff_role:  root.sender_role,
-          start_date:  root.start_date || null,   // stored field if present
-          end_date:    root.end_date   || null,   // stored field if present
-          duration:    leaveMatch[2].toLowerCase().replace(' ','_'), // 'half_day' or 'full_day'
-          status:      'approved',
-          message_id:  root.id,
-          approved_by: me.name,
-          notes:       root.body
-        };
-        // Fallback: use start_date as end_date if end_date is missing
-        if(!leavePayload.end_date){
-          leavePayload.end_date = leavePayload.start_date;
-        }
-        try {
-          await api('POST', 'staff_leave', leavePayload);
+      // Parse duration from body text; dates come from stored start_date / end_date fields
+      var leaveMatch = root.body && root.body.match(/\((Half day|Full day)\)/i);
+      var durRaw  = leaveMatch ? leaveMatch[1] : 'Full day';
+      var durKey  = durRaw.toLowerCase().replace(' ','_'); // 'half_day' | 'full_day'
+      var startDt = root.start_date || null;
+      var endDt   = root.end_date   || startDt;
+      var leavePayload = {
+        staff_name:  root.sender_name,
+        staff_role:  root.sender_role,
+        start_date:  startDt,
+        end_date:    endDt,
+        duration:    durKey,
+        status:      'approved',
+        message_id:  root.id,
+        approved_by: me.name,
+        notes:       root.body
+      };
+      try {
+        await api('POST', 'staff_leave', leavePayload);
         } catch(leaveErr){
           console.warn('staff_leave insert failed:', leaveErr.message);
           // Non-fatal — acceptance still proceeds
         }
       }
-    }
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
     var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
-    showToast('Leave approved ✓');
+    var toastMsg = root.topic === 'Leave' ? 'Leave approved ✓' : 'Booking accepted ✓';
+    showToast(toastMsg);
   } catch(e){ showToast('Failed: '+e.message); btn.disabled=false; btn.textContent='Accept'; }
 }
 function openDeclineForm(){
@@ -778,8 +789,8 @@ async function confirmDecline(){
     btn.disabled=true;
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:'rejected'});
     root.booking_status = 'rejected';
-    // Remove from talent_schedule
-    if(root.booking_datetime){
+    // Remove from talent_schedule (only for Booking Request, not Leave)
+    if(root.topic !== 'Leave' && root.booking_datetime){
       var schedEntry = parseBookingDateTime(root.booking_datetime);
       if(schedEntry){
         var talentId = root.recipient_id || null;
@@ -796,7 +807,7 @@ async function confirmDecline(){
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
     var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
-    showToast('Booking declined');
+    showToast(root.topic === 'Leave' ? 'Leave declined' : 'Booking declined');
   } catch(e){ showToast('Failed: '+e.message); }
   finally{ btn.disabled=false; }
 }
@@ -1026,7 +1037,7 @@ async function sendMessage(){
     sender_name:me.name, sender_role:myRole(),
     recipient_name:recipientName, recipient_role:recipientRole,
     topic, body, booking_datetime:bookingDt, booking_venue:bookingVenue,
-    booking_status: topic==='Booking Request' ? 'pending' : null,
+    booking_status: (topic==='Booking Request' || topic==='Leave') ? 'pending' : null,
     start_date: leaveStartDate,
     end_date:   leaveEndDate,
     read_by_recipient:false
