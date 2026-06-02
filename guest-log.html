@@ -47,7 +47,7 @@
   }
   .date-display:hover { background: rgba(255,255,255,0.18); }
   .date-input-hidden {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 2;
   }
   .today-btn {
     padding: 6px 14px; border-radius: 8px;
@@ -198,8 +198,8 @@
   <div class="date-nav">
     <button class="date-nav-btn" onclick="shiftDate(-1)">&#8249;</button>
     <div class="date-display" id="dateDisplay">
+      <span id="dateLabel" style="pointer-events:none;position:relative;z-index:1">—</span>
       <input type="date" class="date-input-hidden" id="datePicker" onchange="onDatePick(this.value)">
-      <span id="dateLabel">—</span>
     </div>
     <button class="date-nav-btn" onclick="shiftDate(1)">&#8250;</button>
     <button class="today-btn" onclick="goToday()">Today</button>
