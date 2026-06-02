@@ -108,6 +108,18 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 
+
+/* ── Bundle rows in admin table ── */
+.bundle-row td{background:#fafaf8;cursor:pointer}
+.bundle-row:hover td{background:#f3f2ef}
+.bundle-row .bundle-toggle{display:inline-flex;align-items:center;gap:8px;font-weight:500}
+.bundle-toggle-icon{width:18px;height:18px;border-radius:5px;background:var(--br-l);color:var(--br);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:transform .2s}
+.bundle-toggle-icon.open{transform:rotate(90deg)}
+.bundle-sub-row td{background:#fff;border-left:3px solid var(--br-l)}
+.bundle-sub-row td:first-child{padding-left:32px}
+.bundle-sub-row.hidden{display:none}
+.bundle-progress{font-size:11px;color:var(--muted);margin-top:2px}
+
 /* ── Staff task cards (mobile/staff view) ── */
 .task-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
 .task-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
@@ -484,6 +496,8 @@ async function loadAdminTasks(){
       + '  notes        text,\n'
       + '  acknowledged boolean DEFAULT false,\n'
       + '  completed    boolean DEFAULT false,\n'
+      + '  bundle_id    uuid,\n'
+      + '  bundle_name  text,\n'
       + '  created_at   timestamptz DEFAULT now()\n'
       + ');\n\n'
       + '-- Disable RLS (required for anon key)\n'
@@ -539,13 +553,96 @@ function priorityBadge(p){
 function renderAdminTable(tasks){
   const el = document.getElementById('admin-tasks-list');
   if(!tasks.length){ el.innerHTML='<div class="empty">No tasks found</div>'; return; }
-  el.innerHTML = `<table class="tbl">
-    <thead><tr>
-      <th style="width:32%">Task</th><th>Assigned To</th>
-      <th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th><th></th>
-    </tr></thead>
-    <tbody>${tasks.map(adminRow).join('')}</tbody>
-  </table>`;
+
+  // Group: tasks with bundle_id grouped together, singles stand alone
+  const groups = [];
+  const bundleMap = {};
+  tasks.forEach(t => {
+    if(t.bundle_id){
+      if(!bundleMap[t.bundle_id]){
+        bundleMap[t.bundle_id] = {bundle_id:t.bundle_id, bundle_name:t.bundle_name, tasks:[], staff_name:t.staff_name, staff_id:t.staff_id, priority:t.priority, due_date:t.due_date};
+        groups.push({type:'bundle', data:bundleMap[t.bundle_id]});
+      }
+      bundleMap[t.bundle_id].tasks.push(t);
+    } else {
+      groups.push({type:'single', data:t});
+    }
+  });
+
+  let rows = '';
+  groups.forEach(g => {
+    if(g.type === 'single'){
+      rows += adminRow(g.data);
+    } else {
+      rows += bundleRow(g.data);
+    }
+  });
+
+  el.innerHTML = '<table class="tbl"><thead><tr>'
+    + '<th style="width:32%">Task</th><th>Assigned To</th>'
+    + '<th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th><th></th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function bundleRow(b){
+  const tasks = b.tasks;
+  const total = tasks.length;
+  const done  = tasks.filter(t=>t.completed).length;
+  const ackd  = tasks.filter(t=>t.acknowledged).length;
+  const initials = (b.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const staffCell = b.staff_name
+    ? '<div style="display:flex;align-items:center;gap:8px"><div class="staff-avatar">'+initials+'</div><span>'+escHtml(b.staff_name)+'</span></div>'
+    : '<span style="color:var(--muted)">—</span>';
+  const due = b.due_date
+    ? new Date(b.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
+    : '<span style="color:var(--muted)">—</span>';
+  const bid = 'bundle-' + b.bundle_id.replace(/-/g,'');
+
+  let html = '<tr class="bundle-row" onclick="toggleBundle(\''+bid+'\',this)">'
+    + '<td><div class="bundle-toggle">'
+    + '<span class="bundle-toggle-icon" id="icon-'+bid+'">›</span>'
+    + '<span>' + escHtml(b.bundle_name||'Bundle') + '</span>'
+    + '</div>'
+    + '<div class="bundle-progress">' + done + '/' + total + ' completed · ' + ackd + '/' + total + ' acknowledged</div>'
+    + '</td>'
+    + '<td>' + staffCell + '</td>'
+    + '<td>' + priorityBadge(b.priority) + '</td>'
+    + '<td style="font-size:12px">' + due + '</td>'
+    + '<td style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
+    + '<td style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
+    + '<td style="text-align:right"><button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
+    + '</tr>';
+
+  // Sub-rows (hidden by default)
+  tasks.forEach(t => {
+    html += '<tr class="bundle-sub-row hidden" id="sub-'+bid+'">'
+      + '<td><div style="font-size:12px;line-height:1.4;color:var(--text)">' + escHtml(t.work) + '</div></td>'
+      + '<td></td>'
+      + '<td></td>'
+      + '<td></td>'
+      + '<td>' + ackWidget(t.id,'acknowledged',t.acknowledged,'admin') + '</td>'
+      + '<td>' + ackWidget(t.id,'completed',t.completed,'admin') + '</td>'
+      + '<td style="text-align:right"><button class="btn-del" onclick="deleteTask(\''+t.id+'\')">✕</button></td>'
+      + '</tr>';
+  });
+  return html;
+}
+
+function toggleBundle(bid, headerRow){
+  const icon = document.getElementById('icon-'+bid);
+  const subs = document.querySelectorAll('#sub-'+bid);
+  const isOpen = icon.classList.toggle('open');
+  subs.forEach(r => r.classList.toggle('hidden', !isOpen));
+}
+
+async function deleteBundleTasks(bundleId){
+  if(!confirm('Delete all tasks in this bundle? This cannot be undone.')) return;
+  try {
+    await api('/rest/v1/tasks?bundle_id=eq.'+bundleId,'DELETE');
+    ALL_TASKS = ALL_TASKS.filter(t=>t.bundle_id !== bundleId);
+    toast('Bundle deleted');
+    applyFilters();
+  } catch(e){ toast('Delete failed: '+e.message); }
 }
 
 function adminRow(t){
@@ -648,10 +745,12 @@ async function saveTask(){
     const staff = ALL_STAFF.find(s=>s.id===staffId);
     try {
       const items = PRESET_BUNDLES[bundleName];
+      const bundleId = crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2));
       for(let i=0; i<items.length; i++){
         await api('/rest/v1/tasks','POST',{
           work: items[i], staff_id:staffId, staff_name:staff?staff.name:null,
           priority, due_date, notes:null, acknowledged:false, completed:false,
+          bundle_id: bundleId, bundle_name: bundleName,
           created_at: new Date().toISOString()
         });
       }
