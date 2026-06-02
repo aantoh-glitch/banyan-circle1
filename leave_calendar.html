@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Leave Calendar — Banyan Circle</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;--purple:#7B3FA0;--purple-l:#F3EAF9}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── Top bar ── */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all .15s}
+.back-btn:hover{background:var(--bg);color:var(--text)}
+.topbar-title{font-family:'Playfair Display',serif;font-size:18px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+
+/* ── Main layout ── */
+.main{max-width:1100px;margin:0 auto;padding:28px 24px}
+.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+
+/* ── Buttons ── */
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-del{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit:hover{background:var(--br-l);color:var(--br)}
+
+/* ── Card ── */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+
+/* ── Calendar controls ── */
+.cal-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.cal-nav{display:flex;align-items:center;gap:10px}
+.cal-month-label{font-family:'Playfair Display',serif;font-size:20px;min-width:180px;text-align:center}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s}
+.icon-btn:hover{border-color:var(--br);color:var(--br)}
+.icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Calendar grid ── */
+.cal-grid{width:100%;border-collapse:collapse}
+.cal-grid th{text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
+.cal-grid td{width:calc(100%/7);height:88px;border:1px solid var(--border);vertical-align:top;padding:6px;cursor:pointer;transition:background .1s;position:relative}
+.cal-grid td:hover:not(.out-month){background:#FAFAF8}
+.cal-grid td.today .day-num{background:var(--br);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500}
+.cal-grid td.out-month{background:var(--bg);opacity:.55;cursor:default}
+.day-num{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.day-leaves{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.day-leave-pill{font-size:10px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+
+/* ── Leave type colours ── */
+.leave-annual{background:#E3F0FF;color:#0C447C}
+.leave-sick{background:#FCEBEB;color:#791F1F}
+.leave-comp{background:#EAF3DE;color:#27500A}
+.leave-unpaid{background:#F3EAF9;color:#5A2A7A}
+.leave-other{background:#FAEEDA;color:#633806}
+
+/* ── Upcoming list ── */
+.leave-row{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.leave-row:last-child{border-bottom:none}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--br-l);color:var(--br);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.leave-info-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.leave-info-meta{font-size:12px;color:var(--muted)}
+.leave-actions{display:flex;gap:6px;align-items:center}
+
+/* ── Status badges ── */
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-pending{background:#FAEEDA;color:#633806}
+.bdg-approved{background:var(--g-l);color:#27500A}
+.bdg-rejected{background:var(--r-l);color:#791F1F}
+
+/* ── Modal ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
+.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Filters ── */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-pill{padding:6px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.filter-pill.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+
+/* ── Summary KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px 18px}
+.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.kpi-value{font-size:22px;font-weight:500;font-family:'Playfair Display',serif}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border)}
+.tab{padding:10px 18px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.on{color:var(--br);border-bottom-color:var(--br);font-weight:500}
+
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="admin.html" class="back-btn">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <div class="topbar-title">Leave Calendar</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-p" onclick="openAddModal()">+ Request Leave</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="pg-title">Leave Calendar</div>
+  <div class="pg-sub">Track and manage staff leave requests</div>
+
+  <!-- KPI row -->
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">On Leave Today</div><div class="kpi-value" id="kpi-today">—</div></div>
+    <div class="kpi"><div class="kpi-label">Pending Approval</div><div class="kpi-value" id="kpi-pending">—</div></div>
+    <div class="kpi"><div class="kpi-label">This Month</div><div class="kpi-value" id="kpi-month">—</div></div>
+    <div class="kpi"><div class="kpi-label">Total Staff</div><div class="kpi-value" id="kpi-staff">—</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('calendar',this)">Calendar View</button>
+    <button class="tab" onclick="switchTab('list',this)">All Requests</button>
+  </div>
+
+  <!-- ── CALENDAR TAB ── -->
+  <div id="tab-calendar">
+    <div class="card">
+      <div class="cal-controls">
+        <div class="cal-nav">
+          <button class="icon-btn" onclick="changeMonth(-1)"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="cal-month-label" id="cal-label">—</div>
+          <button class="icon-btn" onclick="changeMonth(1)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div class="filter-row" style="margin:0">
+          <button class="filter-pill on" onclick="toggleFilter('all',this)">All</button>
+          <button class="filter-pill" onclick="toggleFilter('Annual',this)">Annual</button>
+          <button class="filter-pill" onclick="toggleFilter('Sick',this)">Sick</button>
+          <button class="filter-pill" onclick="toggleFilter('Comp Off',this)">Comp Off</button>
+          <button class="filter-pill" onclick="toggleFilter('Unpaid',this)">Unpaid</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cal-grid">
+          <thead>
+            <tr>
+              <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+            </tr>
+          </thead>
+          <tbody id="cal-body"></tbody>
+        </table>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <span style="font-size:11px;color:var(--muted);align-self:center">Leave type:</span>
+        <span class="day-leave-pill leave-annual">Annual</span>
+        <span class="day-leave-pill leave-sick">Sick</span>
+        <span class="day-leave-pill leave-comp">Comp Off</span>
+        <span class="day-leave-pill leave-unpaid">Unpaid</span>
+        <span class="day-leave-pill leave-other">Other</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LIST TAB ── -->
+  <div id="tab-list" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div class="card-ttl" style="margin:0">All Leave Requests</div>
+        <div class="filter-row" style="margin:0">
+          <button class="filter-pill on" onclick="filterList('all',this)" id="lf-all">All</button>
+          <button class="filter-pill" onclick="filterList('pending',this)">Pending</button>
+          <button class="filter-pill" onclick="filterList('approved',this)">Approved</button>
+          <button class="filter-pill" onclick="filterList('rejected',this)">Rejected</button>
+        </div>
+      </div>
+      <div id="leave-list">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Leave Modal -->
+<div class="modal" id="modal-leave">
+  <div class="modal-card">
+    <div class="modal-ttl" id="leave-modal-ttl">Request Leave</div>
+    <input type="hidden" id="leave-id"/>
+    <div class="fg">
+      <label class="fl">Staff Member</label>
+      <select class="fc" id="leave-staff"></select>
+    </div>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Start Date</label>
+        <input type="date" class="fc" id="leave-start"/>
+      </div>
+      <div class="fg">
+        <label class="fl">End Date</label>
+        <input type="date" class="fc" id="leave-end"/>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Leave Type</label>
+      <select class="fc" id="leave-type">
+        <option value="Annual">Annual Leave</option>
+        <option value="Sick">Sick Leave</option>
+        <option value="Comp Off">Comp Off</option>
+        <option value="Unpaid">Unpaid Leave</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Status</label>
+      <select class="fc" id="leave-status">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Notes (optional)</label>
+      <textarea class="fc" id="leave-notes" placeholder="Reason or additional info…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-p" onclick="saveLeave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day detail modal -->
+<div class="modal" id="modal-day">
+  <div class="modal-card">
+    <div class="modal-ttl" id="day-modal-ttl">Leave on …</div>
+    <div id="day-modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Close</button>
+      <button class="btn-p" onclick="closeModal();openAddModal()">+ Add Leave</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+if (!me || me.role !== 'office') { location.href='index.html'; throw new Error('No auth'); }
+
+async function api(path, method, body) {
+  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  const json=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
+}
+
+// ── State ──
+let curYear = new Date().getFullYear();
+let curMonth = new Date().getMonth(); // 0-indexed
+let allLeaves = [];
+let staffList = [];
+let activeTypeFilter = 'all';
+let activeListFilter = 'all';
+
+// ── Toast ──
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+
+// ── Modal helpers ──
+function openModal(id){ document.getElementById(id).classList.add('on'); }
+function closeModal(id){
+  document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on'));
+}
+
+// ── Tabs ──
+function switchTab(name, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-calendar').style.display = name==='calendar' ? '' : 'none';
+  document.getElementById('tab-list').style.display     = name==='list'     ? '' : 'none';
+  if(name==='list') renderList();
+}
+
+// ── Load staff ──
+async function loadStaff(){
+  staffList = await api('/rest/v1/staff?select=id,name,designation&order=name') || [];
+  const sel = document.getElementById('leave-staff');
+  sel.innerHTML = staffList.map(s=>`<option value="${s.id}">${s.name}${s.designation?' ('+s.designation+')':''}</option>`).join('');
+  document.getElementById('kpi-staff').textContent = staffList.length;
+}
+
+// ── Load leaves ──
+async function loadLeaves(){
+  // Load a wide window: prev month → 3 months ahead for calendar
+  const from = new Date(curYear, curMonth-1, 1).toISOString().slice(0,10);
+  const to   = new Date(curYear, curMonth+2, 0).toISOString().slice(0,10);
+  allLeaves = await api(`/rest/v1/staff_leave?select=*&start_date=lte.${to}&end_date=gte.${from}&order=start_date`) || [];
+  updateKPIs();
+  renderCalendar();
+  renderList();
+}
+
+// ── KPIs ──
+function updateKPIs(){
+  const today = new Date().toISOString().slice(0,10);
+  const onLeave = allLeaves.filter(l=>l.status==='approved' && l.start_date<=today && l.end_date>=today).length;
+  const pending = allLeaves.filter(l=>l.status==='pending').length;
+
+  // This month approved
+  const m0 = new Date(curYear,curMonth,1).toISOString().slice(0,10);
+  const m1 = new Date(curYear,curMonth+1,0).toISOString().slice(0,10);
+  const thisMonth = allLeaves.filter(l=>l.status==='approved' && l.start_date<=m1 && l.end_date>=m0).length;
+
+  document.getElementById('kpi-today').textContent  = onLeave;
+  document.getElementById('kpi-pending').textContent = pending;
+  document.getElementById('kpi-month').textContent   = thisMonth;
+}
+
+// ── Leave type CSS class ──
+function typeClass(t){
+  if(!t) return 'leave-other';
+  const map={'Annual':'leave-annual','Sick':'leave-sick','Comp Off':'leave-comp','Unpaid':'leave-unpaid'};
+  return map[t]||'leave-other';
+}
+
+// ── Calendar ──
+function changeMonth(delta){
+  curMonth += delta;
+  if(curMonth>11){curMonth=0;curYear++;}
+  if(curMonth<0){curMonth=11;curYear--;}
+  loadLeaves();
+}
+
+function renderCalendar(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-label').textContent = months[curMonth]+' '+curYear;
+
+  const today = new Date().toISOString().slice(0,10);
+  const firstDay = new Date(curYear, curMonth, 1).getDay();
+  const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
+  const daysInPrev  = new Date(curYear, curMonth, 0).getDate();
+
+  // Filter leaves to approved (or all if filter)
+  const visLeaves = allLeaves.filter(l=>{
+    if(activeTypeFilter!=='all' && l.leave_type!==activeTypeFilter) return false;
+    return l.status==='approved';
+  });
+
+  // Build a map: date string → [leave records]
+  const dayMap = {};
+  visLeaves.forEach(l=>{
+    const s=new Date(l.start_date), e=new Date(l.end_date);
+    for(let d=new Date(s); d<=e; d.setDate(d.getDate()+1)){
+      const k=d.toISOString().slice(0,10);
+      if(!dayMap[k]) dayMap[k]=[];
+      dayMap[k].push(l);
+    }
+  });
+
+  let html='';
+  let day=1, nextDay=1;
+  const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+
+  for(let i=0;i<totalCells;i++){
+    if(i%7===0) html+='<tr>';
+    let dateStr, cls='', num='';
+    if(i<firstDay){
+      const pd=daysInPrev-firstDay+i+1;
+      dateStr=`${curYear}-${String(curMonth).padStart(2,'0')}-${String(pd).padStart(2,'0')}`;
+      num=pd; cls='out-month';
+    } else if(day<=daysInMonth){
+      dateStr=`${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      num=day;
+      if(dateStr===today) cls='today';
+      day++;
+    } else {
+      dateStr=`${curYear}-${String(curMonth+2).padStart(2,'0')}-${String(nextDay).padStart(2,'0')}`;
+      num=nextDay; cls='out-month'; nextDay++;
+    }
+
+    const dayLeaves = dayMap[dateStr]||[];
+    const pills = dayLeaves.slice(0,3).map(l=>{
+      const name = (l.staff_name||'Staff').split(' ')[0];
+      return `<div class="day-leave-pill ${typeClass(l.leave_type)}">${name}</div>`;
+    }).join('');
+    const more = dayLeaves.length>3 ? `<div style="font-size:10px;color:var(--muted);padding-left:2px">+${dayLeaves.length-3} more</div>` : '';
+
+    html+=`<td class="${cls}" onclick="showDay('${dateStr}')">
+      <div class="day-num">${num}</div>
+      <div class="day-leaves">${pills}${more}</div>
+    </td>`;
+    if(i%7===6) html+='</tr>';
+  }
+
+  document.getElementById('cal-body').innerHTML=html;
+}
+
+// ── Show day detail ──
+function showDay(dateStr){
+  const dayLeaves = allLeaves.filter(l=>l.start_date<=dateStr && l.end_date>=dateStr);
+  const d = new Date(dateStr+'T00:00:00');
+  document.getElementById('day-modal-ttl').textContent = d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if(!dayLeaves.length){
+    document.getElementById('day-modal-body').innerHTML = '<div class="empty">No leave recorded on this day.</div>';
+  } else {
+    document.getElementById('day-modal-body').innerHTML = dayLeaves.map(l=>`
+      <div class="leave-row">
+        <div class="avatar">${(l.staff_name||'?')[0].toUpperCase()}</div>
+        <div>
+          <div class="leave-info-name">${l.staff_name||'Unknown'}</div>
+          <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}</div>
+          ${l.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px">${l.notes}</div>`:''}
+        </div>
+        <div class="leave-actions">
+          <span class="bdg ${l.status==='approved'?'bdg-approved':l.status==='rejected'?'bdg-rejected':'bdg-pending'}">${l.status}</span>
+          <button class="btn-edit" onclick="closeModal();editLeave(${JSON.stringify(l).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn-del" onclick="closeModal();deleteLeave('${l.id}')">Delete</button>
+        </div>
+      </div>`).join('');
+  }
+  openModal('modal-day');
+}
+
+// ── List view ──
+function filterList(f, btn){
+  activeListFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  renderList();
+}
+
+function renderList(){
+  let data = allLeaves;
+  if(activeListFilter!=='all') data = data.filter(l=>l.status===activeListFilter);
+  const el = document.getElementById('leave-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No leave records found.</div>'; return; }
+  el.innerHTML = data.sort((a,b)=>b.start_date.localeCompare(a.start_date)).map(l=>`
+    <div class="leave-row">
+      <div class="avatar">${(l.staff_name||'?')[0].toUpperCase()}</div>
+      <div>
+        <div class="leave-info-name">${l.staff_name||'Unknown'}</div>
+        <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}${l.notes?' · '+l.notes:''}</div>
+      </div>
+      <div class="leave-actions">
+        <span class="bdg ${l.status==='approved'?'bdg-approved':l.status==='rejected'?'bdg-rejected':'bdg-pending'}">${l.status}</span>
+        <button class="btn-edit" onclick="editLeave(${JSON.stringify(l).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn-del" onclick="deleteLeave('${l.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── Filter calendar by type ──
+function toggleFilter(type, btn){
+  activeTypeFilter = type;
+  document.querySelectorAll('.cal-controls .filter-pill').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  renderCalendar();
+}
+
+// ── Format date ──
+function formatDate(s){
+  if(!s) return '';
+  const d=new Date(s+'T00:00:00');
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+
+// ── Add / Edit modal ──
+function openAddModal(){
+  document.getElementById('leave-id').value='';
+  document.getElementById('leave-modal-ttl').textContent='Request Leave';
+  document.getElementById('leave-start').value=new Date().toISOString().slice(0,10);
+  document.getElementById('leave-end').value=new Date().toISOString().slice(0,10);
+  document.getElementById('leave-type').value='Annual';
+  document.getElementById('leave-status').value='pending';
+  document.getElementById('leave-notes').value='';
+  openModal('modal-leave');
+}
+
+function editLeave(l){
+  document.getElementById('leave-id').value=l.id;
+  document.getElementById('leave-modal-ttl').textContent='Edit Leave';
+  // Set staff dropdown
+  document.getElementById('leave-staff').value=l.staff_id||'';
+  document.getElementById('leave-start').value=l.start_date;
+  document.getElementById('leave-end').value=l.end_date;
+  document.getElementById('leave-type').value=l.leave_type||'Annual';
+  document.getElementById('leave-status').value=l.status||'pending';
+  document.getElementById('leave-notes').value=l.notes||'';
+  openModal('modal-leave');
+}
+
+async function saveLeave(){
+  const id=document.getElementById('leave-id').value;
+  const staffId=document.getElementById('leave-staff').value;
+  const staffName=(staffList.find(s=>s.id===staffId)||{}).name||'';
+  const start=document.getElementById('leave-start').value;
+  const end=document.getElementById('leave-end').value;
+  const type=document.getElementById('leave-type').value;
+  const status=document.getElementById('leave-status').value;
+  const notes=document.getElementById('leave-notes').value.trim();
+
+  if(!staffId||!start||!end){ alert('Please fill in all required fields'); return; }
+  if(end<start){ alert('End date must be on or after start date'); return; }
+
+  const body={staff_id:staffId,staff_name:staffName,start_date:start,end_date:end,leave_type:type,status,notes:notes||null};
+  try{
+    if(id) await api('/rest/v1/staff_leave?id=eq.'+id,'PATCH',body);
+    else   await api('/rest/v1/staff_leave','POST',{...body,created_at:new Date().toISOString()});
+    closeModal();
+    toast('Saved ✓');
+    await loadLeaves();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+async function deleteLeave(id){
+  if(!confirm('Delete this leave record?')) return;
+  try{
+    await api('/rest/v1/staff_leave?id=eq.'+id,'DELETE');
+    toast('Deleted');
+    await loadLeaves();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+// ── Boot ──
+(async function(){
+  await loadStaff();
+  await loadLeaves();
+})();
+</script>
+</body>
+</html>
