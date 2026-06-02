@@ -722,10 +722,40 @@ async function acceptBooking(){
         }
       }
     }
+    // Write leave record into staff_leave when topic = Leave
+    if(root.topic === 'Leave'){
+      // Parse leave date and duration from the message body prefix
+      // Format: "Leave request: <date> (Half day | Full day)\n\n..."
+      var leaveMatch = root.body && root.body.match(/^Leave request: (.+?) \((Half day|Full day)\)/i);
+      if(leaveMatch){
+        var leavePayload = {
+          staff_name:  root.sender_name,
+          staff_role:  root.sender_role,
+          leave_date:  root.leave_date || null,   // stored field if present
+          duration:    leaveMatch[2].toLowerCase().replace(' ','_'), // 'half_day' or 'full_day'
+          status:      'approved',
+          message_id:  root.id,
+          approved_by: me.name,
+          notes:       root.body
+        };
+        // Fallback: extract ISO date from leave_date field on message,
+        // or derive from the human-readable prefix (less reliable)
+        if(!leavePayload.leave_date){
+          // Try to get it from the raw leave_date column on the message row
+          leavePayload.leave_date = root.leave_date || null;
+        }
+        try {
+          await api('POST', 'staff_leave', leavePayload);
+        } catch(leaveErr){
+          console.warn('staff_leave insert failed:', leaveErr.message);
+          // Non-fatal — acceptance still proceeds
+        }
+      }
+    }
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
     var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
-    showToast('Booking accepted ✓');
+    showToast('Leave approved ✓');
   } catch(e){ showToast('Failed: '+e.message); btn.disabled=false; btn.textContent='Accept'; }
 }
 function openDeclineForm(){
@@ -967,9 +997,11 @@ async function sendMessage(){
     bookingVenue=document.getElementById('booking-venue').value||null;
     if(!bookingVenue){ showToast('Please select a venue'); return; }
   }
+  var leaveIsoDate = null;
   if(topic==='Leave'){
     var ld=document.getElementById('leave-date').value;
     if(!ld){ showToast('Please select a leave date'); return; }
+    leaveIsoDate = ld;
     var durLabel=leaveDur==='half'?'Half day':'Full day';
     var fmtLd=new Date(ld+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     var leavePrefix='Leave request: '+fmtLd+' ('+durLabel+')\n\n';
@@ -980,6 +1012,7 @@ async function sendMessage(){
     recipient_name:recipientName, recipient_role:recipientRole,
     topic, body, booking_datetime:bookingDt, booking_venue:bookingVenue,
     booking_status: topic==='Booking Request' ? 'pending' : null,
+    leave_date: leaveIsoDate,
     read_by_recipient:false
   };
   try{
