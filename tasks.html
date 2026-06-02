@@ -32,6 +32,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 /* Staff view (no sidebar) */
 body.staff-mode .layout{display:block}
 body.staff-mode .sidebar{display:none}
+body.iframe-mode .sidebar{display:none}
 body.staff-mode .main{max-width:100%;padding:0}
 
 /* ── Staff view shell ── */
@@ -415,6 +416,7 @@ const me       = JSON.parse(localStorage.getItem('bc_me') || 'null');
 
 // isAdmin: explicit ?role=admin param, OR logged in as office role
 const isAdmin  = urlRole === 'admin' || (me && me.role === 'office');
+if(urlRole === 'admin') document.body.classList.add('iframe-mode');
 // isStaff: logged in as staff/owner AND not forced admin
 const isStaff  = !isAdmin && me && (me.role === 'staff' || me.role === 'owner');
 
