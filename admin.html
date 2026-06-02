@@ -198,7 +198,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
       </div>
       <div class="dash-tile-label">Repairs</div>
-      <div class="dash-tile-value" style="font-size:22px;padding-top:4px">Maintenance</div>
+      <div class="dash-tile-value loading" id="dash-repairs" style="padding-top:4px">…</div>
       <div class="dash-tile-sub">open repair tickets</div>
       <span class="dash-tile-nav">›</span>
     </div>
@@ -1944,6 +1944,13 @@ async function loadDashboard(){
     const el = document.getElementById('dash-tasks');
     if(el){ el.textContent = tk.length; el.className='dash-tile-value'; }
   } catch(e){ const el=document.getElementById('dash-tasks'); if(el) el.textContent='—'; }
+
+  // Open maintenance requests (open + in_progress)
+  try {
+    const mr = await api("/rest/v1/maintenance_log?select=id&status=in.(open,in_progress)") || [];
+    const el = document.getElementById("dash-repairs");
+    if(el){ el.textContent = mr.length; el.className="dash-tile-value"; }
+  } catch(e){ const el=document.getElementById("dash-repairs"); if(el) el.textContent="—"; }
 }
 
 // Boot
