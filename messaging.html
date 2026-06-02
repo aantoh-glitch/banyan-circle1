@@ -310,8 +310,12 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     <!-- Leave fields — shown only when topic = Leave -->
     <div id="leave-fields" style="display:none">
       <div class="fg">
-        <label class="fl">Leave date</label>
-        <input type="date" class="fc" id="leave-date"/>
+        <label class="fl">Start Date</label>
+        <input type="date" class="fc" id="leave-start-date"/>
+      </div>
+      <div class="fg">
+        <label class="fl">End Date</label>
+        <input type="date" class="fc" id="leave-end-date"/>
       </div>
       <div class="fg">
         <label class="fl">Duration</label>
@@ -724,25 +728,25 @@ async function acceptBooking(){
     }
     // Write leave record into staff_leave when topic = Leave
     if(root.topic === 'Leave'){
-      // Parse leave date and duration from the message body prefix
-      // Format: "Leave request: <date> (Half day | Full day)\n\n..."
+      // Parse leave dates and duration from the message body prefix
+      // Format: "Leave request: <date> (Half day | Full day)\n\n..." (single day)
+      // or:     "Leave request: <startDate> – <endDate> (Half day | Full day)\n\n..."
       var leaveMatch = root.body && root.body.match(/^Leave request: (.+?) \((Half day|Full day)\)/i);
       if(leaveMatch){
         var leavePayload = {
           staff_name:  root.sender_name,
           staff_role:  root.sender_role,
-          leave_date:  root.leave_date || null,   // stored field if present
+          start_date:  root.start_date || null,   // stored field if present
+          end_date:    root.end_date   || null,   // stored field if present
           duration:    leaveMatch[2].toLowerCase().replace(' ','_'), // 'half_day' or 'full_day'
           status:      'approved',
           message_id:  root.id,
           approved_by: me.name,
           notes:       root.body
         };
-        // Fallback: extract ISO date from leave_date field on message,
-        // or derive from the human-readable prefix (less reliable)
-        if(!leavePayload.leave_date){
-          // Try to get it from the raw leave_date column on the message row
-          leavePayload.leave_date = root.leave_date || null;
+        // Fallback: use start_date as end_date if end_date is missing
+        if(!leavePayload.end_date){
+          leavePayload.end_date = leavePayload.start_date;
         }
         try {
           await api('POST', 'staff_leave', leavePayload);
@@ -872,8 +876,12 @@ function onTopicChange(){
   document.getElementById('leave-fields').style.display         = t==='Leave'           ? 'block' : 'none';
   if(t==='Booking Request') loadVenues();
   if(t==='Leave'){
-    if(!document.getElementById('leave-date').value){
-      document.getElementById('leave-date').value = new Date().toISOString().slice(0,10);
+    var today = new Date().toISOString().slice(0,10);
+    if(!document.getElementById('leave-start-date').value){
+      document.getElementById('leave-start-date').value = today;
+    }
+    if(!document.getElementById('leave-end-date').value){
+      document.getElementById('leave-end-date').value = today;
     }
     leaveDur='full';
     document.getElementById('leave-half').classList.remove('leave-dur-on');
@@ -997,14 +1005,21 @@ async function sendMessage(){
     bookingVenue=document.getElementById('booking-venue').value||null;
     if(!bookingVenue){ showToast('Please select a venue'); return; }
   }
-  var leaveIsoDate = null;
+  var leaveStartDate = null, leaveEndDate = null;
   if(topic==='Leave'){
-    var ld=document.getElementById('leave-date').value;
-    if(!ld){ showToast('Please select a leave date'); return; }
-    leaveIsoDate = ld;
+    var ls=document.getElementById('leave-start-date').value;
+    var le=document.getElementById('leave-end-date').value;
+    if(!ls){ showToast('Please select a start date'); return; }
+    if(!le){ showToast('Please select an end date'); return; }
+    if(le < ls){ showToast('End date cannot be before start date'); return; }
+    leaveStartDate = ls;
+    leaveEndDate   = le;
     var durLabel=leaveDur==='half'?'Half day':'Full day';
-    var fmtLd=new Date(ld+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    var leavePrefix='Leave request: '+fmtLd+' ('+durLabel+')\n\n';
+    var fmtStart=new Date(ls+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var fmtEnd  =new Date(le+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    var leavePrefix= ls===le
+      ? 'Leave request: '+fmtStart+' ('+durLabel+')\n\n'
+      : 'Leave request: '+fmtStart+' – '+fmtEnd+' ('+durLabel+')\n\n';
     body=leavePrefix+body;
   }
   var payload={
@@ -1012,7 +1027,8 @@ async function sendMessage(){
     recipient_name:recipientName, recipient_role:recipientRole,
     topic, body, booking_datetime:bookingDt, booking_venue:bookingVenue,
     booking_status: topic==='Booking Request' ? 'pending' : null,
-    leave_date: leaveIsoDate,
+    start_date: leaveStartDate,
+    end_date:   leaveEndDate,
     read_by_recipient:false
   };
   try{
