@@ -639,7 +639,8 @@ async function deleteCurrentBooking() {
   console.log('[delete] booking object:', b);
 
   // Attempt Supabase delete for any blocked date that has a non-local ID
-  if (b && b.source === 'blocked' && !String(b.id).startsWith('b')) {
+  const isLocalId = String(b.id).startsWith('b') && !isNaN(String(b.id).slice(1));
+if (b && b.source === 'blocked' && !isLocalId) {
     const deleteUrl = SB + '/rest/v1/blocked_dates?id=eq.' + b.id;
     console.log('[delete] DELETE URL:', deleteUrl);
     try {
