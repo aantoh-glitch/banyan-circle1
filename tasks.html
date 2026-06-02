@@ -85,6 +85,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .preset-chip{padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
 .preset-chip:hover{border-color:var(--br);color:var(--br);background:var(--br-l)}
 .preset-chip.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.preset-chip.preset-bundle{border-color:var(--br);color:var(--br)}
 
 /* ── KPI row ── */
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
@@ -229,6 +230,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <div style="margin-top:8px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500">Quick presets</div>
         <div class="preset-wrap" id="preset-chips"></div>
+        <div id="preset-bundle-note" style="display:none;margin-top:8px;font-size:12px;color:var(--br);font-weight:500"></div>
       </div>
     </div>
 
@@ -284,10 +286,113 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
+// Bundle presets: selecting these creates multiple tasks at once
+const PRESET_BUNDLES = {
+  'Check In': [
+    'Inspect quickly – note visible dirt, stains, or disarray.',
+    'Make bed – smooth linens, adjust pillows. Replace if soiled.',
+    'Empty bins – replace liners.',
+    'Wipe surfaces – desk, tables, switch panels, handles, mirrors, and bathroom fittings.',
+    'Refresh bathroom – rinse sink, wipe surfaces, arrange amenities neatly, replace towels if damp or used.',
+    'Vacuum or spot mop if visible dust, hair, or marks present.',
+    'Spray air freshener lightly to neutralize odor.',
+    'Set room temperature, lights, and curtains to standard check-in presentation.',
+  ],
+  'Daily Common Area': [
+    'Living Room – Dust furniture, clean TV & remote, mop floor.',
+    'Dining – Sanitize table & chairs.',
+    'Kitchen – Clean sink, counters, and bins.',
+    'Balcony – Sweep & mop, clean railings.',
+    'Stairs – Sweep & mop, polish railing.',
+    'Entrance – Wipe door, sweep porch.',
+    'Outdoor Area – Remove litter, clean seating.',
+  ],
+  'Daily Room Clean': [
+    'Knock & announce before entry.',
+    'Open curtains & windows.',
+    'Remove trash and replace liners.',
+    'Strip & replace bed linen.',
+    'Dust all surfaces (high to low).',
+    'Clean mirrors & windows.',
+    'Clean bathroom (sink, WC, shower).',
+    'Restock toiletries & towels.',
+    'Vacuum & mop floors.',
+    'Replace water bottles & tea setup.',
+    'Final check (AC, lights, aroma, decor).',
+    'Record "Room Ready" status.',
+  ],
+  'Linen & Amenities': [
+    'Bed Sheets & Pillow Covers – replace daily or every 2 nights.',
+    'Bath Towels – replace daily.',
+    'Hand / Face Towels – replace daily.',
+    'Bath Mats – replace daily.',
+    'Duvet Covers – replace weekly or on checkout.',
+    'Towels – stock 2 bath, 2 hand, 1 face per room.',
+    'Toiletries – stock 2 soap, 1 shampoo, 1 conditioner, 1 lotion.',
+    'Toilet Roll – stock 2 rolls.',
+    'Water Bottles – stock 2 per guest.',
+    'Coffee/Tea Setup – stock 2 tea, 2 coffee, 2 sugar, 2 creamer.',
+    'Slippers – stock 1 pair per guest.',
+    'Laundry Bag – stock 1 per room.',
+    'Tissue Box – stock 1 per room.',
+    'Room Fragrance / Freshener – 1 spray per room.',
+  ],
+  'Check Inventory': [
+    'Bed Sheet – check stock meets 3 per bed.',
+    'Bath Towel – check stock meets 3 per guest.',
+    'Pillow Cover – check stock meets 3 per pillow.',
+    'Bath Mat – check stock meets 2 per bathroom.',
+    'Guest Toiletries – verify 3-day stock available.',
+    'Cleaning Chemicals – verify 7-day stock available.',
+  ],
+  'Inspection': [
+    'Daily inspection by Housekeeping Supervisor / Villa Manager.',
+    'Use Room Inspection Checklist to rate: Cleanliness.',
+    'Use Room Inspection Checklist to rate: Odor.',
+    'Use Room Inspection Checklist to rate: Linen freshness.',
+    'Use Room Inspection Checklist to rate: Amenity placement.',
+    'Use Room Inspection Checklist to rate: Lighting and AC condition.',
+  ],
+  'Weekly': [
+    'Move furniture, clean underneath.',
+    'Wash curtains/blinds.',
+    'Vacuum upholstery & mattress.',
+    'Clean ceiling fans & fixtures.',
+    'Polish furniture & metal.',
+    'Deep clean bathrooms.',
+    'Wash balcony & outdoor floors.',
+    'Clean glass doors & windows.',
+  ],
+  'Monthly': [
+    'Pest control.',
+    'Deep-clean kitchen appliances.',
+    'Clean water tanks and drainage outlets.',
+    'Steam clean sofas or carpets.',
+    'Paint touch-ups and wall cleaning.',
+  ],
+  'Check Out': [
+    'Collect and record guest laundry items (if any).',
+    'Check if the products in fridge have been used. If yes, report to VC.',
+    'Inspect for damages or missing items (report immediately).',
+    'Check for forgotten belongings.',
+    'Deep clean bathroom, wardrobe, balcony, and furniture.',
+    'Replace all linen, toiletries, and consumables.',
+    'Reset the room to "Ready" status with standard setup.',
+  ],
+};
+
 const PRESETS = [
-  'Room cleaning','Linen change','Laundry pickup','Laundry delivery',
-  'Grocery run','Guest check-in assist','Guest check-out assist',
-  'Pool maintenance','Garden upkeep','Kitchen deep clean','Towel restock',
+  'Check In',
+  'Check Out',
+  'Linen & Amenities',
+  'Check Inventory',
+  'Inspection',
+  'Daily Common Area',
+  'Daily Room Clean',
+  'Weekly',
+  'Monthly',
+  'Linen change','Laundry pickup','Laundry delivery',
+  'Grocery run','Pool maintenance','Garden upkeep','Kitchen deep clean','Towel restock',
 ];
 
 // ── Determine who's viewing ──────────────────────────────────────────
@@ -499,28 +604,65 @@ function editTask(t){
 function closeModal(){ document.getElementById('modal-task').classList.remove('on'); }
 
 function renderPresets(current){
-  document.getElementById('preset-chips').innerHTML = PRESETS.map(p=>
-    `<button class="preset-chip ${current===p?'on':''}" onclick="pickPreset(this,'${p.replace(/'/g,"\\'")}')">
-      ${escHtml(p)}
-    </button>`).join('');
+  document.getElementById('preset-chips').innerHTML = PRESETS.map(p=>{
+    const isBundle = !!PRESET_BUNDLES[p];
+    const isOn = current === p;
+    const label = isBundle ? p + ' <span style="font-size:10px;opacity:.7">(' + PRESET_BUNDLES[p].length + ' tasks)</span>' : escHtml(p);
+    return '<button class="preset-chip ' + (isOn?'on':'') + (isBundle?' preset-bundle':'') + '" onclick="pickPreset(this,\'' + p.replace(/'/g,"\\'") + '\')">' + label + '</button>';
+  }).join('');
 }
 
 function pickPreset(btn, value){
-  document.getElementById('t-work').value = value;
   document.querySelectorAll('.preset-chip').forEach(c=>c.classList.remove('on'));
   btn.classList.add('on');
+  if(PRESET_BUNDLES[value]){
+    // Bundle: show preview, clear textarea, store bundle name
+    document.getElementById('t-work').value = '';
+    document.getElementById('t-work').placeholder = value + ': will create ' + PRESET_BUNDLES[value].length + ' tasks…';
+    document.getElementById('t-work').dataset.bundle = value;
+    document.getElementById('preset-bundle-note').style.display = 'block';
+    document.getElementById('preset-bundle-note').textContent = '✦ Will create ' + PRESET_BUNDLES[value].length + ' separate tasks for this checklist.';
+  } else {
+    document.getElementById('t-work').value = value;
+    document.getElementById('t-work').placeholder = 'Describe the task…';
+    delete document.getElementById('t-work').dataset.bundle;
+    document.getElementById('preset-bundle-note').style.display = 'none';
+  }
 }
 
 async function saveTask(){
   const id          = document.getElementById('t-id').value;
-  const work        = document.getElementById('t-work').value.trim();
+  const workEl      = document.getElementById('t-work');
+  const work        = workEl.value.trim();
+  const bundleName  = workEl.dataset.bundle || '';
   const staffId     = document.getElementById('t-staff').value;
   const priority    = document.getElementById('t-priority').value;
   const due_date    = document.getElementById('t-due').value || null;
   const notes       = document.getElementById('t-notes').value.trim() || null;
   const acknowledged = document.getElementById('t-ack-yes').checked;
-  if(!work)    { alert('Please enter a task description.'); return; }
   if(!staffId) { alert('Please select a staff member.'); return; }
+  // Bundle preset — create one task per checklist item
+  if(!id && bundleName && PRESET_BUNDLES[bundleName]){
+    const btn = document.getElementById('btn-save-task');
+    btn.disabled = true; btn.textContent = 'Creating tasks…';
+    const staff = ALL_STAFF.find(s=>s.id===staffId);
+    try {
+      const items = PRESET_BUNDLES[bundleName];
+      for(let i=0; i<items.length; i++){
+        await api('/rest/v1/tasks','POST',{
+          work: items[i], staff_id:staffId, staff_name:staff?staff.name:null,
+          priority, due_date, notes:null, acknowledged:false, completed:false,
+          created_at: new Date().toISOString()
+        });
+      }
+      closeModal();
+      toast(bundleName + ': ' + items.length + ' tasks created ✓');
+      await loadAdminTasks();
+    } catch(e){ toast('Save failed: '+e.message); }
+    finally{ btn.disabled=false; btn.textContent='Save Task'; }
+    return;
+  }
+  if(!work) { alert('Please enter a task description.'); return; }
   const staff = ALL_STAFF.find(s=>s.id===staffId);
   const body = {work, staff_id:staffId, staff_name:staff?staff.name:null, priority, due_date, notes, acknowledged};
   const btn = document.getElementById('btn-save-task');
