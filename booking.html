@@ -636,21 +636,27 @@ function showBookingDetail(id) {
 
 async function deleteCurrentBooking() {
   const b = bookings.find(x => x.id === selectedBookingId);
+  console.log('[delete] booking object:', b);
 
-  // If it's a blocked date with a real Supabase ID (not a local fallback), delete from DB
+  // Attempt Supabase delete for any blocked date that has a non-local ID
   if (b && b.source === 'blocked' && !String(b.id).startsWith('b')) {
+    const deleteUrl = SB + '/rest/v1/blocked_dates?id=eq.' + b.id;
+    console.log('[delete] DELETE URL:', deleteUrl);
     try {
-      const res = await fetch(
-        SB + '/rest/v1/blocked_dates?id=eq.' + encodeURIComponent(b.id),
-        {
-          method: 'DELETE',
-          headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Prefer: 'return=minimal' }
-        }
-      );
-      if (!res.ok) throw new Error('Delete failed: ' + res.status);
+      const res = await fetch(deleteUrl, {
+        method: 'DELETE',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Prefer: 'return=minimal' }
+      });
+      console.log('[delete] response status:', res.status);
+      if (!res.ok) {
+        const body = await res.text();
+        console.error('[delete] error body:', body);
+        throw new Error('Delete failed: ' + res.status);
+      }
     } catch(e) {
+      console.error('[delete] caught error:', e);
       showToast('Could not delete from Supabase', 'error');
-      return; // bail — keep local state in sync with DB
+      return;
     }
   }
 
