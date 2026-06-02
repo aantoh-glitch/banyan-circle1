@@ -614,10 +614,19 @@ function staffCard(t){
 //  SHARED: ACK TOGGLE  (works in both views)
 // ════════════════════════════════════════════════════════════════════
 function ackWidget(id, field, isOn, view){
-  return `<label class="ack-toggle" onclick="toggleAck('${id}','${field}',${isOn},this,'${view}')">
-    <div class="ack-track ${isOn?'on':''}"><div class="ack-knob"></div></div>
-    <span class="ack-text">${isOn?'Yes':'No'}</span>
+  const on = isOn === true || isOn === 'true';
+  return `<label class="ack-toggle" data-id="${id}" data-field="${field}" data-view="${view}" data-on="${on}" onclick="handleAckClick(this)">
+    <div class="ack-track ${on?'on':''}"><div class="ack-knob"></div></div>
+    <span class="ack-text">${on?'Yes':'No'}</span>
   </label>`;
+}
+
+function handleAckClick(labelEl){
+  const id    = labelEl.dataset.id;
+  const field = labelEl.dataset.field;
+  const view  = labelEl.dataset.view;
+  const on    = labelEl.dataset.on === 'true';
+  toggleAck(id, field, on, labelEl, view);
 }
 
 async function toggleAck(id, field, current, labelEl, view){
@@ -633,7 +642,7 @@ async function toggleAck(id, field, current, labelEl, view){
     const txt   = labelEl.querySelector('.ack-text');
     track.classList.toggle('on', newVal);
     txt.textContent = newVal ? 'Yes' : 'No';
-    labelEl.setAttribute('onclick', `toggleAck('${id}','${field}',${newVal},this,'${view}')`);
+    labelEl.dataset.on = String(newVal);
     if(view==='admin') updateKpis(ALL_TASKS);
     // In staff view: completed toggle moves card out of To Do tab
     if(view==='staff' && field==='completed' && staffFilterMode==='pending' && newVal){
