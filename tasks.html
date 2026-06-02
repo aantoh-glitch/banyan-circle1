@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Banyan Circle — Tasks</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;
+  --a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;
+  --text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
+  --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── Sidebar (admin view only) ── */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
+.main{flex:1;padding:28px 32px;max-width:1100px}
+.sb-logo{display:flex;align-items:center;justify-content:center;padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sb-nav{flex:1;padding:0 12px}
+.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
+.sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sb-btn:hover{background:var(--bg);color:var(--text)}
+.sb-btn.on{background:#222;color:#fff;font-weight:500}
+.sb-btn.on svg{stroke:#fff}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+
+/* Staff view (no sidebar) */
+body.staff-mode .layout{display:block}
+body.staff-mode .sidebar{display:none}
+body.staff-mode .main{max-width:100%;padding:0}
+
+/* ── Staff view shell ── */
+.staff-shell{display:none;flex-direction:column;min-height:100vh}
+body.staff-mode .staff-shell{display:flex}
+.staff-hdr{background:var(--white);border-bottom:1px solid var(--border);padding:18px 20px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.staff-hdr-title{font-family:'Playfair Display',serif;font-size:22px}
+.staff-hdr-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.staff-body{flex:1;padding:20px 16px 40px}
+
+/* ── Page (admin view) ── */
+.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+
+/* ── Cards / Tables ── */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafaf8}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+
+/* ── Buttons ── */
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}
+.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-del{padding:5px 11px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit:hover{background:var(--br-l);color:var(--br)}
+
+/* ── Form ── */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
+select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235F5E5A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+/* ── Badges ── */
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-r{background:var(--r-l);color:#791F1F}
+.bdg-a{background:var(--a-l);color:#633806}
+
+/* ── Preset chips ── */
+.preset-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.preset-chip{padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
+.preset-chip:hover{border-color:var(--br);color:var(--br);background:var(--br-l)}
+.preset-chip.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+
+/* ── KPI row ── */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
+
+/* ── Filters bar ── */
+.filters-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-chip{padding:6px 14px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
+.filter-chip:hover{border-color:var(--br);color:var(--br)}
+.filter-chip.on{background:#222;color:#fff;border-color:#222}
+.filter-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
+
+/* ── Modal ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:14px;padding:26px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+
+/* ── Staff task cards (mobile/staff view) ── */
+.task-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
+.task-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
+.task-card.pri-high::before{background:#e74c3c}
+.task-card.pri-medium::before{background:#f39c12}
+.task-card.pri-low::before{background:#95a5a6}
+.task-card-work{font-size:15px;font-weight:500;margin-bottom:6px;padding-left:8px;line-height:1.4}
+.task-card-meta{font-size:11px;color:var(--muted);padding-left:8px;margin-bottom:12px}
+.task-card-ack{display:flex;align-items:center;justify-content:space-between;padding-left:8px;padding-top:10px;border-top:1px solid var(--border);margin-top:4px}
+.task-card-ack-label{font-size:12px;color:var(--muted)}
+
+/* ── Ack toggle ── */
+.ack-toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.ack-track{width:40px;height:22px;border-radius:999px;border:1.5px solid var(--border);background:var(--bg);position:relative;transition:all .2s;flex-shrink:0}
+.ack-track.on{background:var(--g);border-color:var(--g)}
+.ack-knob{width:16px;height:16px;border-radius:50%;background:#ccc;position:absolute;top:1px;left:2px;transition:all .2s}
+.ack-track.on .ack-knob{left:20px;background:#fff}
+.ack-text{font-size:12px;color:var(--muted);min-width:22px}
+.ack-track.on + .ack-text{color:var(--g);font-weight:500}
+
+/* ── Staff avatar ── */
+.staff-avatar{width:26px;height:26px;border-radius:50%;background:var(--br-l);color:var(--br);font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     ADMIN VIEW  (sidebar + full table)
+════════════════════════════════════ -->
+<div class="layout" id="admin-view" style="display:none">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='18' fill='%23222'/%3E%3Ctext x='18' y='23' text-anchor='middle' fill='white' font-size='14' font-family='serif'%3EBC%3C/text%3E%3C/svg%3E" style="width:36px;height:36px"/>
+    </div>
+    <div class="sb-nav">
+      <button class="sb-btn on">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tasks
+      </button>
+      <button class="sb-btn" onclick="location.href='admin.html'">
+        <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+        Back to Admin
+      </button>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">OFFICE</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="pg-title">Tasks</div>
+    <div class="pg-sub" id="admin-date-label">Assign and track work across the team</div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Total Tasks</div><div class="kpi-value" id="kpi-total">—</div></div>
+      <div class="kpi"><div class="kpi-label">Pending Acknowledgement</div><div class="kpi-value" id="kpi-pending" style="color:var(--r)">—</div></div>
+      <div class="kpi"><div class="kpi-label">Acknowledged</div><div class="kpi-value" id="kpi-ack" style="color:var(--g)">—</div></div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap">
+      <div class="filters-bar">
+        <button class="filter-chip on" data-filter="all" onclick="setFilter('all',this)">All</button>
+        <button class="filter-chip" data-filter="pending" onclick="setFilter('pending',this)">Not Acknowledged</button>
+        <button class="filter-chip" data-filter="ack" onclick="setFilter('ack',this)">Acknowledged</button>
+        <div class="filter-sep"></div>
+        <select class="fc" id="filter-staff" onchange="applyFilters()" style="width:auto;padding:6px 32px 6px 10px;font-size:12px;height:34px">
+          <option value="">All Staff</option>
+        </select>
+      </div>
+      <button class="btn-p" onclick="openAddModal()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Task
+      </button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="admin-tasks-list" style="min-height:120px"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     STAFF VIEW  (mobile card list)
+════════════════════════════════════ -->
+<div class="staff-shell" id="staff-view" style="display:none">
+  <div class="staff-hdr">
+    <div>
+      <div class="staff-hdr-title">My Tasks</div>
+      <div class="staff-hdr-sub" id="staff-name-label">—</div>
+    </div>
+    <button class="btn-sec" onclick="location.href='ops.html'" style="font-size:12px;padding:7px 14px">← Back</button>
+  </div>
+
+  <div class="staff-body">
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <button class="filter-chip on" data-f="pending" onclick="staffFilter('pending',this)">To Do</button>
+      <button class="filter-chip" data-f="all" onclick="staffFilter('all',this)">All</button>
+      <button class="filter-chip" data-f="ack" onclick="staffFilter('ack',this)">Done</button>
+    </div>
+    <div id="staff-tasks-list"><div class="empty">Loading your tasks…</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ADD / EDIT MODAL (admin only)
+════════════════════════════════════ -->
+<div class="modal" id="modal-task">
+  <div class="modal-card">
+    <div class="modal-ttl" id="task-modal-ttl">New Task</div>
+    <input type="hidden" id="t-id"/>
+
+    <div class="fg">
+      <label class="fl">Work / Task Description <span style="color:var(--r)">*</span></label>
+      <textarea class="fc" id="t-work" placeholder="Describe the task…" rows="3"></textarea>
+      <div style="margin-top:8px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500">Quick presets</div>
+        <div class="preset-wrap" id="preset-chips"></div>
+      </div>
+    </div>
+
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Assigned To <span style="color:var(--r)">*</span></label>
+        <select class="fc" id="t-staff">
+          <option value="">Select staff member…</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Priority</label>
+        <select class="fc" id="t-priority">
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Due Date (optional)</label>
+      <input type="date" class="fc" id="t-due"/>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Notes (optional)</label>
+      <textarea class="fc" id="t-notes" placeholder="Any additional context…" rows="2"></textarea>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Information Acknowledged</label>
+      <div style="display:flex;gap:16px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+          <input type="radio" name="t-ack" id="t-ack-no" value="false" checked style="accent-color:var(--br)"/> No
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+          <input type="radio" name="t-ack" id="t-ack-yes" value="true" style="accent-color:var(--br)"/> Yes
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-p" onclick="saveTask()" id="btn-save-task">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+const PRESETS = [
+  'Room cleaning','Linen change','Laundry pickup','Laundry delivery',
+  'Grocery run','Guest check-in assist','Guest check-out assist',
+  'Pool maintenance','Garden upkeep','Kitchen deep clean','Towel restock',
+];
+
+// ── Determine who's viewing ──────────────────────────────────────────
+// Priority: URL param ?role=admin > localStorage bc_me role
+const params   = new URLSearchParams(location.search);
+const urlRole  = params.get('role'); // 'admin' when opened from admin iframe
+const me       = JSON.parse(localStorage.getItem('bc_me') || 'null');
+
+// isAdmin: explicit ?role=admin param, OR logged in as office role
+const isAdmin  = urlRole === 'admin' || (me && me.role === 'office');
+// isStaff: logged in as staff/owner AND not forced admin
+const isStaff  = !isAdmin && me && (me.role === 'staff' || me.role === 'owner');
+
+// If neither and no me at all — redirect to login (but allow admin iframe)
+if (!isAdmin && !isStaff && urlRole !== 'admin') {
+  location.href = '/index.html';
+}
+
+// Show correct view
+if (isAdmin) {
+  document.getElementById('admin-view').style.display = 'flex';
+} else {
+  document.getElementById('staff-view').style.display = 'flex';
+  document.body.classList.add('staff-mode');
+}
+
+let ALL_TASKS  = [];
+let ALL_STAFF  = [];
+let adminFilter = 'all';
+let staffFilterMode = 'pending';
+
+// ── API helper ───────────────────────────────────────────────────────
+async function api(path, method, body){
+  const h = {apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const r = await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  const json = await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
+}
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.style.display='none', 2800);
+}
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ════════════════════════════════════════════════════════════════════
+//  ADMIN FUNCTIONS
+// ════════════════════════════════════════════════════════════════════
+async function loadStaff(){
+  try {
+    ALL_STAFF = await api('/rest/v1/staff?select=id,name,designation&order=name') || [];
+    // Populate filter dropdown
+    const filterSel = document.getElementById('filter-staff');
+    if(filterSel){
+      filterSel.innerHTML = '<option value="">All Staff</option>' +
+        ALL_STAFF.map(s=>`<option value="${s.id}">${s.name}${s.designation?' · '+s.designation:''}</option>`).join('');
+    }
+    // Populate modal dropdown
+    const modalSel = document.getElementById('t-staff');
+    if(modalSel){
+      modalSel.innerHTML = '<option value="">Select staff member…</option>' +
+        ALL_STAFF.map(s=>`<option value="${s.id}">${s.name}${s.designation?' · '+s.designation:''}</option>`).join('');
+    }
+  } catch(e){ console.error('Staff load failed', e); }
+}
+
+async function loadAdminTasks(){
+  try {
+    ALL_TASKS = await api('/rest/v1/tasks?select=*&order=created_at.desc') || [];
+  } catch(e){
+    document.getElementById('admin-tasks-list').innerHTML = `
+      <div class="empty">
+        <div style="font-size:22px;margin-bottom:8px">📋</div>
+        <div style="font-weight:500;margin-bottom:4px">No tasks table yet</div>
+        <pre style="margin-top:14px;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:11px;line-height:1.6;max-width:520px;overflow:auto;margin:14px auto 0">CREATE TABLE tasks (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  work        text NOT NULL,
+  staff_id    uuid REFERENCES staff(id) ON DELETE SET NULL,
+  staff_name  text,
+  priority    text DEFAULT 'medium',
+  due_date    date,
+  notes       text,
+  acknowledged boolean DEFAULT false,
+  created_at  timestamptz DEFAULT now()
+);</pre>
+      </div>`;
+    updateKpis([]);
+    return;
+  }
+  applyFilters();
+}
+
+function setFilter(f, btn){
+  adminFilter = f;
+  document.querySelectorAll('.filter-chip[data-filter]').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilters();
+}
+
+function applyFilters(){
+  const staffFilter = (document.getElementById('filter-staff')||{}).value || '';
+  let rows = ALL_TASKS;
+  if(adminFilter === 'pending') rows = rows.filter(t=>!t.acknowledged);
+  if(adminFilter === 'ack')     rows = rows.filter(t=> t.acknowledged);
+  if(staffFilter)               rows = rows.filter(t=> t.staff_id === staffFilter);
+  renderAdminTable(rows);
+  updateKpis(ALL_TASKS);
+}
+
+function updateKpis(tasks){
+  const el = (id)=>document.getElementById(id);
+  if(el('kpi-total'))   el('kpi-total').textContent   = tasks.length;
+  if(el('kpi-pending')) el('kpi-pending').textContent  = tasks.filter(t=>!t.acknowledged).length;
+  if(el('kpi-ack'))     el('kpi-ack').textContent      = tasks.filter(t=> t.acknowledged).length;
+}
+
+function priorityBadge(p){
+  const map = {high:'bdg-r',medium:'bdg-a',low:'bdg'};
+  return `<span class="bdg ${map[p]||'bdg'}" style="text-transform:capitalize">${p||'medium'}</span>`;
+}
+
+function renderAdminTable(tasks){
+  const el = document.getElementById('admin-tasks-list');
+  if(!tasks.length){ el.innerHTML='<div class="empty">No tasks found</div>'; return; }
+  el.innerHTML = `<table class="tbl">
+    <thead><tr>
+      <th style="width:36%">Task</th><th>Assigned To</th>
+      <th>Priority</th><th>Due</th><th>Acknowledged</th><th></th>
+    </tr></thead>
+    <tbody>${tasks.map(adminRow).join('')}</tbody>
+  </table>`;
+}
+
+function adminRow(t){
+  const ackOn = t.acknowledged;
+  const initials = (t.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const staffCell = t.staff_name
+    ? `<div style="display:flex;align-items:center;gap:8px"><div class="staff-avatar">${initials}</div><span>${escHtml(t.staff_name)}</span></div>`
+    : '<span style="color:var(--muted)">—</span>';
+  const due = t.due_date
+    ? new Date(t.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
+    : '<span style="color:var(--muted)">—</span>';
+  const notes = t.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(t.notes)}</div>` : '';
+  return `<tr id="row-${t.id}">
+    <td><div style="font-weight:500;line-height:1.4">${escHtml(t.work)}</div>${notes}</td>
+    <td>${staffCell}</td>
+    <td>${priorityBadge(t.priority)}</td>
+    <td style="font-size:12px">${due}</td>
+    <td>${ackWidget(t.id, ackOn, 'admin')}</td>
+    <td style="text-align:right;white-space:nowrap">
+      <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
+      <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
+    </td>
+  </tr>`;
+}
+
+// ── Modal ──────────────────────────────────────────────────────────
+function openAddModal(){
+  document.getElementById('t-id').value = '';
+  document.getElementById('t-work').value = '';
+  document.getElementById('t-staff').value = '';
+  document.getElementById('t-priority').value = 'medium';
+  document.getElementById('t-due').value = '';
+  document.getElementById('t-notes').value = '';
+  document.getElementById('t-ack-no').checked = true;
+  document.getElementById('task-modal-ttl').textContent = 'New Task';
+  document.getElementById('btn-save-task').textContent = 'Save Task';
+  renderPresets('');
+  document.getElementById('modal-task').classList.add('on');
+}
+
+function editTask(t){
+  document.getElementById('t-id').value = t.id;
+  document.getElementById('t-work').value = t.work||'';
+  document.getElementById('t-staff').value = t.staff_id||'';
+  document.getElementById('t-priority').value = t.priority||'medium';
+  document.getElementById('t-due').value = t.due_date||'';
+  document.getElementById('t-notes').value = t.notes||'';
+  t.acknowledged ? document.getElementById('t-ack-yes').checked=true : document.getElementById('t-ack-no').checked=true;
+  document.getElementById('task-modal-ttl').textContent = 'Edit Task';
+  document.getElementById('btn-save-task').textContent = 'Update Task';
+  renderPresets(t.work||'');
+  document.getElementById('modal-task').classList.add('on');
+}
+
+function closeModal(){ document.getElementById('modal-task').classList.remove('on'); }
+
+function renderPresets(current){
+  document.getElementById('preset-chips').innerHTML = PRESETS.map(p=>
+    `<button class="preset-chip ${current===p?'on':''}" onclick="pickPreset(this,'${p.replace(/'/g,"\\'")}')">
+      ${escHtml(p)}
+    </button>`).join('');
+}
+
+function pickPreset(btn, value){
+  document.getElementById('t-work').value = value;
+  document.querySelectorAll('.preset-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+async function saveTask(){
+  const id          = document.getElementById('t-id').value;
+  const work        = document.getElementById('t-work').value.trim();
+  const staffId     = document.getElementById('t-staff').value;
+  const priority    = document.getElementById('t-priority').value;
+  const due_date    = document.getElementById('t-due').value || null;
+  const notes       = document.getElementById('t-notes').value.trim() || null;
+  const acknowledged = document.getElementById('t-ack-yes').checked;
+  if(!work)    { alert('Please enter a task description.'); return; }
+  if(!staffId) { alert('Please select a staff member.'); return; }
+  const staff = ALL_STAFF.find(s=>s.id===staffId);
+  const body = {work, staff_id:staffId, staff_name:staff?staff.name:null, priority, due_date, notes, acknowledged};
+  const btn = document.getElementById('btn-save-task');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    if(id){ await api('/rest/v1/tasks?id=eq.'+id,'PATCH',body); }
+    else  { body.created_at=new Date().toISOString(); await api('/rest/v1/tasks','POST',body); }
+    closeModal(); toast(id?'Task updated ✓':'Task added ✓'); await loadAdminTasks();
+  } catch(e){ toast('Save failed: '+e.message); }
+  finally{ btn.disabled=false; btn.textContent=id?'Update Task':'Save Task'; }
+}
+
+async function deleteTask(id){
+  if(!confirm('Delete this task? This cannot be undone.')) return;
+  try {
+    await api('/rest/v1/tasks?id=eq.'+id,'DELETE');
+    ALL_TASKS = ALL_TASKS.filter(t=>t.id!==id);
+    toast('Task deleted'); applyFilters();
+  } catch(e){ toast('Delete failed: '+e.message); }
+}
+
+document.getElementById('modal-task').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+// ════════════════════════════════════════════════════════════════════
+//  STAFF FUNCTIONS
+// ════════════════════════════════════════════════════════════════════
+let STAFF_TASKS = [];
+
+async function loadStaffTasks(){
+  if(!me || !me.id) return;
+  const nameEl = document.getElementById('staff-name-label');
+  if(nameEl) nameEl.textContent = (me.name||'Staff') + ' · ' + new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+
+  try {
+    // Look up staff row by name match (staff logs in with name)
+    // Try by staff id first if stored, fallback to name match
+    let query = '/rest/v1/tasks?select=*&order=created_at.desc';
+    if(me.id){
+      query += '&staff_id=eq.'+me.id;
+    } else if(me.name){
+      query += '&staff_name=eq.'+encodeURIComponent(me.name);
+    }
+    STAFF_TASKS = await api(query) || [];
+  } catch(e){
+    document.getElementById('staff-tasks-list').innerHTML = '<div class="empty">Could not load tasks.</div>';
+    return;
+  }
+  renderStaffTasks();
+}
+
+function staffFilter(f, btn){
+  staffFilterMode = f;
+  document.querySelectorAll('.filter-chip[data-f]').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  renderStaffTasks();
+}
+
+function renderStaffTasks(){
+  let rows = STAFF_TASKS;
+  if(staffFilterMode === 'pending') rows = rows.filter(t=>!t.acknowledged);
+  if(staffFilterMode === 'ack')     rows = rows.filter(t=> t.acknowledged);
+  const el = document.getElementById('staff-tasks-list');
+  if(!rows.length){
+    const msgs = {pending:'No pending tasks — all caught up! ✓', ack:'No acknowledged tasks yet.', all:'No tasks assigned yet.'};
+    el.innerHTML = `<div class="empty">${msgs[staffFilterMode]||'No tasks found.'}</div>`;
+    return;
+  }
+  el.innerHTML = rows.map(staffCard).join('');
+}
+
+function staffCard(t){
+  const pri = t.priority || 'medium';
+  const due = t.due_date
+    ? `<span>Due ${new Date(t.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span> · `
+    : '';
+  const notes = t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;padding-left:8px">${escHtml(t.notes)}</div>` : '';
+  return `<div class="task-card pri-${pri}" id="sc-${t.id}">
+    <div class="task-card-work">${escHtml(t.work)}</div>
+    ${notes}
+    <div class="task-card-meta">${due}<span style="text-transform:capitalize">${pri} priority</span></div>
+    <div class="task-card-ack">
+      <span class="task-card-ack-label">Information Acknowledged</span>
+      ${ackWidget(t.id, t.acknowledged, 'staff')}
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  SHARED: ACK TOGGLE  (works in both views)
+// ════════════════════════════════════════════════════════════════════
+function ackWidget(id, isOn, view){
+  return `<label class="ack-toggle" onclick="toggleAck('${id}',${isOn},this,'${view}')">
+    <div class="ack-track ${isOn?'on':''}"><div class="ack-knob"></div></div>
+    <span class="ack-text">${isOn?'Yes':'No'}</span>
+  </label>`;
+}
+
+async function toggleAck(id, current, labelEl, view){
+  const newVal = !current;
+  try {
+    await api('/rest/v1/tasks?id=eq.'+id,'PATCH',{acknowledged:newVal});
+    // Update local arrays
+    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t) t.acknowledged=newVal; });
+    // Update widget inline
+    const track = labelEl.querySelector('.ack-track');
+    const txt   = labelEl.querySelector('.ack-text');
+    track.classList.toggle('on', newVal);
+    txt.textContent = newVal ? 'Yes' : 'No';
+    labelEl.setAttribute('onclick', `toggleAck('${id}',${newVal},this,'${view}')`);
+    if(view==='admin') updateKpis(ALL_TASKS);
+    // In staff view, if filter is 'pending' and task just got acknowledged, remove the card
+    if(view==='staff' && staffFilterMode==='pending' && newVal){
+      const card = document.getElementById('sc-'+id);
+      if(card){ card.style.opacity='0.4'; card.style.transition='opacity .3s'; setTimeout(()=>renderStaffTasks(),600); }
+    }
+    toast(newVal ? 'Acknowledged ✓' : 'Marked as not acknowledged');
+  } catch(e){ toast('Update failed: '+e.message); }
+}
+
+// ── Date label ──────────────────────────────────────────────────────
+const dateStr = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const adminDateEl = document.getElementById('admin-date-label');
+if(adminDateEl) adminDateEl.textContent = dateStr;
+
+// ── Boot ─────────────────────────────────────────────────────────────
+if(isAdmin){
+  loadStaff().then(()=>loadAdminTasks());
+} else {
+  loadStaffTasks();
+}
+</script>
+</body>
+</html>
