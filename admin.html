@@ -467,6 +467,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
   <div class="fg"><label class="fl">Property</label><select class="fc" id="mg-prop"></select></div>
   <div class="fg"><label class="fl">Mobile</label><input class="fc" id="mg-mobile" type="tel" placeholder="+91 …"/></div>
+  <div class="fg"><label class="fl">Platform</label><input class="fc" id="mg-platform" placeholder="e.g. Airbnb, Booking, Direct…"/></div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Check-in</label><input class="fc" id="mg-in" type="date"/></div>
     <div class="fg"><label class="fl">Check-out</label><input class="fc" id="mg-out" type="date"/></div>
@@ -913,14 +914,14 @@ async function loadGuests(){
   const data=await api('/rest/v1/guest_profiles?select=*&order=check_in.desc')||[];
   const el=document.getElementById('guests-list');
   if(!data.length){el.innerHTML='<div class="empty">No guest profiles yet</div>';return;}
-  el.innerHTML=`<table class="tbl"><thead><tr><th>Name</th><th>Property</th><th>Mobile</th><th>Check-in</th><th>Check-out</th><th>PIN</th><th></th></tr></thead><tbody>
-    ${data.map(g=>`<tr><td><b>${g.name}</b></td><td>${g.property_name||'—'}</td><td>${g.mobile||'—'}</td><td>${fmtDate(g.check_in)}</td><td>${fmtDate(g.check_out)}</td><td>••••</td>
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Name</th><th>Property</th><th>Mobile</th><th>Platform</th><th>Check-in</th><th>Check-out</th><th>PIN</th><th></th></tr></thead><tbody>
+    ${data.map(g=>`<tr><td><b>${g.name}</b></td><td>${g.property_name||'—'}</td><td>${g.mobile||'—'}</td><td>${g.platform||'—'}</td><td>${fmtDate(g.check_in)}</td><td>${fmtDate(g.check_out)}</td><td>••••</td>
     <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editGuest(${JSON.stringify(g).replace(/'/g,"&#39;")})'>Edit</button> <button class="btn-del" onclick="deleteGuest('${g.id}','${(g.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`).join('')}
   </tbody></table>`;
 }
-async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-mobile','mg-in','mg-out'].forEach(i=>document.getElementById(i).value=''); if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
-function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-mobile').value=g.mobile||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
-async function saveGuest(){ const id=document.getElementById('mg-id').value; const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),mobile:document.getElementById('mg-mobile').value.trim()||null,property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,created_by:'OFFICE'}; if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;} if(!body.property_name){alert('Please select a property');return;} try{ if(id) await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body); else await api('/rest/v1/guest_profiles','POST',body); closeModal('modal-guest'); toast('Guest saved ✓'); loadGuests();}catch(e){alert('Error: '+e.message);} }
+async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-mobile','mg-platform','mg-in','mg-out'].forEach(i=>document.getElementById(i).value=''); if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
+function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-mobile').value=g.mobile||''; document.getElementById('mg-platform').value=g.platform||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
+async function saveGuest(){ const id=document.getElementById('mg-id').value; const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),mobile:document.getElementById('mg-mobile').value.trim()||null,platform:document.getElementById('mg-platform').value.trim()||null,property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,created_by:'OFFICE'}; if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;} if(!body.property_name){alert('Please select a property');return;} try{ if(id) await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body); else await api('/rest/v1/guest_profiles','POST',body); closeModal('modal-guest'); toast('Guest saved ✓'); loadGuests();}catch(e){alert('Error: '+e.message);} }
 async function deleteGuest(id,name){ if(!confirm('Remove '+name+'? Their submitted registrations will be kept.'))return; try{ await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+id,'PATCH',{guest_profile_id:null}); await api('/rest/v1/guest_profiles?id=eq.'+id,'DELETE'); toast(name+' removed'); loadGuests(); }catch(e){ alert('Could not remove: '+e.message); } }
 
 // GUEST TAB TOGGLE
@@ -966,9 +967,10 @@ async function glLoadBookings(){
   document.getElementById('gl-count-ci').textContent='—';
   document.getElementById('gl-count-co').textContent='—';
   document.getElementById('gl-count-st').textContent='—';
-  const data = await api(`/rest/v1/guest_profiles?select=id,name,mobile,property_name,check_in,check_out&check_in=lte.${glDate}&check_out=gte.${glDate}&order=check_in`) || [];
+  const data = await api(`/rest/v1/guest_profiles?select=id,name,mobile,platform,property_name,check_in,check_out&check_in=lte.${glDate}&check_out=gte.${glDate}&order=check_in`) || [];
   glBookings = data.map(r=>({
     id:r.id, guest:r.name||'Guest', phone:r.mobile||null,
+    platform:r.platform||null,
     num_guests:null, property_name:r.property_name,
     source:'manual', start:r.check_in, end:r.check_out
   }));
@@ -1016,7 +1018,7 @@ function glGuestRow(g,type){
   const color = prop?prop.color:'#9898b8';
   const initial = (g.guest||'?').charAt(0).toUpperCase();
   const srcClass = {airbnb:'gl-src-airbnb',booking:'gl-src-booking',manual:'gl-src-manual'}[g.source]||'gl-src-manual';
-  const srcLabel = {airbnb:'Airbnb',booking:'Booking',manual:'Direct'}[g.source]||g.source;
+  const srcLabel = g.platform || ({airbnb:'Airbnb',booking:'Booking',manual:'Direct'}[g.source]||'Direct');
   let dateHint='';
   if(type==='checkin')  dateHint='Check-out '+glFmtDate(g.end);
   if(type==='checkout') dateHint='Checked in '+glFmtDate(g.start);

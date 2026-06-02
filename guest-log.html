@@ -287,7 +287,7 @@ async function loadBookings() {
   // Fetch bookings that could overlap selectedDate
   // We fetch a window: start <= selectedDate AND end >= selectedDate
   const data = await sbFetch(
-    `/rest/v1/guest_profiles?select=id,name,mobile,property_name,check_in,check_out&check_in=lte.${selectedDate}&check_out=gte.${selectedDate}&order=check_in`
+    `/rest/v1/guest_profiles?select=id,name,mobile,platform,property_name,check_in,check_out&check_in=lte.${selectedDate}&check_out=gte.${selectedDate}&order=check_in`
   );
   if (Array.isArray(data)) {
     bookings = data.map(r => ({
@@ -296,6 +296,7 @@ async function loadBookings() {
       phone: r.mobile || null,
       num_guests: null,
       property_name: r.property_name,
+      platform: r.platform || null,
       source: 'manual',
       start: r.check_in,
       end: r.check_out
@@ -362,7 +363,7 @@ function guestRow(g, type) {
   const color = prop ? prop.color : '#9898b8';
   const initial = (g.guest || '?').charAt(0).toUpperCase();
   const srcClass = { airbnb:'src-airbnb', booking:'src-booking', manual:'src-manual', blocked:'src-blocked' }[g.source] || 'src-manual';
-  const srcLabel = { airbnb:'Airbnb', booking:'Booking', manual:'Direct', blocked:'Blocked' }[g.source] || g.source;
+  const srcLabel = g.platform || ({ airbnb:'Airbnb', booking:'Booking', manual:'Direct', blocked:'Blocked' }[g.source] || 'Direct');
 
   let dateHint = '';
   if (type === 'checkin')  dateHint = `Check-out ${formatDate(g.end)}`;
