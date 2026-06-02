@@ -117,6 +117,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .task-card-meta{font-size:11px;color:var(--muted);padding-left:8px;margin-bottom:12px}
 .task-card-ack{display:flex;align-items:center;justify-content:space-between;padding-left:8px;padding-top:10px;border-top:1px solid var(--border);margin-top:4px}
 .task-card-ack-label{font-size:12px;color:var(--muted)}
+.task-card.is-completed{opacity:0.6;background:#f5faf0}
 
 /* ── Ack toggle ── */
 .ack-toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
@@ -208,7 +209,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div style="display:flex;gap:8px;margin-bottom:18px">
       <button class="filter-chip on" data-f="pending" onclick="staffFilter('pending',this)">To Do</button>
       <button class="filter-chip" data-f="all" onclick="staffFilter('all',this)">All</button>
-      <button class="filter-chip" data-f="ack" onclick="staffFilter('ack',this)">Done</button>
+      <button class="filter-chip" data-f="completed" onclick="staffFilter('completed',this)">Completed</button>
     </div>
     <div id="staff-tasks-list"><div class="empty">Loading your tasks…</div></div>
   </div>
@@ -324,7 +325,11 @@ async function api(path, method, body){
   const r = await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204) return null;
   const json = await r.json().catch(()=>null);
-  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  if(!r.ok){
+    const msg = (json&&(json.message||json.hint||json.error||json.details||json.code)) || ('HTTP '+r.status);
+    console.error('API error', r.status, json);
+    throw new Error(msg);
+  }
   return json;
 }
 
@@ -363,21 +368,31 @@ async function loadAdminTasks(){
   try {
     ALL_TASKS = await api('/rest/v1/tasks?select=*&order=created_at.desc') || [];
   } catch(e){
+    const isNoTable = e.message && (e.message.includes('relation') || e.message.includes('does not exist') || e.message.includes('42P01') || e.message.includes('404'));
     document.getElementById('admin-tasks-list').innerHTML = `
       <div class="empty">
         <div style="font-size:22px;margin-bottom:8px">📋</div>
-        <div style="font-weight:500;margin-bottom:4px">No tasks table yet</div>
-        <pre style="margin-top:14px;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:11px;line-height:1.6;max-width:520px;overflow:auto;margin:14px auto 0">CREATE TABLE tasks (
-  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  work        text NOT NULL,
-  staff_id    uuid REFERENCES staff(id) ON DELETE SET NULL,
-  staff_name  text,
-  priority    text DEFAULT 'medium',
-  due_date    date,
-  notes       text,
+        <div style="font-weight:500;margin-bottom:4px">${isNoTable ? 'Tasks table not created yet' : 'Could not load tasks'}</div>
+        <div style="font-size:12px;color:#A32D2D;margin-top:4px;margin-bottom:8px">${isNoTable ? '' : 'Error: '+e.message}</div>
+        ${isNoTable ? \`<div style="font-size:12px;max-width:420px;margin:0 auto 10px">Run this SQL in your <a href="https://supabase.com/dashboard" target="_blank" style="color:#993C1D">Supabase SQL editor</a>, then refresh:</div>
+        <pre style="text-align:left;background:#F9F8F6;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:14px;font-size:11px;line-height:1.7;max-width:520px;overflow:auto;margin:0 auto">CREATE TABLE tasks (
+  id           uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  work         text NOT NULL,
+  staff_id     uuid REFERENCES staff(id) ON DELETE SET NULL,
+  staff_name   text,
+  priority     text DEFAULT 'medium',
+  due_date     date,
+  notes        text,
   acknowledged boolean DEFAULT false,
-  created_at  timestamptz DEFAULT now()
-);</pre>
+  completed    boolean DEFAULT false,
+  created_at   timestamptz DEFAULT now()
+);
+
+-- Disable RLS so the anon key can read/write
+ALTER TABLE tasks DISABLE ROW LEVEL SECURITY;
+
+-- If table already exists, add the completed column:
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;</pre>\` : ''}
       </div>`;
     updateKpis([]);
     return;
@@ -419,8 +434,8 @@ function renderAdminTable(tasks){
   if(!tasks.length){ el.innerHTML='<div class="empty">No tasks found</div>'; return; }
   el.innerHTML = `<table class="tbl">
     <thead><tr>
-      <th style="width:36%">Task</th><th>Assigned To</th>
-      <th>Priority</th><th>Due</th><th>Acknowledged</th><th></th>
+      <th style="width:32%">Task</th><th>Assigned To</th>
+      <th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th><th></th>
     </tr></thead>
     <tbody>${tasks.map(adminRow).join('')}</tbody>
   </table>`;
@@ -441,7 +456,8 @@ function adminRow(t){
     <td>${staffCell}</td>
     <td>${priorityBadge(t.priority)}</td>
     <td style="font-size:12px">${due}</td>
-    <td>${ackWidget(t.id, ackOn, 'admin')}</td>
+    <td>${ackWidget(t.id, 'acknowledged', ackOn, 'admin')}</td>
+    <td>${ackWidget(t.id, 'completed', t.completed, 'admin')}</td>
     <td style="text-align:right;white-space:nowrap">
       <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
       <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
@@ -562,11 +578,11 @@ function staffFilter(f, btn){
 
 function renderStaffTasks(){
   let rows = STAFF_TASKS;
-  if(staffFilterMode === 'pending') rows = rows.filter(t=>!t.acknowledged);
-  if(staffFilterMode === 'ack')     rows = rows.filter(t=> t.acknowledged);
+  if(staffFilterMode === 'pending')   rows = rows.filter(t=>!t.completed);
+  if(staffFilterMode === 'completed') rows = rows.filter(t=> t.completed);
   const el = document.getElementById('staff-tasks-list');
   if(!rows.length){
-    const msgs = {pending:'No pending tasks — all caught up! ✓', ack:'No acknowledged tasks yet.', all:'No tasks assigned yet.'};
+    const msgs = {pending:'No pending tasks — all caught up! ✓', completed:'No completed tasks yet.', all:'No tasks assigned yet.'};
     el.innerHTML = `<div class="empty">${msgs[staffFilterMode]||'No tasks found.'}</div>`;
     return;
   }
@@ -583,9 +599,13 @@ function staffCard(t){
     <div class="task-card-work">${escHtml(t.work)}</div>
     ${notes}
     <div class="task-card-meta">${due}<span style="text-transform:capitalize">${pri} priority</span></div>
-    <div class="task-card-ack">
+    <div class="task-card-ack" style="margin-bottom:0;border-bottom:none;padding-bottom:8px">
       <span class="task-card-ack-label">Information Acknowledged</span>
-      ${ackWidget(t.id, t.acknowledged, 'staff')}
+      ${ackWidget(t.id, 'acknowledged', t.acknowledged, 'staff')}
+    </div>
+    <div class="task-card-ack" style="border-top:1px solid var(--border);padding-top:10px">
+      <span class="task-card-ack-label" style="font-weight:500;color:var(--text)">Task Completed</span>
+      ${ackWidget(t.id, 'completed', t.completed, 'staff')}
     </div>
   </div>`;
 }
@@ -593,32 +613,35 @@ function staffCard(t){
 // ════════════════════════════════════════════════════════════════════
 //  SHARED: ACK TOGGLE  (works in both views)
 // ════════════════════════════════════════════════════════════════════
-function ackWidget(id, isOn, view){
-  return `<label class="ack-toggle" onclick="toggleAck('${id}',${isOn},this,'${view}')">
+function ackWidget(id, field, isOn, view){
+  return `<label class="ack-toggle" onclick="toggleAck('${id}','${field}',${isOn},this,'${view}')">
     <div class="ack-track ${isOn?'on':''}"><div class="ack-knob"></div></div>
     <span class="ack-text">${isOn?'Yes':'No'}</span>
   </label>`;
 }
 
-async function toggleAck(id, current, labelEl, view){
+async function toggleAck(id, field, current, labelEl, view){
   const newVal = !current;
+  const patch  = {};
+  patch[field] = newVal;
   try {
-    await api('/rest/v1/tasks?id=eq.'+id,'PATCH',{acknowledged:newVal});
+    await api('/rest/v1/tasks?id=eq.'+id,'PATCH', patch);
     // Update local arrays
-    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t) t.acknowledged=newVal; });
+    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t) t[field]=newVal; });
     // Update widget inline
     const track = labelEl.querySelector('.ack-track');
     const txt   = labelEl.querySelector('.ack-text');
     track.classList.toggle('on', newVal);
     txt.textContent = newVal ? 'Yes' : 'No';
-    labelEl.setAttribute('onclick', `toggleAck('${id}',${newVal},this,'${view}')`);
+    labelEl.setAttribute('onclick', `toggleAck('${id}','${field}',${newVal},this,'${view}')`);
     if(view==='admin') updateKpis(ALL_TASKS);
-    // In staff view, if filter is 'pending' and task just got acknowledged, remove the card
-    if(view==='staff' && staffFilterMode==='pending' && newVal){
+    // In staff view: completed toggle moves card out of To Do tab
+    if(view==='staff' && field==='completed' && staffFilterMode==='pending' && newVal){
       const card = document.getElementById('sc-'+id);
-      if(card){ card.style.opacity='0.4'; card.style.transition='opacity .3s'; setTimeout(()=>renderStaffTasks(),600); }
+      if(card){ card.style.opacity='0.4'; card.style.transition='opacity .3s'; setTimeout(()=>renderStaffTasks(),700); }
     }
-    toast(newVal ? 'Acknowledged ✓' : 'Marked as not acknowledged');
+    const labels = {acknowledged: newVal ? 'Acknowledged ✓' : 'Unacknowledged', completed: newVal ? 'Task completed ✓' : 'Marked incomplete'};
+    toast(labels[field] || (newVal ? 'Updated ✓' : 'Updated'));
   } catch(e){ toast('Update failed: '+e.message); }
 }
 
