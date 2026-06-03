@@ -70,24 +70,7 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
 </style>
 </head>
 <body>
-<div class="layout">
-<div class="sidebar">
-  <div class="sb-logo" style="justify-content:center;padding:0 16px 20px">
-    <a href="admin.html" style="display:block">
-      <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAoACgDASIAAhEBAxEB/8QAGgABAAMBAQEAAAAAAAAAAAAAAAMEBgUCB//EACsQAAEDAwIFBAMBAAAAAAAAAAECAxEABBIhMUFRBSJhcZEGE6GxwdH/xAAWAQEBAQAAAAAAAAAAAAAAAAADAgH/xAAYEQEBAQEBAAAAAAAAAAAAAAAAARExAv/aAAwDAQACEQMRAD8A+hXN9a2iA5cTzGM4CQVEnuABvWV/xFYJcCFJuFj+5tJwkdSrb+81nuI9VlxuGxb3FxCGX1OBxlOVoO2UkY3G3TBqqbfXe2kRrBCUgAJSlIAAHQAV45Z+V6McfMX7uq3t0tMOuJadWEIWogKWf4pB3JNVqbq1ZjnP3CAOF6tRZXaS2pJCkqQe4IwRWnF0dqcqOtKkqAIIOCDXHQ0qXL7AAAAAD0FZvxDeXVlaQhxSQqU2lRSSDgqG3UEfmu45z0+j/9k=" style="width:140px;object-fit:contain;display:block"/>
-    </a>
-  </div>
-  <div class="sb-nav">
-    <a href="admin.html" class="sb-btn" style="text-decoration:none">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
-    </a>
-    <button class="sb-btn on">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Laundry
-    </button>
-  </div>
-  <div class="sb-footer"><div class="sb-user">OFFICE</div></div>
-</div>
-
+<div class="layout" style="display:block">
 <div class="main">
   <div class="pg-title">Laundry</div>
   <div class="pg-sub">Track laundry movement across all properties</div>
@@ -109,7 +92,7 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
         <button class="btn-sec" onclick="downloadExcel()" style="font-size:13px;display:flex;align-items:center;gap:6px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel
         </button>
-        <button class="btn-p" onclick="requirePin('Create laundry log', openCreateModal)">+ Log Laundry</button>
+        <button class="btn-p" onclick="openCreateModal()">+ Log Laundry</button>
       </div>
     </div>
     <div id="laundry-list">Loading…</div>
@@ -289,7 +272,7 @@ async function loadList(){
         <td><span class="bdg ${r.status==='collected'?'bdg-g':'bdg-a'}">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
           ${r.status!=='collected'
-            ? `<button class="btn-edit" style="background:var(--g-l);color:var(--g);font-size:12px;padding:6px 14px;font-weight:600" onclick='requirePin("Collect back", ()=>openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")}))'>Collected Back</button>`
+            ? `<button class="btn-edit" style="background:var(--g-l);color:var(--g);font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collected Back</button>`
             : `<span style="font-size:11px;color:var(--muted)">✓ Done</span>`}
           <button onclick='requirePin("Delete log",()=>deleteLog("${r.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px" onmouseover="this.style.color='var(--r)'" onmouseout="this.style.color='var(--muted)'">×</button>
         </td>

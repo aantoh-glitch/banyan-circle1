@@ -202,8 +202,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       </div>
       <div class="dash-tile-label">Laundry</div>
-      <div class="dash-tile-value" style="font-size:22px;padding-top:4px">Track &amp; Log</div>
-      <div class="dash-tile-sub">view laundry requests</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
+        <div class="dash-tile-value loading" id="dash-laundry-count" style="font-size:36px">…</div>
+        <div style="font-size:13px;color:var(--muted)">at vendor</div>
+      </div>
+      <div id="dash-laundry-due" style="display:none;margin-top:6px;background:#FEF3E8;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;color:#633806"></div>
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-repairs" onclick="goPage('maint', document.querySelector('.sb-btn[onclick*=maint]'))">
@@ -2196,6 +2199,20 @@ async function loadDashboard(){
     const el = document.getElementById("dash-repairs");
     if(el){ el.textContent = mr.length; el.className="dash-tile-value"; }
   } catch(e){ const el=document.getElementById("dash-repairs"); if(el) el.textContent="—"; }
+
+  // Laundry at vendor + due today
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const lau = await api("/rest/v1/laundry_log?select=id,promised_return_at&status=eq.at_vendor") || [];
+    const countEl = document.getElementById("dash-laundry-count");
+    if(countEl){ countEl.textContent = lau.length; countEl.className="dash-tile-value"; }
+    const dueToday = lau.filter(l => l.promised_return_at && l.promised_return_at.slice(0,10) === today);
+    const dueEl = document.getElementById("dash-laundry-due");
+    if(dueEl && dueToday.length){
+      dueEl.style.display = 'block';
+      dueEl.textContent = `⚠ ${dueToday.length} due back today`;
+    }
+  } catch(e){ const el=document.getElementById("dash-laundry-count"); if(el) el.textContent="—"; }
 }
 
 // Boot
