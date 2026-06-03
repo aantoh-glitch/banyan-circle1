@@ -2,109 +2,150 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Banyan Circle — Laundry</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Heritance — Laundry</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
-html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
-.main{flex:1;padding:28px 32px;max-width:1280px}
-.sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
-.sb-nav{flex:1;padding:0 12px;overflow-y:auto}
-.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
-.sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.sb-btn:hover{background:var(--bg);color:var(--text)}
-.sb-btn.on{background:#222;color:#fff;font-weight:500}
-.sb-btn.on svg{stroke:#fff}
-.sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
-.sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
-.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
-.fg{margin-bottom:12px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
-.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.btn-sec:hover{border-color:var(--br);color:var(--br)}
-.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-edit:hover{background:var(--br-l);color:var(--br)}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
+:root{
+  --br:#993C1D;--br-l:#FAECE7;
+  --g:#3B6D11;--g-l:#EAF3DE;
+  --a:#854F0B;--a-l:#FAEEDA;
+  --r:#A32D2D;--r-l:#FCEBEB;
+  --b:#185FA5;--b-l:#E6F1FB;
+  --text:#1a1a18;--muted:#7a7870;
+  --border:rgba(0,0,0,0.08);
+  --bg:#F9F8F6;--white:#fff;
+}
+html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+
+/* Shell matches ops.html */
+.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 0 48px}
+
+/* Header */
+.hdr{padding:24px 24px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--white)}
+.hdr-back{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center}
+.hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;flex:1}
+.hdr-prop{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+
+/* Log button area */
+.log-btn-wrap{padding:20px 24px 8px}
+.btn-log{width:100%;padding:16px;background:var(--br);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.2px}
+.btn-log svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-log:active{background:#712B13}
+
+/* Status filter */
+.status-wrap{padding:12px 24px 4px;display:flex;gap:8px}
+.stab{padding:7px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.stab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+
+/* Section label */
+.sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 24px 8px}
+
+/* Cards */
+.cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.log-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
+.log-card.done{opacity:.7}
+.card-left{flex:1;min-width:0}
+.card-vendor{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.card-right{flex-shrink:0}
+.btn-collect{padding:9px 14px;background:var(--g-l);color:var(--g);border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-collect:active{background:#c8e8aa}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
-.bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:var(--b-l);color:#0C447C}
-.ptab{padding:8px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.ptab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-a{background:var(--a-l);color:#633806}
+.empty{text-align:center;padding:40px 24px;color:var(--muted);font-size:13px}
+
+/* Modals — full screen bottom sheet on mobile */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
-.row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.row-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none}
+.modal-card{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-ttl{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn-p{flex:1}
+.modal-actions .btn-sec{flex:1}
+
+/* Form */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.fc{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;-webkit-appearance:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+.fc:disabled{background:var(--bg);color:var(--muted)}
+textarea.fc{resize:none;min-height:72px;line-height:1.6}
+.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-p{padding:14px 18px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;width:100%}
+.btn-p:active{background:#712B13}
+.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.btn-sec{padding:13px 18px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit;width:100%}
+.btn-sec:active{background:var(--bg)}
+
+/* Items grid */
+.item-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.item-row{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:8px;padding:10px 12px}
+.item-label{flex:1;font-size:13px}
+.item-qty{width:56px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;text-align:center}
+
+/* Return condition rows */
+.ret-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:8px;gap:8px}
+.ret-row span{font-size:13px;flex:1}
+.ret-row select{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--white);-webkit-appearance:none;appearance:none}
+
+/* PIN */
 .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all .15s;display:inline-block}
 .dot.on{background:var(--br);border-color:var(--br)}
 .dot.err{background:var(--r);border-color:var(--r)}
-.key{height:52px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:20px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;width:100%}
+.key{height:56px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:22px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;width:100%}
 .key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
 
-/* Item qty grid */
-.item-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px}
-.item-row{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:8px;padding:8px 10px}
-.item-label{flex:1;font-size:13px}
-.item-qty{width:60px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;text-align:center}
-/* Return condition rows */
-.ret-row{display:grid;grid-template-columns:1fr 160px;gap:8px;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;margin-bottom:6px;font-size:13px}
-.ret-row select{padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:11px 24px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
 </style>
 </head>
 <body>
-<div class="layout" style="display:block">
-<div class="main">
-  <div class="pg-title">Laundry</div>
-  <div class="pg-sub">Track laundry movement across all properties</div>
+<div class="shell">
 
-  <!-- Filters -->
-  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
-    <div style="display:flex;gap:6px;flex-wrap:wrap" id="prop-tabs"></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto" id="status-tabs">
-      <button class="ptab on" data-s="all" onclick="setStatus('all',this)">All</button>
-      <button class="ptab" data-s="at_vendor" onclick="setStatus('at_vendor',this)">At Vendor</button>
-      <button class="ptab" data-s="collected" onclick="setStatus('collected',this)">Collected Back</button>
+  <!-- Header -->
+  <div class="hdr">
+    <button class="hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    </button>
+    <div>
+      <div class="hdr-title">Laundry</div>
+      <div class="hdr-prop" id="hdr-prop"></div>
     </div>
   </div>
 
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px" id="list-label">All Properties</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-sec" onclick="downloadExcel()" style="font-size:13px;display:flex;align-items:center;gap:6px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel
-        </button>
-        <button class="btn-p" onclick="openCreateModal()">+ Log Laundry</button>
-      </div>
-    </div>
-    <div id="laundry-list">Loading…</div>
+  <!-- Log button -->
+  <div class="log-btn-wrap">
+    <button class="btn-log" onclick="openCreateModal()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M8 7.5A5 5 0 0 1 16.5 10"/></svg>
+      Log Laundry
+    </button>
   </div>
-</div>
+
+  <!-- Status filter -->
+  <div class="status-wrap">
+    <button class="stab on" onclick="setStatus('all',this)">All</button>
+    <button class="stab" onclick="setStatus('at_vendor',this)">At Vendor</button>
+    <button class="stab" onclick="setStatus('collected',this)">Collected</button>
+  </div>
+
+  <div class="sec-label" id="list-label">Logs</div>
+
+  <div class="cards" id="laundry-list">
+    <div class="empty">Loading…</div>
+  </div>
+
 </div>
 
-<!-- ─── MODALS ─── -->
+<!-- ── Log Laundry Modal ── -->
+<div class="modal" id="modal-create">
+<div class="modal-card">
+  <div class="modal-handle"></div>
+  <div class="modal-ttl">Log Laundry</div>
 
-<!-- Create Log Modal -->
-<div class="modal" id="modal-create"><div class="modal-card" style="max-width:600px">
-  <div class="modal-ttl">Log Laundry — At the Vendor</div>
   <div class="fg">
     <label class="fl">Property</label>
     <select class="fc" id="c-prop"></select>
@@ -115,8 +156,8 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
   </div>
   <div class="fg"><label class="fl">Vendor Name</label><input class="fc" type="text" id="c-vendor" placeholder="e.g. Kumar Laundry"/></div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Promised Return Date</label><input class="fc" type="date" id="c-return-date"/></div>
-    <div class="fg"><label class="fl">Promised Return Time</label><input class="fc" type="time" id="c-return-time"/></div>
+    <div class="fg"><label class="fl">Return Date</label><input class="fc" type="date" id="c-return-date"/></div>
+    <div class="fg"><label class="fl">Return Time</label><input class="fc" type="time" id="c-return-time"/></div>
   </div>
   <div class="fg"><label class="fl">Staff Handled</label><select class="fc" id="c-staff"></select></div>
   <div class="fg">
@@ -128,13 +169,16 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
     <button class="btn-sec" onclick="closeModal('modal-create')">Cancel</button>
     <button class="btn-p" onclick="saveCreate()">Save Log</button>
   </div>
-</div></div>
+</div>
+</div>
 
-<!-- Collect Back Modal -->
-<div class="modal" id="modal-collect"><div class="modal-card" style="max-width:600px">
-  <div class="modal-ttl">Update — Collected Back</div>
+<!-- ── Collect Back Modal ── -->
+<div class="modal" id="modal-collect">
+<div class="modal-card">
+  <div class="modal-handle"></div>
+  <div class="modal-ttl">Collected Back</div>
   <input type="hidden" id="col-id"/>
-  <div class="row-grid" style="margin-bottom:12px">
+  <div class="row-grid" style="margin-bottom:14px">
     <div class="fg"><label class="fl">Collected Date</label><input class="fc" type="date" id="col-date"/></div>
     <div class="fg"><label class="fl">Collected Time</label><input class="fc" type="time" id="col-time"/></div>
   </div>
@@ -144,21 +188,22 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
   </div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Amount Paid (₹)</label><input class="fc" type="number" id="col-amount" placeholder="0"/></div>
-    <div class="fg"><label class="fl">Invoice Upload</label><input class="fc" type="file" id="col-invoice" accept="image/*,application/pdf"/></div>
+    <div class="fg"><label class="fl">Invoice</label><input class="fc" type="file" id="col-invoice" accept="image/*,application/pdf"/></div>
   </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="col-notes" placeholder="Any notes on collection…"></textarea></div>
   <div class="modal-actions">
     <button class="btn-sec" onclick="closeModal('modal-collect')">Cancel</button>
-    <button class="btn-p" id="col-save-btn" onclick="saveCollect()">Save Collection</button>
+    <button class="btn-p" id="col-save-btn" onclick="saveCollect()">Save</button>
   </div>
-</div></div>
+</div>
+</div>
 
-<!-- Detail / Log Expand (inline row, no modal) -->
-
-<!-- Property Picker Modal (shown when staff has 2+ properties) -->
-<div class="modal on" id="modal-prop-pick" style="z-index:10000"><div class="modal-card" style="max-width:360px">
+<!-- ── Property Picker Modal ── -->
+<div class="modal" id="modal-prop-pick">
+<div class="modal-card">
+  <div class="modal-handle"></div>
   <div class="modal-ttl">Select Property</div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">You are assigned to multiple properties. Select one to view.</p>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px">You are assigned to multiple properties.</p>
   <div class="fg">
     <label class="fl">Property</label>
     <select class="fc" id="pp-select"></select>
@@ -166,26 +211,30 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
   <div class="modal-actions">
     <button class="btn-p" onclick="confirmPropPick()">Continue</button>
   </div>
-</div></div>
+</div>
+</div>
 
-<!-- PIN Modal -->
-<div class="modal" id="modal-pin"><div class="modal-card" style="max-width:320px">
-  <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px" id="pin-title">Confirm</div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:16px" id="pin-sub"></p>
-  <div style="display:flex;justify-content:center;gap:14px;margin-bottom:16px">
+<!-- ── PIN Modal ── -->
+<div class="modal" id="modal-pin">
+<div class="modal-card" style="padding-bottom:28px">
+  <div class="modal-handle"></div>
+  <div style="font-family:'EB Garamond',Georgia,serif;font-size:20px;margin-bottom:6px" id="pin-title">Confirm</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:18px" id="pin-sub"></p>
+  <div style="display:flex;justify-content:center;gap:16px;margin-bottom:20px">
     <div class="dot" id="pd0"></div><div class="dot" id="pd1"></div>
     <div class="dot" id="pd2"></div><div class="dot" id="pd3"></div>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
     <button class="key" onclick="pk('1')">1</button><button class="key" onclick="pk('2')">2</button><button class="key" onclick="pk('3')">3</button>
     <button class="key" onclick="pk('4')">4</button><button class="key" onclick="pk('5')">5</button><button class="key" onclick="pk('6')">6</button>
     <button class="key" onclick="pk('7')">7</button><button class="key" onclick="pk('8')">8</button><button class="key" onclick="pk('9')">9</button>
     <div></div><button class="key" onclick="pk('0')">0</button>
-    <button class="key" onclick="pkDel()" style="font-size:16px;color:var(--muted)">⌫</button>
+    <button class="key" onclick="pkDel()" style="font-size:18px;color:var(--muted)">⌫</button>
   </div>
-  <div style="font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:10px" id="pin-err"></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-pin')">Cancel</button></div>
-</div></div>
+  <div style="font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:12px" id="pin-err"></div>
+  <button class="btn-sec" onclick="closeModal('modal-pin')">Cancel</button>
+</div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -202,58 +251,8 @@ const LAUNDRY_ITEMS = [
 let PROPS = [];
 let STAFF = [];
 let FILTER = { prop: 'all', status: 'all' };
+let STAFF_ASSIGNED_PROPS = [];
 let _pinAction = null, _pinStr = '';
-
-/* ── Staff property scope from URL params ── */
-(function applyStaffScope(){
-  const params = new URLSearchParams(location.search);
-  const singleProp = params.get('prop');
-  const multiProps = params.get('props');
-
-  if(singleProp){
-    // Single property: auto-lock, hide prop tabs, hide picker
-    FILTER.prop = singleProp;
-    document.getElementById('modal-prop-pick').classList.remove('on');
-    // Hide prop tabs row once DOM is ready
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const pt = document.getElementById('prop-tabs');
-      if(pt) pt.style.display = 'none';
-    });
-  } else if(multiProps){
-    // Multiple properties: show picker modal
-    let props;
-    try { props = JSON.parse(decodeURIComponent(multiProps)); } catch(e){ props=[]; }
-    if(props.length){
-      const sel = document.getElementById('pp-select');
-      sel.innerHTML = props.map(p=>`<option value="${p}">${p}</option>`).join('');
-      document.getElementById('modal-prop-pick').classList.add('on');
-    } else {
-      document.getElementById('modal-prop-pick').classList.remove('on');
-    }
-  } else {
-    // No params: owner/admin full access
-    document.getElementById('modal-prop-pick').classList.remove('on');
-  }
-})();
-
-function confirmPropPick(){
-  const val = document.getElementById('pp-select').value;
-  if(!val) return;
-  FILTER.prop = val;
-  closeModal('modal-prop-pick');
-  // Restrict prop tabs to only assigned props
-  const params = new URLSearchParams(location.search);
-  const multiProps = params.get('props');
-  let assignedProps = [];
-  try { assignedProps = JSON.parse(decodeURIComponent(multiProps||'[]')); } catch(e){}
-  if(assignedProps.length){
-    const pt = document.getElementById('prop-tabs');
-    if(pt){
-      pt.innerHTML = assignedProps.map(p=>`<button class="ptab ${p===FILTER.prop?'on':''}" onclick="setProp('${p.replace(/'/g,"\\'")}',this)">${p}</button>`).join('');
-    }
-  }
-  loadList();
-}
 
 async function api(path, method='GET', body=null){
   const opts = { method, headers:{ apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type':'application/json', Prefer:'return=representation' } };
@@ -263,7 +262,7 @@ async function api(path, method='GET', body=null){
   return r.status===204 ? null : r.json();
 }
 
-const fmtDT = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+const fmtDT = d => d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
 const fmtD  = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
 
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2800); }
@@ -309,134 +308,120 @@ async function loadStaff(){
   STAFF = await api('/rest/v1/staff?select=name&order=name').catch(()=>[]) || [];
 }
 
-/* ── Prop tabs ── */
-function renderPropTabs(){
-  const el = document.getElementById('prop-tabs');
-  el.innerHTML = `<button class="ptab ${FILTER.prop==='all'?'on':''}" onclick="setProp('all',this)">All Properties</button>`
-    + PROPS.map(p=>`<button class="ptab ${FILTER.prop===p.name?'on':''}" onclick="setProp('${p.name.replace(/'/g,"\\'")}',this)">${p.name}</button>`).join('');
-}
-window.setProp = (p,btn)=>{ FILTER.prop=p; document.querySelectorAll('#prop-tabs .ptab').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); loadList(); };
-window.setStatus = (s,btn)=>{ FILTER.status=s; document.querySelectorAll('#status-tabs .ptab').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); loadList(); };
+/* ── Staff scope from Supabase ── */
+async function resolveStaffScope(){
+  const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+  if(!me || me.role === 'owner') return;
 
-/* ── Main list ── */
+  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(me.name)).catch(()=>[]);
+  const record = (rows||[])[0];
+  if(!record || !record.assigned_properties) return;
+
+  const assigned = (record.assigned_properties||[]).filter(Boolean);
+  if(!assigned.length) return;
+
+  STAFF_ASSIGNED_PROPS = assigned;
+
+  if(assigned.length === 1){
+    FILTER.prop = assigned[0];
+    document.getElementById('hdr-prop').textContent = assigned[0];
+  } else {
+    // Show picker
+    const sel = document.getElementById('pp-select');
+    sel.innerHTML = assigned.map(p=>`<option value="${p}">${p}</option>`).join('');
+    openModal('modal-prop-pick');
+  }
+}
+
+function confirmPropPick(){
+  const val = document.getElementById('pp-select').value;
+  if(!val) return;
+  FILTER.prop = val;
+  document.getElementById('hdr-prop').textContent = val;
+  closeModal('modal-prop-pick');
+  loadList();
+}
+
+/* ── Status filter ── */
+window.setStatus = (s, btn) => {
+  FILTER.status = s;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  loadList();
+};
+
+/* ── Main list — card layout ── */
 async function loadList(){
-  document.getElementById('list-label').textContent = FILTER.prop==='all' ? 'All Properties' : FILTER.prop;
   let q = '/rest/v1/laundry_log?order=sent_at.desc';
-  if(FILTER.prop!=='all') q += '&property_name=eq.'+encodeURIComponent(FILTER.prop);
-  if(FILTER.status!=='all') q += '&status=eq.'+FILTER.status;
+  if(FILTER.prop !== 'all') q += '&property_name=eq.'+encodeURIComponent(FILTER.prop);
+  if(FILTER.status !== 'all') q += '&status=eq.'+FILTER.status;
+
   const el = document.getElementById('laundry-list');
-  el.innerHTML = 'Loading…';
+  el.innerHTML = '<div class="empty">Loading…</div>';
   const data = await api(q).catch(()=>[]) || [];
-  if(!data.length){ el.innerHTML='<div class="empty">No laundry logs found</div>'; return; }
-  el.innerHTML = `<table class="tbl" id="laundry-tbl">
-    <thead><tr>
-      <th>Property</th><th>Vendor</th><th>Sent At</th>
-      <th>Promised Return</th><th>Staff</th><th>Status</th><th></th>
-    </tr></thead>
-    <tbody>${data.map(r=>`
-      <tr style="cursor:pointer" onclick="toggleDetail(this,'${r.id}')">
-        <td style="font-size:12px;color:var(--muted);white-space:nowrap">${r.property_name||'—'}</td>
-        <td><b>${r.vendor_name||'—'}</b></td>
-        <td style="font-size:12px;white-space:nowrap">${fmtDT(r.sent_at)}</td>
-        <td style="font-size:12px;white-space:nowrap">${r.promised_return_at ? fmtDT(r.promised_return_at) : '—'}</td>
-        <td style="font-size:12px">${r.staff_handled||'—'}</td>
-        <td><span class="bdg ${r.status==='collected'?'bdg-g':'bdg-a'}">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
-        <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
-          ${r.status!=='collected'
-            ? `<button class="btn-edit" style="background:var(--g-l);color:var(--g);font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collected Back</button>`
-            : `<span style="font-size:11px;color:var(--muted)">✓ Done</span>`}
-          <button onclick='requirePin("Delete log",()=>deleteLog("${r.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px" onmouseover="this.style.color='var(--r)'" onmouseout="this.style.color='var(--muted)'">×</button>
-        </td>
-      </tr>
-      <tr id="detail-${r.id}" style="display:none">
-        <td colspan="7" style="padding:0">
-          <div style="background:var(--bg);border-top:1px solid var(--border);padding:16px 20px;font-size:13px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-              <div>
-                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Items Sent</div>
-                ${renderItemsSent(r.items_sent)}
-              </div>
-              <div>
-                ${r.status==='collected' ? `
-                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Collection Details</div>
-                  <div style="margin-bottom:6px;font-size:13px"><b>Collected:</b> ${fmtDT(r.collected_at)}</div>
-                  ${r.amount_paid ? `<div style="margin-bottom:6px"><b>Amount Paid:</b> ₹${r.amount_paid}</div>` : ''}
-                  ${r.invoice_url ? `<div style="margin-bottom:6px"><a href="${r.invoice_url}" target="_blank" style="color:var(--br)">View Invoice ↗</a></div>` : ''}
-                  ${r.collection_notes ? `<div style="margin-bottom:6px;color:var(--muted)">${r.collection_notes}</div>` : ''}
-                  ${renderItemsReturn(r.items_return)}
-                ` : `<div style="color:var(--muted);font-size:13px;padding-top:4px"><em>Awaiting collection</em></div>`}
-              </div>
-            </div>
-            ${r.notes ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--muted);font-size:13px">${r.notes}</div>` : ''}
-          </div>
-        </td>
-      </tr>`).join('')}
-    </tbody></table>`;
-}
 
-function renderItemsSent(items){
-  if(!items || !items.length) return '<em style="color:var(--muted)">No items recorded</em>';
-  return items.filter(i=>i.qty>0).map(i=>`
-    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
-      <span>${i.name}</span><b>${i.qty}</b>
-    </div>`).join('') || '<em style="color:var(--muted)">No items recorded</em>';
-}
+  document.getElementById('list-label').textContent =
+    FILTER.prop === 'all' ? 'All Logs' : FILTER.prop;
 
-function renderItemsReturn(items){
-  if(!items || !items.length) return '';
-  const rows = items.filter(i=>i.qty>0).map(i=>{
-    const c = i.condition;
-    const cls = c==='good'?'bdg-g':c==='bad'?'bdg-a':'bdg-r';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
-      <span>${i.name} ×${i.qty}</span>
-      <span class="bdg ${cls}" style="font-size:10px">${c==='good'?'Good':c==='bad'?'Bad Condition':'Missing'}</span>
+  if(!data.length){
+    el.innerHTML = '<div class="empty">No logs found</div>';
+    return;
+  }
+
+  el.innerHTML = data.map(r => {
+    const isDone = r.status === 'collected';
+    const sentDate = fmtDT(r.sent_at);
+    const returnDate = r.promised_return_at ? fmtD(r.promised_return_at) : null;
+    return `
+    <div class="log-card ${isDone ? 'done' : ''}">
+      <div class="card-left">
+        <div class="card-vendor">${r.vendor_name || '—'}</div>
+        <div class="card-meta">
+          Sent ${sentDate}${returnDate ? ' · Return ' + returnDate : ''}
+        </div>
+      </div>
+      <div class="card-right">
+        ${isDone
+          ? `<span class="bdg bdg-g">✓ Collected</span>`
+          : `<button class="btn-collect" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collected Back</button>`
+        }
+      </div>
     </div>`;
   }).join('');
-  return rows ? `<div style="margin-top:8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px">Item Conditions</div>${rows}` : '';
-}
-
-function toggleDetail(row, id){
-  const dr = document.getElementById('detail-'+id);
-  if(!dr) return;
-  dr.style.display = dr.style.display==='none' ? '' : 'none';
 }
 
 /* ── Create Modal ── */
 async function openCreateModal(){
-  try { await loadProps(); } catch(e){ console.warn('Could not load properties', e); }
-  try { await loadStaff(); } catch(e){ console.warn('Could not load staff', e); }
+  try { await loadProps(); } catch(e){}
+  try { await loadStaff(); } catch(e){}
 
+  // Property dropdown
   const propSel = document.getElementById('c-prop');
-  propSel.innerHTML = PROPS.length
-    ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
-    : '<option value="">No properties found</option>';
-  // Respect staff scope: restrict dropdown to assigned properties
-  const params = new URLSearchParams(location.search);
-  const singleProp = params.get('prop');
-  const multiProps = params.get('props');
-  if(singleProp){
-    propSel.innerHTML = `<option value="${singleProp}">${singleProp}</option>`;
+  if(STAFF_ASSIGNED_PROPS.length === 1){
+    propSel.innerHTML = `<option value="${STAFF_ASSIGNED_PROPS[0]}">${STAFF_ASSIGNED_PROPS[0]}</option>`;
     propSel.disabled = true;
-  } else if(multiProps){
-    let assignedProps = [];
-    try { assignedProps = JSON.parse(decodeURIComponent(multiProps)); } catch(e){}
-    if(assignedProps.length){
-      propSel.innerHTML = assignedProps.map(p=>`<option value="${p}">${p}</option>`).join('');
-      propSel.value = FILTER.prop !== 'all' ? FILTER.prop : assignedProps[0];
-      propSel.disabled = false;
-    }
-  } else if(FILTER.prop!=='all'){
-    propSel.value = FILTER.prop;
+  } else if(STAFF_ASSIGNED_PROPS.length > 1){
+    propSel.innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
+    propSel.disabled = false;
+    if(FILTER.prop !== 'all') propSel.value = FILTER.prop;
+  } else {
+    propSel.innerHTML = PROPS.length
+      ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
+      : '<option value="">No properties found</option>';
+    propSel.disabled = false;
+    if(FILTER.prop !== 'all') propSel.value = FILTER.prop;
   }
 
-  document.getElementById('c-staff').innerHTML = `<option value="">— Select staff —</option>`
-    + STAFF.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-  // Pre-select logged-in staff
+  // Staff dropdown — lock to logged-in staff if role=staff
   const me = JSON.parse(localStorage.getItem('bc_me')||'null');
-  if(me && me.name){
-    const staffSel = document.getElementById('c-staff');
-    const opt = Array.from(staffSel.options).find(o=>o.value===me.name);
-    if(opt) staffSel.value = me.name;
+  const staffSel = document.getElementById('c-staff');
+  if(me && me.role === 'staff' && me.name){
+    staffSel.innerHTML = `<option value="${me.name}">${me.name}</option>`;
+    staffSel.disabled = true;
+  } else {
+    staffSel.innerHTML = `<option value="">— Select staff —</option>`
+      + STAFF.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+    staffSel.disabled = false;
   }
 
   const now = new Date();
@@ -449,7 +434,7 @@ async function openCreateModal(){
   document.getElementById('c-items-grid').innerHTML = LAUNDRY_ITEMS.map(name=>`
     <div class="item-row">
       <span class="item-label">${name}</span>
-      <input class="item-qty" type="number" min="0" placeholder="0" data-item="${name}" value="0"/>
+      <input class="item-qty" type="number" min="0" inputmode="numeric" placeholder="0" data-item="${name}" value="0"/>
     </div>`).join('');
   openModal('modal-create');
 }
@@ -494,19 +479,18 @@ function openCollectModal(record){
   document.getElementById('col-amount').value = '';
   document.getElementById('col-invoice').value = '';
   document.getElementById('col-notes').value = '';
-  // Build condition rows from items_sent
   const items = (record.items_sent||[]).filter(i=>i.qty>0);
   document.getElementById('col-items-list').innerHTML = items.length
     ? items.map(i=>`
       <div class="ret-row">
-        <span>${i.name} <span style="color:var(--muted)">(sent: ${i.qty})</span></span>
+        <span>${i.name} <span style="color:var(--muted);font-size:11px">(${i.qty})</span></span>
         <select data-item="${i.name}" data-qty="${i.qty}">
-          <option value="good">✓ Good Condition</option>
-          <option value="bad">⚠ Bad Condition</option>
+          <option value="good">✓ Good</option>
+          <option value="bad">⚠ Bad</option>
           <option value="missing">✗ Missing</option>
         </select>
       </div>`).join('')
-    : '<div style="color:var(--muted);font-size:13px">No items recorded for this log.</div>';
+    : '<div style="color:var(--muted);font-size:13px">No items recorded.</div>';
   openModal('modal-collect');
 }
 
@@ -518,15 +502,9 @@ async function saveCollect(){
   const notes = document.getElementById('col-notes').value.trim();
   if(!date){ alert('Collection date is required'); return; }
   const collected_at = new Date(date+'T'+(time||'00:00')).toISOString();
-
-  // Collect item conditions
   const items_return = Array.from(document.querySelectorAll('#col-items-list select')).map(sel=>({
-    name: sel.dataset.item,
-    qty: parseInt(sel.dataset.qty)||0,
-    condition: sel.value
+    name: sel.dataset.item, qty: parseInt(sel.dataset.qty)||0, condition: sel.value
   }));
-
-  // Upload invoice if present
   const btn = document.getElementById('col-save-btn');
   let invoice_url = null;
   const file = document.getElementById('col-invoice').files[0];
@@ -540,9 +518,8 @@ async function saveCollect(){
     });
     if(res.ok) invoice_url = SB+'/storage/v1/object/public/laundry-invoices/'+path;
     else { const e=await res.json().catch(()=>({})); alert('Invoice upload failed: '+(e.message||res.status)); }
-    btn.disabled=false; btn.textContent='Save Collection';
+    btn.disabled=false; btn.textContent='Save';
   }
-
   const patch = { status:'collected', collected_at, items_return, notes:notes||null };
   if(amount) patch.amount_paid = amount;
   if(invoice_url) patch.invoice_url = invoice_url;
@@ -558,47 +535,12 @@ async function deleteLog(id){
   loadList();
 }
 
-/* ── Excel Download ── */
-function downloadExcel(){
-  const rows = [];
-  document.querySelectorAll('#laundry-tbl tbody tr[onclick]').forEach(tr=>{
-    const cells = tr.querySelectorAll('td');
-    rows.push([
-      cells[0]?.innerText?.trim()||'',
-      cells[1]?.innerText?.trim()||'',
-      cells[2]?.innerText?.trim()||'',
-      cells[3]?.innerText?.trim()||'',
-      cells[4]?.innerText?.trim()||'',
-      cells[5]?.innerText?.trim()||''
-    ]);
-  });
-  if(!rows.length){ toast('No data to export'); return; }
-  const header = ['Property','Vendor','Sent At','Promised Return','Staff','Status'];
-  const csv = '\uFEFF'+[header,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = `Laundry_${FILTER.prop==='all'?'All':FILTER.prop.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  toast('Downloaded ✓');
-}
-
 /* ── Boot ── */
 (async()=>{
   await loadProps();
-  const params = new URLSearchParams(location.search);
-  const singleProp = params.get('prop');
-  const multiProps = params.get('props');
-  if(!singleProp && !multiProps){
-    // Full access: render all prop tabs
-    renderPropTabs();
-    loadList();
-  } else if(singleProp){
-    // Single prop: render tabs with only that prop (or just hide)
-    const pt = document.getElementById('prop-tabs');
-    if(pt) pt.style.display = 'none';
-    loadList();
-  }
-  // Multi-prop: wait for confirmPropPick() to call loadList()
+  await resolveStaffScope();
+  if(STAFF_ASSIGNED_PROPS.length > 1) return; // wait for picker
+  loadList();
 })();
 </script>
 </body>
