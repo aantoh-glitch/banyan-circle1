@@ -169,14 +169,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
   <div class="dash-section-title">Staff & Operations</div>
   <div class="dash-grid-2">
-    <div class="dash-tile tile-leave" style="cursor:default">
-      <div class="dash-tile-icon icon-leave">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <div class="dash-tile-label">On Leave</div>
-      <div class="dash-tile-value" id="dash-leave" style="color:var(--muted);font-size:28px">—</div>
-      <div class="dash-tile-sub">coming soon</div>
-    </div>
+    <div class="dash-tile tile-leave" onclick="window.location.href='leave_calendar.html'">
+  <div class="dash-tile-icon icon-leave">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </div>
+  <div class="dash-tile-label">On Leave</div>
+  <div class="dash-tile-value loading" id="dash-leave">…</div>
+  <div class="dash-tile-sub">today</div>
+  <div class="dash-tile-nav">→</div>
+</div>
     <div class="dash-tile tile-tasks" onclick="goPage('tasks', document.querySelector('.sb-btn[onclick*=tasks]'))">
       <div class="dash-tile-icon icon-tasks">
         <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -2224,7 +2225,14 @@ async function loadDashboard(){
       dueEl.textContent = `⚠ ${dueToday.length} due back today`;
     }
   } catch(e){ const el=document.getElementById("dash-laundry-count"); if(el) el.textContent="—"; }
-}
+
+// Staff on leave today
+try {
+  const today = new Date().toISOString().slice(0,10);
+  const lv = await api(`/rest/v1/staff_leave?select=id&status=eq.approved&start_date=lte.${today}&end_date=gte.${today}`) || [];
+  const el = document.getElementById('dash-leave');
+  if(el){ el.textContent = lv.length; el.className='dash-tile-value'; }
+} catch(e){ const el=document.getElementById('dash-leave'); if(el){ el.textContent='—'; el.className='dash-tile-value'; } }}
 
 // Boot
 loadDashboard();
