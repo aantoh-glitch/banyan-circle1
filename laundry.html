@@ -155,6 +155,19 @@ textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
 
 <!-- Detail / Log Expand (inline row, no modal) -->
 
+<!-- Property Picker Modal (shown when staff has 2+ properties) -->
+<div class="modal on" id="modal-prop-pick" style="z-index:10000"><div class="modal-card" style="max-width:360px">
+  <div class="modal-ttl">Select Property</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">You are assigned to multiple properties. Select one to view.</p>
+  <div class="fg">
+    <label class="fl">Property</label>
+    <select class="fc" id="pp-select"></select>
+  </div>
+  <div class="modal-actions">
+    <button class="btn-p" onclick="confirmPropPick()">Continue</button>
+  </div>
+</div></div>
+
 <!-- PIN Modal -->
 <div class="modal" id="modal-pin"><div class="modal-card" style="max-width:320px">
   <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px" id="pin-title">Confirm</div>
@@ -190,6 +203,57 @@ let PROPS = [];
 let STAFF = [];
 let FILTER = { prop: 'all', status: 'all' };
 let _pinAction = null, _pinStr = '';
+
+/* ── Staff property scope from URL params ── */
+(function applyStaffScope(){
+  const params = new URLSearchParams(location.search);
+  const singleProp = params.get('prop');
+  const multiProps = params.get('props');
+
+  if(singleProp){
+    // Single property: auto-lock, hide prop tabs, hide picker
+    FILTER.prop = singleProp;
+    document.getElementById('modal-prop-pick').classList.remove('on');
+    // Hide prop tabs row once DOM is ready
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const pt = document.getElementById('prop-tabs');
+      if(pt) pt.style.display = 'none';
+    });
+  } else if(multiProps){
+    // Multiple properties: show picker modal
+    let props;
+    try { props = JSON.parse(decodeURIComponent(multiProps)); } catch(e){ props=[]; }
+    if(props.length){
+      const sel = document.getElementById('pp-select');
+      sel.innerHTML = props.map(p=>`<option value="${p}">${p}</option>`).join('');
+      document.getElementById('modal-prop-pick').classList.add('on');
+    } else {
+      document.getElementById('modal-prop-pick').classList.remove('on');
+    }
+  } else {
+    // No params: owner/admin full access
+    document.getElementById('modal-prop-pick').classList.remove('on');
+  }
+})();
+
+function confirmPropPick(){
+  const val = document.getElementById('pp-select').value;
+  if(!val) return;
+  FILTER.prop = val;
+  closeModal('modal-prop-pick');
+  // Restrict prop tabs to only assigned props
+  const params = new URLSearchParams(location.search);
+  const multiProps = params.get('props');
+  let assignedProps = [];
+  try { assignedProps = JSON.parse(decodeURIComponent(multiProps||'[]')); } catch(e){}
+  if(assignedProps.length){
+    const pt = document.getElementById('prop-tabs');
+    if(pt){
+      pt.innerHTML = assignedProps.map(p=>`<button class="ptab ${p===FILTER.prop?'on':''}" onclick="setProp('${p.replace(/'/g,"\\'")}',this)">${p}</button>`).join('');
+    }
+  }
+  loadList();
+}
 
 async function api(path, method='GET', body=null){
   const opts = { method, headers:{ apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type':'application/json', Prefer:'return=representation' } };
@@ -346,10 +410,34 @@ async function openCreateModal(){
   propSel.innerHTML = PROPS.length
     ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
     : '<option value="">No properties found</option>';
-  if(FILTER.prop!=='all') propSel.value = FILTER.prop;
+  // Respect staff scope: restrict dropdown to assigned properties
+  const params = new URLSearchParams(location.search);
+  const singleProp = params.get('prop');
+  const multiProps = params.get('props');
+  if(singleProp){
+    propSel.innerHTML = `<option value="${singleProp}">${singleProp}</option>`;
+    propSel.disabled = true;
+  } else if(multiProps){
+    let assignedProps = [];
+    try { assignedProps = JSON.parse(decodeURIComponent(multiProps)); } catch(e){}
+    if(assignedProps.length){
+      propSel.innerHTML = assignedProps.map(p=>`<option value="${p}">${p}</option>`).join('');
+      propSel.value = FILTER.prop !== 'all' ? FILTER.prop : assignedProps[0];
+      propSel.disabled = false;
+    }
+  } else if(FILTER.prop!=='all'){
+    propSel.value = FILTER.prop;
+  }
 
   document.getElementById('c-staff').innerHTML = `<option value="">— Select staff —</option>`
     + STAFF.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+  // Pre-select logged-in staff
+  const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+  if(me && me.name){
+    const staffSel = document.getElementById('c-staff');
+    const opt = Array.from(staffSel.options).find(o=>o.value===me.name);
+    if(opt) staffSel.value = me.name;
+  }
 
   const now = new Date();
   document.getElementById('c-date').value = now.toISOString().slice(0,10);
@@ -497,8 +585,20 @@ function downloadExcel(){
 /* ── Boot ── */
 (async()=>{
   await loadProps();
-  renderPropTabs();
-  loadList();
+  const params = new URLSearchParams(location.search);
+  const singleProp = params.get('prop');
+  const multiProps = params.get('props');
+  if(!singleProp && !multiProps){
+    // Full access: render all prop tabs
+    renderPropTabs();
+    loadList();
+  } else if(singleProp){
+    // Single prop: render tabs with only that prop (or just hide)
+    const pt = document.getElementById('prop-tabs');
+    if(pt) pt.style.display = 'none';
+    loadList();
+  }
+  // Multi-prop: wait for confirmPropPick() to call loadList()
 })();
 </script>
 </body>

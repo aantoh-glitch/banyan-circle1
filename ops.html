@@ -213,7 +213,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </a>
 
-    <a class="dash-btn" href="/laundry.html">
+    <a class="dash-btn" id="laundry-link" href="/laundry.html">
       <div class="db-icon">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M8 7.5A5 5 0 0 1 16.5 10"/></svg>
       </div>
@@ -262,6 +262,19 @@ function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html
 const earnLink = document.getElementById('earnings-link');
 if (earnLink && me && me.name) {
   earnLink.href = '/earnings.html?role=staff&name=' + encodeURIComponent(me.name);
+}
+// Wire laundry link with property_name from logged-in staff
+const laundryLink = document.getElementById('laundry-link');
+if (laundryLink && me) {
+  const props = me.property_name
+    ? (Array.isArray(me.property_name) ? me.property_name : [me.property_name])
+    : [];
+  if (props.length === 1) {
+    laundryLink.href = '/laundry.html?prop=' + encodeURIComponent(props[0]);
+  } else if (props.length > 1) {
+    laundryLink.href = '/laundry.html?props=' + encodeURIComponent(JSON.stringify(props));
+  }
+  // 0 properties or owner/admin → plain /laundry.html (all access)
 }
 </script>
 </body>
