@@ -17,7 +17,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .sb-name{font-family:'Playfair Display',serif;font-size:16px}
 .sb-sub{font-size:11px;color:var(--muted)}
 .sb-nav{flex:1;padding:0 12px;overflow-y:auto}
-.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s;text-decoration:none}
+.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
 .sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .sb-btn:hover{background:var(--bg);color:var(--text)}
 .sb-btn.on{background:#222;color:#fff;font-weight:500}
@@ -28,11 +28,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
 .pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
-.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 .fg{margin-bottom:12px}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
 .fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
 .btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
 .btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
 .btn-p svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -49,58 +49,51 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .bdg-b{background:var(--b-l);color:#0C447C}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
 .modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
 .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
 .kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
 .kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
-
-/* Toggle switch */
-.toggle-wrap{display:flex;align-items:center;gap:10px}
+/* Toggle */
 .toggle{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
 .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .toggle input:checked+.toggle-slider{background:var(--br)}
 .toggle input:checked+.toggle-slider:before{transform:translateX(20px)}
+.toggle-wrap{display:flex;align-items:center;gap:10px}
 .toggle-label{font-size:13px;color:var(--text)}
-
-/* Photo preview */
-.photo-preview{width:100%;height:140px;border:1.5px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s;overflow:hidden;position:relative;background:var(--bg)}
+/* Small table toggle */
+.sm-toggle{position:relative;display:inline-block;width:36px;height:20px}
+.sm-toggle input{opacity:0;width:0;height:0}
+.sm-toggle-s{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
+.sm-toggle-s:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.sm-toggle input:checked+.sm-toggle-s{background:var(--br)}
+.sm-toggle input:checked+.sm-toggle-s:before{transform:translateX(16px)}
+/* Photo */
+.photo-preview{width:100%;height:140px;border:1.5px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:var(--bg);transition:border-color .15s}
 .photo-preview:hover{border-color:var(--br)}
-.photo-preview img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.photo-preview .ph-prompt{font-size:12px;color:var(--muted);text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
-.photo-preview .ph-prompt svg{width:24px;height:24px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ph-prompt{font-size:12px;color:var(--muted);text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.ph-prompt svg{width:24px;height:24px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 #photo-input{display:none}
-
-/* Item photo thumb in table */
 .item-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
 .item-thumb-empty{width:40px;height:40px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center}
-.item-thumb-empty svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-
+.item-thumb-empty svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:1.5}
 /* Lightbox */
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out}
 .lightbox.on{display:flex}
-.lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 8px 48px rgba(0,0,0,.5)}
-
-/* Inline toggle in table */
-.tbl-toggle{position:relative;display:inline-block;width:38px;height:20px}
-.tbl-toggle input{opacity:0;width:0;height:0}
-.tbl-toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
-.tbl-toggle-slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.15)}
-.tbl-toggle input:checked+.tbl-toggle-slider{background:var(--br)}
-.tbl-toggle input:checked+.tbl-toggle-slider:before{transform:translateX(18px)}
-
+.lightbox img{max-width:90vw;max-height:90vh;border-radius:12px}
+/* Filter */
 .filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.filter-row input.fc{width:220px}
-.filter-row select.fc{width:160px}
-
-.number-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--a-l);color:var(--a);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif}
+/* Status badge colours */
+.s-pending{background:var(--a-l);color:#633806}
+.s-informed{background:var(--b-l);color:#0C447C}
+.s-collected{background:var(--g-l);color:#27500A}
 </style>
 </head>
 <body>
@@ -110,27 +103,24 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <div class="sidebar">
   <div class="sb-logo" style="justify-content:center;padding:0 16px 20px">
     <div class="sb-mark">BC</div>
-    <div>
-      <div class="sb-name">Banyan Circle</div>
-      <div class="sb-sub">Office</div>
-    </div>
+    <div><div class="sb-name">Banyan Circle</div><div class="sb-sub">Office</div></div>
   </div>
   <nav class="sb-nav">
-    <a class="sb-btn" href="admin.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
-    <a class="sb-btn" href="admin.html#properties"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Properties</a>
-    <a class="sb-btn" href="admin.html#staff"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Manager &amp; Staff</a>
-    <a class="sb-btn" href="admin.html#guests"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guests</a>
-    <a class="sb-btn" href="admin.html#maintenance"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</a>
-    <a class="sb-btn" href="admin.html#laundry"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Laundry</a>
-    <a class="sb-btn" href="admin.html#tasks"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</a>
-    <a class="sb-btn on" href="lost-and-found.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>Lost &amp; Found</a>
-    <a class="sb-btn" href="admin.html#earnings"><svg viewBox="0 0 24 24"><line x1="5" y1="21" x2="5" y2="3"/><path d="M5 3h10a4 4 0 0 1 0 8H5"/><path d="M5 11h10"/><path d="M8 21l7-10"/></svg>Earnings</a>
-    <a class="sb-btn" href="admin.html#billing"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Billing</a>
-    <a class="sb-btn" href="admin.html#bookings"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bookings</a>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Properties</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Manager &amp; Staff</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guests</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Laundry</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</button>
+    <button class="sb-btn on"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>Lost &amp; Found</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><line x1="5" y1="21" x2="5" y2="3"/><path d="M5 3h10a4 4 0 0 1 0 8H5"/><path d="M5 11h10"/><path d="M8 21l7-10"/></svg>Earnings</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Billing</button>
+    <button class="sb-btn" onclick="location='admin.html'"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bookings</button>
   </nav>
   <div class="sb-footer">
-    <div class="sb-user">Office Admin</div>
-    <button class="sb-signout" onclick="window.location='admin.html'">← Back to Admin</button>
+    <div class="sb-user">OFFICE</div>
+    <button class="sb-signout" onclick="location='admin.html'">← Back to Admin</button>
   </div>
 </div>
 
@@ -139,7 +129,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
     <div>
       <div class="pg-title">Lost &amp; Found</div>
-      <div class="pg-sub">Track items found on property — log, notify, and mark as collected.</div>
+      <div class="pg-sub">Track items found on property — log, notify guests, and mark as collected.</div>
     </div>
     <button class="btn-p" onclick="openAddModal()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -149,47 +139,44 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
   <!-- KPIs -->
   <div class="kpi-row">
-    <div class="kpi">
-      <div class="kpi-label">Total Items</div>
-      <div class="kpi-value" id="kpi-total">—</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Awaiting Collection</div>
-      <div class="kpi-value" id="kpi-pending" style="color:var(--a)">—</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Collected</div>
-      <div class="kpi-value" id="kpi-collected" style="color:var(--g)">—</div>
-    </div>
+    <div class="kpi"><div class="kpi-label">Total Items</div><div class="kpi-value" id="kpi-total">—</div></div>
+    <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value" id="kpi-pending" style="color:var(--a)">—</div></div>
+    <div class="kpi"><div class="kpi-label">Informed</div><div class="kpi-value" id="kpi-informed" style="color:var(--b)">—</div></div>
+    <div class="kpi"><div class="kpi-label">Collected</div><div class="kpi-value" id="kpi-collected" style="color:var(--g)">—</div></div>
   </div>
 
-  <!-- Filter row -->
+  <!-- Filters -->
   <div class="filter-row">
-    <input class="fc" type="text" id="search-input" placeholder="Search items…" oninput="renderTable()" style="width:220px"/>
-    <select class="fc" id="filter-status" onchange="renderTable()" style="width:180px">
+    <input class="fc" type="text" id="search-input" placeholder="Search item or guest…" oninput="renderTable()" style="width:220px"/>
+    <select class="fc" id="filter-status" onchange="renderTable()" style="width:170px">
       <option value="">All items</option>
-      <option value="uncollected">Awaiting collection</option>
+      <option value="pending">Pending</option>
+      <option value="informed">Informed</option>
       <option value="collected">Collected</option>
-      <option value="notified">Customer notified</option>
+    </select>
+    <select class="fc" id="filter-prop" onchange="renderTable()" style="width:170px">
+      <option value="">All properties</option>
     </select>
   </div>
 
-  <!-- Table card -->
+  <!-- Table -->
   <div class="card" style="padding:0;overflow:hidden">
     <table class="tbl" id="lf-table">
       <thead>
         <tr>
           <th style="width:52px">Photo</th>
           <th>Item</th>
-          <th>Number</th>
-          <th>Found On</th>
+          <th>Guest</th>
+          <th>Property</th>
+          <th>Found</th>
+          <th>Status</th>
           <th>Informed</th>
           <th>Collected</th>
-          <th style="width:80px"></th>
+          <th style="width:90px"></th>
         </tr>
       </thead>
       <tbody id="lf-tbody">
-        <tr><td colspan="7" class="empty">Loading…</td></tr>
+        <tr><td colspan="9" class="empty">Loading…</td></tr>
       </tbody>
     </table>
   </div>
@@ -199,17 +186,56 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 <!-- Add / Edit Modal -->
 <div class="modal" id="modal-add">
   <div class="modal-card">
-    <div class="modal-ttl" id="modal-add-title">Add Lost &amp; Found Item</div>
+    <div class="modal-ttl" id="modal-ttl">Add Lost &amp; Found Item</div>
     <input type="hidden" id="edit-id"/>
 
-    <div class="fg">
-      <label class="fl">Item Name *</label>
-      <input class="fc" id="f-name" type="text" placeholder="e.g. Black umbrella"/>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Item Description *</label>
+        <input class="fc" id="f-desc" type="text" placeholder="e.g. Black umbrella"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Location Found</label>
+        <input class="fc" id="f-location" type="text" placeholder="e.g. Room 3, Pool area"/>
+      </div>
+    </div>
+
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Found Date</label>
+        <input class="fc" id="f-date" type="date"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Found Time</label>
+        <input class="fc" id="f-time" type="time"/>
+      </div>
+    </div>
+
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Property</label>
+        <select class="fc" id="f-property"><option value="">— select —</option></select>
+      </div>
+      <div class="fg">
+        <label class="fl">Found By (Staff)</label>
+        <select class="fc" id="f-foundby"><option value="">— select —</option></select>
+      </div>
+    </div>
+
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Guest Name</label>
+        <input class="fc" id="f-guestname" type="text" placeholder="Guest name if known"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Booking ID</label>
+        <input class="fc" id="f-bookingid" type="text" placeholder="Optional"/>
+      </div>
     </div>
 
     <div class="fg">
-      <label class="fl">Number / Room Reference <span style="color:var(--muted);font-size:11px">(default –1 if unknown)</span></label>
-      <input class="fc" id="f-number" type="number" value="-1" placeholder="-1"/>
+      <label class="fl">Remarks</label>
+      <textarea class="fc" id="f-remarks" placeholder="Any additional notes…"></textarea>
     </div>
 
     <div class="fg">
@@ -223,25 +249,19 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       <input type="file" id="photo-input" accept="image/*" onchange="previewPhoto(event)"/>
     </div>
 
-    <div class="row-grid" style="margin-bottom:12px">
+    <div class="row-grid" style="margin-bottom:4px">
       <div>
         <label class="fl" style="margin-bottom:10px">Customer Informed</label>
         <div class="toggle-wrap">
-          <label class="toggle">
-            <input type="checkbox" id="f-informed"/>
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-label" id="informed-label">No</span>
+          <label class="toggle"><input type="checkbox" id="f-informed" onchange="syncStatus()"/><span class="toggle-slider"></span></label>
+          <span class="toggle-label" id="lbl-informed">No</span>
         </div>
       </div>
       <div>
         <label class="fl" style="margin-bottom:10px">Collected by Customer</label>
         <div class="toggle-wrap">
-          <label class="toggle">
-            <input type="checkbox" id="f-collected"/>
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="toggle-label" id="collected-label">No</span>
+          <label class="toggle"><input type="checkbox" id="f-collected" onchange="syncStatus()"/><span class="toggle-slider"></span></label>
+          <span class="toggle-label" id="lbl-collected">No</span>
         </div>
       </div>
     </div>
@@ -253,33 +273,33 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 </div>
 
-<!-- Photo lightbox -->
+<!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')">
-  <img id="lightbox-img" src="" alt="Item photo"/>
+  <img id="lb-img" src="" alt=""/>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
-const TABLE = 'lost_and_found';
+const SB    = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const TABLE  = 'lost_and_found';
 const BUCKET = 'lost-and-found-photos';
 
-let allItems = [];
-let photoFile = null;
-let photoPreviewUrl = null; // existing URL when editing
+let allItems = [], PROPS = [], STAFF = [];
+let photoFile = null, existingPhotoUrl = null;
 
-// ── API helpers ──────────────────────────────────────────────
-async function api(path, opts={}) {
-  const r = await fetch(SB + path, {
-    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...opts.headers },
-    ...opts
-  });
-  if (!r.ok) { const e = await r.text(); throw new Error(e); }
-  const txt = await r.text();
-  return txt ? JSON.parse(txt) : null;
+// ── API ──────────────────────────────────────────────────────
+async function api(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB + path, opts);
+  if (!r.ok) throw new Error(await r.text());
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
 }
 
 async function uploadPhoto(file) {
@@ -287,258 +307,267 @@ async function uploadPhoto(file) {
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const r = await fetch(`${SB}/storage/v1/object/${BUCKET}/${path}`, {
     method: 'POST',
-    headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': file.type },
-    body: file
+    headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': file.type }
+    , body: file
   });
-  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+  if (!r.ok) throw new Error(await r.text());
   return `${SB}/storage/v1/object/public/${BUCKET}/${path}`;
 }
 
-// ── Load ────────────────────────────────────────────────────
-async function loadItems() {
-  try {
-    allItems = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`) || [];
-    updateKPIs();
-    renderTable();
-  } catch(e) {
-    showToast('Failed to load items: ' + e.message);
-    document.getElementById('lf-tbody').innerHTML = '<tr><td colspan="7" class="empty">Error loading data.</td></tr>';
-  }
+// ── Boot ─────────────────────────────────────────────────────
+async function boot() {
+  const [items, props, staff] = await Promise.all([
+    api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]),
+    api('/rest/v1/properties?select=id,name&order=name').catch(()=>[]),
+    api('/rest/v1/staff?select=id,name&order=name').catch(()=>[])
+  ]);
+  allItems = items || [];
+  PROPS    = props  || [];
+  STAFF    = staff  || [];
+
+  // Populate property filter
+  const pf = document.getElementById('filter-prop');
+  PROPS.forEach(p => pf.innerHTML += `<option value="${p.id}">${esc(p.name)}</option>`);
+
+  updateKPIs();
+  renderTable();
 }
 
+// ── KPIs ─────────────────────────────────────────────────────
 function updateKPIs() {
-  document.getElementById('kpi-total').textContent = allItems.length;
-  document.getElementById('kpi-pending').textContent = allItems.filter(i => !i.collected_by_customer).length;
-  document.getElementById('kpi-collected').textContent = allItems.filter(i => i.collected_by_customer).length;
+  document.getElementById('kpi-total').textContent     = allItems.length;
+  document.getElementById('kpi-pending').textContent   = allItems.filter(i=>i.status==='pending').length;
+  document.getElementById('kpi-informed').textContent  = allItems.filter(i=>i.status==='informed').length;
+  document.getElementById('kpi-collected').textContent = allItems.filter(i=>i.status==='collected').length;
 }
 
-// ── Render table ────────────────────────────────────────────
+// ── Render ───────────────────────────────────────────────────
 function renderTable() {
-  const q = document.getElementById('search-input').value.toLowerCase();
+  const q  = document.getElementById('search-input').value.toLowerCase();
   const st = document.getElementById('filter-status').value;
+  const pr = document.getElementById('filter-prop').value;
 
-  let items = allItems.filter(i => {
-    if (q && !i.item_name.toLowerCase().includes(q)) return false;
-    if (st === 'uncollected' && i.collected_by_customer) return false;
-    if (st === 'collected' && !i.collected_by_customer) return false;
-    if (st === 'notified' && !i.informed_customer) return false;
+  const items = allItems.filter(i => {
+    if (q  && !(i.item_description||'').toLowerCase().includes(q) && !(i.guest_name||'').toLowerCase().includes(q)) return false;
+    if (st && i.status !== st) return false;
+    if (pr && i.property_id !== pr) return false;
     return true;
   });
 
   const tbody = document.getElementById('lf-tbody');
-  if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">No items found.</td></tr>';
-    return;
-  }
+  if (!items.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty">No items found.</td></tr>'; return; }
+
+  const propName = id => PROPS.find(p=>p.id===id)?.name || '—';
+  const staffName = id => STAFF.find(s=>s.id===id)?.name || '—';
 
   tbody.innerHTML = items.map(i => `
-    <tr id="row-${i.id}">
-      <td>
-        ${i.photo_url
-          ? `<img class="item-thumb" src="${i.photo_url}" alt="${esc(i.item_name)}" onclick="openLightbox('${i.photo_url}')" title="Click to enlarge"/>`
-          : `<span class="item-thumb-empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>`
-        }
+    <tr>
+      <td>${i.photo_url
+        ? `<img class="item-thumb" src="${i.photo_url}" onclick="openLightbox('${i.photo_url}')" title="Enlarge"/>`
+        : `<span class="item-thumb-empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>`}
       </td>
-      <td style="font-weight:500">${esc(i.item_name)}</td>
+      <td style="font-weight:500;max-width:160px">${esc(i.item_description||'—')}</td>
+      <td style="color:var(--muted)">${esc(i.guest_name||'—')}</td>
+      <td style="color:var(--muted)">${esc(propName(i.property_id))}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtDate(i.found_date)}${i.found_time ? '<br><span style="font-size:11px">'+i.found_time.slice(0,5)+'</span>' : ''}</td>
+      <td><span class="bdg ${i.status==='collected'?'s-collected':i.status==='informed'?'s-informed':'s-pending'}">${i.status||'pending'}</span></td>
       <td>
-        ${i.number !== null && i.number !== -1
-          ? `<span class="number-badge">${i.number}</span>`
-          : `<span style="color:var(--muted);font-size:12px">—</span>`}
-      </td>
-      <td style="color:var(--muted);font-size:12px">${fmtDate(i.created_at)}</td>
-      <td>
-        <label class="tbl-toggle" title="${i.informed_customer ? 'Informed' : 'Not yet informed'}">
-          <input type="checkbox" ${i.informed_customer ? 'checked' : ''} onchange="toggleField(${i.id},'informed_customer',this.checked)"/>
-          <span class="tbl-toggle-slider"></span>
+        <label class="sm-toggle">
+          <input type="checkbox" ${i.status==='informed'||i.status==='collected'?'checked':''} onchange="toggleInformed('${i.id}',this.checked)"/>
+          <span class="sm-toggle-s"></span>
         </label>
       </td>
       <td>
-        <label class="tbl-toggle" title="${i.collected_by_customer ? 'Collected' : 'Not collected'}">
-          <input type="checkbox" ${i.collected_by_customer ? 'checked' : ''} onchange="toggleField(${i.id},'collected_by_customer',this.checked)"/>
-          <span class="tbl-toggle-slider"></span>
+        <label class="sm-toggle">
+          <input type="checkbox" ${i.status==='collected'?'checked':''} onchange="toggleCollected('${i.id}',this.checked)"/>
+          <span class="sm-toggle-s"></span>
         </label>
       </td>
-      <td style="text-align:right">
-        <button class="btn-edit" style="padding:5px 10px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px" onmouseover="this.style.background='var(--br-l)';this.style.color='var(--br)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'" onclick="openEditModal(${i.id})">Edit</button>
-        <button style="padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit" onclick="deleteItem(${i.id})">Delete</button>
+      <td style="text-align:right;white-space:nowrap">
+        <button style="padding:5px 10px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px" onmouseover="this.style.background='var(--br-l)';this.style.color='var(--br)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'" onclick="openEditModal('${i.id}')">Edit</button>
+        <button style="padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit" onclick="deleteItem('${i.id}')">Delete</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
-// ── Toggle inline ───────────────────────────────────────────
-async function toggleField(id, field, val) {
+// ── Inline toggles ───────────────────────────────────────────
+async function toggleInformed(id, checked) {
+  const newStatus = checked ? 'informed' : 'pending';
+  await patchStatus(id, newStatus);
+}
+async function toggleCollected(id, checked) {
+  const newStatus = checked ? 'collected' : 'informed';
+  await patchStatus(id, newStatus);
+}
+async function patchStatus(id, status) {
   try {
-    await api(`/rest/v1/${TABLE}?id=eq.${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ [field]: val })
-    });
-    const item = allItems.find(i => i.id === id);
-    if (item) item[field] = val;
+    await api(`/rest/v1/${TABLE}?id=eq.${id}`, 'PATCH', { status });
+    const item = allItems.find(i=>i.id===id);
+    if (item) item.status = status;
     updateKPIs();
+    renderTable();
     showToast('Updated');
-  } catch(e) {
-    showToast('Update failed: ' + e.message);
-    loadItems(); // revert UI
-  }
+  } catch(e) { showToast('Error: '+e.message); loadItems(); }
 }
 
-// ── Add modal ───────────────────────────────────────────────
+// ── Load ─────────────────────────────────────────────────────
+async function loadItems() {
+  allItems = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]);
+  updateKPIs(); renderTable();
+}
+
+// ── Modal ────────────────────────────────────────────────────
+function fillSelects() {
+  const ps = document.getElementById('f-property');
+  const fs = document.getElementById('f-foundby');
+  ps.innerHTML = '<option value="">— select —</option>' + PROPS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  fs.innerHTML = '<option value="">— select —</option>' + STAFF.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+
 function openAddModal() {
-  document.getElementById('modal-add-title').textContent = 'Add Lost & Found Item';
+  document.getElementById('modal-ttl').textContent = 'Add Lost & Found Item';
   document.getElementById('edit-id').value = '';
-  document.getElementById('f-name').value = '';
-  document.getElementById('f-number').value = '-1';
+  ['f-desc','f-location','f-guestname','f-bookingid','f-remarks'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-time').value = '';
   document.getElementById('f-informed').checked = false;
   document.getElementById('f-collected').checked = false;
-  document.getElementById('informed-label').textContent = 'No';
-  document.getElementById('collected-label').textContent = 'No';
-  resetPhotoPreview();
-  photoPreviewUrl = null;
+  document.getElementById('lbl-informed').textContent = 'No';
+  document.getElementById('lbl-collected').textContent = 'No';
+  resetPhoto();
+  fillSelects();
   document.getElementById('modal-add').classList.add('on');
 }
 
 function openEditModal(id) {
-  const item = allItems.find(i => i.id === id);
-  if (!item) return;
-  document.getElementById('modal-add-title').textContent = 'Edit Item';
+  const i = allItems.find(x=>x.id===id);
+  if (!i) return;
+  document.getElementById('modal-ttl').textContent = 'Edit Item';
   document.getElementById('edit-id').value = id;
-  document.getElementById('f-name').value = item.item_name;
-  document.getElementById('f-number').value = item.number !== null ? item.number : -1;
-  document.getElementById('f-informed').checked = !!item.informed_customer;
-  document.getElementById('f-collected').checked = !!item.collected_by_customer;
-  document.getElementById('informed-label').textContent = item.informed_customer ? 'Yes' : 'No';
-  document.getElementById('collected-label').textContent = item.collected_by_customer ? 'Yes' : 'No';
-
-  // Show existing photo
-  if (item.photo_url) {
-    photoPreviewUrl = item.photo_url;
-    const prev = document.getElementById('photo-preview');
-    prev.innerHTML = `<img src="${item.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/><div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 7px;border-radius:999px">Click to change</div>`;
-    prev.querySelector('div').style.pointerEvents = 'none';
-  } else {
-    resetPhotoPreview();
-    photoPreviewUrl = null;
-  }
+  document.getElementById('f-desc').value       = i.item_description || '';
+  document.getElementById('f-location').value   = i.location_found || '';
+  document.getElementById('f-date').value       = i.found_date || '';
+  document.getElementById('f-time').value       = i.found_time ? i.found_time.slice(0,5) : '';
+  document.getElementById('f-guestname').value  = i.guest_name || '';
+  document.getElementById('f-bookingid').value  = i.booking_id || '';
+  document.getElementById('f-remarks').value    = i.remarks || '';
+  const informed  = i.status === 'informed' || i.status === 'collected';
+  const collected = i.status === 'collected';
+  document.getElementById('f-informed').checked  = informed;
+  document.getElementById('f-collected').checked = collected;
+  document.getElementById('lbl-informed').textContent  = informed  ? 'Yes' : 'No';
+  document.getElementById('lbl-collected').textContent = collected ? 'Yes' : 'No';
+  existingPhotoUrl = i.photo_url || null;
   photoFile = null;
+  if (existingPhotoUrl) {
+    document.getElementById('photo-preview').innerHTML =
+      `<img src="${existingPhotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>
+       <div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 8px;border-radius:999px;pointer-events:none">Click to change</div>`;
+  } else { resetPhoto(); }
+  fillSelects();
+  document.getElementById('f-property').value = i.property_id || '';
+  document.getElementById('f-foundby').value  = i.found_by   || '';
   document.getElementById('modal-add').classList.add('on');
 }
 
-// ── Save ────────────────────────────────────────────────────
+// ── Save ─────────────────────────────────────────────────────
 async function saveItem() {
-  const name = document.getElementById('f-name').value.trim();
-  if (!name) { showToast('Item name is required'); return; }
+  const desc = document.getElementById('f-desc').value.trim();
+  if (!desc) { showToast('Item description is required'); return; }
 
   const btn = document.getElementById('btn-save');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
+  btn.disabled = true; btn.textContent = 'Saving…';
 
   try {
-    let photo_url = photoPreviewUrl || null;
+    let photo_url = existingPhotoUrl || null;
+    if (photoFile) photo_url = await uploadPhoto(photoFile);
 
-    // Upload new photo if selected
-    if (photoFile) {
-      photo_url = await uploadPhoto(photoFile);
-    }
+    const informed  = document.getElementById('f-informed').checked;
+    const collected = document.getElementById('f-collected').checked;
+    const status    = collected ? 'collected' : informed ? 'informed' : 'pending';
 
     const payload = {
-      item_name: name,
-      number: parseInt(document.getElementById('f-number').value) || -1,
+      item_description: desc,
+      location_found:   document.getElementById('f-location').value.trim() || null,
+      found_date:       document.getElementById('f-date').value || null,
+      found_time:       document.getElementById('f-time').value || null,
+      guest_name:       document.getElementById('f-guestname').value.trim() || null,
+      booking_id:       document.getElementById('f-bookingid').value.trim() || null,
+      remarks:          document.getElementById('f-remarks').value.trim() || null,
+      property_id:      document.getElementById('f-property').value || null,
+      found_by:         document.getElementById('f-foundby').value || null,
       photo_url,
-      informed_customer: document.getElementById('f-informed').checked,
-      collected_by_customer: document.getElementById('f-collected').checked
+      status
     };
 
     const editId = document.getElementById('edit-id').value;
     if (editId) {
-      await api(`/rest/v1/${TABLE}?id=eq.${editId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      await api(`/rest/v1/${TABLE}?id=eq.${editId}`, 'PATCH', payload);
       showToast('Item updated');
     } else {
-      await api(`/rest/v1/${TABLE}`, { method: 'POST', body: JSON.stringify(payload) });
+      await api(`/rest/v1/${TABLE}`, 'POST', payload);
       showToast('Item added');
     }
-
     closeModal('modal-add');
     await loadItems();
   } catch(e) {
     showToast('Error: ' + e.message);
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Save Item';
+    btn.disabled = false; btn.textContent = 'Save Item';
   }
 }
 
-// ── Delete ──────────────────────────────────────────────────
+// ── Delete ───────────────────────────────────────────────────
 async function deleteItem(id) {
-  if (!confirm('Delete this item? This cannot be undone.')) return;
+  if (!confirm('Delete this item? Cannot be undone.')) return;
   try {
-    await api(`/rest/v1/${TABLE}?id=eq.${id}`, { method: 'DELETE', headers: { 'Prefer': '' } });
-    allItems = allItems.filter(i => i.id !== id);
-    updateKPIs();
-    renderTable();
-    showToast('Item deleted');
-  } catch(e) {
-    showToast('Delete failed: ' + e.message);
-  }
+    await api(`/rest/v1/${TABLE}?id=eq.${id}`, 'DELETE');
+    allItems = allItems.filter(i=>i.id!==id);
+    updateKPIs(); renderTable(); showToast('Deleted');
+  } catch(e) { showToast('Error: '+e.message); }
 }
 
-// ── Photo preview ────────────────────────────────────────────
+// ── Status sync from toggles ─────────────────────────────────
+function syncStatus() {
+  const informed  = document.getElementById('f-informed');
+  const collected = document.getElementById('f-collected');
+  document.getElementById('lbl-informed').textContent  = informed.checked  ? 'Yes' : 'No';
+  document.getElementById('lbl-collected').textContent = collected.checked ? 'Yes' : 'No';
+  // collected implies informed
+  if (collected.checked) { informed.checked = true; document.getElementById('lbl-informed').textContent = 'Yes'; }
+}
+
+// ── Photo ────────────────────────────────────────────────────
 function previewPhoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   photoFile = file;
   const url = URL.createObjectURL(file);
-  const prev = document.getElementById('photo-preview');
-  prev.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/><div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;pointer-events:none">Click to change</div>`;
+  document.getElementById('photo-preview').innerHTML =
+    `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>
+     <div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 8px;border-radius:999px;pointer-events:none">Click to change</div>`;
 }
-
-function resetPhotoPreview() {
-  photoFile = null;
+function resetPhoto() {
+  photoFile = null; existingPhotoUrl = null;
   document.getElementById('photo-input').value = '';
-  document.getElementById('photo-preview').innerHTML = `
-    <div class="ph-prompt" id="ph-prompt">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-      Click to upload photo
-    </div>`;
+  document.getElementById('photo-preview').innerHTML =
+    `<div class="ph-prompt"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>Click to upload photo</div>`;
 }
 
 // ── Lightbox ─────────────────────────────────────────────────
 function openLightbox(url) {
-  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lb-img').src = url;
   document.getElementById('lightbox').classList.add('on');
 }
-
-// ── Toggle label sync ────────────────────────────────────────
-document.getElementById('f-informed').addEventListener('change', function() {
-  document.getElementById('informed-label').textContent = this.checked ? 'Yes' : 'No';
-});
-document.getElementById('f-collected').addEventListener('change', function() {
-  document.getElementById('collected-label').textContent = this.checked ? 'Yes' : 'No';
-});
 
 // ── Helpers ──────────────────────────────────────────────────
 function closeModal(id) { document.getElementById(id).classList.remove('on'); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtDate(d) {
-  if (!d) return '—';
-  const dt = new Date(d);
-  return dt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
-}
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.display = 'block';
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.style.display = 'none', 3000);
-}
+function fmtDate(d) { if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',3000); }
 
-// Close modal on backdrop click
-document.getElementById('modal-add').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('modal-add');
-});
+document.getElementById('modal-add').addEventListener('click', e => { if (e.target===document.getElementById('modal-add')) closeModal('modal-add'); });
 
-// Boot
-loadItems();
+boot();
 </script>
 </body>
 </html>
