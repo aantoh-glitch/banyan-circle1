@@ -457,7 +457,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="card-ttl" style="margin:0" id="maint-prop-label">All Properties</div>
-      <button class="btn-p" onclick="openMaintModal()">+ Raise issue</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sec" onclick="downloadMaintExcel()" style="font-size:13px;display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Excel
+        </button>
+        <button class="btn-p" onclick="openMaintModal()">+ Raise issue</button>
+      </div>
     </div>
     <div id="maint-list">Loading…</div>
   </div>
@@ -1453,7 +1459,7 @@ async function loadMaintPage(){
         <td><span style="font-size:12px">${m.priority||'normal'}</span></td>
         <td><span class="bdg ${m.status==='resolved'?'bdg-g':m.status==='in_progress'?'bdg-a':'bdg-r'}">${(m.status||'open').replace('_',' ')}</span></td>
         <td onclick="event.stopPropagation()">
-          <button class="btn-edit" style="background:var(--b-l);color:var(--b);font-size:11px;padding:4px 10px" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}"))'>Update</button>
+          <button class="btn-edit" style="background:var(--b-l);color:var(--b);font-size:12px;padding:6px 14px;font-weight:600;letter-spacing:.3px" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}"))'>Update Status</button>
         </td>
         <td style="white-space:nowrap;font-size:12px">${fmtDateTime(m.created_at)}</td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
@@ -1570,6 +1576,34 @@ async function saveMaint(){
   closeModal('modal-maint'); toast('Saved'); loadMaintPage();
 }
 async function deleteMaint(id){ if(!confirm('Delete this issue?'))return; await api('/rest/v1/maintenance_log?id=eq.'+id,'DELETE'); loadMaintPage(); }
+
+function downloadMaintExcel(){
+  // Grab all rows currently rendered in the table
+  const rows = [];
+  document.querySelectorAll('#maint-tbl tbody .maint-row').forEach(tr=>{
+    const cells = tr.querySelectorAll('td');
+    rows.push([
+      cells[0]?.innerText?.trim()||'',   // Property
+      cells[1]?.innerText?.trim()||'',   // Issue
+      cells[2]?.innerText?.trim()||'',   // Raised by
+      cells[3]?.innerText?.trim()||'',   // Priority
+      cells[4]?.innerText?.trim()||'',   // Status
+      cells[6]?.innerText?.trim()||''    // Logged (skip Update col)
+    ]);
+  });
+  if(!rows.length){ toast('No data to export'); return; }
+  const header = ['Property','Issue','Raised By','Priority','Status','Logged At'];
+  const csvRows = [header, ...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(','));
+  const csv = '\uFEFF'+csvRows.join('\r\n'); // BOM for Excel UTF-8
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const prop = MAINT_FILTER.prop==='all'?'All_Properties':MAINT_FILTER.prop.replace(/\s+/g,'_');
+  const status = MAINT_FILTER.status==='all'?'All':MAINT_FILTER.status;
+  a.href=url; a.download=`Maintenance_${prop}_${status}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('Downloaded ✓');
+}
 
 // MESSAGES
 async function loadMsgsPage(){ await loadAllProperties(); if(!SCOPE.msgs)SCOPE.msgs=PROPS[0]?.name||''; renderPropTabs('msgs','msgs','setMsgsProp'); document.getElementById('msgs-prop-label').textContent=SCOPE.msgs?'Thread · '+SCOPE.msgs:'Thread'; const data=await api('/rest/v1/internal_messages?property_name=eq.'+encodeURIComponent(SCOPE.msgs)+'&order=created_at.asc')||[]; const el=document.getElementById('msgs-list'); if(!data.length){el.innerHTML='<div class="empty">No messages yet for this property</div>';return;} el.innerHTML=data.map(m=>{const isMe=m.from_role==='office';const align=isMe?'flex-end':'flex-start';const bg=isMe?'#222':'#fff';const fg=isMe?'#fff':'var(--text)';return `<div style="display:flex;justify-content:${align};margin-bottom:10px"><div style="max-width:75%;background:${bg};color:${fg};border:1px solid var(--border);border-radius:12px;padding:10px 14px"><div style="font-size:11px;opacity:.7;margin-bottom:3px">${m.from_role} · ${m.from_name||''} · ${fmtDate(m.created_at)}</div><div style="font-size:14px;line-height:1.5;white-space:pre-wrap">${m.message}</div></div></div>`;}).join(''); el.scrollTop=el.scrollHeight; }
