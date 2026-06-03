@@ -788,11 +788,39 @@ async function acceptBooking(){
       var durKey  = durRaw.toLowerCase().replace(' ','_'); // 'half_day' | 'full_day'
       var startDt = root.start_date || null;
       var endDt   = root.end_date   || startDt;
+
+      // Look up staff_id by name so leave_calendar.html can join correctly
+      var staffId = null;
+      try {
+        var staffRows = await api('GET','staff?name=eq.'+encodeURIComponent(root.sender_name)+'&select=id&limit=1');
+        staffId = (staffRows && staffRows[0]) ? staffRows[0].id : null;
+      } catch(_){}
+
+      // Derive leave_type from the message body (sender may include it); default to 'Other'
+      // Matches patterns like "Leave type: Sick" or "Sick leave" in the body
+      var leaveType = 'Other';
+      if(root.body){
+        var ltMatch = root.body.match(/leave type[:\s]+([A-Za-z\s]+)/i);
+        if(ltMatch){
+          var ltRaw = ltMatch[1].trim();
+          // Normalise to the values leave_calendar.html expects
+          if(/annual/i.test(ltRaw))        leaveType = 'Annual';
+          else if(/sick/i.test(ltRaw))     leaveType = 'Sick';
+          else if(/comp/i.test(ltRaw))     leaveType = 'Comp Off';
+          else if(/unpaid/i.test(ltRaw))   leaveType = 'Unpaid';
+        } else if(/sick/i.test(root.body))      leaveType = 'Sick';
+          else if(/annual/i.test(root.body))    leaveType = 'Annual';
+          else if(/comp.?off/i.test(root.body)) leaveType = 'Comp Off';
+          else if(/unpaid/i.test(root.body))    leaveType = 'Unpaid';
+      }
+
       var leavePayload = {
+        staff_id:    staffId,
         staff_name:  root.sender_name,
         staff_role:  root.sender_role,
         start_date:  startDt,
         end_date:    endDt,
+        leave_type:  leaveType,
         duration:    durKey,
         status:      'approved',
         message_id:  root.id,
@@ -800,12 +828,18 @@ async function acceptBooking(){
         notes:       root.body
       };
       try {
-        await api('POST', 'staff_leave', leavePayload);
-        } catch(leaveErr){
-          console.warn('staff_leave insert failed:', leaveErr.message);
-          // Non-fatal — acceptance still proceeds
+        // Check for an existing record for this message to avoid duplicates
+        var existingLeave = await api('GET','staff_leave?message_id=eq.'+root.id+'&select=id&limit=1');
+        if(existingLeave && existingLeave.length){
+          await api('PATCH','staff_leave?message_id=eq.'+root.id, leavePayload);
+        } else {
+          await api('POST', 'staff_leave', leavePayload);
         }
+      } catch(leaveErr){
+        console.warn('staff_leave insert failed:', leaveErr.message);
+        // Non-fatal — acceptance still proceeds
       }
+    }
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
     var el=document.getElementById('thread-msgs'); el.scrollTop=el.scrollHeight;
@@ -842,6 +876,12 @@ async function confirmDecline(){
           await api('DELETE','talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+schedEntry.date);
         }
       }
+    }
+    // For Leave: mark any existing staff_leave record as rejected
+    if(root.topic === 'Leave'){
+      try{
+        await api('PATCH','staff_leave?message_id=eq.'+root.id,{status:'rejected'});
+      } catch(_){}
     }
     document.getElementById('decline-form').classList.remove('on');
     renderThread(currentThread.msgs);
