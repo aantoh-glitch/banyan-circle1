@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Banyan Circle — Billing</title>
+<title>Properties By Heritance — Billing</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -65,10 +65,34 @@ body{padding:28px 32px 60px}
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 24px;border-radius:999px;font-size:13px;z-index:9999;display:none;white-space:nowrap}
 .row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.log-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end}
+.log-filters .fg{margin-bottom:0;flex:1;min-width:160px}
+.log-filters .fg-date{margin-bottom:0;flex:1;min-width:130px}
+.filter-clear{padding:9px 14px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;align-self:flex-end}
+.filter-clear:hover{border-color:var(--br);color:var(--br)}
+/* PIN modal */
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center}
+.pin-box{background:var(--white);border-radius:16px;padding:32px 28px;width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18)}
+.pin-title{font-family:'EB Garamond',Georgia,serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.pin-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--bg);transition:all .15s}
+.pin-dot.filled{background:var(--br);border-color:var(--br)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.pin-key{padding:14px;border:1px solid var(--border);border-radius:10px;font-size:17px;font-weight:500;cursor:pointer;background:var(--white);font-family:inherit;color:var(--text);transition:all .12s}
+.pin-key:hover{background:var(--br-l);border-color:var(--br);color:var(--br)}
+.pin-key:active{transform:scale(.95)}
+.pin-err{font-size:12px;color:var(--r);min-height:16px;margin-bottom:8px}
+.pin-cancel{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:inherit;text-decoration:underline}
+.pin-cancel:hover{color:var(--text)}
 </style>
 </head>
 <body>
 
+<div style="text-align:center;margin-bottom:24px">
+  <img src="Herit.JPG" alt="Properties By Heritance" style="max-height:72px;max-width:220px;object-fit:contain;display:block;margin:0 auto 10px"/>
+  <div style="font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:600;color:var(--br);letter-spacing:0.3px">Properties By Heritance</div>
+</div>
 <div class="pg-title">Billing</div>
 <div class="pg-sub">Create and manage guest bills</div>
 
@@ -76,6 +100,11 @@ body{padding:28px 32px 60px}
 <div class="card">
   <div class="card-ttl" id="form-ttl">New Bill</div>
   <input type="hidden" id="edit-id"/>
+
+  <div class="fg">
+    <label class="fl">Bill Date <span style="color:var(--r)">*</span></label>
+    <input class="fc" id="bill-date" type="date"/>
+  </div>
 
   <div class="fg">
     <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
@@ -98,11 +127,12 @@ body{padding:28px 32px 60px}
   <table class="items-table" id="items-table">
     <thead>
       <tr>
-        <th style="width:40%">Item / Description</th>
-        <th style="width:13%;text-align:center">Qty</th>
-        <th style="width:18%;text-align:right">Rate (₹)</th>
-        <th style="width:20%;text-align:right">Total (₹)</th>
-        <th style="width:9%"></th>
+        <th style="width:32%">Item / Description</th>
+        <th style="width:13%">Date</th>
+        <th style="width:11%;text-align:center">Qty</th>
+        <th style="width:16%;text-align:right">Rate (₹)</th>
+        <th style="width:18%;text-align:right">Total (₹)</th>
+        <th style="width:10%"></th>
       </tr>
     </thead>
     <tbody id="items-body"></tbody>
@@ -162,10 +192,61 @@ body{padding:28px 32px 60px}
 <!-- ─── BILL LOG ─── -->
 <div class="section-hdg">Bill Log</div>
 <div class="card">
+  <div class="log-filters">
+    <div class="fg" style="flex:1.5;min-width:180px">
+      <label class="fl">Search Guest</label>
+      <input class="fc" id="filter-guest" type="text" placeholder="Guest name…" oninput="filterBills()"/>
+    </div>
+    <div class="fg" style="flex:1.2;min-width:160px">
+      <label class="fl">Property</label>
+      <select class="fc" id="filter-property" onchange="filterBills()">
+        <option value="">All properties</option>
+      </select>
+    </div>
+    <div class="fg-date fg" style="min-width:140px">
+      <label class="fl">From</label>
+      <input class="fc" id="filter-from" type="date" onchange="filterBills()"/>
+    </div>
+    <div class="fg-date fg" style="min-width:140px">
+      <label class="fl">To</label>
+      <input class="fc" id="filter-to" type="date" onchange="filterBills()"/>
+    </div>
+    <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
+  </div>
   <div id="bill-log">Loading…</div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- PIN Modal -->
+<div class="pin-overlay" id="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <div class="pin-title">Admin Access</div>
+    <div class="pin-sub" id="pin-sub">Enter PIN to continue</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('back')" style="font-size:13px;color:var(--muted)">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('clear')" style="font-size:12px;color:var(--muted)">CLR</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <button class="pin-cancel" onclick="pinCancel()">Cancel</button>
+  </div>
+</div>
 
 <script>
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
@@ -174,6 +255,52 @@ var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 var payMethod  = '';
 var GUESTS     = [];
 var EDIT_BILL  = null;
+
+// ── PIN ──
+var ADMIN_PIN   = '1234'; // change this to your preferred PIN
+var pinBuffer   = '';
+var pinCallback = null;
+
+function requirePin(label, cb) {
+  pinBuffer = '';
+  pinCallback = cb;
+  document.getElementById('pin-sub').textContent = label || 'Enter PIN to continue';
+  document.getElementById('pin-err').textContent = '';
+  updatePinDots();
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+
+function pinKey(k) {
+  if (k === 'back')  { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
+  if (k === 'clear') { pinBuffer = ''; updatePinDots(); return; }
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += k;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    if (pinBuffer === ADMIN_PIN) {
+      document.getElementById('pin-overlay').style.display = 'none';
+      var cb = pinCallback; pinCallback = null; pinBuffer = '';
+      updatePinDots();
+      if (cb) cb();
+    } else {
+      document.getElementById('pin-err').textContent = 'Incorrect PIN. Try again.';
+      setTimeout(function(){ pinBuffer = ''; updatePinDots(); document.getElementById('pin-err').textContent=''; }, 700);
+    }
+  }
+}
+
+function updatePinDots() {
+  for (var i=0;i<4;i++) {
+    var d = document.getElementById('pd'+i);
+    if (d) d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+  }
+}
+
+function pinCancel() {
+  pinBuffer = ''; pinCallback = null;
+  document.getElementById('pin-overlay').style.display = 'none';
+  updatePinDots();
+}
 
 async function api(path, method, body) {
   var h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
@@ -197,6 +324,8 @@ var fmtDate = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{da
 
 // ── Init ──
 async function init() {
+  // Default bill date to today
+  document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
   await loadGuests();
   await loadBills();
 }
@@ -257,17 +386,19 @@ async function onGuestSelect() {
 
 // ── Items ──
 var rowCount = 0;
-function addItemRow(name, qty, rate) {
+function addItemRow(name, qty, rate, itemDate) {
   rowCount++;
   var rid = 'row-' + rowCount;
   var tr = document.createElement('tr');
   tr.id = rid;
   var tot = (parseFloat(qty)||0) * (parseFloat(rate)||0);
+  var defaultDate = itemDate || document.getElementById('bill-date').value || new Date().toISOString().slice(0,10);
   tr.innerHTML =
-    '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:180px"/></td>' +
-    '<td style="text-align:center"><input type="number" min="1" value="' + (qty||1) + '" oninput="calcRowTotal(this);calcTotal()" style="width:70px;text-align:center"/></td>' +
-    '<td style="text-align:right"><input type="number" min="0" step="0.01" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:100px;text-align:right"/></td>' +
-    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:110px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:150px"/></td>' +
+    '<td><input type="date" value="' + defaultDate + '" style="width:130px;padding:7px 8px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit;color:var(--text);background:var(--white);outline:none"/></td>' +
+    '<td style="text-align:center"><input type="number" min="1" value="' + (qty||1) + '" oninput="calcRowTotal(this);calcTotal()" style="width:60px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" min="0" step="0.01" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:90px;text-align:right"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:100px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>' +
     '<td style="text-align:center"><button class="del-row" onclick="removeRow(\'' + rid + '\')">✕</button></td>';
   document.getElementById('items-body').appendChild(tr);
   calcTotal();
@@ -276,9 +407,10 @@ function addItemRow(name, qty, rate) {
 function calcRowTotal(input) {
   var tr = input.closest('tr');
   var inputs = tr.querySelectorAll('input');
-  var qty  = parseFloat(inputs[1].value) || 0;
-  var rate = parseFloat(inputs[2].value) || 0;
-  inputs[3].value = (qty * rate).toFixed(2);
+  // inputs: 0=name, 1=date, 2=qty, 3=rate, 4=total
+  var qty  = parseFloat(inputs[2].value) || 0;
+  var rate = parseFloat(inputs[3].value) || 0;
+  inputs[4].value = (qty * rate).toFixed(2);
 }
 
 function calcTotal() {
@@ -313,11 +445,13 @@ function getItems() {
   var rows = document.querySelectorAll('#items-body tr');
   rows.forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
+    // 0=name, 1=date, 2=qty, 3=rate, 4=total
     var name  = inputs[0].value.trim();
-    var qty   = parseFloat(inputs[1].value) || 0;
-    var rate  = parseFloat(inputs[2].value) || 0;
-    var total = parseFloat(inputs[3].value) || 0;
-    if (name) items.push({name:name, qty:qty, rate:rate, total:total});
+    var date  = inputs[1].value || '';
+    var qty   = parseFloat(inputs[2].value) || 0;
+    var rate  = parseFloat(inputs[3].value) || 0;
+    var total = parseFloat(inputs[4].value) || 0;
+    if (name) items.push({name:name, date:date, qty:qty, rate:rate, total:total});
   });
   return items;
 }
@@ -340,6 +474,9 @@ async function saveBill() {
   var amountPaid = parseFloat(document.getElementById('amount-paid').value) || 0;
   if (amountPaid > 0 && !payMethod) { toast('Select payment method (Cash / Card / UPI)'); return; }
 
+  var billDate = document.getElementById('bill-date').value;
+  if (!billDate) { toast('Please select a bill date'); return; }
+
   var g = GUESTS.find(function(x){ return x.id === gid; });
   var infoBox = document.getElementById('guest-info');
   var subtotal = calcTotal();
@@ -359,6 +496,7 @@ async function saveBill() {
     payment_status   : payStatus,
     payment_method   : payMethod || null,
     remarks          : document.getElementById('bill-remarks').value.trim()||null,
+    bill_date        : billDate,
     updated_at       : new Date().toISOString()
   };
 
@@ -399,45 +537,97 @@ function cancelEdit() {
   document.getElementById('method-row-fg').style.display = 'none';
   payMethod = '';
   document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('bill-remarks').value = '';
 }
 
 function editBill(bill) {
-  EDIT_BILL = bill;
-  document.getElementById('form-ttl').textContent = 'Edit Bill — ' + (bill.guest_name||'');
-  document.getElementById('save-btn').textContent = 'Update Bill';
-  document.getElementById('cancel-btn').style.display = '';
+  requirePin('PIN required to edit bill', function() {
+    EDIT_BILL = bill;
+    document.getElementById('form-ttl').textContent = 'Edit Bill — ' + (bill.guest_name||'');
+    document.getElementById('save-btn').textContent = 'Update Bill';
+    document.getElementById('cancel-btn').style.display = '';
 
-  // Set guest
-  document.getElementById('bill-guest-select').value = bill.guest_profile_id || '';
-  onGuestSelect();
+    // Restore date
+    document.getElementById('bill-date').value = bill.bill_date
+      ? bill.bill_date.slice(0,10)
+      : (bill.created_at ? bill.created_at.slice(0,10) : new Date().toISOString().slice(0,10));
 
-  // Items
-  document.getElementById('items-body').innerHTML = '';
-  rowCount = 0;
-  (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate); });
+    // Set guest
+    document.getElementById('bill-guest-select').value = bill.guest_profile_id || '';
+    onGuestSelect();
 
-  // Payment
-  document.getElementById('amount-paid').value = bill.amount_paid || '';
-  if (bill.payment_method) setPayMethod(bill.payment_method);
-  calcPending();
+    // Items
+    document.getElementById('items-body').innerHTML = '';
+    rowCount = 0;
+    (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate, i.date||''); });
 
-  document.getElementById('bill-remarks').value = bill.remarks || '';
-  window.scrollTo({top:0, behavior:'smooth'});
+    // Payment
+    document.getElementById('amount-paid').value = bill.amount_paid || '';
+    if (bill.payment_method) setPayMethod(bill.payment_method);
+    calcPending();
+
+    document.getElementById('bill-remarks').value = bill.remarks || '';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
 }
 
 // ── Load log ──
+var ALL_BILLS = [];
+
 async function loadBills() {
   var el = document.getElementById('bill-log');
   el.innerHTML = 'Loading…';
   try {
     var data = await api('/rest/v1/bills?select=*&order=created_at.desc') || [];
-    if (!data.length) { el.innerHTML = '<div class="empty">No bills yet</div>'; return; }
-    el.innerHTML = '<table class="tbl"><thead><tr>' +
-      '<th>Guest</th><th>Property</th><th>Date</th><th style="text-align:right">Total</th>' +
-      '<th>Status</th><th></th>' +
-      '</tr></thead><tbody>' +
-      data.map(function(b){
+    ALL_BILLS = data;
+
+    // Populate property filter
+    var props = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean))).sort();
+    var propSel = document.getElementById('filter-property');
+    var curProp = propSel.value;
+    propSel.innerHTML = '<option value="">All properties</option>' +
+      props.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
+
+    renderBills(data);
+  } catch(e) {
+    document.getElementById('bill-log').innerHTML = '<div class="empty">Could not load bills — ensure billing-tables.sql has been run in Supabase.</div>';
+  }
+}
+
+function filterBills() {
+  var guestQ  = (document.getElementById('filter-guest').value||'').toLowerCase().trim();
+  var propQ   = document.getElementById('filter-property').value;
+  var fromQ   = document.getElementById('filter-from').value;
+  var toQ     = document.getElementById('filter-to').value;
+
+  var filtered = ALL_BILLS.filter(function(b){
+    if (guestQ && !(b.guest_name||'').toLowerCase().includes(guestQ)) return false;
+    if (propQ  && (b.property_name||'') !== propQ) return false;
+    var billD = (b.bill_date || b.created_at || '').slice(0,10);
+    if (fromQ && billD < fromQ) return false;
+    if (toQ   && billD > toQ)   return false;
+    return true;
+  });
+  renderBills(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('filter-guest').value    = '';
+  document.getElementById('filter-property').value = '';
+  document.getElementById('filter-from').value     = '';
+  document.getElementById('filter-to').value       = '';
+  renderBills(ALL_BILLS);
+}
+
+function renderBills(data) {
+  var el = document.getElementById('bill-log');
+  if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
+  el.innerHTML = '<table class="tbl"><thead><tr>' +
+    '<th>Guest</th><th>Property</th><th>Date</th><th style="text-align:right">Total</th>' +
+    '<th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    data.map(function(b){
         var statusCls = b.payment_status==='paid' ? 'bdg-g' : b.payment_status==='partial' ? 'bdg-a' : 'bdg-a';
         var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
         var statusLbl = b.payment_status==='paid'
@@ -447,10 +637,11 @@ async function loadBills() {
             : 'Pending';
         var items = b.items || [];
         var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
+        var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
         return '<tr>' +
           '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
           '<td>' + esc(b.property_name||'—') + '</td>' +
-          '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + fmtDate(b.created_at) + '</td>' +
+          '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
           '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;font-size:15px">' + fmtF(b.subtotal) + '</td>' +
           '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap">' +
@@ -461,30 +652,48 @@ async function loadBills() {
         '</tr>';
       }).join('') +
       '</tbody></table>';
-  } catch(e) {
-    el.innerHTML = '<div class="empty">Could not load bills — ensure billing-tables.sql has been run in Supabase.</div>';
-  }
 }
 
 async function deleteBill(id, name) {
-  if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
-  try {
-    await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
-    toast(name + ' bill removed');
-    loadBills();
-  } catch(e) { toast('Error: ' + e.message); }
+  requirePin('PIN required to remove bill', async function() {
+    if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
+    try {
+      await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
+      toast(name + ' bill removed');
+      loadBills();
+    } catch(e) { toast('Error: ' + e.message); }
+  });
 }
 
 // ── PDF ──
-function downloadBillPdf(b) {
+function getLogoBase64() {
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg'));
+    };
+    img.onerror = function() { resolve(''); };
+    img.src = 'Herit.JPG';
+  });
+}
+
+async function downloadBillPdf(b) {
+  var logoSrc = await getLogoBase64();
   var items = b.items || [];
   var name  = b.guest_name || 'Guest';
-  var dt    = new Date(b.created_at || Date.now());
+  var dt    = new Date(b.bill_date || b.created_at || Date.now());
   var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
 
   var itemRows = items.map(function(i){
+    var iDate = i.date ? new Date(i.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
     return '<tr>' +
       '<td>' + esc(i.name||'Item') + '</td>' +
+      '<td style="color:#888;font-size:12px">' + iDate + '</td>' +
       '<td style="text-align:center">' + (i.qty||1) + '</td>' +
       '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
       '<td style="text-align:right;font-weight:600">₹' + Number(i.total||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
@@ -523,8 +732,8 @@ function downloadBillPdf(b) {
     '@media print{body{padding:18px 24px}}' +
     '</style></head><body>' +
     '<div class="hdr">' +
-      '<div><h1>Banyan Circle</h1><div class="sub">Properties by Heritance</div></div>' +
-      '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.created_at) + '</div></div>' +
+      '<div style="display:flex;align-items:center;gap:12px">' + (logoSrc ? '<img src="' + logoSrc + '" alt="" style="max-height:56px;max-width:140px;object-fit:contain"/>' : '') + '<div><h1>Properties By Heritance</h1></div></div>' +
+      '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.bill_date||b.created_at) + '</div></div>' +
     '</div>' +
     '<div class="guest-card">' +
       '<div class="guest-name">' + esc(b.guest_name||'Guest') + '</div>' +
@@ -532,15 +741,15 @@ function downloadBillPdf(b) {
       (b.guest_mobile||b.guest_email ? '<div class="guest-detail" style="margin-top:4px">' + [b.guest_mobile, b.guest_email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ') + '</div>' : '') +
     '</div>' +
     '<hr/>' +
-    '<table><thead><tr><th>Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+    '<table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
     itemRows +
-    '<tr class="total-row"><td colspan="3">Grand Total</td><td style="text-align:right">₹' + Number(b.subtotal||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
-    (amtPaid > 0 ? '<tr><td colspan="3" style="color:#3B6D11;font-size:13px;border-top:1px dashed #ddd">Already Paid' + methodStr + '</td><td style="text-align:right;color:#3B6D11;font-weight:600;border-top:1px dashed #ddd">− ₹' + amtPaid.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' : '') +
-    (amtPaid > 0 ? '<tr><td colspan="3" style="font-weight:700;font-size:14px;border-top:2px solid #2C2C2A">Pending Payment</td><td style="text-align:right;font-weight:700;font-size:14px;color:#A32D2D;border-top:2px solid #2C2C2A">₹' + pendingAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' : '') +
+    '<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">₹' + Number(b.subtotal||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
+    (amtPaid > 0 ? '<tr><td colspan="4" style="color:#3B6D11;font-size:13px;border-top:1px dashed #ddd">Already Paid' + methodStr + '</td><td style="text-align:right;color:#3B6D11;font-weight:600;border-top:1px dashed #ddd">− ₹' + amtPaid.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' : '') +
+    (amtPaid > 0 ? '<tr><td colspan="4" style="font-weight:700;font-size:14px;border-top:2px solid #2C2C2A">Pending Payment</td><td style="text-align:right;font-weight:700;font-size:14px;color:#A32D2D;border-top:2px solid #2C2C2A">₹' + pendingAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' : '') +
     '</tbody></table>' +
     '<div class="status-pill">' + statusStr + '</div>' +
     (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
-    '<div class="footer">Thank you for staying with Banyan Circle · For queries contact the front desk</div>' +
+    '<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div>' +
     '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
     '</body></html>';
 
