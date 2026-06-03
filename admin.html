@@ -839,6 +839,7 @@ function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
 const fmt=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
 const fmtDate=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+const fmtDateTime=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}):'—';
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
 function goPage(id,btn){
@@ -1443,7 +1444,7 @@ async function loadMaintPage(){
   const el = document.getElementById('maint-list');
   if(!data.length){ el.innerHTML='<div class="empty">No maintenance issues found</div>'; return; }
   el.innerHTML = `<table class="tbl" id="maint-tbl">
-    <thead><tr><th>Property</th><th>Issue</th><th>Raised by</th><th>Priority</th><th>Status</th><th>Logged</th><th></th></tr></thead>
+    <thead><tr><th>Property</th><th>Issue</th><th>Raised by</th><th>Priority</th><th>Status</th><th></th><th>Logged</th><th></th></tr></thead>
     <tbody>${data.map(m=>`
       <tr class="maint-row" style="cursor:pointer" onclick="toggleMaintLog(this,'${m.id}')">
         <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${m.property_name||'—'}</td>
@@ -1451,15 +1452,17 @@ async function loadMaintPage(){
         <td>${m.raised_by||'—'} <span style="color:var(--muted);font-size:11px">(${m.raised_role||'—'})</span></td>
         <td><span style="font-size:12px">${m.priority||'normal'}</span></td>
         <td><span class="bdg ${m.status==='resolved'?'bdg-g':m.status==='in_progress'?'bdg-a':'bdg-r'}">${(m.status||'open').replace('_',' ')}</span></td>
-        <td style="white-space:nowrap;font-size:12px">${fmtDate(m.created_at)}</td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn-edit" style="background:var(--b-l);color:var(--b);font-size:11px;padding:4px 10px" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}"))'>Update</button>
+        </td>
+        <td style="white-space:nowrap;font-size:12px">${fmtDateTime(m.created_at)}</td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
-          <button class="btn-edit" onclick='requirePin("Edit issue",()=>editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")}))'>Edit</button>
-          <button class="btn-edit" style="background:var(--b-l);color:var(--b)" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}"))'>Update</button>
-          <button class="btn-del" onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))'>Delete</button>
+          <button class="btn-edit" style="font-size:11px;padding:4px 8px" onclick='requirePin("Edit issue",()=>editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")}))'>Edit</button>
+          <button onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px;transition:color .15s" onmouseover="this.style.color='var(--r)'" onmouseout="this.style.color='var(--muted)'">×</button>
         </td>
       </tr>
       <tr class="maint-log-row" id="maint-log-${m.id}" style="display:none">
-        <td colspan="7" style="padding:0">
+        <td colspan="8" style="padding:0">
           <div style="background:var(--bg);border-top:1px solid var(--border);padding:14px 20px;font-size:13px">
             <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Update Log</div>
             <div id="maint-log-entries-${m.id}" style="color:var(--muted);font-size:13px">Loading…</div>
@@ -1495,7 +1498,7 @@ async function toggleMaintLog(row, id){
     if(!logs.length){ entriesEl.innerHTML='<em>No updates yet.</em>'; return; }
     entriesEl.innerHTML = logs.map(l=>`
       <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="white-space:nowrap;color:var(--muted);font-size:12px;min-width:130px">${fmtDate(l.created_at)}</div>
+        <div style="white-space:nowrap;color:var(--muted);font-size:12px;min-width:160px">${fmtDateTime(l.created_at)}</div>
         <div style="flex:1">${l.note}</div>
         <div style="font-size:12px;color:var(--muted)">${l.updated_by||''}</div>
       </div>`).join('');
