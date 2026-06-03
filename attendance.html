@@ -105,6 +105,21 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
 
 .empty{text-align:center;padding:32px;font-size:13px;color:var(--muted)}
 
+/* Admin toolbar */
+.admin-toolbar{display:none;padding:16px 20px 0;flex-direction:column;gap:10px}
+.admin-toolbar.show{display:flex}
+.date-range-row{display:flex;gap:8px;align-items:center}
+.date-range-row label{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.date-input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;background:var(--white);color:var(--text);outline:none}
+.date-input:focus{border-color:var(--text)}
+.date-range-sep{font-size:12px;color:var(--muted)}
+.admin-btn-row{display:flex;gap:8px}
+.filter-btn{padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:var(--white);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--text);transition:all .18s}
+.filter-btn:active{opacity:.8}
+.dl-btn{flex:1;padding:10px 18px;border-radius:10px;border:none;background:#1D6F42;color:#fff;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .18s}
+.dl-btn:active{opacity:.85}
+.dl-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
 /* Toast */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 </style>
@@ -138,6 +153,24 @@ img#cam-snap{width:100%;max-height:220px;object-fit:cover;display:none}
       <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Log Out
     </button>
+  </div>
+
+  <!-- Admin toolbar: date range + download -->
+  <div class="admin-toolbar" id="admin-toolbar">
+    <div class="date-range-row">
+      <label>From</label>
+      <input type="date" class="date-input" id="date-from"/>
+      <span class="date-range-sep">→</span>
+      <label>To</label>
+      <input type="date" class="date-input" id="date-to"/>
+    </div>
+    <div class="admin-btn-row">
+      <button class="filter-btn" onclick="applyFilter()">Apply</button>
+      <button class="dl-btn" id="dl-btn" onclick="downloadExcel()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Excel
+      </button>
+    </div>
   </div>
 
   <!-- Capture panel label -->
@@ -218,6 +251,12 @@ document.getElementById('clock-name').textContent = name;
 
 if (adminView) {
   document.getElementById('log-section').style.display = 'none';
+  document.getElementById('admin-toolbar').classList.add('show');
+  // Default: last 30 days
+  const today = new Date();
+  const from30 = new Date(today); from30.setDate(today.getDate() - 30);
+  document.getElementById('date-to').value = today.toISOString().split('T')[0];
+  document.getElementById('date-from').value = from30.toISOString().split('T')[0];
 }
 
 // ── Clock ──
@@ -448,13 +487,32 @@ async function submitLog() {
 }
 
 // ── History (combined day view) ──
+let currentData = []; // cache for excel export
+
+function applyFilter() {
+  loadHistory();
+}
+
 async function loadHistory() {
   const today = new Date().toISOString().split('T')[0];
   const el = document.getElementById('history-list');
-  const from = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
-  const data = await api(`/rest/v1/attendance_log?staff_id=eq.${me.id}&date=gte.${from}&order=logged_at.asc`) || [];
 
-  if (!data.length) { el.innerHTML = '<div class="empty">No attendance logged yet</div>'; return; }
+  let fromDate, toDate;
+  if (adminView) {
+    fromDate = document.getElementById('date-from').value;
+    toDate   = document.getElementById('date-to').value;
+    if (!fromDate) fromDate = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
+    if (!toDate)   toDate   = today;
+  } else {
+    fromDate = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
+    toDate   = today;
+  }
+
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const data = await api(`/rest/v1/attendance_log?staff_id=eq.${me.id}&date=gte.${fromDate}&date=lte.${toDate}&order=logged_at.asc`) || [];
+  currentData = data;
+
+  if (!data.length) { el.innerHTML = '<div class="empty">No attendance logged for this period</div>'; return; }
 
   // Group by date
   const byDate = {};
@@ -472,11 +530,9 @@ async function loadHistory() {
     const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
     const isToday = date === today;
 
-    // First in and last out of the day
     const inRecord  = ins[0]  || null;
     const outRecord = outs[outs.length - 1] || null;
 
-    // Calculate hours if both exist
     let hoursLabel = '';
     if (inRecord && outRecord) {
       const ms = new Date(outRecord.logged_at) - new Date(inRecord.logged_at);
@@ -493,7 +549,6 @@ async function loadHistory() {
       return `
         <div class="col-time">${t}</div>
         ${record.location_text ? `<div class="col-loc">📍 ${record.location_text}</div>` : ''}
-        ${record.photo_url ? `<img class="col-photo" src="${record.photo_url}" alt="${type} photo"/>` : '<div class="col-empty" style="font-size:11px">No photo</div>'}
       `;
     }
 
@@ -517,6 +572,65 @@ async function loadHistory() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Excel Download ──
+async function downloadExcel() {
+  if (!currentData.length) { toast('No data to download'); return; }
+
+  // SheetJS via CDN
+  if (!window.XLSX) {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    document.head.appendChild(s);
+    await new Promise(res => s.onload = res);
+  }
+
+  // Group by date, get first-in / last-out per day
+  const byDate = {};
+  currentData.forEach(r => {
+    if (!byDate[r.date]) byDate[r.date] = { ins: [], outs: [] };
+    if (r.type === 'in') byDate[r.date].ins.push(r);
+    else byDate[r.date].outs.push(r);
+  });
+
+  const rows = [['Name', 'Date', 'Log In', 'Log Out', 'Total Hours']];
+
+  Object.keys(byDate).sort().forEach(date => {
+    const { ins, outs } = byDate[date];
+    const inRec  = ins[0] || null;
+    const outRec = outs[outs.length - 1] || null;
+
+    const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    const inTime  = inRec  ? new Date(inRec.logged_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+    const outTime = outRec ? new Date(outRec.logged_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+
+    let totalHours = '—';
+    if (inRec && outRec) {
+      const ms = new Date(outRec.logged_at) - new Date(inRec.logged_at);
+      if (ms > 0) {
+        const h = Math.floor(ms / 3600000);
+        const m = Math.floor((ms % 3600000) / 60000);
+        totalHours = `${h}h ${m}m`;
+      }
+    }
+
+    rows.push([me.name, dateLabel, inTime, outTime, totalHours]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Column widths
+  ws['!cols'] = [{wch:20},{wch:18},{wch:12},{wch:12},{wch:12}];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+
+  const fromVal = document.getElementById('date-from').value || 'start';
+  const toVal   = document.getElementById('date-to').value   || 'end';
+  const filename = `Attendance_${me.name.replace(/\s+/g,'_')}_${fromVal}_to_${toVal}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  toast('✓ Excel downloaded');
 }
 
 function toast(msg) {
