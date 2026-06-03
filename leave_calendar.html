@@ -454,6 +454,14 @@ function renderCalendar(){
   document.getElementById('cal-body').innerHTML=html;
 }
 
+// ── Days helper (defined early so showDay can use it) ──
+function getDays(l){
+  if(l['number-of-days'] != null && l['number-of-days'] !== '') return +l['number-of-days'];
+  if(!l.start_date || !l.end_date) return null;
+  const ms = new Date(l.end_date+'T00:00:00') - new Date(l.start_date+'T00:00:00');
+  return Math.round(ms/86400000) + 1;
+}
+
 // ── Show day detail ──
 function showDay(dateStr){
   const dayLeaves = allLeaves.filter(l=>l.start_date<=dateStr && l.end_date>=dateStr);
@@ -462,24 +470,25 @@ function showDay(dateStr){
   if(!dayLeaves.length){
     document.getElementById('day-modal-body').innerHTML = '<div class="empty">No leave recorded on this day.</div>';
   } else {
-  document.getElementById('day-modal-body').innerHTML = dayLeaves.map(l=>{
-    const days = getDays(l);
-    const daysLabel = days!=='—' ? `${days} day${days!==1?'s':''}` : '';
-    return `
-      <div class="leave-row">
-        <div class="avatar">${(l.staff_name||'?')[0].toUpperCase()}</div>
-        <div>
-          <div class="leave-info-name">${l.staff_name||'Unknown'}</div>
-          <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}${daysLabel?' · <strong>'+daysLabel+'</strong>':''}</div>
-          ${l.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px">${l.notes}</div>`:''}
-        </div>
-        <div class="leave-actions">
-          <span class="bdg ${l.status==='approved'?'bdg-approved':l.status==='rejected'?'bdg-rejected':'bdg-pending'}">${l.status}</span>
-          <button class="btn-edit" onclick="closeModal();editLeave(${JSON.stringify(l).replace(/"/g,'&quot;')})">Edit</button>
-          <button class="btn-del" onclick="closeModal();deleteLeave('${l.id}')">Delete</button>
-        </div>
-      </div>`;
-  }).join('');
+    document.getElementById('day-modal-body').innerHTML = dayLeaves.map(l=>{
+      const days = getDays(l);
+      const daysLabel = days != null ? `${days} day${days!==1?'s':''}` : null;
+      return `
+        <div class="leave-row">
+          <div class="avatar">${(l.staff_name||'?')[0].toUpperCase()}</div>
+          <div>
+            <div class="leave-info-name">${l.staff_name||'Unknown'}</div>
+            <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}</div>
+            ${l.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px">${l.notes}</div>`:''}
+          </div>
+          <div class="leave-actions">
+            ${daysLabel?`<span style="font-size:12px;font-weight:600;color:var(--br);background:var(--br-l);border-radius:6px;padding:3px 9px;white-space:nowrap">${daysLabel}</span>`:''}
+            <span class="bdg ${l.status==='approved'?'bdg-approved':l.status==='rejected'?'bdg-rejected':'bdg-pending'}">${l.status}</span>
+            <button class="btn-edit" onclick="closeModal();editLeave(${JSON.stringify(l).replace(/"/g,'&quot;')})">Edit</button>
+            <button class="btn-del" onclick="closeModal();deleteLeave('${l.id}')">Delete</button>
+          </div>
+        </div>`;
+    }).join('');
   }
   openModal('modal-day');
 }
@@ -500,14 +509,6 @@ function clearListFilters(){
   document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('on'));
   document.getElementById('lf-all').classList.add('on');
   renderList();
-}
-
-function getDays(l){
-  // Use DB column 'number-of-days' if present, otherwise compute
-  if(l['number-of-days'] != null) return +l['number-of-days'];
-  if(!l.start_date || !l.end_date) return '—';
-  const ms = new Date(l.end_date+'T00:00:00') - new Date(l.start_date+'T00:00:00');
-  return Math.round(ms/86400000) + 1;
 }
 
 function renderList(){
