@@ -119,6 +119,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('guests',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guests</button>
     <button class="sb-btn" onclick="goPage('utilities',this)"><svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>Financials</button>
     <button class="sb-btn" onclick="goPage('maint',this)"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button>
+    <button class="sb-btn" onclick="goPage('laundry',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Laundry</button>
     <button class="sb-btn" onclick="goPage('tasks',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</button>
     <button class="sb-btn" onclick="goPage('talents',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Talents</button>
     <button class="sb-btn" onclick="goPage('earnings',this)"><svg viewBox="0 0 24 24"><line x1="5" y1="21" x2="5" y2="3"/><path d="M5 3h10a4 4 0 0 1 0 8H5"/><path d="M5 11h10"/><path d="M8 21l7-10"/></svg>Earnings</button>
@@ -180,11 +181,23 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </div>
       <div class="dash-tile-label">Tasks Pending</div>
-      <div class="dash-tile-value loading" id="dash-tasks">…</div>
-      <div class="dash-tile-sub">not yet completed</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px">
+        <div style="background:var(--r-l);border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#791F1F;margin-bottom:4px">Complaint</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:#791F1F" id="dash-tasks-complaint">…</div>
+        </div>
+        <div style="background:var(--a-l);border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#633806;margin-bottom:4px">Request</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:#633806" id="dash-tasks-request">…</div>
+        </div>
+        <div style="background:var(--g-l);border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#27500A;margin-bottom:4px">Routine</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:#27500A" id="dash-tasks-routine">…</div>
+        </div>
+      </div>
       <span class="dash-tile-nav">›</span>
     </div>
-    <div class="dash-tile tile-laundry" onclick="goPage('maint', document.querySelector('.sb-btn[onclick*=maint]'))">
+    <div class="dash-tile tile-laundry" onclick="goPage('laundry', document.querySelector('.sb-btn[onclick*=laundry]'))">
       <div class="dash-tile-icon icon-laundry">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       </div>
@@ -467,6 +480,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <div id="maint-list">Loading…</div>
   </div>
+</div>
+
+<div class="pg" id="pg-laundry" style="padding:0">
+  <iframe id="laundry-frame" src="about:blank" style="width:100%;height:100vh;border:none;display:block"></iframe>
 </div>
 
 <div class="pg" id="pg-msgs">
@@ -866,6 +883,7 @@ function goPage(id,btn){
   if(id==='earnings'){var ef=document.getElementById('earnings-frame');if(!ef.src||ef.src==='about:blank'||ef.src.indexOf('earnings.html')===-1)ef.src='earnings.html?role=admin';}
   if(id==='billing'){var bf=document.getElementById('billing-frame');if(!bf.src||bf.src==='about:blank'||bf.src.indexOf('billing.html')===-1)bf.src='billing.html';}
   if(id==='bookings'){var bkf=document.getElementById('bookings-frame');if(!bkf.src||bkf.src==='about:blank'||bkf.src.indexOf('booking.html')===-1)bkf.src='booking.html';}
+  if(id==='laundry'){var lf=document.getElementById('laundry-frame');if(!lf.src||lf.src==='about:blank'||lf.src.indexOf('laundry.html')===-1)lf.src='laundry.html';}
   if(id==='tasks'){var tkf=document.getElementById('tasks-frame');if(!tkf.src||tkf.src==='about:blank'||tkf.src.indexOf('tasks.html')===-1)tkf.src='tasks.html?role=admin';}
 }
 function openModal(id){ document.getElementById(id).classList.add('on'); }
@@ -2160,12 +2178,17 @@ async function loadDashboard(){
     if(el){ el.textContent = st.length; el.className='dash-tile-value'; }
   } catch(e){ const el=document.getElementById('dash-staff'); if(el) el.textContent='—'; }
 
-  // Tasks pending (not completed)
+  // Tasks pending by type
   try {
-    const tk = await api('/rest/v1/tasks?select=id&completed=eq.false') || [];
-    const el = document.getElementById('dash-tasks');
-    if(el){ el.textContent = tk.length; el.className='dash-tile-value'; }
-  } catch(e){ const el=document.getElementById('dash-tasks'); if(el) el.textContent='—'; }
+    const tk = await api('/rest/v1/tasks?select=task_type&completed=eq.false') || [];
+    const counts = {Complaint:0, Request:0, Routine:0};
+    tk.forEach(t=>{ if(counts[t.task_type]!==undefined) counts[t.task_type]++; });
+    const ec=document.getElementById('dash-tasks-complaint'); if(ec) ec.textContent=counts.Complaint;
+    const er=document.getElementById('dash-tasks-request');   if(er) er.textContent=counts.Request;
+    const ero=document.getElementById('dash-tasks-routine');  if(ero) ero.textContent=counts.Routine;
+  } catch(e){
+    ['dash-tasks-complaint','dash-tasks-request','dash-tasks-routine'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='—'; });
+  }
 
   // Open maintenance requests (open + in_progress)
   try {
