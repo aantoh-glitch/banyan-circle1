@@ -2,44 +2,113 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Lost &amp; Found</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
-html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-.main{padding:28px 32px;max-width:1280px}
-.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
-.fg{margin-bottom:12px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
-.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
-.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-p svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.btn-sec:hover{border-color:var(--br);color:var(--br)}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
+html,body{min-height:100%;background:var(--bg);color:var(--text)}
+
+/* ── DESKTOP ── */
+body.desktop{font-family:'DM Sans',sans-serif}
+body.desktop .main{padding:28px 32px;max-width:1280px}
+body.desktop .pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+body.desktop .pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+body.desktop .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+body.desktop .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+body.desktop .kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+body.desktop .kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+body.desktop .kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
+body.desktop .filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+body.desktop .tbl{width:100%;border-collapse:collapse;font-size:13px}
+body.desktop .tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+body.desktop .tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+body.desktop .tbl tr:last-child td{border-bottom:none}
+body.desktop .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+body.desktop .modal.on{display:flex}
+body.desktop .modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+body.desktop .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
+body.desktop .modal-handle{display:none}
+body.desktop .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+body.desktop .fg{margin-bottom:12px}
+body.desktop .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+body.desktop .fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+body.desktop .fc:focus{border-color:var(--br)}
+body.desktop textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
+body.desktop .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+body.desktop .btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+body.desktop .btn-p:hover{background:#712B13}
+body.desktop .btn-p:disabled{opacity:.6;cursor:not-allowed}
+body.desktop .btn-p svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body.desktop .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+body.desktop .btn-sec:hover{border-color:var(--br);color:var(--br)}
+
+/* ── MOBILE ── */
+body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.m-shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 0 48px}
+.m-hdr{padding:24px 24px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--white)}
+.m-hdr-back{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center}
+.m-hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;flex:1}
+.m-hdr-prop{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.m-log-wrap{padding:20px 24px 8px}
+.m-btn-log{width:100%;padding:16px;background:var(--br);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.m-btn-log svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-btn-log:active{background:#712B13}
+.m-status-wrap{padding:12px 24px 4px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.m-status-wrap::-webkit-scrollbar{display:none}
+.stab{padding:7px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;white-space:nowrap;flex-shrink:0}
+.stab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 24px 8px}
+.m-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.lf-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative}
+.lf-card-top{display:flex;align-items:flex-start;gap:12px}
+.lf-card-thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
+.lf-card-thumb-empty{width:48px;height:48px;border-radius:10px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lf-card-thumb-empty svg{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.lf-card-info{flex:1;min-width:0}
+.lf-card-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lf-card-meta{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.lf-card-badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:600;margin-top:4px}
+.lf-card-logged{font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+.lf-card-actions{display:flex;gap:8px;margin-top:12px}
+.lf-act-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+.lf-act-btn.active-informed{background:var(--b-l);border-color:#185FA5;color:#0C447C}
+.lf-act-btn.active-collected{background:var(--g-l);border-color:#3B6D11;color:#27500A}
+.lf-act-btn:active{opacity:.7}
+/* mobile modal — bottom sheet */
+body.mobile .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
+body.mobile .modal.on{display:flex}
+body.mobile .modal-card{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
+body.mobile .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
+body.mobile .modal-ttl{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;margin-bottom:18px}
+body.mobile .modal-actions{display:flex;gap:10px;margin-top:20px}
+body.mobile .modal-actions .btn-p{flex:1}
+body.mobile .modal-actions .btn-sec{flex:1}
+body.mobile .fg{margin-bottom:14px}
+body.mobile .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+body.mobile .fc{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;-webkit-appearance:none;appearance:none}
+body.mobile .fc:focus{border-color:var(--br)}
+body.mobile textarea.fc{resize:none;min-height:72px;line-height:1.6}
+body.mobile .row-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+body.mobile .btn-p{padding:14px 18px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;width:100%}
+body.mobile .btn-p:active{background:#712B13}
+body.mobile .btn-p:disabled{opacity:.6;cursor:not-allowed}
+body.mobile .btn-sec{padding:13px 18px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit;width:100%}
+body.mobile .btn-sec:active{background:var(--bg)}
+
+/* shared */
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
-.modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
-.row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
-.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
-.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
+.s-pending{background:var(--a-l);color:#633806}
+.s-informed{background:var(--b-l);color:#0C447C}
+.s-collected{background:var(--g-l);color:#27500A}
+.sm-toggle{position:relative;display:inline-block;width:36px;height:20px}
+.sm-toggle input{opacity:0;width:0;height:0}
+.sm-toggle-s{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
+.sm-toggle-s:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.sm-toggle input:checked+.sm-toggle-s{background:var(--br)}
+.sm-toggle input:checked+.sm-toggle-s:before{transform:translateX(16px)}
 .toggle{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
@@ -48,12 +117,6 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
 .toggle input:checked+.toggle-slider:before{transform:translateX(20px)}
 .toggle-wrap{display:flex;align-items:center;gap:10px}
 .toggle-label{font-size:13px;color:var(--text)}
-.sm-toggle{position:relative;display:inline-block;width:36px;height:20px}
-.sm-toggle input{opacity:0;width:0;height:0}
-.sm-toggle-s{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
-.sm-toggle-s:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
-.sm-toggle input:checked+.sm-toggle-s{background:var(--br)}
-.sm-toggle input:checked+.sm-toggle-s:before{transform:translateX(16px)}
 .photo-preview{width:100%;height:140px;border:1.5px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:var(--bg);transition:border-color .15s}
 .photo-preview:hover{border-color:var(--br)}
 .ph-prompt{font-size:12px;color:var(--muted);text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
@@ -65,13 +128,14 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
 .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out}
 .lightbox.on{display:flex}
 .lightbox img{max-width:90vw;max-height:90vh;border-radius:12px}
-.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.s-pending{background:var(--a-l);color:#633806}
-.s-informed{background:var(--b-l);color:#0C447C}
-.s-collected{background:var(--g-l);color:#27500A}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════ DESKTOP VIEW ═══════════════════════ -->
+<div id="view-desktop" style="display:none">
 <div class="main">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
     <div>
@@ -83,27 +147,24 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
       Add Item
     </button>
   </div>
-
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">Total Items</div><div class="kpi-value" id="kpi-total">—</div></div>
     <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value" id="kpi-pending" style="color:var(--a)">—</div></div>
     <div class="kpi"><div class="kpi-label">Informed</div><div class="kpi-value" id="kpi-informed" style="color:var(--b)">—</div></div>
     <div class="kpi"><div class="kpi-label">Collected</div><div class="kpi-value" id="kpi-collected" style="color:var(--g)">—</div></div>
   </div>
-
   <div class="filter-row">
-    <input class="fc" type="text" id="search-input" placeholder="Search item or guest…" oninput="renderTable()" style="width:220px"/>
-    <select class="fc" id="filter-status" onchange="renderTable()" style="width:170px">
+    <input class="fc" type="text" id="search-input" placeholder="Search item or guest…" oninput="renderDesktop()" style="width:220px"/>
+    <select class="fc" id="filter-status" onchange="renderDesktop()" style="width:170px">
       <option value="">All items</option>
       <option value="pending">Pending</option>
       <option value="informed">Informed</option>
       <option value="collected">Collected</option>
     </select>
-    <select class="fc" id="filter-prop" onchange="renderTable()" style="width:170px">
+    <select class="fc" id="filter-prop" onchange="renderDesktop()" style="width:170px">
       <option value="">All properties</option>
     </select>
   </div>
-
   <div class="card" style="padding:0;overflow:hidden">
     <table class="tbl">
       <thead>
@@ -113,23 +174,57 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
           <th>Guest</th>
           <th>Property</th>
           <th>Found</th>
+          <th>Logged By</th>
           <th>Status</th>
           <th>Informed</th>
           <th>Collected</th>
           <th style="width:90px"></th>
         </tr>
       </thead>
-      <tbody id="lf-tbody">
-        <tr><td colspan="9" class="empty">Loading…</td></tr>
+      <tbody id="d-tbody">
+        <tr><td colspan="10" class="empty">Loading…</td></tr>
       </tbody>
     </table>
   </div>
 </div>
+</div>
 
-<!-- Add / Edit Modal -->
+<!-- ═══════════════════════ MOBILE VIEW ═══════════════════════ -->
+<div id="view-mobile" style="display:none">
+<div class="m-shell">
+  <div class="m-hdr">
+    <button class="m-hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    </button>
+    <div>
+      <div class="m-hdr-title">Lost &amp; Found</div>
+      <div class="m-hdr-prop" id="m-hdr-prop"></div>
+    </div>
+  </div>
+  <div class="m-log-wrap">
+    <button class="m-btn-log" onclick="openAddModal()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Log Item
+    </button>
+  </div>
+  <div class="m-status-wrap">
+    <button class="stab on" onclick="setMobileStatus('all',this)">All</button>
+    <button class="stab" onclick="setMobileStatus('pending',this)">Pending</button>
+    <button class="stab" onclick="setMobileStatus('informed',this)">Informed</button>
+    <button class="stab" onclick="setMobileStatus('collected',this)">Collected</button>
+  </div>
+  <div class="m-sec-label">Items</div>
+  <div class="m-cards" id="m-cards">
+    <div class="empty">Loading…</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SHARED MODAL ═══════════════════════ -->
 <div class="modal" id="modal-add">
   <div class="modal-card">
-    <div class="modal-ttl" id="modal-ttl">Add Lost &amp; Found Item</div>
+    <div class="modal-handle"></div>
+    <div class="modal-ttl" id="modal-ttl">Log Lost &amp; Found Item</div>
     <input type="hidden" id="edit-id"/>
 
     <div class="row-grid">
@@ -142,7 +237,6 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
         <input class="fc" id="f-location" type="text" placeholder="e.g. Room 3, Pool area"/>
       </div>
     </div>
-
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Found Date</label>
@@ -153,34 +247,20 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
         <input class="fc" id="f-time" type="time"/>
       </div>
     </div>
-
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Property</label>
         <select class="fc" id="f-property"><option value="">— select —</option></select>
       </div>
       <div class="fg">
-        <label class="fl">Found By (Staff)</label>
-        <select class="fc" id="f-foundby"><option value="">— select —</option></select>
-      </div>
-    </div>
-
-    <div class="row-grid">
-      <div class="fg">
         <label class="fl">Guest Name</label>
-        <input class="fc" id="f-guestname" type="text" placeholder="Guest name if known"/>
-      </div>
-      <div class="fg">
-        <label class="fl">Booking ID</label>
-        <input class="fc" id="f-bookingid" type="text" placeholder="Optional"/>
+        <input class="fc" id="f-guestname" type="text" placeholder="If known"/>
       </div>
     </div>
-
     <div class="fg">
       <label class="fl">Remarks</label>
       <textarea class="fc" id="f-remarks" placeholder="Any additional notes…"></textarea>
     </div>
-
     <div class="fg">
       <label class="fl">Photo</label>
       <div class="photo-preview" id="photo-preview" onclick="document.getElementById('photo-input').click()">
@@ -191,7 +271,6 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
       </div>
       <input type="file" id="photo-input" accept="image/*" onchange="previewPhoto(event)"/>
     </div>
-
     <div class="row-grid" style="margin-bottom:4px">
       <div>
         <label class="fl" style="margin-bottom:10px">Customer Informed</label>
@@ -208,7 +287,6 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
         </div>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal('modal-add')">Cancel</button>
       <button class="btn-p" id="btn-save" onclick="saveItem()">Save Item</button>
@@ -219,7 +297,6 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')">
   <img id="lb-img" src="" alt=""/>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -228,11 +305,28 @@ const KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const TABLE  = 'lost_and_found';
 const BUCKET = 'lost-and-found-photos';
 
-let allItems = [], PROPS = [], STAFF = [];
+let allItems = [], PROPS = [], IS_MOBILE = false;
 let photoFile = null, existingPhotoUrl = null;
+let mobileStatusFilter = 'all';
 
+/* ── Role detection ── */
+const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!_me) location.href = '/index.html';
+
+IS_MOBILE = (_me.role === 'staff');
+
+if (IS_MOBILE) {
+  document.body.classList.add('mobile');
+  document.getElementById('view-mobile').style.display = 'block';
+  if (_me.name) document.getElementById('m-hdr-prop').textContent = _me.name;
+} else {
+  document.body.classList.add('desktop');
+  document.getElementById('view-desktop').style.display = 'block';
+}
+
+/* ── API ── */
 async function api(path, method='GET', body=null) {
-  const opts = { method, headers: { apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Prefer:'return=representation' } };
+  const opts = { method, headers:{ apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Prefer:'return=representation' } };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(SB+path, opts);
   if (!r.ok) throw new Error(await r.text());
@@ -249,18 +343,27 @@ async function uploadPhoto(file) {
   return `${SB}/storage/v1/object/public/${BUCKET}/${path}`;
 }
 
+/* ── Boot ── */
 async function boot() {
-  const [items, props, staff] = await Promise.all([
+  const [items, landlords] = await Promise.all([
     api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]),
-    api('/rest/v1/properties?select=id,name&order=name').catch(()=>[]),
-    api('/rest/v1/staff?select=id,name&order=name').catch(()=>[])
+    api('/rest/v1/landlords?select=property_name&order=property_name').catch(()=>[])
   ]);
-  allItems = items||[]; PROPS = props||[]; STAFF = staff||[];
-  const pf = document.getElementById('filter-prop');
-  PROPS.forEach(p => pf.innerHTML += `<option value="${p.id}">${esc(p.name)}</option>`);
-  updateKPIs(); renderTable();
+  allItems = items||[];
+  const seen = new Set();
+  PROPS = (landlords||[]).filter(l=>l.property_name&&!seen.has(l.property_name)&&seen.add(l.property_name)).map(l=>({id:l.property_name,name:l.property_name}));
+
+  if (!IS_MOBILE) {
+    const pf = document.getElementById('filter-prop');
+    PROPS.forEach(p => pf.innerHTML += `<option value="${p.id}">${esc(p.name)}</option>`);
+    updateKPIs();
+    renderDesktop();
+  } else {
+    renderMobile();
+  }
 }
 
+/* ── KPIs (desktop) ── */
 function updateKPIs() {
   document.getElementById('kpi-total').textContent     = allItems.length;
   document.getElementById('kpi-pending').textContent   = allItems.filter(i=>i.status==='pending').length;
@@ -268,7 +371,8 @@ function updateKPIs() {
   document.getElementById('kpi-collected').textContent = allItems.filter(i=>i.status==='collected').length;
 }
 
-function renderTable() {
+/* ── Desktop render ── */
+function renderDesktop() {
   const q  = document.getElementById('search-input').value.toLowerCase();
   const st = document.getElementById('filter-status').value;
   const pr = document.getElementById('filter-prop').value;
@@ -278,19 +382,20 @@ function renderTable() {
     if (pr && i.property_id !== pr) return false;
     return true;
   });
-  const tbody = document.getElementById('lf-tbody');
-  if (!items.length) { tbody.innerHTML='<tr><td colspan="9" class="empty">No items found.</td></tr>'; return; }
-  const propName  = id => PROPS.find(p=>p.id===id)?.name||'—';
+  const tbody = document.getElementById('d-tbody');
+  if (!items.length) { tbody.innerHTML='<tr><td colspan="10" class="empty">No items found.</td></tr>'; return; }
+  const propName = id => PROPS.find(p=>p.id===id)?.name||id||'—';
   tbody.innerHTML = items.map(i=>`
     <tr>
       <td>${i.photo_url
         ?`<img class="item-thumb" src="${i.photo_url}" onclick="openLightbox('${i.photo_url}')" title="Enlarge"/>`
         :`<span class="item-thumb-empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>`}
       </td>
-      <td style="font-weight:500;max-width:160px">${esc(i.item_description||'—')}</td>
+      <td style="font-weight:500">${esc(i.item_description||'—')}</td>
       <td style="color:var(--muted)">${esc(i.guest_name||'—')}</td>
       <td style="color:var(--muted)">${esc(propName(i.property_id))}</td>
       <td style="color:var(--muted);font-size:12px">${fmtDate(i.found_date)}${i.found_time?'<br><span style="font-size:11px">'+i.found_time.slice(0,5)+'</span>':''}</td>
+      <td style="font-size:12px;color:var(--muted)">${esc(i.logged_by_name||'—')}<br><span style="font-size:10px">${i.logged_at?fmtDT(i.logged_at):''}</span></td>
       <td><span class="bdg ${i.status==='collected'?'s-collected':i.status==='informed'?'s-informed':'s-pending'}">${i.status||'pending'}</span></td>
       <td><label class="sm-toggle"><input type="checkbox" ${i.status==='informed'||i.status==='collected'?'checked':''} onchange="toggleInformed('${i.id}',this.checked)"/><span class="sm-toggle-s"></span></label></td>
       <td><label class="sm-toggle"><input type="checkbox" ${i.status==='collected'?'checked':''} onchange="toggleCollected('${i.id}',this.checked)"/><span class="sm-toggle-s"></span></label></td>
@@ -301,37 +406,83 @@ function renderTable() {
     </tr>`).join('');
 }
 
+/* ── Mobile render ── */
+function setMobileStatus(s, btn) {
+  mobileStatusFilter = s;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderMobile();
+}
+
+function renderMobile() {
+  const items = allItems.filter(i => mobileStatusFilter === 'all' || i.status === mobileStatusFilter);
+  const el = document.getElementById('m-cards');
+  if (!items.length) { el.innerHTML='<div class="empty">No items found.</div>'; return; }
+  el.innerHTML = items.map(i => {
+    const informed  = i.status==='informed'||i.status==='collected';
+    const collected = i.status==='collected';
+    return `<div class="lf-card">
+      <div class="lf-card-top">
+        ${i.photo_url
+          ? `<img class="lf-card-thumb" src="${i.photo_url}" onclick="openLightbox('${i.photo_url}')"/>`
+          : `<div class="lf-card-thumb-empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></div>`}
+        <div class="lf-card-info">
+          <div class="lf-card-name">${esc(i.item_description||'—')}</div>
+          <div class="lf-card-meta">${i.location_found?esc(i.location_found)+'<br>':''}${i.guest_name?'Guest: '+esc(i.guest_name)+'<br>':''}${fmtDate(i.found_date)}</div>
+          <span class="lf-card-badge ${i.status==='collected'?'s-collected':i.status==='informed'?'s-informed':'s-pending'}">${i.status||'pending'}</span>
+        </div>
+      </div>
+      ${i.logged_by_name ? `<div class="lf-card-logged">Logged by ${esc(i.logged_by_name)}${i.logged_at?' · '+fmtDT(i.logged_at):''}</div>` : ''}
+      <div class="lf-card-actions">
+        <button class="lf-act-btn ${informed?'active-informed':''}" onclick="toggleInformed('${i.id}',${!informed})">
+          ${informed ? '✓ Informed' : 'Mark Informed'}
+        </button>
+        <button class="lf-act-btn ${collected?'active-collected':''}" onclick="toggleCollected('${i.id}',${!collected})">
+          ${collected ? '✓ Collected' : 'Mark Collected'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Toggles ── */
 async function toggleInformed(id, checked) { await patchStatus(id, checked ? 'informed' : 'pending'); }
 async function toggleCollected(id, checked) { await patchStatus(id, checked ? 'collected' : 'informed'); }
 async function patchStatus(id, status) {
   try {
     await api(`/rest/v1/${TABLE}?id=eq.${id}`, 'PATCH', {status});
     const item = allItems.find(i=>i.id===id); if (item) item.status = status;
-    updateKPIs(); renderTable(); showToast('Updated');
-  } catch(e) { showToast('Error: '+e.message); boot(); }
+    if (!IS_MOBILE) { updateKPIs(); renderDesktop(); } else { renderMobile(); }
+    showToast('Updated');
+  } catch(e) { showToast('Error: '+e.message); }
 }
 
 async function loadItems() {
   allItems = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]);
-  updateKPIs(); renderTable();
+  if (!IS_MOBILE) { updateKPIs(); renderDesktop(); } else { renderMobile(); }
 }
 
-function fillSelects() {
+/* ── Modal ── */
+function fillPropertySelect() {
   document.getElementById('f-property').innerHTML = '<option value="">— select —</option>'+PROPS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
-  document.getElementById('f-foundby').innerHTML  = '<option value="">— select —</option>'+STAFF.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  // For staff, pre-select their property
+  if (IS_MOBILE && _me.property_name) {
+    const props = Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name];
+    if (props.length === 1) document.getElementById('f-property').value = props[0];
+  }
 }
 
 function openAddModal() {
-  document.getElementById('modal-ttl').textContent = 'Add Lost & Found Item';
+  document.getElementById('modal-ttl').textContent = 'Log Lost & Found Item';
   document.getElementById('edit-id').value = '';
-  ['f-desc','f-location','f-guestname','f-bookingid','f-remarks'].forEach(id=>document.getElementById(id).value='');
+  ['f-desc','f-location','f-guestname','f-remarks'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('f-time').value = '';
+  document.getElementById('f-time').value = new Date().toTimeString().slice(0,5);
   document.getElementById('f-informed').checked = false;
   document.getElementById('f-collected').checked = false;
   document.getElementById('lbl-informed').textContent = 'No';
   document.getElementById('lbl-collected').textContent = 'No';
-  resetPhoto(); fillSelects();
+  resetPhoto(); fillPropertySelect();
   document.getElementById('modal-add').classList.add('on');
 }
 
@@ -344,26 +495,25 @@ function openEditModal(id) {
   document.getElementById('f-date').value    = i.found_date||'';
   document.getElementById('f-time').value    = i.found_time?i.found_time.slice(0,5):'';
   document.getElementById('f-guestname').value= i.guest_name||'';
-  document.getElementById('f-bookingid').value= i.booking_id||'';
   document.getElementById('f-remarks').value = i.remarks||'';
   const informed  = i.status==='informed'||i.status==='collected';
   const collected = i.status==='collected';
   document.getElementById('f-informed').checked  = informed;
   document.getElementById('f-collected').checked = collected;
-  document.getElementById('lbl-informed').textContent  = informed  ?'Yes':'No';
-  document.getElementById('lbl-collected').textContent = collected ?'Yes':'No';
+  document.getElementById('lbl-informed').textContent  = informed?'Yes':'No';
+  document.getElementById('lbl-collected').textContent = collected?'Yes':'No';
   existingPhotoUrl = i.photo_url||null; photoFile = null;
   if (existingPhotoUrl) {
     document.getElementById('photo-preview').innerHTML =
       `<img src="${existingPhotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>
        <div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 8px;border-radius:999px;pointer-events:none">Click to change</div>`;
   } else resetPhoto();
-  fillSelects();
+  fillPropertySelect();
   document.getElementById('f-property').value = i.property_id||'';
-  document.getElementById('f-foundby').value  = i.found_by||'';
   document.getElementById('modal-add').classList.add('on');
 }
 
+/* ── Save — stamps logged_by_name + logged_at for staff ── */
 async function saveItem() {
   const desc = document.getElementById('f-desc').value.trim();
   if (!desc) { showToast('Item description is required'); return; }
@@ -381,35 +531,39 @@ async function saveItem() {
       found_date:       document.getElementById('f-date').value||null,
       found_time:       document.getElementById('f-time').value||null,
       guest_name:       document.getElementById('f-guestname').value.trim()||null,
-      booking_id:       document.getElementById('f-bookingid').value.trim()||null,
       remarks:          document.getElementById('f-remarks').value.trim()||null,
       property_id:      document.getElementById('f-property').value||null,
-      found_by:         document.getElementById('f-foundby').value||null,
       photo_url, status
     };
+    // Staff: stamp who logged it and when
     const editId = document.getElementById('edit-id').value;
-    if (editId) { await api(`/rest/v1/${TABLE}?id=eq.${editId}`,'PATCH',payload); showToast('Item updated'); }
-    else        { await api(`/rest/v1/${TABLE}`,'POST',payload); showToast('Item added'); }
+    if (!editId && IS_MOBILE && _me.name) {
+      payload.logged_by_name = _me.name;
+      payload.logged_at      = new Date().toISOString();
+    }
+    if (editId) { await api(`/rest/v1/${TABLE}?id=eq.${editId}`,'PATCH',payload); showToast('Updated'); }
+    else        { await api(`/rest/v1/${TABLE}`,'POST',payload); showToast('Item logged'); }
     closeModal('modal-add'); await loadItems();
   } catch(e) { showToast('Error: '+e.message); }
   finally { btn.disabled=false; btn.textContent='Save Item'; }
 }
 
 async function deleteItem(id) {
-  if (!confirm('Delete this item? Cannot be undone.')) return;
+  if (!confirm('Delete this item?')) return;
   try {
     await api(`/rest/v1/${TABLE}?id=eq.${id}`,'DELETE');
     allItems = allItems.filter(i=>i.id!==id);
-    updateKPIs(); renderTable(); showToast('Deleted');
+    if (!IS_MOBILE) { updateKPIs(); renderDesktop(); } else renderMobile();
+    showToast('Deleted');
   } catch(e) { showToast('Error: '+e.message); }
 }
 
 function syncStatus() {
   const inf = document.getElementById('f-informed');
   const col = document.getElementById('f-collected');
-  if (col.checked) { inf.checked=true; document.getElementById('lbl-informed').textContent='Yes'; }
-  document.getElementById('lbl-informed').textContent  = inf.checked ?'Yes':'No';
-  document.getElementById('lbl-collected').textContent = col.checked ?'Yes':'No';
+  if (col.checked) { inf.checked=true; }
+  document.getElementById('lbl-informed').textContent  = inf.checked?'Yes':'No';
+  document.getElementById('lbl-collected').textContent = col.checked?'Yes':'No';
 }
 
 function previewPhoto(e) {
@@ -429,6 +583,7 @@ function openLightbox(url) { document.getElementById('lb-img').src=url; document
 function closeModal(id)    { document.getElementById(id).classList.remove('on'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtDate(d){ if(!d)return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function fmtDT(d){ if(!d)return ''; return new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',3000); }
 
 document.getElementById('modal-add').addEventListener('click',e=>{ if(e.target===document.getElementById('modal-add')) closeModal('modal-add'); });
