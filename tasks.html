@@ -555,7 +555,9 @@ async function loadAdminTasks(){
       + 'ALTER TABLE tasks DISABLE ROW LEVEL SECURITY;\n\n'
       + '-- If table already exists:\n'
       + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;\n'
-      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS task_type text;';
+      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS task_type text;\n'
+      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS acknowledged_at timestamptz;\n'
+      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed_at timestamptz;';
     const sqlBlock = isNoTable
       ? '<div style="font-size:12px;max-width:420px;margin:0 auto 10px">Run this SQL in your <a href="https://supabase.com/dashboard" target="_blank" style="color:#993C1D">Supabase SQL editor</a>, then refresh:</div>'
         + '<pre style="text-align:left;background:#F9F8F6;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:14px;font-size:11px;line-height:1.7;max-width:520px;overflow:auto;margin:0 auto">' + sql + '</pre>'
@@ -635,8 +637,10 @@ function renderAdminTable(tasks){
   });
 
   el.innerHTML = '<table class="tbl"><thead><tr>'
-    + '<th style="width:28%">Task</th><th>Assigned To</th><th>Property</th>'
-    + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th><th></th>'
+    + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
+    + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
+    + '<th style="font-size:10px">Created</th><th style="font-size:10px">Ack\'d At</th><th style="font-size:10px">Done At</th>'
+    + '<th></th>'
     + '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
@@ -667,6 +671,7 @@ function bundleRow(b){
     + '<td style="font-size:12px">' + due + '</td>'
     + '<td style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
     + '<td style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
+    + '<td></td><td></td><td></td>'
     + '<td style="text-align:right"><button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
     + '</tr>';
 
@@ -679,6 +684,9 @@ function bundleRow(b){
       + '<td></td>'
       + '<td>' + ackWidget(t.id,'acknowledged',t.acknowledged,'admin') + '</td>'
       + '<td>' + ackWidget(t.id,'completed',t.completed,'admin') + '</td>'
+      + '<td>' + fmtTs(t.created_at) + '</td>'
+      + '<td id="ts-ack-'+t.id+'">' + fmtTs(t.acknowledged_at) + '</td>'
+      + '<td id="ts-done-'+t.id+'">' + fmtTs(t.completed_at) + '</td>'
       + '<td style="text-align:right"><button class="btn-del" onclick="deleteTask(\''+t.id+'\')">✕</button></td>'
       + '</tr>';
   });
@@ -708,6 +716,12 @@ function taskTypeBadge(type){
   return `<span class="bdg ${map[type]||'bdg'}">${escHtml(type)}</span>`;
 }
 
+function fmtTs(val){
+  if(!val) return '<span style="color:var(--muted)">—</span>';
+  const d = new Date(val);
+  return `<span style="font-size:11px;color:var(--muted)">${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}<br>${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}</span>`;
+}
+
 function adminRow(t){
   const ackOn = t.acknowledged;
   const initials = (t.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
@@ -728,6 +742,9 @@ function adminRow(t){
     <td style="font-size:12px">${due}</td>
     <td>${ackWidget(t.id, 'acknowledged', ackOn, 'admin')}</td>
     <td>${ackWidget(t.id, 'completed', t.completed, 'admin')}</td>
+    <td>${fmtTs(t.created_at)}</td>
+    <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
+    <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
       <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
       <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
@@ -853,7 +870,7 @@ function downloadReport(){
   if(!tasks.length){ toast('No tasks to export'); return; }
 
   // Build CSV
-  const headers = ['Task','Assigned To','Property','Task Type','Priority','Due Date','Acknowledged','Completed','Notes','Created At'];
+  const headers = ['Task','Assigned To','Property','Task Type','Priority','Due Date','Acknowledged','Completed','Created At','Acknowledged At','Completed At','Notes'];
   const rows = tasks.map(t => [
     t.work||'',
     t.staff_name||'',
@@ -863,8 +880,10 @@ function downloadReport(){
     t.due_date||'',
     t.acknowledged ? 'Yes' : 'No',
     t.completed ? 'Yes' : 'No',
-    t.notes||'',
-    t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN') : ''
+    t.created_at     ? new Date(t.created_at).toLocaleString('en-IN')     : '',
+    t.acknowledged_at? new Date(t.acknowledged_at).toLocaleString('en-IN'): '',
+    t.completed_at   ? new Date(t.completed_at).toLocaleString('en-IN')   : '',
+    t.notes||''
   ]);
 
   // Escape CSV values
@@ -986,16 +1005,27 @@ async function toggleAck(id, field, current, labelEl, view){
   const newVal = !current;
   const patch  = {};
   patch[field] = newVal;
+
+  // Capture timestamp fields
+  const tsField = field === 'acknowledged' ? 'acknowledged_at' : field === 'completed' ? 'completed_at' : null;
+  const now = new Date().toISOString();
+  if(tsField) patch[tsField] = newVal ? now : null;
+
   try {
     await api('/rest/v1/tasks?id=eq.'+id,'PATCH', patch);
     // Update local arrays
-    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t) t[field]=newVal; });
+    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t){ t[field]=newVal; if(tsField) t[tsField]=newVal?now:null; } });
     // Update widget inline
     const track = labelEl.querySelector('.ack-track');
     const txt   = labelEl.querySelector('.ack-text');
     track.classList.toggle('on', newVal);
     txt.textContent = newVal ? 'Yes' : 'No';
     labelEl.dataset.on = String(newVal);
+    // Update timestamp cell inline (admin view)
+    if(view === 'admin' && tsField){
+      const tsCell = document.getElementById('ts-' + (field==='acknowledged'?'ack':'done') + '-' + id);
+      if(tsCell) tsCell.innerHTML = fmtTs(newVal ? now : null);
+    }
     if(view==='admin') updateKpis(ALL_TASKS);
     // In staff view: completed toggle moves card out of To Do tab
     if(view==='staff' && field==='completed' && staffFilterMode==='pending' && newVal){
