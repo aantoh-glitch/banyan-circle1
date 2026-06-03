@@ -118,6 +118,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .dash-btn:nth-child(6){border-top:3px solid #1A6B5A}
 .dash-btn:nth-child(7){border-top:3px solid #993C1D}
 .dash-btn:nth-child(8){border-top:3px solid #854F0B}
+.dash-btn:nth-child(9){border-top:3px solid #3B6D11}
 
 .db-icon{
   width:38px;height:38px;
@@ -143,6 +144,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .dash-btn:nth-child(7) .db-icon svg{stroke:#993C1D;fill:none}
 .dash-btn:nth-child(8) .db-icon{background:#FAEEDA;color:#854F0B}
 .dash-btn:nth-child(8) .db-icon svg{stroke:#854F0B;fill:none}
+.dash-btn:nth-child(9) .db-icon{background:#EAF3DE;color:#3B6D11}
+.dash-btn:nth-child(9) .db-icon svg{stroke:#3B6D11;fill:none}
 
 .db-label{
   font-family:'EB Garamond',serif;
@@ -159,7 +162,29 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   font-weight:400;
 }
 
-/* Footer */
+/* Leave bottom-sheet modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
+.modal-ttl{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;margin-bottom:4px;color:var(--text)}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+
+/* Leave list inside modal */
+.leave-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.leave-item:last-child{border-bottom:none}
+.leave-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.leave-icon svg{width:16px;height:16px;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.leave-detail{flex:1;min-width:0}
+.leave-dates{font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px}
+.leave-type-line{font-size:12px;color:var(--muted)}
+.leave-notes-line{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic}
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500;flex-shrink:0}
+.bdg-pending{background:#FAEEDA;color:#633806}
+.bdg-approved{background:#EAF3DE;color:#27500A}
+.bdg-rejected{background:#FCEBEB;color:#791F1F}
+.leave-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+
 .footer{
   margin-top:40px;
   text-align:center;
@@ -269,6 +294,30 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </a>
 
+    <button class="dash-btn" onclick="openLeaveModal()">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+      </div>
+      <div>
+        <div class="db-label">My Leave</div>
+        <div class="db-sub">View leave records</div>
+      </div>
+    </button>
+
+  </div><!-- /dash-grid -->
+
+  <!-- Leave bottom-sheet modal -->
+  <div class="modal" id="modal-leave">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-ttl">My Leave</div>
+      <div class="modal-sub" id="leave-modal-sub"></div>
+      <div id="leave-modal-list"><div class="leave-empty">Loading…</div></div>
+      <button onclick="document.getElementById('modal-leave').classList.remove('on')"
+        style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
+        Close
+      </button>
+    </div>
   </div>
 
   <div class="footer">a property by heritance</div>
@@ -302,6 +351,90 @@ if (laundryLink && me) {
   }
   // 0 properties or owner/admin → plain /laundry.html (all access)
 }
+
+/* ── Leave Modal ── */
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+async function leaveApi(path) {
+  const r = await fetch(SB + path, {
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+function fmtLeaveDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function leaveTypeClass(type) {
+  const t = (type || '').toLowerCase();
+  if (t.includes('annual')) return { bg: '#E3F0FF', color: '#0C447C' };
+  if (t.includes('sick'))   return { bg: '#FCEBEB', color: '#791F1F' };
+  if (t.includes('comp'))   return { bg: '#EAF3DE', color: '#27500A' };
+  if (t.includes('unpaid')) return { bg: '#F3EAF9', color: '#5A2A7A' };
+  return { bg: '#FAEEDA', color: '#633806' };
+}
+
+async function openLeaveModal() {
+  document.getElementById('modal-leave').classList.add('on');
+  const listEl = document.getElementById('leave-modal-list');
+  const subEl  = document.getElementById('leave-modal-sub');
+  listEl.innerHTML = '<div class="leave-empty">Loading…</div>';
+  subEl.textContent = '';
+
+  try {
+    const staffName = encodeURIComponent(me.name || '');
+    const rows = await leaveApi(
+      '/rest/v1/staff_leave?staff_name=eq.' + staffName + '&order=start_date.desc&limit=50'
+    );
+
+    if (!rows || !rows.length) {
+      subEl.textContent = me.name || '';
+      listEl.innerHTML = '<div class="leave-empty">No leave records found</div>';
+      return;
+    }
+
+    subEl.textContent = me.name + ' · ' + rows.length + ' record' + (rows.length !== 1 ? 's' : '');
+
+    listEl.innerHTML = rows.map(l => {
+      const tc = leaveTypeClass(l.leave_type);
+      const isSameDay = l.start_date === l.end_date;
+      const dateStr = isSameDay
+        ? fmtLeaveDate(l.start_date)
+        : fmtLeaveDate(l.start_date) + ' – ' + fmtLeaveDate(l.end_date);
+      const status = l.status || 'pending';
+      const badgeClass = status === 'approved' ? 'bdg-approved' : status === 'rejected' ? 'bdg-rejected' : 'bdg-pending';
+
+      return `<div class="leave-item">
+        <div class="leave-icon" style="background:${tc.bg}">
+          <svg viewBox="0 0 24 24" style="stroke:${tc.color}">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="leave-detail">
+          <div class="leave-dates">${dateStr}</div>
+          <div class="leave-type-line">${l.leave_type || 'Leave'}</div>
+          ${l.notes ? `<div class="leave-notes-line">${l.notes}</div>` : ''}
+        </div>
+        <span class="bdg ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+      </div>`;
+    }).join('');
+
+  } catch (e) {
+    listEl.innerHTML = '<div class="leave-empty">Could not load leave records</div>';
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('modal-leave').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('on');
+});
 </script>
 </body>
 </html>
