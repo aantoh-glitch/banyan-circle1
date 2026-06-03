@@ -444,11 +444,19 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <div class="pg" id="pg-maint">
   <div class="pg-title">Maintenance</div>
-  <div class="pg-sub">All open and closed maintenance issues across properties</div>
-  <div class="prop-tabs" id="maint-prop-tabs"></div>
+  <div class="pg-sub">All maintenance issues across properties</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+    <div class="prop-tabs" id="maint-prop-tabs" style="margin-bottom:0;flex:1"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="maint-status-filters">
+      <button class="ptab on" data-status="all" onclick="setMaintStatus('all',this)">All</button>
+      <button class="ptab" data-status="open" onclick="setMaintStatus('open',this)">Open</button>
+      <button class="ptab" data-status="in_progress" onclick="setMaintStatus('in_progress',this)">In Progress</button>
+      <button class="ptab" data-status="resolved" onclick="setMaintStatus('resolved',this)">Resolved</button>
+    </div>
+  </div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div class="card-ttl" style="margin:0" id="maint-prop-label">Maintenance</div>
+      <div class="card-ttl" style="margin:0" id="maint-prop-label">All Properties</div>
       <button class="btn-p" onclick="openMaintModal()">+ Raise issue</button>
     </div>
     <div id="maint-list">Loading…</div>
@@ -638,6 +646,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <div class="modal" id="modal-maint"><div class="modal-card">
   <div class="modal-ttl" id="mm-ttl">Raise maintenance issue</div><input type="hidden" id="mm-id"/>
+  <div class="fg"><label class="fl">Property</label><select class="fc" id="mm-property"></select></div>
   <div class="fg"><label class="fl">Issue</label><textarea class="fc" id="mm-issue"></textarea></div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Priority</label><select class="fc" id="mm-prio"><option>normal</option><option>high</option><option>low</option></select></div>
@@ -1413,11 +1422,150 @@ async function saveRevenue(){ const id=document.getElementById('mr-id').value; c
 async function deleteRevenue(id){ if(!confirm('Delete this revenue entry?'))return; await api('/rest/v1/property_revenues?id=eq.'+id,'DELETE'); loadUtilPage(); }
 
 // MAINTENANCE
-async function loadMaintPage(){ await loadAllProperties(); if(!SCOPE.maint)SCOPE.maint=PROPS[0]?.name||''; renderPropTabs('maint','maint','setMaintProp'); document.getElementById('maint-prop-label').textContent=SCOPE.maint?'Maintenance · '+SCOPE.maint:'Maintenance'; const data=await api('/rest/v1/maintenance_log?property_name=eq.'+encodeURIComponent(SCOPE.maint)+'&order=created_at.desc')||[]; const el=document.getElementById('maint-list'); if(!data.length){el.innerHTML='<div class="empty">No maintenance issues for this property</div>';return;} el.innerHTML=`<table class="tbl"><thead><tr><th>Issue</th><th>Raised by</th><th>Priority</th><th>Status</th><th>Logged</th><th></th></tr></thead><tbody>${data.map(m=>`<tr><td style="max-width:280px">${m.issue}</td><td>${m.raised_by||'—'} <span style="color:var(--muted);font-size:11px">(${m.raised_role||'—'})</span></td><td>${m.priority||'normal'}</td><td><span class="bdg ${m.status==='resolved'?'bdg-g':m.status==='in_progress'?'bdg-a':'bdg-r'}">${(m.status||'open').replace('_',' ')}</span></td><td>${fmtDate(m.created_at)}</td><td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")})'>Edit</button> <button class="btn-del" onclick="deleteMaint('${m.id}')">Delete</button></td></tr>`).join('')}</tbody></table>`; }
-window.setMaintProp=p=>{SCOPE.maint=p;loadMaintPage();};
-function openMaintModal(){ document.getElementById('mm-id').value=''; document.getElementById('mm-ttl').textContent='Raise issue · '+SCOPE.maint; ['mm-issue','mm-notes'].forEach(i=>document.getElementById(i).value=''); document.getElementById('mm-prio').value='normal'; document.getElementById('mm-status').value='open'; openModal('modal-maint'); }
-function editMaint(m){ document.getElementById('mm-id').value=m.id; document.getElementById('mm-ttl').textContent='Edit maintenance issue'; document.getElementById('mm-issue').value=m.issue||''; document.getElementById('mm-prio').value=m.priority||'normal'; document.getElementById('mm-status').value=m.status||'open'; document.getElementById('mm-notes').value=m.notes||''; openModal('modal-maint'); }
-async function saveMaint(){ const id=document.getElementById('mm-id').value; const body={property_name:SCOPE.maint,issue:document.getElementById('mm-issue').value.trim(),priority:document.getElementById('mm-prio').value,status:document.getElementById('mm-status').value,notes:document.getElementById('mm-notes').value.trim()||null,raised_by:'OFFICE',raised_role:'office'}; if(!body.issue){alert('Describe the issue');return;} if(body.status==='resolved')body.resolved_at=new Date().toISOString(); if(id)await api('/rest/v1/maintenance_log?id=eq.'+id,'PATCH',body); else await api('/rest/v1/maintenance_log','POST',body); closeModal('modal-maint'); toast('Saved'); loadMaintPage(); }
+/* ── Maintenance ── */
+const MAINT_FILTER = { prop: 'all', status: 'all' };
+
+async function loadMaintPage(){
+  await loadAllProperties();
+  // Render "All" + per-property tabs
+  const tabEl = document.getElementById('maint-prop-tabs');
+  const allActive = MAINT_FILTER.prop === 'all';
+  tabEl.innerHTML = `<button class="ptab ${allActive?'on':''}" onclick="setMaintProp('all',this)">All Properties</button>`
+    + PROPS.map(p=>`<button class="ptab ${MAINT_FILTER.prop===p.name?'on':''}" onclick="setMaintProp('${p.name.replace(/'/g,"\\'")}',this)">${p.name}</button>`).join('');
+  // Update label
+  document.getElementById('maint-prop-label').textContent =
+    MAINT_FILTER.prop === 'all' ? 'All Properties' : MAINT_FILTER.prop;
+  // Build query
+  let q = '/rest/v1/maintenance_log?order=created_at.desc';
+  if(MAINT_FILTER.prop !== 'all') q += '&property_name=eq.'+encodeURIComponent(MAINT_FILTER.prop);
+  if(MAINT_FILTER.status !== 'all') q += '&status=eq.'+MAINT_FILTER.status;
+  const data = await api(q) || [];
+  const el = document.getElementById('maint-list');
+  if(!data.length){ el.innerHTML='<div class="empty">No maintenance issues found</div>'; return; }
+  el.innerHTML = `<table class="tbl" id="maint-tbl">
+    <thead><tr><th>Property</th><th>Issue</th><th>Raised by</th><th>Priority</th><th>Status</th><th>Logged</th><th></th></tr></thead>
+    <tbody>${data.map(m=>`
+      <tr class="maint-row" style="cursor:pointer" onclick="toggleMaintLog(this,'${m.id}')">
+        <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${m.property_name||'—'}</td>
+        <td style="max-width:240px">${m.issue}</td>
+        <td>${m.raised_by||'—'} <span style="color:var(--muted);font-size:11px">(${m.raised_role||'—'})</span></td>
+        <td><span style="font-size:12px">${m.priority||'normal'}</span></td>
+        <td><span class="bdg ${m.status==='resolved'?'bdg-g':m.status==='in_progress'?'bdg-a':'bdg-r'}">${(m.status||'open').replace('_',' ')}</span></td>
+        <td style="white-space:nowrap;font-size:12px">${fmtDate(m.created_at)}</td>
+        <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
+          <button class="btn-edit" onclick='requirePin("Edit issue",()=>editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")}))'>Edit</button>
+          <button class="btn-edit" style="background:var(--b-l);color:var(--b)" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}"))'>Update</button>
+          <button class="btn-del" onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))'>Delete</button>
+        </td>
+      </tr>
+      <tr class="maint-log-row" id="maint-log-${m.id}" style="display:none">
+        <td colspan="7" style="padding:0">
+          <div style="background:var(--bg);border-top:1px solid var(--border);padding:14px 20px;font-size:13px">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Update Log</div>
+            <div id="maint-log-entries-${m.id}" style="color:var(--muted);font-size:13px">Loading…</div>
+          </div>
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+window.setMaintProp = function(p, btn){
+  MAINT_FILTER.prop = p;
+  document.querySelectorAll('#maint-prop-tabs .ptab').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  loadMaintPage();
+};
+window.setMaintStatus = function(s, btn){
+  MAINT_FILTER.status = s;
+  document.querySelectorAll('#maint-status-filters .ptab').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  loadMaintPage();
+};
+
+async function toggleMaintLog(row, id){
+  const logRow = document.getElementById('maint-log-'+id);
+  if(!logRow) return;
+  const isOpen = logRow.style.display !== 'none';
+  if(isOpen){ logRow.style.display='none'; return; }
+  logRow.style.display='';
+  const entriesEl = document.getElementById('maint-log-entries-'+id);
+  entriesEl.textContent = 'Loading…';
+  try {
+    const logs = await api('/rest/v1/maintenance_updates?maintenance_id=eq.'+id+'&order=created_at.desc') || [];
+    if(!logs.length){ entriesEl.innerHTML='<em>No updates yet.</em>'; return; }
+    entriesEl.innerHTML = logs.map(l=>`
+      <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="white-space:nowrap;color:var(--muted);font-size:12px;min-width:130px">${fmtDate(l.created_at)}</div>
+        <div style="flex:1">${l.note}</div>
+        <div style="font-size:12px;color:var(--muted)">${l.updated_by||''}</div>
+      </div>`).join('');
+  } catch(e){ entriesEl.innerHTML='<em>Could not load updates.</em>'; }
+}
+
+/* Update modal */
+let _maintUpdateId = '';
+function openMaintUpdate(id, issueLabel){
+  _maintUpdateId = id;
+  document.getElementById('mu-id-label').textContent = issueLabel || 'this issue';
+  document.getElementById('mu-note').value = '';
+  openModal('modal-maint-update');
+}
+async function saveMaintUpdate(){
+  const note = document.getElementById('mu-note').value.trim();
+  if(!note){ alert('Enter an update note'); return; }
+  await api('/rest/v1/maintenance_updates','POST',{
+    maintenance_id: _maintUpdateId,
+    note,
+    updated_by: 'OFFICE',
+    created_at: new Date().toISOString()
+  });
+  closeModal('modal-maint-update');
+  toast('Update logged ✓');
+  // Refresh log if open
+  const logRow = document.getElementById('maint-log-'+_maintUpdateId);
+  if(logRow && logRow.style.display !== 'none') toggleMaintLog(null, _maintUpdateId);
+}
+
+async function openMaintModal(){
+  await loadAllProperties();
+  document.getElementById('mm-id').value='';
+  document.getElementById('mm-ttl').textContent='Raise maintenance issue';
+  ['mm-issue','mm-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('mm-prio').value='normal';
+  document.getElementById('mm-status').value='open';
+  const propSel = document.getElementById('mm-property');
+  propSel.innerHTML = PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  if(MAINT_FILTER.prop !== 'all') propSel.value = MAINT_FILTER.prop;
+  openModal('modal-maint');
+}
+function editMaint(m){
+  document.getElementById('mm-id').value=m.id;
+  document.getElementById('mm-ttl').textContent='Edit maintenance issue';
+  document.getElementById('mm-issue').value=m.issue||'';
+  document.getElementById('mm-prio').value=m.priority||'normal';
+  document.getElementById('mm-status').value=m.status||'open';
+  document.getElementById('mm-notes').value=m.notes||'';
+  const propSel=document.getElementById('mm-property');
+  if(propSel.options.length===0) PROPS.forEach(p=>{ const o=document.createElement('option'); o.value=p.name; o.textContent=p.name; propSel.appendChild(o); });
+  propSel.value=m.property_name||'';
+  openModal('modal-maint');
+}
+async function saveMaint(){
+  const id=document.getElementById('mm-id').value;
+  const body={
+    property_name: document.getElementById('mm-property').value,
+    issue: document.getElementById('mm-issue').value.trim(),
+    priority: document.getElementById('mm-prio').value,
+    status: document.getElementById('mm-status').value,
+    notes: document.getElementById('mm-notes').value.trim()||null,
+    raised_by:'OFFICE', raised_role:'office'
+  };
+  if(!body.issue){alert('Describe the issue');return;}
+  if(body.status==='resolved') body.resolved_at=new Date().toISOString();
+  if(id) await api('/rest/v1/maintenance_log?id=eq.'+id,'PATCH',body);
+  else { body.created_at=new Date().toISOString(); await api('/rest/v1/maintenance_log','POST',body); }
+  closeModal('modal-maint'); toast('Saved'); loadMaintPage();
+}
 async function deleteMaint(id){ if(!confirm('Delete this issue?'))return; await api('/rest/v1/maintenance_log?id=eq.'+id,'DELETE'); loadMaintPage(); }
 
 // MESSAGES
@@ -1990,6 +2138,17 @@ loadProperties();
 // Resize earnings iframe
 window.addEventListener('message',function(e){if(e.data&&e.data.type==='bc_resize'){var ef=document.getElementById('earnings-frame');if(ef)ef.style.height=Math.max(e.data.height,window.innerHeight-60)+'px';}});
 </script>
+
+<!-- Maintenance Update Modal -->
+<div class="modal" id="modal-maint-update"><div class="modal-card" style="max-width:460px">
+  <div class="modal-ttl">Log Update</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:14px" id="mu-id-label"></p>
+  <div class="fg"><label class="fl">Update note</label><textarea class="fc" id="mu-note" style="min-height:100px" placeholder="Describe what was done, observed, or next steps…"></textarea></div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-maint-update')">Cancel</button>
+    <button class="btn-p" onclick="saveMaintUpdate()">Save Update</button>
+  </div>
+</div></div>
 
 <!-- PIN Confirm Modal for staff removal -->
 <div class="modal" id="modal-pin-confirm"><div class="modal-card" style="max-width:320px">
