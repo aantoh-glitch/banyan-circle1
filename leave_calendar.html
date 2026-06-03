@@ -353,7 +353,7 @@ async function loadLeaves(){
   // Load a wide window: prev month → 3 months ahead for calendar
   const from = new Date(curYear, curMonth-1, 1).toISOString().slice(0,10);
   const to   = new Date(curYear, curMonth+2, 0).toISOString().slice(0,10);
-  allLeaves = await api(`/rest/v1/staff_leave?select=id,staff_id,staff_name,start_date,end_date,leave_type,status,notes,number_of_days,created_at&start_date=lte.${to}&end_date=gte.${from}&order=start_date`) || [];
+  allLeaves = await api(`/rest/v1/staff_leave?select=*&start_date=lte.${to}&end_date=gte.${from}&order=start_date`) || [];
   updateKPIs();
   renderCalendar();
   renderList();
@@ -456,9 +456,7 @@ function renderCalendar(){
 
 // ── Days helper (defined early so showDay can use it) ──
 function getDays(l){
-  // Check both underscore (Supabase standard) and hyphen variants
-  const stored = l['number_of_days'] ?? l['number-of-days'];
-  if(stored != null && stored !== '') return +stored;
+  if(l['number-of-days'] != null && l['number-of-days'] !== '') return +l['number-of-days'];
   if(!l.start_date || !l.end_date) return null;
   const ms = new Date(l.end_date+'T00:00:00') - new Date(l.start_date+'T00:00:00');
   return Math.round(ms/86400000) + 1;
@@ -481,6 +479,7 @@ function showDay(dateStr){
           <div>
             <div class="leave-info-name">${l.staff_name||'Unknown'}</div>
             <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}</div>
+            ${l.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px">${l.notes}</div>`:''}
           </div>
           <div class="leave-actions">
             ${daysLabel?`<span style="font-size:12px;font-weight:600;color:var(--br);background:var(--br-l);border-radius:6px;padding:3px 9px;white-space:nowrap">${daysLabel}</span>`:''}
