@@ -77,6 +77,24 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
 <div id="prop-label-debug" style="font-size:11px;color:var(--faint);margin-bottom:16px;letter-spacing:.2px"></div>
 
 <div class="sec-hdg">
+  <span>Emergency Numbers</span>
+  <button class="btn-sm admin-only" onclick="toggleForm('emergency-form')">+ Add</button>
+</div>
+<div class="sec-sub">Key contacts for urgent situations</div>
+<div class="add-form" id="emergency-form">
+  <div class="fg"><label class="fl">Name</label><input class="fc" id="emg-name" type="text" placeholder="e.g. Rajan — Electrician"/></div>
+  <div class="fg"><label class="fl">Role / Category</label><input class="fc" id="emg-role" type="text" placeholder="e.g. Plumber, Police, Hospital"/></div>
+  <div class="fg" style="margin-bottom:4px"><label class="fl">Phone Number</label><input class="fc" id="emg-phone" type="tel" placeholder="+91 98765 43210" inputmode="tel"/></div>
+  <div class="btn-row">
+    <button class="btn-sec" onclick="toggleForm('emergency-form')">Cancel</button>
+    <button class="btn-p" onclick="saveEmergency()">Save Contact</button>
+  </div>
+</div>
+<div class="card" id="emergency-card">
+  <div id="emergency-list"><div class="empty-state"><div class="empty-icon">📞</div>No emergency contacts added yet.</div></div>
+</div>
+
+<div class="sec-hdg" style="margin-top:28px">
   <span>Property Rules</span>
   <button class="btn-sm admin-only" onclick="toggleForm('rules-form')">+ Add Rule</button>
 </div>
@@ -105,24 +123,6 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
 <div class="sec-sub">Private notes for this property</div>
 <div class="card" style="padding:0;overflow:hidden">
   <textarea class="fc" id="notes-area" style="border:none;border-radius:var(--radius);min-height:140px;background:var(--white);padding:16px" placeholder="Jot down anything — maintenance reminders, guest preferences, seasonal notes…" oninput="scheduleNoteSave()"></textarea>
-</div>
-
-<div class="sec-hdg" style="margin-top:28px">
-  <span>Emergency Numbers</span>
-  <button class="btn-sm admin-only" onclick="toggleForm('emergency-form')">+ Add</button>
-</div>
-<div class="sec-sub">Key contacts for urgent situations</div>
-<div class="add-form" id="emergency-form">
-  <div class="fg"><label class="fl">Name</label><input class="fc" id="emg-name" type="text" placeholder="e.g. Rajan — Electrician"/></div>
-  <div class="fg"><label class="fl">Role / Category</label><input class="fc" id="emg-role" type="text" placeholder="e.g. Plumber, Police, Hospital"/></div>
-  <div class="fg" style="margin-bottom:4px"><label class="fl">Phone Number</label><input class="fc" id="emg-phone" type="tel" placeholder="+91 98765 43210" inputmode="tel"/></div>
-  <div class="btn-row">
-    <button class="btn-sec" onclick="toggleForm('emergency-form')">Cancel</button>
-    <button class="btn-p" onclick="saveEmergency()">Save Contact</button>
-  </div>
-</div>
-<div class="card" id="emergency-card">
-  <div id="emergency-list"><div class="empty-state"><div class="empty-icon">📞</div>No emergency contacts added yet.</div></div>
 </div>
 
 </div>
