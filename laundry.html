@@ -231,11 +231,18 @@ function pcheck(){
 /* ── Load props & staff ── */
 async function loadProps(){
   if(PROPS.length) return;
-  PROPS = await api('/rest/v1/properties?select=name&order=name') || [];
+  const [fromProps, fromLandlords] = await Promise.all([
+    api('/rest/v1/properties?select=*&order=name').catch(()=>[]),
+    api('/rest/v1/landlords?select=property_name&order=property_name').catch(()=>[])
+  ]);
+  const propNames = new Set((fromProps||[]).map(p=>p.name));
+  const extras = (fromLandlords||[]).map(l=>l.property_name).filter(Boolean)
+    .filter(n=>!propNames.has(n)).filter((n,i,a)=>a.indexOf(n)===i).map(n=>({name:n}));
+  PROPS = [...(fromProps||[]), ...extras].sort((a,b)=>a.name.localeCompare(b.name));
 }
 async function loadStaff(){
   if(STAFF.length) return;
-  STAFF = await api('/rest/v1/staff?select=name&order=name') || [];
+  STAFF = await api('/rest/v1/staff?select=name&order=name').catch(()=>[]) || [];
 }
 
 /* ── Prop tabs ── */
@@ -332,10 +339,18 @@ function toggleDetail(row, id){
 
 /* ── Create Modal ── */
 async function openCreateModal(){
-  await loadProps(); await loadStaff();
-  document.getElementById('c-prop').innerHTML = PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
-  if(FILTER.prop!=='all') document.getElementById('c-prop').value = FILTER.prop;
-  document.getElementById('c-staff').innerHTML = `<option value="">— Select staff —</option>`+STAFF.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+  try { await loadProps(); } catch(e){ console.warn('Could not load properties', e); }
+  try { await loadStaff(); } catch(e){ console.warn('Could not load staff', e); }
+
+  const propSel = document.getElementById('c-prop');
+  propSel.innerHTML = PROPS.length
+    ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
+    : '<option value="">No properties found</option>';
+  if(FILTER.prop!=='all') propSel.value = FILTER.prop;
+
+  document.getElementById('c-staff').innerHTML = `<option value="">— Select staff —</option>`
+    + STAFF.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+
   const now = new Date();
   document.getElementById('c-date').value = now.toISOString().slice(0,10);
   document.getElementById('c-time').value = now.toTimeString().slice(0,5);
@@ -343,7 +358,6 @@ async function openCreateModal(){
   document.getElementById('c-return-time').value = '';
   document.getElementById('c-vendor').value = '';
   document.getElementById('c-notes').value = '';
-  // Build items grid
   document.getElementById('c-items-grid').innerHTML = LAUNDRY_ITEMS.map(name=>`
     <div class="item-row">
       <span class="item-label">${name}</span>
