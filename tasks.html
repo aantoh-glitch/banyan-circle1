@@ -197,6 +197,13 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <select class="fc" id="filter-property" onchange="applyFilters()" style="width:auto;padding:6px 32px 6px 10px;font-size:12px;height:34px">
           <option value="">All Properties</option>
         </select>
+        <div class="filter-sep"></div>
+        <select class="fc" id="filter-type" onchange="applyFilters()" style="width:auto;padding:6px 32px 6px 10px;font-size:12px;height:34px">
+          <option value="">All Types</option>
+          <option value="Complaint">Complaint</option>
+          <option value="Request">Request</option>
+          <option value="Routine">Routine</option>
+        </select>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn-sec" onclick="downloadReport()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
@@ -576,11 +583,13 @@ function setFilter(f, btn){
 function applyFilters(){
   const staffFilter    = (document.getElementById('filter-staff')||{}).value || '';
   const propertyFilter = (document.getElementById('filter-property')||{}).value || '';
+  const typeFilter     = (document.getElementById('filter-type')||{}).value || '';
   let rows = ALL_TASKS;
   if(adminFilter === 'pending')  rows = rows.filter(t=>!t.acknowledged);
   if(adminFilter === 'ack')      rows = rows.filter(t=> t.acknowledged);
   if(staffFilter)                rows = rows.filter(t=> t.staff_id === staffFilter);
   if(propertyFilter)             rows = rows.filter(t=> t.property_name === propertyFilter);
+  if(typeFilter)                 rows = rows.filter(t=> t.task_type === typeFilter);
   renderAdminTable(rows);
   updateKpis(ALL_TASKS);
 }
