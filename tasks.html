@@ -198,10 +198,16 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
           <option value="">All Properties</option>
         </select>
       </div>
-      <button class="btn-p" onclick="openAddModal()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-sec" onclick="downloadReport()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Report
+        </button>
+        <button class="btn-p" onclick="openAddModal()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Task
-      </button>
+        </button>
+      </div>
     </div>
 
     <div class="card" style="padding:0;overflow:hidden">
@@ -283,6 +289,16 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div class="fg">
       <label class="fl">Notes (optional)</label>
       <textarea class="fc" id="t-notes" placeholder="Any additional context…" rows="2"></textarea>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Task Type</label>
+      <select class="fc" id="t-type">
+        <option value="">Select type…</option>
+        <option value="Complaint">Complaint</option>
+        <option value="Request">Request</option>
+        <option value="Routine">Routine</option>
+      </select>
     </div>
 
     <div class="fg">
@@ -525,12 +541,14 @@ async function loadAdminTasks(){
       + '  completed    boolean DEFAULT false,\n'
       + '  bundle_id    uuid,\n'
       + '  bundle_name  text,\n'
+      + '  task_type    text,\n'
       + '  created_at   timestamptz DEFAULT now()\n'
       + ');\n\n'
       + '-- Disable RLS (required for anon key)\n'
       + 'ALTER TABLE tasks DISABLE ROW LEVEL SECURITY;\n\n'
       + '-- If table already exists:\n'
-      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;';
+      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed boolean DEFAULT false;\n'
+      + 'ALTER TABLE tasks ADD COLUMN IF NOT EXISTS task_type text;';
     const sqlBlock = isNoTable
       ? '<div style="font-size:12px;max-width:420px;margin:0 auto 10px">Run this SQL in your <a href="https://supabase.com/dashboard" target="_blank" style="color:#993C1D">Supabase SQL editor</a>, then refresh:</div>'
         + '<pre style="text-align:left;background:#F9F8F6;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:14px;font-size:11px;line-height:1.7;max-width:520px;overflow:auto;margin:0 auto">' + sql + '</pre>'
@@ -608,8 +626,8 @@ function renderAdminTable(tasks){
   });
 
   el.innerHTML = '<table class="tbl"><thead><tr>'
-    + '<th style="width:30%">Task</th><th>Assigned To</th><th>Property</th>'
-    + '<th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th><th></th>'
+    + '<th style="width:28%">Task</th><th>Assigned To</th><th>Property</th>'
+    + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th><th></th>'
     + '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
@@ -675,6 +693,12 @@ async function deleteBundleTasks(bundleId){
   } catch(e){ toast('Delete failed: '+e.message); }
 }
 
+function taskTypeBadge(type){
+  const map = {Complaint:'bdg-r', Request:'bdg-a', Routine:'bdg-g'};
+  if(!type) return '<span style="color:var(--muted)">—</span>';
+  return `<span class="bdg ${map[type]||'bdg'}">${escHtml(type)}</span>`;
+}
+
 function adminRow(t){
   const ackOn = t.acknowledged;
   const initials = (t.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
@@ -690,6 +714,7 @@ function adminRow(t){
     <td><div style="font-weight:500;line-height:1.4">${escHtml(t.work)}</div>${notes}</td>
     <td>${staffCell}</td>
     <td>${propCell}</td>
+    <td>${taskTypeBadge(t.task_type)}</td>
     <td>${priorityBadge(t.priority)}</td>
     <td style="font-size:12px">${due}</td>
     <td>${ackWidget(t.id, 'acknowledged', ackOn, 'admin')}</td>
@@ -710,6 +735,7 @@ function openAddModal(){
   document.getElementById('t-due').value = '';
   document.getElementById('t-notes').value = '';
   document.getElementById('t-property').value = '';
+  document.getElementById('t-type').value = '';
   document.getElementById('t-ack-no').checked = true;
   document.getElementById('task-modal-ttl').textContent = 'New Task';
   document.getElementById('btn-save-task').textContent = 'Save Task';
@@ -725,6 +751,7 @@ function editTask(t){
   document.getElementById('t-due').value = t.due_date||'';
   document.getElementById('t-notes').value = t.notes||'';
   document.getElementById('t-property').value = t.property_name||'';
+  document.getElementById('t-type').value = t.task_type||'';
   t.acknowledged ? document.getElementById('t-ack-yes').checked=true : document.getElementById('t-ack-no').checked=true;
   document.getElementById('task-modal-ttl').textContent = 'Edit Task';
   document.getElementById('btn-save-task').textContent = 'Update Task';
@@ -771,6 +798,7 @@ async function saveTask(){
   const due_date    = document.getElementById('t-due').value || null;
   const notes       = document.getElementById('t-notes').value.trim() || null;
   const acknowledged = document.getElementById('t-ack-yes').checked;
+  const task_type    = document.getElementById('t-type').value || null;
   if(!staffId) { alert('Please select a staff member.'); return; }
   // Bundle preset — create one task per checklist item
   if(!id && bundleName && PRESET_BUNDLES[bundleName]){
@@ -786,6 +814,7 @@ async function saveTask(){
           priority, due_date, notes:null, acknowledged:false, completed:false,
           bundle_id: bundleId, bundle_name: bundleName,
           property_name: document.getElementById('t-property').value || null,
+          task_type: task_type,
           created_at: new Date().toISOString()
         });
       }
@@ -799,7 +828,7 @@ async function saveTask(){
   if(!work) { alert('Please enter a task description.'); return; }
   const staff = ALL_STAFF.find(s=>s.id===staffId);
   const property_name = document.getElementById('t-property').value || null;
-  const body = {work, staff_id:staffId, staff_name:staff?staff.name:null, priority, due_date, notes, acknowledged, property_name};
+  const body = {work, staff_id:staffId, staff_name:staff?staff.name:null, priority, due_date, notes, acknowledged, property_name, task_type};
   const btn = document.getElementById('btn-save-task');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
@@ -808,6 +837,42 @@ async function saveTask(){
     closeModal(); toast(id?'Task updated ✓':'Task added ✓'); await loadAdminTasks();
   } catch(e){ toast('Save failed: '+e.message); }
   finally{ btn.disabled=false; btn.textContent=id?'Update Task':'Save Task'; }
+}
+
+function downloadReport(){
+  const tasks = ALL_TASKS;
+  if(!tasks.length){ toast('No tasks to export'); return; }
+
+  // Build CSV
+  const headers = ['Task','Assigned To','Property','Task Type','Priority','Due Date','Acknowledged','Completed','Notes','Created At'];
+  const rows = tasks.map(t => [
+    t.work||'',
+    t.staff_name||'',
+    t.property_name||'',
+    t.task_type||'',
+    t.priority||'medium',
+    t.due_date||'',
+    t.acknowledged ? 'Yes' : 'No',
+    t.completed ? 'Yes' : 'No',
+    t.notes||'',
+    t.created_at ? new Date(t.created_at).toLocaleDateString('en-IN') : ''
+  ]);
+
+  // Escape CSV values
+  const esc = v => '"' + String(v).replace(/"/g,'""') + '"';
+  const csv = [headers.map(esc).join(','), ...rows.map(r=>r.map(esc).join(','))].join('\r\n');
+
+  // Trigger download
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'tasks-report-' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Report downloaded ✓');
 }
 
 async function deleteTask(id){
