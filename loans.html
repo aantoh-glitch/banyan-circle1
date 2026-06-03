@@ -2,43 +2,102 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Loan Register</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
-html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-body{padding:28px 32px}
-.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
-.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
-.fg{margin-bottom:12px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
-.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.btn-sec:hover{border-color:var(--br);color:var(--br)}
-.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-edit:hover{background:var(--br-l);color:var(--br)}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
+html,body{min-height:100%;background:var(--bg);color:var(--text)}
+
+/* ══ DESKTOP ══ */
+body.desktop{font-family:'DM Sans',sans-serif}
+body.desktop .wrap{padding:28px 32px;max-width:1280px}
+body.desktop .pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+body.desktop .pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+body.desktop .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+body.desktop .fg{margin-bottom:12px}
+body.desktop .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+body.desktop .fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+body.desktop .fc:focus{border-color:var(--br)}
+body.desktop .btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+body.desktop .btn-p:hover{background:#712B13}
+body.desktop .btn-p:disabled{opacity:.6;cursor:not-allowed}
+body.desktop .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+body.desktop .btn-sec:hover{border-color:var(--br);color:var(--br)}
+body.desktop .btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+body.desktop .btn-edit:hover{background:var(--br-l);color:var(--br)}
+body.desktop .tbl{width:100%;border-collapse:collapse;font-size:13px}
+body.desktop .tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+body.desktop .tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+body.desktop .tbl tr:last-child td{border-bottom:none}
+body.desktop .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+body.desktop .kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+body.desktop .kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+body.desktop .kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
+body.desktop .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+body.desktop .filter-bar select,body.desktop .filter-bar input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+body.desktop .filter-bar select:focus,body.desktop .filter-bar input:focus{border-color:var(--br)}
+body.desktop .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+body.desktop .modal.on{display:flex}
+body.desktop .modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+body.desktop .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
+body.desktop .modal-handle{display:none}
+body.desktop .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ══ MOBILE ══ */
+body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
+.m-shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 0 48px}
+.m-hdr{padding:24px 24px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--white)}
+.m-hdr-back{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center}
+.m-hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;flex:1}
+.m-hdr-sub{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.m-log-wrap{padding:20px 24px 8px}
+.m-btn-log{width:100%;padding:16px;background:var(--br);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.m-btn-log svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-btn-log:active{background:#712B13}
+.m-status-wrap{padding:12px 24px 4px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.m-status-wrap::-webkit-scrollbar{display:none}
+.stab{padding:7px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;white-space:nowrap;flex-shrink:0}
+.stab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 24px 8px}
+.m-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+.loan-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px}
+.loan-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.loan-card-item{font-size:15px;font-weight:500}
+.loan-card-guest{font-size:12px;color:var(--muted);margin-top:2px}
+.loan-card-meta{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.loan-card-videos{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.vid-tag{padding:3px 9px;border-radius:999px;font-size:10px;font-weight:600}
+.vid-yes{background:var(--g-l);color:#27500A}
+.vid-no{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.loan-return-btn{width:100%;padding:12px;background:var(--g-l);color:#27500A;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.loan-return-btn:active{background:#c8e8aa}
+.loan-closed{font-size:11px;color:var(--muted);text-align:center;padding:6px 0}
+/* mobile modal */
+body.mobile .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
+body.mobile .modal.on{display:flex}
+body.mobile .modal-card{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
+body.mobile .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
+body.mobile .modal-ttl{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;margin-bottom:18px}
+body.mobile .modal-actions{display:flex;gap:10px;margin-top:20px}
+body.mobile .modal-actions .btn-p{flex:1}
+body.mobile .modal-actions .btn-sec{flex:1}
+body.mobile .fg{margin-bottom:14px}
+body.mobile .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+body.mobile .fc{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;-webkit-appearance:none;appearance:none}
+body.mobile .fc:focus{border-color:var(--br)}
+body.mobile .btn-p{padding:14px 18px;background:var(--br);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;width:100%}
+body.mobile .btn-p:active{background:#712B13}
+body.mobile .btn-p:disabled{opacity:.6;cursor:not-allowed}
+body.mobile .btn-sec{padding:13px 18px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit;width:100%}
+body.mobile .btn-sec:active{background:var(--bg)}
+
+/* shared */
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
 .bdg-g{background:var(--g-l);color:#27500A}
 .bdg-muted{background:var(--bg);color:var(--muted)}
-.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
-.modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
-/* Loan-specific */
 .loan-status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600}
 .loan-out{background:var(--a-l);color:var(--a)}
 .loan-returned-ok{background:var(--g-l);color:#27500A}
@@ -51,92 +110,100 @@ body{padding:28px 32px}
 .toggle input:checked+.toggle-slider{background:var(--g)}
 .toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
 .return-btn-group{display:flex;gap:8px;margin-top:4px}
-.btn-return-ok{padding:7px 14px;background:var(--g-l);color:#27500A;border:2px solid transparent;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-return-ok{padding:7px 14px;background:var(--g-l);color:#27500A;border:2px solid transparent;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;flex:1}
 .btn-return-ok:hover{background:#c6e8a8}
 .btn-return-ok.selected{border-color:var(--g)}
-.btn-return-dmg{padding:7px 14px;background:var(--r-l);color:var(--r);border:2px solid transparent;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-return-dmg{padding:7px 14px;background:var(--r-l);color:var(--r);border:2px solid transparent;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;flex:1}
 .btn-return-dmg:hover{background:#f7d0d0}
 .btn-return-dmg.selected{border-color:var(--r)}
-/* Filters */
-.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-.filter-bar select,.filter-bar input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.filter-bar select:focus,.filter-bar input:focus{border-color:var(--br)}
-/* KPIs */
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
-.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
 </style>
 </head>
 <body>
 
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-  <div>
-    <div class="pg-title">Loan Register</div>
-    <div class="pg-sub" style="margin-bottom:0">Track items loaned to guests — pre-loan video, condition and return status</div>
+<!-- ══════════════ DESKTOP VIEW ══════════════ -->
+<div id="view-desktop" style="display:none">
+<div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="pg-title">Loan Register</div>
+      <div class="pg-sub" style="margin-bottom:0">Track items loaned to guests — pre-loan video, condition and return status</div>
+    </div>
+    <button class="btn-p" onclick="openLoanModal()">+ New Loan</button>
   </div>
-  <button class="btn-p" onclick="openLoanModal()">+ New Loan</button>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Currently Out</div><div class="kpi-value" id="d-kpi-out">—</div></div>
+    <div class="kpi"><div class="kpi-label">Returned — No Damage</div><div class="kpi-value" id="d-kpi-ok">—</div></div>
+    <div class="kpi"><div class="kpi-label">Returned — Damaged</div><div class="kpi-value" id="d-kpi-dmg" style="color:var(--r)">—</div></div>
+  </div>
+  <div class="filter-bar">
+    <select id="filter-status" onchange="applyFilters()">
+      <option value="">All statuses</option>
+      <option value="out">On Loan</option>
+      <option value="no_damage">Returned — No Damage</option>
+      <option value="with_damage">Returned — Damaged</option>
+    </select>
+    <input type="text" id="filter-search" placeholder="Search guest or item…" oninput="applyFilters()" style="min-width:200px"/>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Guest</th><th>Item</th><th>Loaned Out</th>
+          <th>Pre-loan Video</th><th>Status</th><th>Returned</th>
+          <th>Post-return Video</th><th>Logged By</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="d-tbody">
+        <tr><td colspan="9" class="empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 </div>
 
-<!-- KPIs -->
-<div class="kpi-row">
-  <div class="kpi">
-    <div class="kpi-label">Currently Out</div>
-    <div class="kpi-value" id="kpi-out">—</div>
+<!-- ══════════════ MOBILE VIEW ══════════════ -->
+<div id="view-mobile" style="display:none">
+<div class="m-shell">
+  <div class="m-hdr">
+    <button class="m-hdr-back" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+    </button>
+    <div>
+      <div class="m-hdr-title">Loan Register</div>
+      <div class="m-hdr-sub" id="m-hdr-sub"></div>
+    </div>
   </div>
-  <div class="kpi">
-    <div class="kpi-label">Returned — No Damage</div>
-    <div class="kpi-value" id="kpi-ok">—</div>
+  <div class="m-log-wrap">
+    <button class="m-btn-log" onclick="openLoanModal()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Loan
+    </button>
   </div>
-  <div class="kpi">
-    <div class="kpi-label">Returned — Damaged</div>
-    <div class="kpi-value" id="kpi-dmg" style="color:var(--r)">—</div>
+  <div class="m-status-wrap">
+    <button class="stab on" onclick="setMobileFilter('all',this)">All</button>
+    <button class="stab" onclick="setMobileFilter('out',this)">On Loan</button>
+    <button class="stab" onclick="setMobileFilter('no_damage',this)">Returned OK</button>
+    <button class="stab" onclick="setMobileFilter('with_damage',this)">Damaged</button>
+  </div>
+  <div class="m-sec-label">Loans</div>
+  <div class="m-cards" id="m-cards">
+    <div class="empty">Loading…</div>
   </div>
 </div>
-
-<!-- Filters -->
-<div class="filter-bar">
-  <select id="filter-status" onchange="applyFilters()">
-    <option value="">All statuses</option>
-    <option value="out">On Loan</option>
-    <option value="no_damage">Returned — No Damage</option>
-    <option value="with_damage">Returned — Damaged</option>
-  </select>
-  <input type="text" id="filter-search" placeholder="Search guest or item…" oninput="applyFilters()" style="min-width:200px"/>
 </div>
 
-<!-- Table -->
-<div class="card" style="padding:0;overflow:hidden">
-  <table class="tbl" id="loans-table">
-    <thead>
-      <tr>
-        <th>Guest</th>
-        <th>Item</th>
-        <th>Loaned Out</th>
-        <th>Pre-loan Video</th>
-        <th>Status</th>
-        <th>Returned</th>
-        <th>Post-return Video</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="loans-tbody">
-      <tr><td colspan="8" class="empty">Loading…</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="toast" id="toast"></div>
+<!-- ══════════════ SHARED MODALS ══════════════ -->
 
 <!-- New Loan Modal -->
 <div class="modal" id="modal-loan">
   <div class="modal-card">
+    <div class="modal-handle"></div>
     <div class="modal-ttl">New Loan</div>
     <div class="fg">
       <label class="fl">Guest</label>
-      <select class="fc" id="loan-guest">
-        <option value="">Loading guests…</option>
-      </select>
+      <select class="fc" id="loan-guest"><option value="">Loading guests…</option></select>
     </div>
     <div class="fg">
       <label class="fl">Item loaned</label>
@@ -163,6 +230,7 @@ body{padding:28px 32px}
 <!-- Return Modal -->
 <div class="modal" id="modal-loan-return">
   <div class="modal-card" style="max-width:440px">
+    <div class="modal-handle"></div>
     <div class="modal-ttl">Record Return</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:18px" id="lr-loan-summary"></p>
     <div class="fg">
@@ -191,10 +259,30 @@ body{padding:28px 32px}
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
+let _allLoans = [], _loanReturnId = null, IS_MOBILE = false, mobileFilter = 'all';
+
+/* ── Role detection ── */
+const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!_me) location.href = '/index.html';
+
+IS_MOBILE = (_me.role === 'staff');
+
+if (IS_MOBILE) {
+  document.body.classList.add('mobile');
+  document.getElementById('view-mobile').style.display = 'block';
+  if (_me.name) document.getElementById('m-hdr-sub').textContent = _me.name;
+} else {
+  document.body.classList.add('desktop');
+  document.getElementById('view-desktop').style.display = 'block';
+}
+
+/* ── API ── */
 async function api(path, method, body) {
   const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
   const r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
@@ -204,41 +292,30 @@ async function api(path, method, body) {
   return json;
 }
 
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.style.display = 'block';
-  setTimeout(()=>t.style.display='none', 2800);
-}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2800); }
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+function fmtDt(iso){ if(!iso)return '—'; return new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function fmtDtShort(iso){ if(!iso)return '—'; return new Date(iso).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function fmtDt(iso) {
-  if(!iso) return '—';
-  return new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-}
-
-let _allLoans = [];
-let _loanReturnId = null;
-
+/* ── Load ── */
 async function loadLoans() {
-  const tbody = document.getElementById('loans-tbody');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty">Loading…</td></tr>';
   try {
     _allLoans = await api('/rest/v1/loan_register?select=*&order=loaned_at.desc') || [];
-    updateKPIs();
-    renderTable(_allLoans);
+    if (!IS_MOBILE) { updateKPIs(); renderDesktop(_allLoans); }
+    else renderMobile();
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty" style="color:var(--r)">Error: ${e.message}</td></tr>`;
+    if (!IS_MOBILE) document.getElementById('d-tbody').innerHTML = `<tr><td colspan="9" class="empty" style="color:var(--r)">Error: ${e.message}</td></tr>`;
+    else document.getElementById('m-cards').innerHTML = `<div class="empty" style="color:var(--r)">Error: ${e.message}</div>`;
   }
 }
 
+/* ── Desktop ── */
 function updateKPIs() {
-  const out = _allLoans.filter(r=>!r.returned_at).length;
-  const ok  = _allLoans.filter(r=>r.return_condition==='no_damage').length;
-  const dmg = _allLoans.filter(r=>r.return_condition==='with_damage').length;
-  document.getElementById('kpi-out').textContent = out;
-  document.getElementById('kpi-ok').textContent  = ok;
-  document.getElementById('kpi-dmg').textContent = dmg;
+  document.getElementById('d-kpi-out').textContent = _allLoans.filter(r=>!r.returned_at).length;
+  document.getElementById('d-kpi-ok').textContent  = _allLoans.filter(r=>r.return_condition==='no_damage').length;
+  document.getElementById('d-kpi-dmg').textContent = _allLoans.filter(r=>r.return_condition==='with_damage').length;
 }
 
 function applyFilters() {
@@ -249,25 +326,19 @@ function applyFilters() {
   if(status==='no_damage')   rows = rows.filter(r=>r.return_condition==='no_damage');
   if(status==='with_damage') rows = rows.filter(r=>r.return_condition==='with_damage');
   if(search) rows = rows.filter(r=>(r.guest_name||'').toLowerCase().includes(search)||(r.item||'').toLowerCase().includes(search));
-  renderTable(rows);
+  renderDesktop(rows);
 }
 
-function renderTable(rows) {
-  const tbody = document.getElementById('loans-tbody');
-  if(!rows.length){
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">No loans found.</td></tr>';
-    return;
-  }
+function renderDesktop(rows) {
+  const tbody = document.getElementById('d-tbody');
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="9" class="empty">No loans found.</td></tr>'; return; }
   tbody.innerHTML = rows.map(r => {
-    const preVid  = r.pre_loan_video  ? '<span class="bdg bdg-g">✓ Taken</span>' : '<span class="bdg bdg-muted">—</span>';
+    const preVid  = r.pre_loan_video   ? '<span class="bdg bdg-g">✓ Taken</span>' : '<span class="bdg bdg-muted">—</span>';
     const postVid = r.post_return_video ? '<span class="bdg bdg-g">✓ Taken</span>' : '<span class="bdg bdg-muted">—</span>';
-
     let statusBadge, actions;
     if(!r.returned_at){
       statusBadge = '<span class="loan-status-badge loan-out">On Loan</span>';
-      const gn = (r.guest_name||'').replace(/'/g,"\\'");
-      const it = (r.item||'').replace(/'/g,"\\'");
-      actions = `<button class="btn-edit" onclick="openReturnModal('${r.id}','${gn}','${it}')">Record Return</button>`;
+      actions = `<button class="btn-edit" onclick="openReturnModal('${r.id}','${esc(r.guest_name)}','${esc(r.item)}')">Record Return</button>`;
     } else if(r.return_condition==='with_damage'){
       statusBadge = '<span class="loan-status-badge loan-returned-dmg">⚠ Returned — Damaged</span>';
       actions = '<span style="font-size:12px;color:var(--muted)">Closed</span>';
@@ -275,20 +346,70 @@ function renderTable(rows) {
       statusBadge = '<span class="loan-status-badge loan-returned-ok">✓ Returned</span>';
       actions = '<span style="font-size:12px;color:var(--muted)">Closed</span>';
     }
-
     return `<tr>
-      <td style="font-weight:500">${r.guest_name||'—'}</td>
-      <td>${r.item||'—'}</td>
+      <td style="font-weight:500">${esc(r.guest_name)||'—'}</td>
+      <td>${esc(r.item)||'—'}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap">${fmtDt(r.loaned_at)}</td>
       <td>${preVid}</td>
       <td>${statusBadge}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap">${fmtDt(r.returned_at)}</td>
       <td>${postVid}</td>
+      <td style="font-size:12px;color:var(--muted)">${esc(r.logged_by_name||'—')}<br><span style="font-size:10px">${r.logged_at?fmtDtShort(r.logged_at):''}</span></td>
       <td>${actions}</td>
     </tr>`;
   }).join('');
 }
 
+/* ── Mobile ── */
+function setMobileFilter(f, btn) {
+  mobileFilter = f;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderMobile();
+}
+
+function renderMobile() {
+  let rows = _allLoans;
+  if(mobileFilter==='out')         rows = rows.filter(r=>!r.returned_at);
+  if(mobileFilter==='no_damage')   rows = rows.filter(r=>r.return_condition==='no_damage');
+  if(mobileFilter==='with_damage') rows = rows.filter(r=>r.return_condition==='with_damage');
+  const el = document.getElementById('m-cards');
+  if(!rows.length){ el.innerHTML='<div class="empty">No loans found.</div>'; return; }
+  el.innerHTML = rows.map(r => {
+    const isOut = !r.returned_at;
+    let badge, action;
+    if(isOut){
+      badge  = '<span class="loan-status-badge loan-out">On Loan</span>';
+      action = `<button class="loan-return-btn" onclick="openReturnModal('${r.id}','${esc(r.guest_name)}','${esc(r.item)}')">Record Return</button>`;
+    } else if(r.return_condition==='with_damage'){
+      badge  = '<span class="loan-status-badge loan-returned-dmg">⚠ Damaged</span>';
+      action = `<div class="loan-closed">Closed · ${fmtDtShort(r.returned_at)}</div>`;
+    } else {
+      badge  = '<span class="loan-status-badge loan-returned-ok">✓ Returned</span>';
+      action = `<div class="loan-closed">Closed · ${fmtDtShort(r.returned_at)}</div>`;
+    }
+    return `<div class="loan-card">
+      <div class="loan-card-top">
+        <div>
+          <div class="loan-card-item">${esc(r.item||'—')}</div>
+          <div class="loan-card-guest">${esc(r.guest_name||'—')}</div>
+        </div>
+        ${badge}
+      </div>
+      <div class="loan-card-meta">
+        Loaned: ${fmtDtShort(r.loaned_at)}
+        ${r.logged_by_name ? ' · Logged by '+esc(r.logged_by_name) : ''}
+      </div>
+      <div class="loan-card-videos">
+        <span class="vid-tag ${r.pre_loan_video?'vid-yes':'vid-no'}">Pre-loan video: ${r.pre_loan_video?'✓ Taken':'—'}</span>
+        ${r.returned_at ? `<span class="vid-tag ${r.post_return_video?'vid-yes':'vid-no'}">Post-return: ${r.post_return_video?'✓ Taken':'—'}</span>` : ''}
+      </div>
+      ${action}
+    </div>`;
+  }).join('');
+}
+
+/* ── New Loan Modal ── */
 async function openLoanModal() {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -299,9 +420,9 @@ async function openLoanModal() {
   const sel = document.getElementById('loan-guest');
   sel.innerHTML = '<option value="">Loading…</option>';
   try {
-    const guests = await api('/rest/v1/guest_profiles?select=id,full_name&order=full_name') || [];
+    const guests = await api('/rest/v1/guest_profiles?select=id,name&order=name') || [];
     sel.innerHTML = guests.length
-      ? '<option value="">— Select guest —</option>' + guests.map(g=>`<option value="${g.id}">${g.full_name||g.id}</option>`).join('')
+      ? '<option value="">— Select guest —</option>' + guests.map(g=>`<option value="${g.id}">${esc(g.name||g.id)}</option>`).join('')
       : '<option value="">No guests found</option>';
   } catch(e) {
     sel.innerHTML = '<option value="">Could not load guests</option>';
@@ -317,29 +438,21 @@ async function saveLoan() {
   const loanedAt  = document.getElementById('loan-datetime').value;
   const preVideo  = document.getElementById('loan-pre-video').checked;
 
-  if(!guestId || !item || !loanedAt){ alert('Please fill in Guest, Item and Date/Time.'); return; }
-
+  if(!guestId || !item || !loanedAt){ toast('Please fill in Guest, Item and Date/Time'); return; }
   try {
-    await api('/rest/v1/loan_register', 'POST', {
-      guest_id: guestId,
-      guest_name: guestName,
-      item,
-      loaned_at: new Date(loanedAt).toISOString(),
-      pre_loan_video: preVideo
-    });
-    closeModal('modal-loan');
-    toast('Loan recorded');
-    loadLoans();
-  } catch(e) {
-    alert('Error saving loan: ' + e.message);
-  }
+    const payload = { guest_id:guestId, guest_name:guestName, item, loaned_at:new Date(loanedAt).toISOString(), pre_loan_video:preVideo };
+    // Stamp who logged
+    if (IS_MOBILE && _me.name) { payload.logged_by_name = _me.name; payload.logged_at = new Date().toISOString(); }
+    await api('/rest/v1/loan_register', 'POST', payload);
+    closeModal('modal-loan'); toast('Loan recorded'); loadLoans();
+  } catch(e) { toast('Error: '+e.message); }
 }
 
+/* ── Return Modal ── */
 function openReturnModal(id, guestName, item) {
   _loanReturnId = id;
   document.getElementById('lr-loan-summary').textContent = `Returning "${item}" — loaned by ${guestName}`;
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const now = new Date(); now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
   document.getElementById('lr-datetime').value = now.toISOString().slice(0,16);
   document.getElementById('lr-condition').value = '';
   document.getElementById('lr-post-video').checked = false;
@@ -360,21 +473,15 @@ async function saveReturn() {
   const returnedAt = document.getElementById('lr-datetime').value;
   const condition  = document.getElementById('lr-condition').value;
   const postVideo  = document.getElementById('lr-post-video').checked;
-
-  if(!returnedAt || !condition){ alert('Please fill in Return Date and Condition.'); return; }
-
+  if(!returnedAt || !condition){ toast('Please fill in Return Date and Condition'); return; }
   try {
     await api('/rest/v1/loan_register?id=eq.'+_loanReturnId, 'PATCH', {
       returned_at: new Date(returnedAt).toISOString(),
       return_condition: condition,
       post_return_video: postVideo
     });
-    closeModal('modal-loan-return');
-    toast('Return recorded');
-    loadLoans();
-  } catch(e) {
-    alert('Error saving return: ' + e.message);
-  }
+    closeModal('modal-loan-return'); toast('Return recorded'); loadLoans();
+  } catch(e) { toast('Error: '+e.message); }
 }
 
 loadLoans();
