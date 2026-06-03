@@ -1459,7 +1459,7 @@ async function loadMaintPage(){
         <td><span style="font-size:12px">${m.priority||'normal'}</span></td>
         <td><span class="bdg ${m.status==='resolved'?'bdg-g':m.status==='in_progress'?'bdg-a':'bdg-r'}">${(m.status||'open').replace('_',' ')}</span></td>
         <td onclick="event.stopPropagation()">
-          <button class="btn-edit" style="background:var(--b-l);color:var(--b);font-size:12px;padding:6px 14px;font-weight:600;letter-spacing:.3px" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}"))'>Update Status</button>
+          <button class="btn-edit" style="background:var(--b-l);color:var(--b);font-size:12px;padding:6px 14px;font-weight:600;letter-spacing:.3px" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}","${m.status||'open'}"))'>Update Status</button>
         </td>
         <td style="white-space:nowrap;font-size:12px">${fmtDateTime(m.created_at)}</td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
@@ -1503,36 +1503,43 @@ async function toggleMaintLog(row, id){
     const logs = await api('/rest/v1/maintenance_updates?maintenance_id=eq.'+id+'&order=created_at.desc') || [];
     if(!logs.length){ entriesEl.innerHTML='<em>No updates yet.</em>'; return; }
     entriesEl.innerHTML = logs.map(l=>`
-      <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start">
         <div style="white-space:nowrap;color:var(--muted);font-size:12px;min-width:160px">${fmtDateTime(l.created_at)}</div>
         <div style="flex:1">${l.note}</div>
-        <div style="font-size:12px;color:var(--muted)">${l.updated_by||''}</div>
+        ${l.new_status?`<span class="bdg ${l.new_status==='resolved'?'bdg-g':l.new_status==='in_progress'?'bdg-a':'bdg-r'}" style="flex-shrink:0">${l.new_status.replace('_',' ')}</span>`:''}
+        <div style="font-size:12px;color:var(--muted);white-space:nowrap">${l.updated_by||''}</div>
       </div>`).join('');
   } catch(e){ entriesEl.innerHTML='<em>Could not load updates.</em>'; }
 }
 
 /* Update modal */
 let _maintUpdateId = '';
-function openMaintUpdate(id, issueLabel){
+function openMaintUpdate(id, issueLabel, currentStatus){
   _maintUpdateId = id;
   document.getElementById('mu-id-label').textContent = issueLabel || 'this issue';
   document.getElementById('mu-note').value = '';
+  document.getElementById('mu-status-update').value = currentStatus || 'open';
   openModal('modal-maint-update');
 }
 async function saveMaintUpdate(){
   const note = document.getElementById('mu-note').value.trim();
+  const newStatus = document.getElementById('mu-status-update').value;
   if(!note){ alert('Enter an update note'); return; }
+  // Log the update entry
   await api('/rest/v1/maintenance_updates','POST',{
     maintenance_id: _maintUpdateId,
     note,
+    new_status: newStatus,
     updated_by: 'OFFICE',
     created_at: new Date().toISOString()
   });
+  // Patch the status on the issue itself
+  const patch = { status: newStatus };
+  if(newStatus === 'resolved') patch.resolved_at = new Date().toISOString();
+  await api('/rest/v1/maintenance_log?id=eq.'+_maintUpdateId, 'PATCH', patch);
   closeModal('modal-maint-update');
-  toast('Update logged ✓');
-  // Refresh log if open
-  const logRow = document.getElementById('maint-log-'+_maintUpdateId);
-  if(logRow && logRow.style.display !== 'none') toggleMaintLog(null, _maintUpdateId);
+  toast('Status updated ✓');
+  loadMaintPage();
 }
 
 async function openMaintModal(){
@@ -2178,8 +2185,15 @@ window.addEventListener('message',function(e){if(e.data&&e.data.type==='bc_resiz
 
 <!-- Maintenance Update Modal -->
 <div class="modal" id="modal-maint-update"><div class="modal-card" style="max-width:460px">
-  <div class="modal-ttl">Log Update</div>
+  <div class="modal-ttl">Update Status</div>
   <p style="font-size:13px;color:var(--muted);margin-bottom:14px" id="mu-id-label"></p>
+  <div class="fg"><label class="fl">New Status</label>
+    <select class="fc" id="mu-status-update">
+      <option value="open">Open</option>
+      <option value="in_progress">In Progress</option>
+      <option value="resolved">Resolved</option>
+    </select>
+  </div>
   <div class="fg"><label class="fl">Update note</label><textarea class="fc" id="mu-note" style="min-height:100px" placeholder="Describe what was done, observed, or next steps…"></textarea></div>
   <div class="modal-actions">
     <button class="btn-sec" onclick="closeModal('modal-maint-update')">Cancel</button>
