@@ -903,9 +903,14 @@ function downloadGuestBillPdf(){
 // ── Review sheets ──
 function openRevSheet(sheetId, frameId, title, src) {
   var frame = document.getElementById(frameId);
-  if (frame.getAttribute('data-src') !== src) {
-    frame.src = src;
-    frame.setAttribute('data-src', src);
+  // Pass guest's property into staff-review so it can filter by assignment
+  var finalSrc = src;
+  if (frameId === 'staff-frame' && me && me.prop) {
+    finalSrc = src + '?prop=' + encodeURIComponent(me.prop);
+  }
+  if (frame.getAttribute('data-src') !== finalSrc) {
+    frame.src = finalSrc;
+    frame.setAttribute('data-src', finalSrc);
   }
   var backdropId = sheetId === 'rating-sheet' ? 'rating-backdrop' : 'staff-backdrop';
   document.getElementById(backdropId).classList.add('open');

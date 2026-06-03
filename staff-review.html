@@ -113,8 +113,11 @@ if (!me) { location.href = '/index.html'; throw new Error(); }
 
 var isOps = me && (me.role === 'staff' || me.role === 'owner');
 
+// Prop comes from URL param (passed by guest.html iframe) or fallback to me.prop
+var urlProp = new URLSearchParams(window.location.search).get('prop') || me.prop || null;
+
 if (isOps) document.getElementById('ops-banner').style.display = 'flex';
-if (me.prop) document.getElementById('hdr-prop').textContent = me.prop;
+if (urlProp) document.getElementById('hdr-prop').textContent = urlProp;
 
 function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(function(){t.style.display='none';},2500); }
 
@@ -136,7 +139,16 @@ var submitted = {};
 
 async function loadStaff(){
   try {
-    var rows = await api('/rest/v1/staff?select=id,name,designation&order=name') || [];
+    var rows = await api('/rest/v1/staff?select=id,name,designation,assigned_properties&order=name') || [];
+    // If we know the guest's property, only show staff assigned to it
+    if (urlProp) {
+      rows = rows.filter(function(s){
+        var props = Array.isArray(s.assigned_properties)
+          ? s.assigned_properties
+          : (s.assigned_properties ? JSON.parse(s.assigned_properties) : []);
+        return props.length === 0 || props.indexOf(urlProp) !== -1;
+      });
+    }
     staffData = rows;
     renderAll();
   } catch(e){
@@ -227,7 +239,7 @@ async function submitCard(id){
       rating:        rating,
       comment:       comment,
       guest_name:    me.name,
-      property_name: me.prop || null,
+      property_name: urlProp || null,
       created_at:    new Date().toISOString()
     };
     var result = await api('/rest/v1/staff_reviews', 'POST', entry);
