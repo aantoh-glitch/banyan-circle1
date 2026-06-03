@@ -189,6 +189,15 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div class="card-ttl" style="margin:0">All Leave Requests</div>
+        <button class="btn-sec" onclick="downloadCSV()" style="display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CSV
+        </button>
+      </div>
+
+      <!-- Status filter pills -->
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap">Status:</span>
         <div class="filter-row" style="margin:0">
           <button class="filter-pill on" onclick="filterList('all',this)" id="lf-all">All</button>
           <button class="filter-pill" onclick="filterList('pending',this)">Pending</button>
@@ -196,6 +205,29 @@ textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
           <button class="filter-pill" onclick="filterList('rejected',this)">Rejected</button>
         </div>
       </div>
+
+      <!-- Staff + Date filters -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:180px">
+          <label class="fl" style="margin-bottom:4px">Filter by Staff</label>
+          <select class="fc" id="list-staff-filter" onchange="renderList()" style="padding:8px 12px;font-size:13px">
+            <option value="">All Staff</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:150px">
+          <label class="fl" style="margin-bottom:4px">From Date</label>
+          <input type="date" class="fc" id="list-date-from" onchange="renderList()" style="padding:8px 12px;font-size:13px"/>
+        </div>
+        <div style="flex:1;min-width:150px">
+          <label class="fl" style="margin-bottom:4px">To Date</label>
+          <input type="date" class="fc" id="list-date-to" onchange="renderList()" style="padding:8px 12px;font-size:13px"/>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn-sec" onclick="clearListFilters()" style="height:38px;white-space:nowrap">Clear Filters</button>
+        </div>
+      </div>
+
+      <div id="list-count" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
       <div id="leave-list">Loading…</div>
     </div>
   </div>
@@ -309,6 +341,10 @@ async function loadStaff(){
   staffList = await api('/rest/v1/staff?select=id,name,designation&order=name') || [];
   const sel = document.getElementById('leave-staff');
   sel.innerHTML = staffList.map(s=>`<option value="${s.id}">${s.name}${s.designation?' ('+s.designation+')':''}</option>`).join('');
+  // Populate list filter dropdown
+  const listSel = document.getElementById('list-staff-filter');
+  listSel.innerHTML = '<option value="">All Staff</option>' +
+    staffList.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
   document.getElementById('kpi-staff').textContent = staffList.length;
 }
 
@@ -426,12 +462,15 @@ function showDay(dateStr){
   if(!dayLeaves.length){
     document.getElementById('day-modal-body').innerHTML = '<div class="empty">No leave recorded on this day.</div>';
   } else {
-    document.getElementById('day-modal-body').innerHTML = dayLeaves.map(l=>`
+  document.getElementById('day-modal-body').innerHTML = dayLeaves.map(l=>{
+    const days = getDays(l);
+    const daysLabel = days!=='—' ? `${days} day${days!==1?'s':''}` : '';
+    return `
       <div class="leave-row">
         <div class="avatar">${(l.staff_name||'?')[0].toUpperCase()}</div>
         <div>
           <div class="leave-info-name">${l.staff_name||'Unknown'}</div>
-          <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}</div>
+          <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}${daysLabel?' · <strong>'+daysLabel+'</strong>':''}</div>
           ${l.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px">${l.notes}</div>`:''}
         </div>
         <div class="leave-actions">
@@ -439,7 +478,8 @@ function showDay(dateStr){
           <button class="btn-edit" onclick="closeModal();editLeave(${JSON.stringify(l).replace(/"/g,'&quot;')})">Edit</button>
           <button class="btn-del" onclick="closeModal();deleteLeave('${l.id}')">Delete</button>
         </div>
-      </div>`).join('');
+      </div>`;
+  }).join('');
   }
   openModal('modal-day');
 }
@@ -452,12 +492,46 @@ function filterList(f, btn){
   renderList();
 }
 
+function clearListFilters(){
+  document.getElementById('list-staff-filter').value = '';
+  document.getElementById('list-date-from').value = '';
+  document.getElementById('list-date-to').value = '';
+  activeListFilter = 'all';
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('on'));
+  document.getElementById('lf-all').classList.add('on');
+  renderList();
+}
+
+function getDays(l){
+  // Use DB column 'number-of-days' if present, otherwise compute
+  if(l['number-of-days'] != null) return +l['number-of-days'];
+  if(!l.start_date || !l.end_date) return '—';
+  const ms = new Date(l.end_date+'T00:00:00') - new Date(l.start_date+'T00:00:00');
+  return Math.round(ms/86400000) + 1;
+}
+
 function renderList(){
-  let data = allLeaves;
+  let data = [...allLeaves];
   if(activeListFilter!=='all') data = data.filter(l=>l.status===activeListFilter);
+
+  const staffFilter = document.getElementById('list-staff-filter')?.value || '';
+  const dateFrom    = document.getElementById('list-date-from')?.value || '';
+  const dateTo      = document.getElementById('list-date-to')?.value || '';
+
+  if(staffFilter) data = data.filter(l=>l.staff_id===staffFilter);
+  if(dateFrom)    data = data.filter(l=>l.end_date >= dateFrom);
+  if(dateTo)      data = data.filter(l=>l.start_date <= dateTo);
+
+  const countEl = document.getElementById('list-count');
+  if(countEl) countEl.textContent = data.length ? `${data.length} record${data.length!==1?'s':''} found` : '';
+
   const el = document.getElementById('leave-list');
   if(!data.length){ el.innerHTML='<div class="empty">No leave records found.</div>'; return; }
-  el.innerHTML = data.sort((a,b)=>b.start_date.localeCompare(a.start_date)).map(l=>`
+
+  el.innerHTML = data.sort((a,b)=>b.start_date.localeCompare(a.start_date)).map(l=>{
+    const days = getDays(l);
+    const daysLabel = days!=='—' ? `${days} day${days!==1?'s':''}` : '—';
+    return `
     <div class="leave-row">
       <div class="avatar">${(l.staff_name||'?')[0].toUpperCase()}</div>
       <div>
@@ -465,11 +539,43 @@ function renderList(){
         <div class="leave-info-meta">${l.leave_type||'Leave'} · ${formatDate(l.start_date)}${l.start_date!==l.end_date?' – '+formatDate(l.end_date):''}${l.notes?' · '+l.notes:''}</div>
       </div>
       <div class="leave-actions">
+        <span style="font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px">${daysLabel}</span>
         <span class="bdg ${l.status==='approved'?'bdg-approved':l.status==='rejected'?'bdg-rejected':'bdg-pending'}">${l.status}</span>
         <button class="btn-edit" onclick="editLeave(${JSON.stringify(l).replace(/"/g,'&quot;')})">Edit</button>
         <button class="btn-del" onclick="deleteLeave('${l.id}')">Delete</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+// ── CSV Download ──
+function downloadCSV(){
+  let data = [...allLeaves];
+  const staffFilter = document.getElementById('list-staff-filter')?.value || '';
+  const dateFrom    = document.getElementById('list-date-from')?.value || '';
+  const dateTo      = document.getElementById('list-date-to')?.value || '';
+  if(activeListFilter!=='all') data = data.filter(l=>l.status===activeListFilter);
+  if(staffFilter) data = data.filter(l=>l.staff_id===staffFilter);
+  if(dateFrom)    data = data.filter(l=>l.end_date >= dateFrom);
+  if(dateTo)      data = data.filter(l=>l.start_date <= dateTo);
+
+  const headers = ['Staff Name','Leave Type','Start Date','End Date','Days','Status','Notes'];
+  const rows = data.sort((a,b)=>b.start_date.localeCompare(a.start_date)).map(l=>[
+    l.staff_name||'',
+    l.leave_type||'',
+    l.start_date||'',
+    l.end_date||'',
+    getDays(l),
+    l.status||'',
+    (l.notes||'').replace(/,/g,' ')
+  ]);
+  const csv = [headers, ...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `leave_requests_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('CSV downloaded ✓');
 }
 
 // ── Filter calendar by type ──
