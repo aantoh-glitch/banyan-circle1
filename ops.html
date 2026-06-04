@@ -192,6 +192,30 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   color:var(--border);
   letter-spacing:.5px;
 }
+
+/* Unread badge */
+.db-icon-wrap{position:relative;display:inline-flex}
+.unread-badge{
+  position:absolute;top:-5px;right:-5px;
+  min-width:18px;height:18px;
+  background:#E8302A;color:#fff;
+  border-radius:999px;
+  font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 4px;border:2px solid var(--white);
+  line-height:1;
+}
+
+/* Reviews modal */
+.rev-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.rev-item:last-child{border-bottom:none}
+.rev-avatar{width:36px;height:36px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--br);flex-shrink:0}
+.rev-detail{flex:1;min-width:0}
+.rev-guest{font-size:13px;font-weight:500;color:var(--text)}
+.rev-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.rev-comment{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic;line-height:1.5}
+.rev-stars{font-size:14px;letter-spacing:1px;color:#E8A020;margin-top:3px}
+.rev-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -234,9 +258,12 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </a>
 
-    <a class="dash-btn" href="/messaging.html">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <a class="dash-btn" href="/messaging.html" id="messages-btn">
+      <div class="db-icon-wrap">
+        <div class="db-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span class="unread-badge" id="unread-badge" style="display:none"></span>
       </div>
       <div>
         <div class="db-label">Messages</div>
@@ -254,7 +281,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </a>
 
-    <a class="dash-btn" href="/staff-review.html">
+    <button class="dash-btn" onclick="openReviewsModal()">
       <div class="db-icon">
         <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
       </div>
@@ -262,7 +289,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
         <div class="db-label">Reviews</div>
         <div class="db-sub">Guest staff ratings</div>
       </div>
-    </a>
+    </button>
 
     <a class="dash-btn" href="/lost-and-found.html">
       <div class="db-icon">
@@ -314,6 +341,20 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div class="modal-sub" id="leave-modal-sub"></div>
       <div id="leave-modal-list"><div class="leave-empty">Loading…</div></div>
       <button onclick="document.getElementById('modal-leave').classList.remove('on')"
+        style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Reviews bottom-sheet modal -->
+  <div class="modal" id="modal-reviews">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-ttl">My Reviews</div>
+      <div class="modal-sub" id="reviews-modal-sub"></div>
+      <div id="reviews-modal-list"><div class="rev-empty">Loading…</div></div>
+      <button onclick="document.getElementById('modal-reviews').classList.remove('on')"
         style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
         Close
       </button>
@@ -434,6 +475,88 @@ async function openLeaveModal() {
 document.getElementById('modal-leave').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('on');
 });
+document.getElementById('modal-reviews').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('on');
+});
+
+/* ── Unread messages badge ── */
+async function loadUnreadCount() {
+  try {
+    const staffName = encodeURIComponent(me.name || '');
+    // Query messages table for unread messages sent TO this staff member
+    const rows = await leaveApi(
+      '/rest/v1/messages?recipient_name=eq.' + staffName + '&is_read=eq.false&select=id'
+    );
+    const count = Array.isArray(rows) ? rows.length : 0;
+    const badge = document.getElementById('unread-badge');
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch (e) { /* silently fail — badge stays hidden */ }
+}
+loadUnreadCount();
+
+/* ── Reviews Modal ── */
+function starStr(n) {
+  let s = '';
+  for (let i = 0; i < 5; i++) s += i < n ? '★' : '☆';
+  return s;
+}
+
+function fmtRevDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function openReviewsModal() {
+  document.getElementById('modal-reviews').classList.add('on');
+  const listEl = document.getElementById('reviews-modal-list');
+  const subEl  = document.getElementById('reviews-modal-sub');
+  listEl.innerHTML = '<div class="rev-empty">Loading…</div>';
+  subEl.textContent = '';
+
+  try {
+    // First get staff id from name
+    const staffName = encodeURIComponent(me.name || '');
+    const staffRows = await leaveApi('/rest/v1/staff?name=eq.' + staffName + '&select=id,name&limit=1');
+    const staffId = staffRows && staffRows[0] && staffRows[0].id;
+
+    let rows = [];
+    if (staffId) {
+      rows = await leaveApi(
+        '/rest/v1/staff_reviews?staff_id=eq.' + staffId + '&order=created_at.desc&limit=50'
+      ) || [];
+    }
+
+    if (!rows.length) {
+      subEl.textContent = me.name || '';
+      listEl.innerHTML = '<div class="rev-empty">No reviews yet</div>';
+      return;
+    }
+
+    const avg = (rows.reduce((s, r) => s + (r.rating || 0), 0) / rows.length).toFixed(1);
+    subEl.textContent = me.name + ' · ' + rows.length + ' review' + (rows.length !== 1 ? 's' : '') + ' · avg ' + avg + ' ★';
+
+    listEl.innerHTML = rows.map(r => {
+      const ini = (r.guest_name || 'Guest').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+      return `<div class="rev-item">
+        <div class="rev-avatar">${ini}</div>
+        <div class="rev-detail">
+          <div class="rev-guest">${r.guest_name || 'Guest'}</div>
+          <div class="rev-stars">${starStr(r.rating || 0)}</div>
+          ${r.comment ? `<div class="rev-comment">"${r.comment}"</div>` : ''}
+          <div class="rev-meta">${r.property_name ? r.property_name + ' · ' : ''}${fmtRevDate(r.created_at)}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch (e) {
+    listEl.innerHTML = '<div class="rev-empty">Could not load reviews</div>';
+  }
+}
 </script>
 </body>
 </html>
