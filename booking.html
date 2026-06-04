@@ -244,6 +244,16 @@
         <input type="date" class="form-input" id="manualEnd" onfocus="const s=document.getElementById('manualStart').value;if(s)this.min=s;">
       </div>
     </div>
+    <div class="date-row" style="margin-bottom:14px;">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">No. of Guests</label>
+        <input type="number" class="form-input" id="manualNumGuests" placeholder="e.g. 2" min="1" step="1">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Discussed Amount</label>
+        <input type="number" class="form-input" id="manualDiscAmount" placeholder="e.g. 500" min="0" step="0.01">
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('addBookingModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveBooking()">Save Booking</button>
@@ -298,6 +308,7 @@
         </select>
       </div>
     </div>
+    <div id="logOccupancy" style="margin-bottom:12px;"></div>
     <div style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
       <table id="logTable" style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead>
@@ -308,6 +319,8 @@
             <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Check-in</th>
             <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Check-out</th>
             <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Nights</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Guests</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Amount</th>
           </tr>
         </thead>
         <tbody id="logTableBody"></tbody>
@@ -649,10 +662,15 @@ function saveBooking() {
   const source = document.getElementById('manualSource').value;
   const start = document.getElementById('manualStart').value;
   const end = document.getElementById('manualEnd').value;
+  const numGuests = parseInt(document.getElementById('manualNumGuests').value) || null;
+  const discAmount = parseFloat(document.getElementById('manualDiscAmount').value) || null;
   if (!guest||!prop||!start||!end) { showToast('Fill all fields','error'); return; }
   if (end < start) { showToast('End must be after start','error'); return; }
-  bookings.push({ id:'b'+Date.now(), guest, property:prop, source, start, end });
+  bookings.push({ id:'b'+Date.now(), guest, property:prop, source, start, end, num_guests: numGuests, disc_amount: discAmount });
   closeModal('addBookingModal');
+  // Clear new fields
+  document.getElementById('manualNumGuests').value = '';
+  document.getElementById('manualDiscAmount').value = '';
   renderCalendar(); renderBookings(); renderStats();
   showToast(`Booking for ${guest} saved`);
 }
@@ -668,6 +686,8 @@ function showBookingDetail(id) {
     <div class="modal-detail-row"><div class="modal-detail-label">Source</div><div class="modal-detail-value">${b.source}</div></div>
     <div class="modal-detail-row"><div class="modal-detail-label">Check-in</div><div class="modal-detail-value">${formatDate(b.start)}</div></div>
     <div class="modal-detail-row"><div class="modal-detail-label">Check-out</div><div class="modal-detail-value">${formatDate(b.end)}</div></div>
+    ${b.num_guests!=null?`<div class="modal-detail-row"><div class="modal-detail-label">Guests</div><div class="modal-detail-value">${b.num_guests}</div></div>`:''}
+    ${b.disc_amount!=null?`<div class="modal-detail-row"><div class="modal-detail-label">Amount</div><div class="modal-detail-value">€${Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>`:''}
     ${b.reason?`<div class="modal-detail-row"><div class="modal-detail-label">Note</div><div class="modal-detail-value">${b.reason}</div></div>`:''}
   `;
   document.getElementById('bookingDetailModal').classList.add('open');
@@ -751,9 +771,63 @@ function nightsBetween(start, end) {
 
 function renderLogTable() {
   const rows = getLogFiltered();
+  const from = document.getElementById('logFrom').value;
+  const to   = document.getElementById('logTo').value;
+  const propFilter = document.getElementById('logProperty').value;
   const tbody = document.getElementById('logTableBody');
+
+  // ── Occupancy section ──────────────────────────────────────────────────────
+  const occEl = document.getElementById('logOccupancy');
+  if (from && to && from <= to) {
+    const totalDays = nightsBetween(from, to) + 1; // inclusive range
+    // Which properties to show
+    const propsToShow = propFilter === 'all' ? properties : properties.filter(p => p.id === propFilter);
+
+    if (propsToShow.length) {
+      const cards = propsToShow.map(prop => {
+        // Count unique occupied days within [from, to] for this property (exclude blocked)
+        const occupiedDays = new Set();
+        bookings.forEach(b => {
+          if (b.source === 'blocked') return;
+          if (b.property !== prop.id) return;
+          // clamp booking range to selected window
+          const start = b.start > from ? b.start : from;
+          const end   = b.end   < to   ? b.end   : to;
+          if (start > end) return;
+          let d = new Date(start + 'T00:00:00');
+          const endD = new Date(end + 'T00:00:00');
+          while (d <= endD) {
+            occupiedDays.add(d.toISOString().split('T')[0]);
+            d.setDate(d.getDate() + 1);
+          }
+        });
+        const rate = totalDays > 0 ? Math.round((occupiedDays.size / totalDays) * 100) : 0;
+        const barColor = rate >= 80 ? '#2d9e6b' : rate >= 50 ? '#c9a84c' : '#e85d75';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">
+          <div style="width:130px;font-size:12px;font-weight:500;color:${prop.color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${prop.name}">${prop.name}</div>
+          <div style="flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden;">
+            <div style="width:${rate}%;background:${barColor};height:100%;border-radius:4px;transition:width 0.3s;"></div>
+          </div>
+          <div style="width:80px;font-size:12px;color:var(--ink-soft);text-align:right;">${occupiedDays.size} / ${totalDays} days</div>
+          <div style="width:42px;font-size:12px;font-weight:600;color:${barColor};text-align:right;">${rate}%</div>
+        </div>`;
+      }).join('');
+
+      occEl.innerHTML = `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
+          <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);font-weight:600;margin-bottom:6px;">Occupancy Rate — ${totalDays} day window</div>
+          ${cards}
+        </div>`;
+    } else {
+      occEl.innerHTML = '';
+    }
+  } else {
+    occEl.innerHTML = '';
+  }
+  // ── End occupancy ──────────────────────────────────────────────────────────
+
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--ink-mute);">No bookings found</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--ink-mute);">No bookings found</td></tr>`;
     document.getElementById('logCount').textContent = '0 bookings';
     return;
   }
@@ -768,6 +842,8 @@ function renderLogTable() {
       <td style="padding:9px 12px;">${formatDate(b.start)}</td>
       <td style="padding:9px 12px;">${formatDate(b.end)}</td>
       <td style="padding:9px 12px;">${nights}</td>
+      <td style="padding:9px 12px;">${b.num_guests!=null?b.num_guests:'—'}</td>
+      <td style="padding:9px 12px;">${b.disc_amount!=null?'€'+Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</td>
     </tr>`;
   }).join('');
   document.getElementById('logCount').textContent = `${rows.length} booking${rows.length!==1?'s':''}`;
@@ -776,13 +852,13 @@ function renderLogTable() {
 function downloadLogExcel() {
   const rows = getLogFiltered();
   if (!rows.length) { showToast('No bookings to export', 'error'); return; }
-  const headers = ['Guest','Property','Source','Check-in','Check-out','Nights'];
+  const headers = ['Guest','Property','Source','Check-in','Check-out','Nights','Num Guests','Disc Amount'];
   const csvRows = [headers.join(',')];
   rows.forEach(b => {
     const prop = properties.find(p => p.id === b.property);
     const srcLabel = b.source==='airbnb'?'Airbnb':b.source==='booking'?'Booking.com':'Direct';
     const nights = nightsBetween(b.start, b.end);
-    csvRows.push([`"${b.guest}"`,`"${prop?.name||''}"`,`"${srcLabel}"`,`"${formatDate(b.start)}"`,`"${formatDate(b.end)}"`,nights].join(','));
+    csvRows.push([`"${b.guest}"`,`"${prop?.name||''}"`,`"${srcLabel}"`,`"${formatDate(b.start)}"`,`"${formatDate(b.end)}"`,nights,b.num_guests!=null?b.num_guests:'',b.disc_amount!=null?b.disc_amount:''].join(','));
   });
   const bom = '\uFEFF';
   const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
