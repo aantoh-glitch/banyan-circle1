@@ -200,7 +200,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   min-width:18px;height:18px;
   background:#E8302A;color:#fff;
   border-radius:999px;
-  font-size:10px;font-weight:700;
+  font-size:12px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
   padding:0 4px;border:2px solid var(--white);
   line-height:1;
@@ -217,15 +217,17 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .rev-stars{font-size:14px;letter-spacing:1px;color:#E8A020;margin-top:3px}
 .rev-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
 
-/* Task / messages counter badge */
+/* Task pill badge */
 .task-badge{
-  display:inline-flex;align-items:center;gap:3px;
-  font-size:12px;font-weight:700;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
   margin-top:6px;
+  min-width:18px;height:18px;
+  background:#E8302A;color:#fff;
+  border-radius:999px;
+  font-size:12px;font-weight:700;
+  padding:0 5px;
+  line-height:1;
 }
-.task-badge-ack{color:#185FA5}
-.task-badge-sep{color:var(--muted);font-weight:400}
-.task-badge-total{color:#A32D2D}
 </style>
 </head>
 <body>
@@ -259,17 +261,15 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
     </a>
 
     <a class="dash-btn" href="/tasks.html" id="tasks-btn">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <div class="db-icon-wrap">
+        <div class="db-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <span class="unread-badge" id="task-badge" style="display:none"></span>
       </div>
       <div>
         <div class="db-label">Tasks</div>
         <div class="db-sub">Today's housekeeping</div>
-        <div class="task-badge" id="task-badge" style="display:none">
-          <span class="task-badge-ack" id="task-badge-ack">0</span>
-          <span class="task-badge-sep">/</span>
-          <span class="task-badge-total" id="task-badge-total">0</span>
-        </div>
       </div>
     </a>
 
@@ -283,11 +283,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div>
         <div class="db-label">Messages</div>
         <div class="db-sub">Chat with admin</div>
-        <div class="task-badge" id="msg-badge" style="display:none">
-          <span class="task-badge-ack" id="msg-badge-unread">0</span>
-          <span class="task-badge-sep">/</span>
-          <span class="task-badge-total" id="msg-badge-total">0</span>
-        </div>
       </div>
     </a>
 
@@ -503,55 +498,39 @@ document.getElementById('modal-reviews').addEventListener('click', function(e) {
 async function loadUnreadCount() {
   try {
     const staffName = encodeURIComponent(me.name || '');
-    // Query messages table for unread messages sent TO this staff member
     const rows = await leaveApi(
-      '/rest/v1/messages?recipient_name=ilike.' + staffName + '&select=id,read_by_recipient'
+      '/rest/v1/messages?recipient_name=ilike.' + staffName + '&read_by_recipient=eq.false&select=id'
     );
-    const total  = Array.isArray(rows) ? rows.length : 0;
-    const unread = Array.isArray(rows) ? rows.filter(r => !r.read_by_recipient).length : 0;
+    const count = Array.isArray(rows) ? rows.length : 0;
     const badge = document.getElementById('unread-badge');
-    if (unread > 0) {
-      badge.textContent = unread > 99 ? '99+' : unread;
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
       badge.style.display = 'flex';
     } else {
       badge.style.display = 'none';
     }
-    // msg-badge: unread (blue) / total (red)
-    if (total > 0) {
-      document.getElementById('msg-badge-unread').textContent = unread;
-      document.getElementById('msg-badge-total').textContent  = total;
-      document.getElementById('msg-badge').style.display = 'inline-flex';
-    }
-  } catch (e) { /* silently fail — badge stays hidden */ }
+  } catch (e) { /* silently fail */ }
 }
 loadUnreadCount();
 
-/* ── Task badge: acknowledged / total (FALSE count) ── */
+/* ── Task badge: pending count pill ── */
 async function loadTaskBadge() {
   try {
-    const staffId = me && me.id ? me.id : null;
+    const staffId   = me && me.id   ? me.id               : null;
     const staffName = me && me.name ? encodeURIComponent(me.name) : null;
     if (!staffId && !staffName) return;
 
     const query = staffId
-      ? '/rest/v1/tasks?select=acknowledged,completed&staff_id=eq.' + staffId
-      : '/rest/v1/tasks?select=acknowledged,completed&staff_name=eq.' + staffName;
+      ? '/rest/v1/tasks?select=completed&staff_id=eq.' + staffId
+      : '/rest/v1/tasks?select=completed&staff_name=eq.' + staffName;
 
-    const rows = await leaveApi(query) || [];
-    // Only count tasks not yet completed
-    const active = rows.filter(t => !t.completed);
-    const total  = active.length;
-    if (total === 0) return; // nothing to show
+    const rows   = await leaveApi(query) || [];
+    const pending = rows.filter(t => !t.completed).length;
+    if (pending === 0) return;
 
-    const acked  = active.filter(t => t.acknowledged).length;
-
-    const badge    = document.getElementById('task-badge');
-    const ackEl    = document.getElementById('task-badge-ack');
-    const totalEl  = document.getElementById('task-badge-total');
-
-    ackEl.textContent   = acked;
-    totalEl.textContent = total;
-    badge.style.display = 'inline-flex';
+    const badge = document.getElementById('task-badge');
+    badge.textContent   = pending > 99 ? '99+' : pending;
+    badge.style.display = 'flex';
   } catch (e) { /* silently fail */ }
 }
 loadTaskBadge();
