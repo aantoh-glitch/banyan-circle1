@@ -10,16 +10,12 @@
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .main{padding:28px 32px;max-width:1100px;margin:0 auto}
-.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
-.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:20px}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.pg-title{font-family:'Playfair Display',serif;font-size:28px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none}
 .back-link:hover{color:var(--br)}
-/* Property pills */
-.prop-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
-.ppill{padding:7px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
-.ppill.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
 /* Action buttons */
-.action-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+.action-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
 .act-btn{padding:16px 10px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .15s}
 .act-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08)}
 .act-btn.red{border-color:#ffcdd2;color:var(--r)}.act-btn.red:hover{background:var(--r-l)}
@@ -27,6 +23,26 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .act-btn.green{border-color:#c8e6c9;color:var(--g)}.act-btn.green:hover{background:var(--g-l)}
 .act-btn.blue{border-color:#bbdefb;color:var(--b)}.act-btn.blue:hover{background:var(--b-l)}
 .act-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+/* Divider */
+.divider{border:none;border-top:1px solid var(--border);margin:0 0 24px}
+/* Property pills */
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
+.prop-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.ppill{padding:7px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.ppill.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+/* Controls row */
+.controls-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.controls-row .fg{margin:0;flex:1;min-width:130px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+/* Net profit bar */
+.net-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.net-card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 18px}
+.net-card-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px}
+.net-card-val{font-family:'Playfair Display',serif;font-size:22px;font-weight:500}
+.net-card.profit .net-card-val{color:var(--g)}
+.net-card.loss .net-card-val{color:var(--r)}
 /* Log */
 .log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
 .log-title{font-family:'Playfair Display',serif;font-size:18px}
@@ -49,19 +65,19 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .fg{margin-bottom:12px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
 textarea.fc{resize:vertical;min-height:72px}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .rupee-wrap{position:relative}
-.rupee-wrap .fc{padding-left:28px}
-.rupee-wrap::before{content:'₹';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none}
+.rupee-wrap .fc{padding-left:26px}
+.rupee-sym{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;font-family:'DM Sans',sans-serif}
 .btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{border-color:var(--br);color:var(--br)}
 .btn-del{padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-dl{padding:9px 16px;background:var(--white);color:var(--g);border:1.5px solid #c8e6c9;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-dl:hover{background:var(--g-l)}
+.btn-dl svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none}
 .type-toggle{display:grid;grid-template-columns:1fr 1fr;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:12px}
 .type-toggle button{padding:9px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;background:var(--white);color:var(--muted)}
@@ -70,23 +86,22 @@ textarea.fc{resize:vertical;min-height:72px}
 </head>
 <body>
 <div class="main">
-  <a class="back-link" href="admin.html">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
-    Back to Admin
-  </a>
 
-  <div class="pg-title">Financials</div>
-  <div class="pg-sub" id="fin-date"></div>
-
-  <!-- Property filter pills -->
-  <div class="prop-pills" id="prop-pills">
-    <button class="ppill on" data-prop="all" onclick="setProp('all',this)">All Properties</button>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div>
+      <a class="back-link" href="admin.html">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+        Back to Admin
+      </a>
+      <div class="pg-title" style="margin-top:6px">Financials</div>
+    </div>
   </div>
 
-  <!-- 4 Action buttons -->
+  <!-- ACTION BUTTONS — top -->
   <div class="action-row">
     <button class="act-btn red" onclick="openModal('modal-expense')">
-      <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       Add Expense
     </button>
     <button class="act-btn amber" onclick="openModal('modal-utility')">
@@ -94,7 +109,7 @@ textarea.fc{resize:vertical;min-height:72px}
       Add Utility Bill
     </button>
     <button class="act-btn green" onclick="openModal('modal-revenue')">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
       Add Revenue
     </button>
     <button class="act-btn blue" onclick="openModal('modal-earnings')">
@@ -103,7 +118,53 @@ textarea.fc{resize:vertical;min-height:72px}
     </button>
   </div>
 
-  <!-- Transaction log -->
+  <hr class="divider"/>
+
+  <!-- PROPERTIES -->
+  <div class="section-label">Properties</div>
+  <div class="prop-pills" id="prop-pills">
+    <button class="ppill on" data-prop="all" onclick="setProp('all',this)">All Properties</button>
+  </div>
+
+  <!-- DATE RANGE + DOWNLOAD -->
+  <div class="controls-row">
+    <div class="fg">
+      <label class="fl">From</label>
+      <input class="fc" type="date" id="date-from"/>
+    </div>
+    <div class="fg">
+      <label class="fl">To</label>
+      <input class="fc" type="date" id="date-to"/>
+    </div>
+    <button class="btn-sec" onclick="applyDates()" style="white-space:nowrap;padding:9px 18px">Apply</button>
+    <button class="btn-sec" onclick="clearDates()" style="white-space:nowrap;padding:9px 14px">Clear</button>
+    <button class="btn-dl" onclick="downloadExcel()">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Excel
+    </button>
+  </div>
+
+  <!-- NET PROFIT SUMMARY -->
+  <div class="net-bar">
+    <div class="net-card">
+      <div class="net-card-label">Revenue</div>
+      <div class="net-card-val" id="sum-revenue" style="color:var(--g)">—</div>
+    </div>
+    <div class="net-card">
+      <div class="net-card-label">Expenses + Utilities</div>
+      <div class="net-card-val" id="sum-costs" style="color:var(--r)">—</div>
+    </div>
+    <div class="net-card">
+      <div class="net-card-label">Earnings Payouts</div>
+      <div class="net-card-val" id="sum-earnings" style="color:var(--r)">—</div>
+    </div>
+    <div class="net-card" id="net-card">
+      <div class="net-card-label">Net Profit / Loss</div>
+      <div class="net-card-val" id="sum-net">—</div>
+    </div>
+  </div>
+
+  <!-- LOG -->
   <div class="log-header">
     <div class="log-title">Transaction Log</div>
     <div class="log-filter">
@@ -119,118 +180,106 @@ textarea.fc{resize:vertical;min-height:72px}
   </div>
 </div>
 
-<!-- EXPENSE MODAL → expenses table -->
-<!-- Columns: property_name, date, amount, category, description, notes, logged_by -->
-<div class="modal" id="modal-expense">
-  <div class="modal-card">
-    <div class="modal-ttl">Add Expense</div>
-    <div class="fg"><label class="fl">Property</label><select class="fc" id="exp-prop"></select></div>
-    <div class="row-grid">
-      <div class="fg"><label class="fl">Date</label><input class="fc" id="exp-date" type="date"/></div>
-      <div class="fg"><label class="fl">Category</label>
-        <select class="fc" id="exp-cat">
-          <option>Repairs</option><option>Cleaning</option><option>Supplies</option><option>Staff</option><option>Other</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg"><label class="fl">Amount</label>
-      <div class="rupee-wrap"><input class="fc" id="exp-amount" type="number" min="0" placeholder="0"/></div>
-    </div>
-    <div class="fg"><label class="fl">Description</label><input class="fc" id="exp-desc" placeholder="Brief description"/></div>
-    <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="exp-notes"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-expense')">Cancel</button>
-      <button class="btn-p" onclick="saveExpense()">Save</button>
+<!-- EXPENSE MODAL -->
+<div class="modal" id="modal-expense"><div class="modal-card">
+  <div class="modal-ttl">Add Expense</div>
+  <div class="fg"><label class="fl">Property</label><select class="fc" id="exp-prop"></select></div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">Date</label><input class="fc" id="exp-date" type="date"/></div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fc" id="exp-cat"><option>Repairs</option><option>Cleaning</option><option>Supplies</option><option>Staff</option><option>Other</option></select>
     </div>
   </div>
-</div>
+  <div class="fg"><label class="fl">Amount (₹)</label>
+    <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="exp-amount" type="number" min="0" placeholder="0"/></div>
+  </div>
+  <div class="fg"><label class="fl">Description</label><input class="fc" id="exp-desc" placeholder="Brief description"/></div>
+  <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="exp-notes"></textarea></div>
+  <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="exp-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="exp-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-expense')">Cancel</button>
+    <button class="btn-p" id="exp-btn" onclick="saveExpense()">Save</button>
+  </div>
+</div></div>
 
-<!-- UTILITY MODAL → utility_payments table -->
-<!-- Columns: property_name, month, utility_type, amount, status, paid_on, notes, logged_by -->
-<div class="modal" id="modal-utility">
-  <div class="modal-card">
-    <div class="modal-ttl">Add Utility Bill</div>
-    <div class="fg"><label class="fl">Property</label><select class="fc" id="util-prop"></select></div>
-    <div class="row-grid">
-      <div class="fg"><label class="fl">Month</label><input class="fc" id="util-month" type="month"/></div>
-      <div class="fg"><label class="fl">Utility Type</label>
-        <select class="fc" id="util-type">
-          <option>Electricity</option><option>Water</option><option>Gas</option><option>Internet</option><option>Cable</option><option>Other</option>
-        </select>
-      </div>
-    </div>
-    <div class="row-grid">
-      <div class="fg"><label class="fl">Amount</label>
-        <div class="rupee-wrap"><input class="fc" id="util-amount" type="number" min="0" placeholder="0"/></div>
-      </div>
-      <div class="fg"><label class="fl">Status</label>
-        <select class="fc" id="util-status"><option>pending</option><option>paid</option></select>
-      </div>
-    </div>
-    <div class="fg"><label class="fl">Paid on (if paid)</label><input class="fc" id="util-paid" type="date"/></div>
-    <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="util-notes"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-utility')">Cancel</button>
-      <button class="btn-p" onclick="saveUtility()">Save</button>
+<!-- UTILITY MODAL -->
+<div class="modal" id="modal-utility"><div class="modal-card">
+  <div class="modal-ttl">Add Utility Bill</div>
+  <div class="fg"><label class="fl">Property</label><select class="fc" id="util-prop"></select></div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">Month</label><input class="fc" id="util-month" type="month"/></div>
+    <div class="fg"><label class="fl">Utility Type</label>
+      <select class="fc" id="util-type"><option>Electricity</option><option>Water</option><option>Gas</option><option>Internet</option><option>Cable</option><option>Other</option></select>
     </div>
   </div>
-</div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">Amount (₹)</label>
+      <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="util-amount" type="number" min="0" placeholder="0"/></div>
+    </div>
+    <div class="fg"><label class="fl">Status</label>
+      <select class="fc" id="util-status"><option>pending</option><option>paid</option></select>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">Paid on (if paid)</label><input class="fc" id="util-paid" type="date"/></div>
+  <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="util-notes"></textarea></div>
+  <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="util-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="util-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-utility')">Cancel</button>
+    <button class="btn-p" id="util-btn" onclick="saveUtility()">Save</button>
+  </div>
+</div></div>
 
-<!-- REVENUE MODAL → property_revenues table -->
-<!-- Columns: property_name, item, date, amount, notes -->
-<div class="modal" id="modal-revenue">
-  <div class="modal-card">
-    <div class="modal-ttl">Add Revenue</div>
-    <div class="fg"><label class="fl">Property</label><select class="fc" id="rev-prop"></select></div>
-    <div class="fg"><label class="fl">Item / Source</label><input class="fc" id="rev-item" placeholder="e.g. Booking — Airbnb"/></div>
-    <div class="row-grid">
-      <div class="fg"><label class="fl">Date</label><input class="fc" id="rev-date" type="date"/></div>
-      <div class="fg"><label class="fl">Amount</label>
-        <div class="rupee-wrap"><input class="fc" id="rev-amount" type="number" min="0" placeholder="0"/></div>
-      </div>
-    </div>
-    <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="rev-notes"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-revenue')">Cancel</button>
-      <button class="btn-p" onclick="saveRevenue()">Save</button>
+<!-- REVENUE MODAL -->
+<div class="modal" id="modal-revenue"><div class="modal-card">
+  <div class="modal-ttl">Add Revenue</div>
+  <div class="fg"><label class="fl">Property</label><select class="fc" id="rev-prop"></select></div>
+  <div class="fg"><label class="fl">Item / Source</label><input class="fc" id="rev-item" placeholder="e.g. Booking — Airbnb"/></div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">Date</label><input class="fc" id="rev-date" type="date"/></div>
+    <div class="fg"><label class="fl">Amount (₹)</label>
+      <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="rev-amount" type="number" min="0" placeholder="0"/></div>
     </div>
   </div>
-</div>
+  <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="rev-notes"></textarea></div>
+  <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="rev-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="rev-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-revenue')">Cancel</button>
+    <button class="btn-p" id="rev-btn" onclick="saveRevenue()">Save</button>
+  </div>
+</div></div>
 
-<!-- EARNINGS MODAL → earnings_log table -->
-<!-- Columns: type(positive/negative), head, amount, percentage, entity_type, entity_name, entry_date, notes, recorded_by -->
-<div class="modal" id="modal-earnings">
-  <div class="modal-card">
-    <div class="modal-ttl">Add Earnings Entry</div>
-    <div class="type-toggle">
-      <button id="earn-pos-btn" class="on" onclick="setEarnType('positive')">+ Positive</button>
-      <button id="earn-neg-btn" onclick="setEarnType('negative')">− Negative</button>
-    </div>
-    <div class="row-grid">
-      <div class="fg"><label class="fl">Person Type</label>
-        <select class="fc" id="earn-ptype" onchange="loadEarnPersons()">
-          <option value="staff">Staff</option>
-          <option value="talent">Talent</option>
-          <option value="landlord">Landlord / Property</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">Person</label><select class="fc" id="earn-person"></select></div>
-    </div>
-    <div class="fg"><label class="fl">Head</label><select class="fc" id="earn-head" onchange="onEarnHeadChange()"></select></div>
-    <div class="fg" id="earn-amount-fg"><label class="fl">Amount</label>
-      <div class="rupee-wrap"><input class="fc" id="earn-amount" type="number" min="0" placeholder="0"/></div>
-    </div>
-    <div class="fg" id="earn-pct-fg" style="display:none"><label class="fl">Percentage (%)</label>
-      <input class="fc" id="earn-pct" type="number" min="0" max="100" step="0.01" placeholder="0.00"/>
-    </div>
-    <div class="fg"><label class="fl">Date</label><input class="fc" id="earn-date" type="date"/></div>
-    <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="earn-notes"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-earnings')">Cancel</button>
-      <button class="btn-p" onclick="saveEarnings()">Save</button>
-    </div>
+<!-- EARNINGS MODAL -->
+<div class="modal" id="modal-earnings"><div class="modal-card">
+  <div class="modal-ttl">Add Earnings Entry</div>
+  <div class="type-toggle">
+    <button id="earn-pos-btn" class="on" onclick="setEarnType('positive')">+ Positive</button>
+    <button id="earn-neg-btn" onclick="setEarnType('negative')">− Negative</button>
   </div>
-</div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">Person Type</label>
+      <select class="fc" id="earn-ptype" onchange="loadEarnPersons()">
+        <option value="staff">Staff</option>
+        <option value="talent">Talent</option>
+        <option value="landlord">Landlord / Property</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Person</label><select class="fc" id="earn-person"></select></div>
+  </div>
+  <div class="fg"><label class="fl">Head</label><select class="fc" id="earn-head" onchange="onEarnHeadChange()"></select></div>
+  <div class="fg" id="earn-amount-fg"><label class="fl">Amount (₹)</label>
+    <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="earn-amount" type="number" min="0" placeholder="0"/></div>
+  </div>
+  <div class="fg" id="earn-pct-fg" style="display:none"><label class="fl">Percentage (%)</label>
+    <input class="fc" id="earn-pct" type="number" min="0" max="100" step="0.01" placeholder="0.00"/>
+  </div>
+  <div class="fg"><label class="fl">Date</label><input class="fc" id="earn-date" type="date"/></div>
+  <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="earn-notes"></textarea></div>
+  <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="earn-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="earn-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-earnings')">Cancel</button>
+    <button class="btn-p" id="earn-btn" onclick="saveEarnings()">Save</button>
+  </div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
@@ -240,12 +289,11 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const EARN_POS_HEADS = ['Revenue','Profit','PAT','Salary','Pay','Expenses Borne','Percentage of Revenue'];
 const EARN_NEG_HEADS = ['Deduction','Loss'];
 
-let PROPS = [];
-let ACTIVE_PROP = 'all';
-let ACTIVE_TYPE = 'all';
-let earnType = 'positive';
+let PROPS=[], ACTIVE_PROP='all', ACTIVE_TYPE='all', earnType='positive';
+let DATE_FROM='', DATE_TO='';
+let ALL_ROWS=[]; // cached for Excel
 
-const HDR = {apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+const HDR={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
 
 async function api(path,method,body){
   const r=await fetch(SB+path,{method:method||'GET',headers:HDR,body:body?JSON.stringify(body):undefined});
@@ -257,10 +305,20 @@ async function api(path,method,body){
 function fmt(n){return '₹'+Math.round(n||0).toLocaleString('en-IN');}
 function fmtDate(d){return d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
-function openModal(id){document.getElementById(id).classList.add('on');}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 
-document.getElementById('fin-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+// Date filters
+function applyDates(){
+  DATE_FROM=document.getElementById('date-from').value;
+  DATE_TO=document.getElementById('date-to').value;
+  loadLog();
+}
+function clearDates(){
+  DATE_FROM=''; DATE_TO='';
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  loadLog();
+}
 
 async function loadProps(){
   const data=await api('/rest/v1/landlords?select=property_name&order=property_name')||[];
@@ -290,32 +348,61 @@ function setType(type,el){
   el.classList.add('on');loadLog();
 }
 
+function dateFilter(dateStr){
+  if(!dateStr) return true;
+  if(DATE_FROM && dateStr < DATE_FROM) return false;
+  if(DATE_TO   && dateStr > DATE_TO)   return false;
+  return true;
+}
+
 async function loadLog(){
   const el=document.getElementById('fin-log');
   el.innerHTML='<div class="empty">Loading…</div>';
   const pf=ACTIVE_PROP!=='all'?'&property_name=eq.'+encodeURIComponent(ACTIVE_PROP):'';
+  const df=DATE_FROM?'&date=gte.'+DATE_FROM:'';
+  const dt=DATE_TO  ?'&date=lte.'+DATE_TO  :'';
+
   try{
     let rows=[];
-    if(ACTIVE_TYPE==='all'||ACTIVE_TYPE==='expense'){
-      const d=await api('/rest/v1/expenses?select=*&order=date.desc'+pf)||[];
-      d.forEach(r=>rows.push({...r,_type:'expense',_date:r.date,_amount:r.amount,_label:r.description||r.category,_sub:r.category,_prop:r.property_name}));
-    }
-    if(ACTIVE_TYPE==='all'||ACTIVE_TYPE==='utility'){
-      const d=await api('/rest/v1/utility_payments?select=*&order=created_at.desc'+pf)||[];
-      d.forEach(r=>rows.push({...r,_type:'utility',_date:r.paid_on||r.month,_amount:r.amount,_label:r.utility_type,_sub:r.month+' · '+r.status,_prop:r.property_name}));
-    }
-    if(ACTIVE_TYPE==='all'||ACTIVE_TYPE==='revenue'){
-      const d=await api('/rest/v1/property_revenues?select=*&order=date.desc'+pf)||[];
-      d.forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:null,_prop:r.property_name}));
-    }
-    if(ACTIVE_TYPE==='all'||ACTIVE_TYPE==='earnings'){
-      let path='/rest/v1/earnings_log?select=*&order=entry_date.desc';
-      if(ACTIVE_PROP!=='all') path+='&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP);
-      const d=await api(path)||[];
-      d.forEach(r=>rows.push({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
-    }
+    // Always fetch all 4 for summary, filter display by type
+    const [expenses, utilities, revenues, earnings] = await Promise.all([
+      api('/rest/v1/expenses?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
+      api('/rest/v1/utility_payments?select=*&order=created_at.desc'+pf).catch(()=>[]),
+      api('/rest/v1/property_revenues?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
+      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[])
+    ]);
+
+    // Filter utilities by date client-side (month field)
+    const utilFiltered=(utilities||[]).filter(r=>dateFilter(r.paid_on||r.month));
+    const earnFiltered=(earnings||[]).filter(r=>dateFilter(r.entry_date));
+
+    // Build full rows
+    (expenses||[]).forEach(r=>rows.push({...r,_type:'expense',_date:r.date,_amount:r.amount,_label:r.description||r.category,_sub:r.category,_prop:r.property_name}));
+    utilFiltered.forEach(r=>rows.push({...r,_type:'utility',_date:r.paid_on||r.month,_amount:r.amount,_label:r.utility_type,_sub:r.month+' · '+r.status,_prop:r.property_name}));
+    (revenues||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:null,_prop:r.property_name}));
+    earnFiltered.forEach(r=>rows.push({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
+
     rows.sort((a,b)=>(b._date||'')>(a._date||'')?1:-1);
-    if(!rows.length){el.innerHTML='<div class="empty">No transactions found</div>';return;}
+    ALL_ROWS=rows;
+
+    // Summary
+    const totalRev  = rows.filter(r=>r._type==='revenue').reduce((s,r)=>s+(r._amount||0),0);
+    const totalCost = rows.filter(r=>r._type==='expense'||r._type==='utility').reduce((s,r)=>s+(r._amount||0),0);
+    const totalEarn = rows.filter(r=>r._type==='earnings').reduce((s,r)=>s+(r._amount||0),0);
+    const net = totalRev - totalCost - totalEarn;
+
+    document.getElementById('sum-revenue').textContent=fmt(totalRev);
+    document.getElementById('sum-costs').textContent=fmt(totalCost);
+    document.getElementById('sum-earnings').textContent=fmt(totalEarn);
+    const netEl=document.getElementById('sum-net');
+    const netCard=document.getElementById('net-card');
+    netEl.textContent=(net<0?'− ':'')+fmt(Math.abs(net));
+    netEl.style.color=net>=0?'var(--g)':'var(--r)';
+
+    // Filter display by type
+    const display=ACTIVE_TYPE==='all'?rows:rows.filter(r=>r._type===ACTIVE_TYPE);
+    if(!display.length){el.innerHTML='<div class="empty">No transactions found</div>';return;}
+
     const badge={
       expense:'<span class="bdg bdg-r">Expense</span>',
       utility:'<span class="bdg bdg-a">Utility</span>',
@@ -324,7 +411,7 @@ async function loadLog(){
     };
     el.innerHTML=`<table class="tbl"><thead><tr>
       <th>Date</th><th>Property</th><th>Type</th><th>Description</th><th style="text-align:right">Amount</th><th></th>
-    </tr></thead><tbody>${rows.map(r=>`<tr>
+    </tr></thead><tbody>${display.map(r=>`<tr>
       <td style="white-space:nowrap">${fmtDate(r._date)}</td>
       <td>${r._prop||'—'}</td>
       <td>${badge[r._type]}</td>
@@ -342,52 +429,84 @@ async function deleteRow(type,id){
   toast('Deleted');loadLog();
 }
 
-// Pre-fill today's date on open
-document.getElementById('modal-expense').addEventListener('click',()=>{});
-function prefill(dateId){document.getElementById(dateId).value=new Date().toISOString().split('T')[0];}
-function prefillMonth(id){document.getElementById(id).value=new Date().toISOString().slice(0,7);}
+// Download Excel (CSV)
+function downloadExcel(){
+  if(!ALL_ROWS.length){toast('No data to download');return;}
+  const headers=['Date','Property','Type','Description','Sub','Amount'];
+  const rows=ALL_ROWS.map(r=>[r._date||'',r._prop||'',r._type,r._label||'',r._sub||'',r._amount||0]);
+  const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='financials_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('Downloaded ✓');
+}
 
-// Override openModal to pre-fill dates
-const _openModal=openModal;
+// Upload file to finance-docs bucket, return public URL or null
+async function uploadDoc(file, prefix){
+  if(!file) return null;
+  const path = prefix.replace(/\s+/g,'_')+'/'+Date.now()+'_'+file.name;
+  const res = await fetch(SB+'/storage/v1/object/finance-docs/'+path,{
+    method:'POST',
+    headers:{apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':file.type||'application/octet-stream', 'x-upsert':'true'},
+    body:file
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error('Upload failed: '+(e.message||e.error||res.status));}
+  return SB+'/storage/v1/object/public/finance-docs/'+path;
+}
+
+function setBtn(id,loading){const b=document.getElementById(id);if(b){b.disabled=loading;b.textContent=loading?'Saving…':'Save';}}
+function setFileStatus(id,msg,ok){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.color=ok?'var(--g)':'var(--muted)';}}
+
 window.openModal=function(id){
-  if(id==='modal-expense') prefill('exp-date');
-  if(id==='modal-utility') prefillMonth('util-month');
-  if(id==='modal-revenue') prefill('rev-date');
-  if(id==='modal-earnings'){prefill('earn-date');setEarnType('positive');loadEarnPersons();}
+  const today=new Date().toISOString().split('T')[0];
+  const month=new Date().toISOString().slice(0,7);
+  if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status','');}
+  if(id==='modal-utility'){document.getElementById('util-month').value=month; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
+  if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status','');}
+  if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); loadEarnPersons();}
   document.getElementById(id).classList.add('on');
 };
 
-// Save Expense → expenses table
 async function saveExpense(){
   const body={property_name:document.getElementById('exp-prop').value,date:document.getElementById('exp-date').value,amount:parseFloat(document.getElementById('exp-amount').value)||0,category:document.getElementById('exp-cat').value,description:document.getElementById('exp-desc').value.trim()||null,notes:document.getElementById('exp-notes').value.trim()||null,logged_by:'OFFICE'};
   if(!body.date||!body.amount){alert('Need date and amount');return;}
-  try{await api('/rest/v1/expenses','POST',body);closeModal('modal-expense');toast('Expense saved ✓');loadLog();}
-  catch(e){alert('Error: '+e.message);}
+  setBtn('exp-btn',true);
+  try{
+    const file=document.getElementById('exp-file').files[0];
+    if(file){setFileStatus('exp-file-status','Uploading…');const url=await uploadDoc(file,'expenses/'+body.property_name);body.doc_url=url;setFileStatus('exp-file-status','Uploaded ✓',true);}
+    await api('/rest/v1/expenses','POST',body);closeModal('modal-expense');toast('Expense saved ✓');loadLog();
+  }catch(e){alert('Error: '+e.message);}finally{setBtn('exp-btn',false);}
 }
 
-// Save Utility → utility_payments table
 async function saveUtility(){
   const body={property_name:document.getElementById('util-prop').value,month:document.getElementById('util-month').value,utility_type:document.getElementById('util-type').value,amount:parseFloat(document.getElementById('util-amount').value)||0,status:document.getElementById('util-status').value,paid_on:document.getElementById('util-paid').value||null,notes:document.getElementById('util-notes').value.trim()||null,logged_by:'OFFICE'};
   if(!body.month){alert('Need month');return;}
-  try{await api('/rest/v1/utility_payments','POST',body);closeModal('modal-utility');toast('Utility bill saved ✓');loadLog();}
-  catch(e){alert('Error: '+e.message);}
+  setBtn('util-btn',true);
+  try{
+    const file=document.getElementById('util-file').files[0];
+    if(file){setFileStatus('util-file-status','Uploading…');const url=await uploadDoc(file,'utility/'+body.property_name);body.proof_url=url;setFileStatus('util-file-status','Uploaded ✓',true);}
+    await api('/rest/v1/utility_payments','POST',body);closeModal('modal-utility');toast('Utility bill saved ✓');loadLog();
+  }catch(e){alert('Error: '+e.message);}finally{setBtn('util-btn',false);}
 }
 
-// Save Revenue → property_revenues table
 async function saveRevenue(){
   const body={property_name:document.getElementById('rev-prop').value,item:document.getElementById('rev-item').value.trim(),date:document.getElementById('rev-date').value,amount:parseFloat(document.getElementById('rev-amount').value)||0,notes:document.getElementById('rev-notes').value.trim()||null};
   if(!body.item||!body.date){alert('Need item and date');return;}
-  try{await api('/rest/v1/property_revenues','POST',body);closeModal('modal-revenue');toast('Revenue saved ✓');loadLog();}
-  catch(e){alert('Error: '+e.message);}
+  setBtn('rev-btn',true);
+  try{
+    const file=document.getElementById('rev-file').files[0];
+    if(file){setFileStatus('rev-file-status','Uploading…');const url=await uploadDoc(file,'revenue/'+body.property_name);body.doc_url=url;setFileStatus('rev-file-status','Uploaded ✓',true);}
+    await api('/rest/v1/property_revenues','POST',body);closeModal('modal-revenue');toast('Revenue saved ✓');loadLog();
+  }catch(e){alert('Error: '+e.message);}finally{setBtn('rev-btn',false);}
 }
 
-// Earnings → earnings_log table
 function setEarnType(t){
   earnType=t;
   document.getElementById('earn-pos-btn').classList.toggle('on',t==='positive');
   document.getElementById('earn-neg-btn').classList.toggle('on',t==='negative');
-  const heads=t==='positive'?EARN_POS_HEADS:EARN_NEG_HEADS;
-  document.getElementById('earn-head').innerHTML=heads.map(h=>`<option>${h}</option>`).join('');
+  document.getElementById('earn-head').innerHTML=(t==='positive'?EARN_POS_HEADS:EARN_NEG_HEADS).map(h=>`<option>${h}</option>`).join('');
   onEarnHeadChange();
 }
 function onEarnHeadChange(){
@@ -405,23 +524,22 @@ async function loadEarnPersons(){
     else if(ptype==='talent'){const d=await api('/rest/v1/talents?select=name&order=name')||[];items=d.map(x=>x.name);}
     else{const d=await api('/rest/v1/landlords?select=property_name&order=property_name')||[];items=[...new Set(d.map(x=>x.property_name).filter(Boolean))];}
     sel.innerHTML=items.map(n=>`<option>${n}</option>`).join('');
-  }catch(e){sel.innerHTML='<option>Error loading</option>';}
+  }catch(e){sel.innerHTML='<option>Error</option>';}
 }
 async function saveEarnings(){
   const isPct=document.getElementById('earn-head').value==='Percentage of Revenue';
   const ptype=document.getElementById('earn-ptype').value;
-  const entityType=ptype==='landlord'?'property':ptype;
-  const body={type:earnType,head:document.getElementById('earn-head').value,amount:isPct?null:parseFloat(document.getElementById('earn-amount').value)||0,percentage:isPct?parseFloat(document.getElementById('earn-pct').value)||null:null,entity_type:entityType,entity_name:document.getElementById('earn-person').value,entry_date:document.getElementById('earn-date').value,notes:document.getElementById('earn-notes').value.trim()||null,recorded_by:'OFFICE'};
-  if(!body.entity_name){alert('Select a person');return;}
-  if(!body.entry_date){alert('Select a date');return;}
-  try{await api('/rest/v1/earnings_log','POST',body);closeModal('modal-earnings');toast('Earnings entry saved ✓');loadLog();}
-  catch(e){alert('Error: '+e.message);}
+  const body={type:earnType,head:document.getElementById('earn-head').value,amount:isPct?null:parseFloat(document.getElementById('earn-amount').value)||0,percentage:isPct?parseFloat(document.getElementById('earn-pct').value)||null:null,entity_type:ptype==='landlord'?'property':ptype,entity_name:document.getElementById('earn-person').value,entry_date:document.getElementById('earn-date').value,notes:document.getElementById('earn-notes').value.trim()||null,recorded_by:'OFFICE'};
+  if(!body.entity_name||!body.entry_date){alert('Select person and date');return;}
+  setBtn('earn-btn',true);
+  try{
+    const file=document.getElementById('earn-file').files[0];
+    if(file){setFileStatus('earn-file-status','Uploading…');const url=await uploadDoc(file,'earnings/'+body.entity_name);body.doc_url=url;setFileStatus('earn-file-status','Uploaded ✓',true);}
+    await api('/rest/v1/earnings_log','POST',body);closeModal('modal-earnings');toast('Earnings entry saved ✓');loadLog();
+  }catch(e){alert('Error: '+e.message);}finally{setBtn('earn-btn',false);}
 }
 
-// Close on backdrop click
 document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on');}));
-
-// Init
 loadProps().then(()=>loadLog());
 </script>
 </body>
