@@ -165,11 +165,12 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
     <div class="fg"><label class="fl">Guest name<span>*</span></label><input class="fc" id="ci-name" type="text"/></div>
     <div class="fg">
-      <label class="fl">ID proof with photo<span>*</span></label>
-      <div class="upload-zone" id="ci-upload-zone" onclick="document.getElementById('ci-files').click()">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-        <p>Tap to upload &middot; JPG, PNG or PDF &middot; Multiple files</p>
-      </div>
+      <label class="fl">Upload Address Proof<span>*</span></label>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Upload one document for everyone staying &middot; Photo or PDF</div>
+      <button type="button" onclick="document.getElementById('ci-files').click()" style="width:100%;padding:13px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:500;color:var(--br);font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--br)'" onmouseout="this.style.borderColor='var(--border)'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Address Proof
+      </button>
       <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="handleIdUpload(this)"/>
       <div class="file-list" id="ci-file-list"></div>
     </div>
