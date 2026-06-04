@@ -473,7 +473,7 @@ const DEFAULT_PRESET_BUNDLES = {
   ],
 };
 
-let PRESET_BUNDLES = loadPersistedBundles() || Object.assign({}, DEFAULT_PRESET_BUNDLES);
+let PRESET_BUNDLES = Object.assign({}, DEFAULT_PRESET_BUNDLES); // replaced by loadPresetsFromSupabase()
 
 const DEFAULT_PRESETS = [
   'Check In',
@@ -490,24 +490,70 @@ const DEFAULT_PRESETS = [
 ];
 
 // Load persisted presets from localStorage or fall back to defaults
-function loadPersistedPresets(){
-  try {
-    const saved = localStorage.getItem('bc_presets');
-    if(saved) return JSON.parse(saved);
-  } catch(e){}
-  return [...DEFAULT_PRESETS];
-}
-function loadPersistedBundles(){
-  try {
-    const saved = localStorage.getItem('bc_preset_bundles');
-    if(saved) return JSON.parse(saved);
-  } catch(e){}
-  return null;
-}
-function persistPresets(){ localStorage.setItem('bc_presets', JSON.stringify(PRESETS)); }
-function persistBundles(){ localStorage.setItem('bc_preset_bundles', JSON.stringify(PRESET_BUNDLES)); }
+// Presets are loaded from Supabase on boot and on opening the manager.
+// The table schema:
+//   CREATE TABLE presets (
+//     id    uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+//     name  text NOT NULL UNIQUE,
+//     tasks jsonb,          -- null = simple preset, array = bundle
+//     ord   integer DEFAULT 0
+//   );
+//   ALTER TABLE presets DISABLE ROW LEVEL SECURITY;
 
-let PRESETS = loadPersistedPresets();
+async function loadPresetsFromSupabase(){
+  try {
+    const rows = await api('/rest/v1/presets?select=name,tasks&order=ord.asc,name.asc') || [];
+    PRESETS = [];
+    PRESET_BUNDLES = {};
+    for(const row of rows){
+      PRESETS.push(row.name);
+      if(row.tasks && Array.isArray(row.tasks)){
+        PRESET_BUNDLES[row.name] = row.tasks;
+      }
+    }
+    if(!PRESETS.length){
+      // First boot: seed defaults into Supabase
+      await seedDefaultPresets();
+    }
+  } catch(e){
+    // Table may not exist yet — fall back to defaults silently
+    console.warn('Presets table not ready, using defaults:', e.message);
+    PRESETS = [...DEFAULT_PRESETS];
+    PRESET_BUNDLES = Object.assign({}, DEFAULT_PRESET_BUNDLES);
+  }
+}
+
+async function seedDefaultPresets(){
+  const rows = DEFAULT_PRESETS.map((name, i)=>({
+    name,
+    tasks: DEFAULT_PRESET_BUNDLES[name] ? DEFAULT_PRESET_BUNDLES[name] : null,
+    ord: i
+  }));
+  try {
+    await api('/rest/v1/presets', 'POST', rows);
+    PRESETS = [...DEFAULT_PRESETS];
+    PRESET_BUNDLES = Object.assign({}, DEFAULT_PRESET_BUNDLES);
+  } catch(e){ console.warn('Seed failed:', e.message); }
+}
+
+async function persistPresets(){
+  // No-op: individual operations call Supabase directly
+}
+async function persistBundles(){
+  // No-op: individual operations call Supabase directly
+}
+
+async function sbUpsertPreset(name, tasks, ord){
+  await api('/rest/v1/presets', 'POST', [{name, tasks: tasks||null, ord: ord||0}]);
+}
+async function sbDeletePreset(name){
+  await api('/rest/v1/presets?name=eq.'+encodeURIComponent(name), 'DELETE');
+}
+async function sbPatchPreset(name, patch){
+  await api('/rest/v1/presets?name=eq.'+encodeURIComponent(name), 'PATCH', patch);
+}
+
+let PRESETS = [...DEFAULT_PRESETS]; // will be replaced on loadPresetsFromSupabase()
 
 // ── Determine who's viewing ──────────────────────────────────────────
 // Priority: URL param ?role=admin > localStorage bc_me role
@@ -860,15 +906,18 @@ function closeModal(){ document.getElementById('modal-task').classList.remove('o
 let _pmCurrentTab = 'bundle';
 let _editCtx = null; // {type:'simple'|'bundleName'|'bundleTask', index, bundleName}
 
-function openPresetsManager(){
+async function openPresetsManager(){
   _pmCurrentTab = 'bundle';
   document.getElementById('pm-tab-bundle').classList.add('on');
   document.getElementById('pm-tab-simple').classList.remove('on');
   document.getElementById('pm-bundle-panel').style.display = '';
   document.getElementById('pm-simple-panel').style.display = 'none';
+  document.getElementById('modal-presets').classList.add('on');
+  document.getElementById('pm-bundle-list').innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Loading…</div>';
+  document.getElementById('pm-simple-list').innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Loading…</div>';
+  await loadPresetsFromSupabase();
   renderPMSimple();
   renderPMBundles();
-  document.getElementById('modal-presets').classList.add('on');
 }
 
 function closePresetsManager(){
@@ -930,71 +979,86 @@ function togglePMBundle(id){
 }
 
 // ── Simple preset CRUD ────────────────────────────────────────────────
-function addSimplePreset(){
+async function addSimplePreset(){
   const inp = document.getElementById('pm-new-simple');
   const val = inp.value.trim();
   if(!val) return;
   if(PRESETS.includes(val)){ toast('Preset already exists'); return; }
-  PRESETS.push(val);
-  persistPresets();
-  inp.value = '';
-  renderPMSimple();
-  toast('Preset added');
+  try {
+    await sbUpsertPreset(val, null, PRESETS.length);
+    PRESETS.push(val);
+    inp.value = '';
+    renderPMSimple();
+    toast('Preset added');
+  } catch(e){ toast('Save failed: '+e.message); }
 }
 
-function deleteSimplePreset(i){
-  PRESETS.splice(i,1);
-  persistPresets();
-  renderPMSimple();
-  toast('Preset removed');
+async function deleteSimplePreset(i){
+  const name = PRESETS[i];
+  try {
+    await sbDeletePreset(name);
+    PRESETS.splice(i,1);
+    if(PRESET_BUNDLES[name]) delete PRESET_BUNDLES[name];
+    renderPMSimple();
+    renderPMBundles();
+    toast('Preset removed');
+  } catch(e){ toast('Delete failed: '+e.message); }
 }
 
 // ── Bundle CRUD ───────────────────────────────────────────────────────
-function addBundle(){
+async function addBundle(){
   const inp = document.getElementById('pm-new-bundle-name');
   const val = inp.value.trim();
   if(!val) return;
   if(PRESET_BUNDLES[val]){ toast('Bundle already exists'); return; }
-  PRESET_BUNDLES[val] = [];
-  // Also add to PRESETS list so it appears as a chip
-  if(!PRESETS.includes(val)) PRESETS.push(val);
-  persistBundles(); persistPresets();
-  inp.value = '';
-  renderPMBundles();
-  renderPMSimple();
-  toast('Bundle created');
+  try {
+    await sbUpsertPreset(val, [], PRESETS.length);
+    PRESET_BUNDLES[val] = [];
+    if(!PRESETS.includes(val)) PRESETS.push(val);
+    inp.value = '';
+    renderPMBundles();
+    renderPMSimple();
+    toast('Bundle created');
+  } catch(e){ toast('Save failed: '+e.message); }
 }
 
-function deleteBundle(name){
+async function deleteBundle(name){
   if(!confirm('Delete bundle "'+name+'" and all its tasks?')) return;
-  delete PRESET_BUNDLES[name];
-  const idx = PRESETS.indexOf(name);
-  if(idx>-1) PRESETS.splice(idx,1);
-  persistBundles(); persistPresets();
-  renderPMBundles(); renderPMSimple();
-  toast('Bundle deleted');
+  try {
+    await sbDeletePreset(name);
+    delete PRESET_BUNDLES[name];
+    const idx = PRESETS.indexOf(name);
+    if(idx>-1) PRESETS.splice(idx,1);
+    renderPMBundles(); renderPMSimple();
+    toast('Bundle deleted');
+  } catch(e){ toast('Delete failed: '+e.message); }
 }
 
-function addBundleTask(bundleName, safeId){
+async function addBundleTask(bundleName, safeId){
   const inp = document.getElementById('new-task-'+safeId);
   const val = inp.value.trim();
   if(!val) return;
-  PRESET_BUNDLES[bundleName].push(val);
-  persistBundles();
-  inp.value = '';
-  renderPMBundles();
-  // Re-expand the bundle
-  setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
-  toast('Task added to bundle');
+  const newTasks = [...PRESET_BUNDLES[bundleName], val];
+  try {
+    await sbPatchPreset(bundleName, {tasks: newTasks});
+    PRESET_BUNDLES[bundleName] = newTasks;
+    inp.value = '';
+    renderPMBundles();
+    setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
+    toast('Task added to bundle');
+  } catch(e){ toast('Save failed: '+e.message); }
 }
 
-function deleteBundleTask(bundleName, i){
-  PRESET_BUNDLES[bundleName].splice(i,1);
-  persistBundles();
+async function deleteBundleTask(bundleName, i){
+  const newTasks = PRESET_BUNDLES[bundleName].filter((_,idx)=>idx!==i);
   const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
-  renderPMBundles();
-  setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
-  toast('Task removed');
+  try {
+    await sbPatchPreset(bundleName, {tasks: newTasks});
+    PRESET_BUNDLES[bundleName] = newTasks;
+    renderPMBundles();
+    setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
+    toast('Task removed');
+  } catch(e){ toast('Delete failed: '+e.message); }
 }
 
 // ── Inline edit ───────────────────────────────────────────────────────
@@ -1041,33 +1105,46 @@ function startEditBundleTask(bundleName, taskIdx){
   setTimeout(()=>{ const el = document.getElementById('iep-val'); if(el){el.focus();} }, 50);
 }
 
-function saveInlineEdit(){
+async function saveInlineEdit(){
   const val = (document.getElementById('iep-val').value || '').trim();
   if(!val){ toast('Name cannot be empty'); return; }
   const {type, indexOrName, bundleName, taskIdx} = _editCtx;
-  if(type === 'simple'){
-    PRESETS[indexOrName] = val;
-    persistPresets();
-    renderPMSimple();
-  } else if(type === 'bundleName'){
-    const oldName = indexOrName;
-    if(oldName !== val){
-      PRESET_BUNDLES[val] = PRESET_BUNDLES[oldName];
-      delete PRESET_BUNDLES[oldName];
-      const i = PRESETS.indexOf(oldName);
-      if(i>-1) PRESETS[i] = val;
-      persistBundles(); persistPresets();
-      renderPMBundles(); renderPMSimple();
+  try {
+    if(type === 'simple'){
+      const oldName = PRESETS[indexOrName];
+      if(oldName !== val){
+        // Rename: delete old, insert new with same tasks
+        const tasks = PRESET_BUNDLES[oldName] || null;
+        await sbDeletePreset(oldName);
+        await sbUpsertPreset(val, tasks, indexOrName);
+        PRESETS[indexOrName] = val;
+        if(tasks){ PRESET_BUNDLES[val] = tasks; delete PRESET_BUNDLES[oldName]; }
+      }
+      renderPMSimple();
+    } else if(type === 'bundleName'){
+      const oldName = indexOrName;
+      if(oldName !== val){
+        const tasks = PRESET_BUNDLES[oldName] || [];
+        await sbDeletePreset(oldName);
+        await sbUpsertPreset(val, tasks, PRESETS.indexOf(oldName));
+        PRESET_BUNDLES[val] = tasks;
+        delete PRESET_BUNDLES[oldName];
+        const i = PRESETS.indexOf(oldName);
+        if(i>-1) PRESETS[i] = val;
+        renderPMBundles(); renderPMSimple();
+      }
+    } else if(type === 'bundleTask'){
+      const newTasks = [...PRESET_BUNDLES[bundleName]];
+      newTasks[taskIdx] = val;
+      await sbPatchPreset(bundleName, {tasks: newTasks});
+      PRESET_BUNDLES[bundleName] = newTasks;
+      const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
+      renderPMBundles();
+      setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
     }
-  } else if(type === 'bundleTask'){
-    PRESET_BUNDLES[bundleName][taskIdx] = val;
-    persistBundles();
-    const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
-    renderPMBundles();
-    setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
-  }
-  document.getElementById('inline-edit-overlay').remove();
-  toast('Saved');
+    document.getElementById('inline-edit-overlay').remove();
+    toast('Saved');
+  } catch(e){ toast('Save failed: '+e.message); }
 }
 
 function renderPresets(current){
@@ -1353,7 +1430,7 @@ if(adminDateEl) adminDateEl.textContent = dateStr;
 
 // ── Boot ─────────────────────────────────────────────────────────────
 if(isAdmin){
-  Promise.all([loadStaff(), loadProperties()]).then(()=>loadAdminTasks());
+  Promise.all([loadStaff(), loadProperties(), loadPresetsFromSupabase()]).then(()=>loadAdminTasks());
 } else {
   loadStaffTasks();
 }
