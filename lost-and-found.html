@@ -349,9 +349,9 @@ async function uploadPhoto(file) {
   return SB+'/storage/v1/object/public/'+BUCKET+'/'+filePath;
 }
 
-/* ── Resolve ops scope from Supabase ── */
-async function resolveOpsScope() {
-  if (!IS_OPS || !_me.name) return;
+/* ── Resolve assigned properties from staff table ── */
+async function resolveAssignedProps() {
+  if (!_me.name) return;
   const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(_me.name)).catch(()=>[]);
   const record = (rows||[])[0];
   const assigned = (record?.assigned_properties||[]).filter(Boolean);
@@ -370,18 +370,13 @@ async function boot() {
     .filter(l=>l.property_name&&!seen.has(l.property_name)&&seen.add(l.property_name))
     .map(l=>({id:l.property_name,name:l.property_name}));
 
-  // ops: fetch assigned properties live from Supabase
-  if (IS_OPS) await resolveOpsScope();
+  // always fetch assigned properties from staff table for any logged-in user
+  await resolveAssignedProps();
 
-  // scope items + props if ops or staff has assigned properties
-  const scopeProps = IS_OPS ? OPS_ASSIGNED_PROPS
-    : (IS_MOBILE && _me.property_name
-        ? (Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name])
-        : []);
-
-  if (scopeProps.length > 0) {
-    allItems = (items||[]).filter(i => scopeProps.includes(i.property_id));
-    PROPS = allProps.filter(p => scopeProps.includes(p.id));
+  // scope items + props to assigned properties if any returned
+  if (OPS_ASSIGNED_PROPS.length > 0) {
+    allItems = (items||[]).filter(i => OPS_ASSIGNED_PROPS.includes(i.property_id));
+    PROPS = allProps.filter(p => OPS_ASSIGNED_PROPS.includes(p.id));
   } else {
     allItems = items||[];
     PROPS = allProps;
@@ -493,26 +488,20 @@ async function patchStatus(id, status) {
 
 async function loadItems() {
   const fetched = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]);
-  const scopeProps = IS_OPS ? OPS_ASSIGNED_PROPS
-    : (IS_MOBILE && _me.property_name
-        ? (Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name])
-        : []);
-  allItems = scopeProps.length > 0 ? (fetched||[]).filter(i => scopeProps.includes(i.property_id)) : (fetched||[]);
+  allItems = OPS_ASSIGNED_PROPS.length > 0
+    ? (fetched||[]).filter(i => OPS_ASSIGNED_PROPS.includes(i.property_id))
+    : (fetched||[]);
   if (!IS_MOBILE) { updateKPIs(); renderDesktop(); } else { renderMobile(); }
 }
 
 /* ── Modal ── */
 function fillPropertySelect() {
-  // PROPS is already scoped for ops/staff — just render it
+  // PROPS is already scoped to assigned_properties from staff table
   document.getElementById('f-property').innerHTML = '<option value="">— select —</option>'+PROPS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
-  // Auto-select if only one property assigned
-  const scopeProps = IS_OPS ? OPS_ASSIGNED_PROPS
-    : (IS_MOBILE && _me.property_name
-        ? (Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name])
-        : []);
-  if (scopeProps.length === 1) {
-    document.getElementById('f-property').value = scopeProps[0];
-    if (IS_OPS) document.getElementById('f-property').disabled = true;
+  // Auto-select and lock if only one property assigned
+  if (OPS_ASSIGNED_PROPS.length === 1) {
+    document.getElementById('f-property').value = OPS_ASSIGNED_PROPS[0];
+    document.getElementById('f-property').disabled = true;
   }
 }
 
