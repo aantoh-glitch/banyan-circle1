@@ -388,7 +388,7 @@ async function openLeaveModal() {
   try {
     const staffName = encodeURIComponent(me.name || '');
     const rows = await leaveApi(
-      '/rest/v1/staff_leave?staff_name=eq.' + staffName + '&order=start_date.desc&limit=50'
+      '/rest/v1/staff_leave?select=staff_name,start_date,end_date,leave_type,status,number_of_days&staff_name=eq.' + staffName + '&order=start_date.desc&limit=50'
     );
 
     if (!rows || !rows.length) {
@@ -419,8 +419,7 @@ async function openLeaveModal() {
         </div>
         <div class="leave-detail">
           <div class="leave-dates">${dateStr}</div>
-          <div class="leave-type-line">${l.leave_type || 'Leave'}</div>
-          ${l.notes ? `<div class="leave-notes-line">${l.notes}</div>` : ''}
+          <div class="leave-type-line">${l.leave_type || 'Leave'} · ${l.number_of_days != null ? l.number_of_days + (l.number_of_days === 1 ? ' day' : ' days') : (Math.round((new Date(l.end_date + 'T00:00:00') - new Date(l.start_date + 'T00:00:00')) / 86400000) + 1) + ' days'}</div>
         </div>
         <span class="bdg ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
       </div>`;
