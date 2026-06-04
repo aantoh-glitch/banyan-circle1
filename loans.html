@@ -150,7 +150,7 @@ body.mobile .btn-sec:active{background:var(--bg)}
     <table class="tbl">
       <thead>
         <tr>
-          <th>Guest</th><th>Item</th><th>Loaned Out</th>
+          <th>Guest</th><th>Property</th><th>Item</th><th>Loaned Out</th>
           <th>Pre-loan Video</th><th>Status</th><th>Returned</th>
           <th>Post-return Video</th><th>Logged By</th><th>Actions</th>
         </tr>
@@ -203,7 +203,8 @@ body.mobile .btn-sec:active{background:var(--bg)}
     <div class="modal-ttl">New Loan</div>
     <div class="fg">
       <label class="fl">Guest</label>
-      <select class="fc" id="loan-guest"><option value="">Loading guests…</option></select>
+      <select class="fc" id="loan-guest" onchange="onGuestChange(this)"><option value="">Loading guests…</option></select>
+      <div id="loan-property-display" style="margin-top:6px;font-size:12px;color:var(--muted);min-height:16px"></div>
     </div>
     <div class="fg">
       <label class="fl">Item loaned</label>
@@ -306,7 +307,7 @@ async function loadLoans() {
     if (!IS_MOBILE) { updateKPIs(); renderDesktop(_allLoans); }
     else renderMobile();
   } catch(e) {
-    if (!IS_MOBILE) document.getElementById('d-tbody').innerHTML = `<tr><td colspan="9" class="empty" style="color:var(--r)">Error: ${e.message}</td></tr>`;
+    if (!IS_MOBILE) document.getElementById('d-tbody').innerHTML = `<tr><td colspan="10" class="empty" style="color:var(--r)">Error: ${e.message}</td></tr>`;
     else document.getElementById('m-cards').innerHTML = `<div class="empty" style="color:var(--r)">Error: ${e.message}</div>`;
   }
 }
@@ -325,13 +326,13 @@ function applyFilters() {
   if(status==='out')         rows = rows.filter(r=>!r.returned_at);
   if(status==='no_damage')   rows = rows.filter(r=>r.return_condition==='no_damage');
   if(status==='with_damage') rows = rows.filter(r=>r.return_condition==='with_damage');
-  if(search) rows = rows.filter(r=>(r.guest_name||'').toLowerCase().includes(search)||(r.item||'').toLowerCase().includes(search));
+  if(search) rows = rows.filter(r=>(r.guest_name||'').toLowerCase().includes(search)||(r.item||'').toLowerCase().includes(search)||(r.property_name||'').toLowerCase().includes(search));
   renderDesktop(rows);
 }
 
 function renderDesktop(rows) {
   const tbody = document.getElementById('d-tbody');
-  if(!rows.length){ tbody.innerHTML='<tr><td colspan="9" class="empty">No loans found.</td></tr>'; return; }
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="10" class="empty">No loans found.</td></tr>'; return; }
   tbody.innerHTML = rows.map(r => {
     const preVid  = r.pre_loan_video   ? '<span class="bdg bdg-g">✓ Taken</span>' : '<span class="bdg bdg-muted">—</span>';
     const postVid = r.post_return_video ? '<span class="bdg bdg-g">✓ Taken</span>' : '<span class="bdg bdg-muted">—</span>';
@@ -348,6 +349,7 @@ function renderDesktop(rows) {
     }
     return `<tr>
       <td style="font-weight:500">${esc(r.guest_name)||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${esc(r.property_name||'—')}</td>
       <td>${esc(r.item)||'—'}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap">${fmtDt(r.loaned_at)}</td>
       <td>${preVid}</td>
@@ -392,7 +394,7 @@ function renderMobile() {
       <div class="loan-card-top">
         <div>
           <div class="loan-card-item">${esc(r.item||'—')}</div>
-          <div class="loan-card-guest">${esc(r.guest_name||'—')}</div>
+          <div class="loan-card-guest">${esc(r.guest_name||'—')}${r.property_name ? ' · <span style="color:var(--br);font-weight:500">' + esc(r.property_name) + '</span>' : ''}</div>
         </div>
         ${badge}
       </div>
@@ -420,27 +422,36 @@ async function openLoanModal() {
   const sel = document.getElementById('loan-guest');
   sel.innerHTML = '<option value="">Loading…</option>';
   try {
-    const guests = await api('/rest/v1/guest_profiles?select=id,name&order=name') || [];
+    const guests = await api('/rest/v1/guest_profiles?select=id,name,property_name&order=name') || [];
     sel.innerHTML = guests.length
-      ? '<option value="">— Select guest —</option>' + guests.map(g=>`<option value="${g.id}">${esc(g.name||g.id)}</option>`).join('')
+      ? '<option value="">— Select guest —</option>' + guests.map(g=>`<option value="${g.id}" data-property="${esc(g.property_name||'')}">${esc(g.name||g.id)}</option>`).join('')
       : '<option value="">No guests found</option>';
   } catch(e) {
     sel.innerHTML = '<option value="">Could not load guests</option>';
   }
+  document.getElementById('loan-property-display').textContent = '';
   openModal('modal-loan');
 }
 
+function onGuestChange(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const prop = opt ? opt.getAttribute('data-property') : '';
+  const disp = document.getElementById('loan-property-display');
+  disp.textContent = prop ? '🏡 ' + prop : '';
+}
+
 async function saveLoan() {
-  const guestSel  = document.getElementById('loan-guest');
-  const guestId   = guestSel.value;
-  const guestName = guestSel.options[guestSel.selectedIndex]?.text || '';
-  const item      = document.getElementById('loan-item').value.trim();
-  const loanedAt  = document.getElementById('loan-datetime').value;
-  const preVideo  = document.getElementById('loan-pre-video').checked;
+  const guestSel    = document.getElementById('loan-guest');
+  const guestId     = guestSel.value;
+  const guestName   = guestSel.options[guestSel.selectedIndex]?.text || '';
+  const propertyName = guestSel.options[guestSel.selectedIndex]?.getAttribute('data-property') || '';
+  const item        = document.getElementById('loan-item').value.trim();
+  const loanedAt    = document.getElementById('loan-datetime').value;
+  const preVideo    = document.getElementById('loan-pre-video').checked;
 
   if(!guestId || !item || !loanedAt){ toast('Please fill in Guest, Item and Date/Time'); return; }
   try {
-    const payload = { guest_id:guestId, guest_name:guestName, item, loaned_at:new Date(loanedAt).toISOString(), pre_loan_video:preVideo };
+    const payload = { guest_id:guestId, guest_name:guestName, property_name:propertyName, item, loaned_at:new Date(loanedAt).toISOString(), pre_loan_video:preVideo };
     // Stamp who logged
     if (IS_MOBILE && _me.name) { payload.logged_by_name = _me.name; payload.logged_at = new Date().toISOString(); }
     await api('/rest/v1/loan_register', 'POST', payload);
