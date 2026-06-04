@@ -210,6 +210,10 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download Report
         </button>
+        <button class="btn-sec" onclick="openPresetsManager()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Presets
+        </button>
         <button class="btn-p" onclick="openAddModal()" style="display:flex;align-items:center;gap:7px;white-space:nowrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Task
@@ -327,6 +331,47 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   </div>
 </div>
 
+<!-- ════════════════════════════════════
+     PRESETS MANAGER MODAL
+════════════════════════════════════ -->
+<div class="modal" id="modal-presets">
+  <div class="modal-card" style="max-width:640px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="modal-ttl" style="margin-bottom:0">Manage Presets</div>
+      <div style="display:flex;gap:8px">
+        <button class="filter-chip" id="pm-tab-simple" onclick="switchPresetTab('simple')" style="font-size:12px">Quick Presets</button>
+        <button class="filter-chip on" id="pm-tab-bundle" onclick="switchPresetTab('bundle')" style="font-size:12px">Bundles</button>
+      </div>
+    </div>
+
+    <!-- Simple presets panel -->
+    <div id="pm-simple-panel" style="display:none">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Single-task presets that fill the task description field.</div>
+      <div id="pm-simple-list" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="fc" id="pm-new-simple" placeholder="New preset name..." style="flex:1"/>
+        <button class="btn-p" onclick="addSimplePreset()" style="white-space:nowrap;padding:10px 14px">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Bundle presets panel -->
+    <div id="pm-bundle-panel">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Bundles create multiple tasks at once. Click a bundle to expand and edit its tasks.</div>
+      <div id="pm-bundle-list" style="margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="fc" id="pm-new-bundle-name" placeholder="New bundle name..." style="flex:1"/>
+        <button class="btn-p" onclick="addBundle()" style="white-space:nowrap;padding:10px 14px">+ Add Bundle</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closePresetsManager()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit preset / bundle task inline edit handled inline -->
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -334,7 +379,7 @@ const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 // Bundle presets: selecting these creates multiple tasks at once
-const PRESET_BUNDLES = {
+const DEFAULT_PRESET_BUNDLES = {
   'Check In': [
     'Inspect quickly – note visible dirt, stains, or disarray.',
     'Make bed – smooth linens, adjust pillows. Replace if soiled.',
@@ -428,7 +473,9 @@ const PRESET_BUNDLES = {
   ],
 };
 
-const PRESETS = [
+let PRESET_BUNDLES = loadPersistedBundles() || Object.assign({}, DEFAULT_PRESET_BUNDLES);
+
+const DEFAULT_PRESETS = [
   'Check In',
   'Check Out',
   'Linen & Amenities',
@@ -441,6 +488,26 @@ const PRESETS = [
   'Linen change','Laundry pickup','Laundry delivery',
   'Grocery run','Pool maintenance','Garden upkeep','Kitchen deep clean','Towel restock',
 ];
+
+// Load persisted presets from localStorage or fall back to defaults
+function loadPersistedPresets(){
+  try {
+    const saved = localStorage.getItem('bc_presets');
+    if(saved) return JSON.parse(saved);
+  } catch(e){}
+  return [...DEFAULT_PRESETS];
+}
+function loadPersistedBundles(){
+  try {
+    const saved = localStorage.getItem('bc_preset_bundles');
+    if(saved) return JSON.parse(saved);
+  } catch(e){}
+  return null;
+}
+function persistPresets(){ localStorage.setItem('bc_presets', JSON.stringify(PRESETS)); }
+function persistBundles(){ localStorage.setItem('bc_preset_bundles', JSON.stringify(PRESET_BUNDLES)); }
+
+let PRESETS = loadPersistedPresets();
 
 // ── Determine who's viewing ──────────────────────────────────────────
 // Priority: URL param ?role=admin > localStorage bc_me role
@@ -786,6 +853,222 @@ function editTask(t){
 }
 
 function closeModal(){ document.getElementById('modal-task').classList.remove('on'); }
+
+// ════════════════════════════════════════════════════════════════════
+//  PRESETS MANAGER
+// ════════════════════════════════════════════════════════════════════
+let _pmCurrentTab = 'bundle';
+let _editCtx = null; // {type:'simple'|'bundleName'|'bundleTask', index, bundleName}
+
+function openPresetsManager(){
+  _pmCurrentTab = 'bundle';
+  document.getElementById('pm-tab-bundle').classList.add('on');
+  document.getElementById('pm-tab-simple').classList.remove('on');
+  document.getElementById('pm-bundle-panel').style.display = '';
+  document.getElementById('pm-simple-panel').style.display = 'none';
+  renderPMSimple();
+  renderPMBundles();
+  document.getElementById('modal-presets').classList.add('on');
+}
+
+function closePresetsManager(){
+  document.getElementById('modal-presets').classList.remove('on');
+}
+
+function switchPresetTab(tab){
+  _pmCurrentTab = tab;
+  document.getElementById('pm-tab-simple').classList.toggle('on', tab==='simple');
+  document.getElementById('pm-tab-bundle').classList.toggle('on', tab==='bundle');
+  document.getElementById('pm-simple-panel').style.display = tab==='simple' ? '' : 'none';
+  document.getElementById('pm-bundle-panel').style.display = tab==='bundle' ? '' : 'none';
+}
+
+function renderPMSimple(){
+  const list = document.getElementById('pm-simple-list');
+  if(!PRESETS.length){ list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No quick presets yet.</div>'; return; }
+  list.innerHTML = PRESETS.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;background:var(--white)">
+      <span style="flex:1;font-size:13px">${escHtml(p)}</span>
+      <button class="btn-edit" onclick="startEditPreset('simple',${i})">Edit</button>
+      <button class="btn-del" onclick="deleteSimplePreset(${i})">Delete</button>
+    </div>`).join('');
+}
+
+function renderPMBundles(){
+  const list = document.getElementById('pm-bundle-list');
+  const names = Object.keys(PRESET_BUNDLES);
+  if(!names.length){ list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No bundles yet.</div>'; return; }
+  list.innerHTML = names.map(name=>{
+    const tasks = PRESET_BUNDLES[name];
+    const safeId = 'bundle-'+name.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<div style="border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);cursor:pointer" onclick="togglePMBundle('${safeId}')">
+        <span style="flex:1;font-size:13px;font-weight:500">${escHtml(name)}</span>
+        <span style="font-size:11px;color:var(--muted)">${tasks.length} tasks</span>
+        <button class="btn-edit" onclick="event.stopPropagation();startEditPreset('bundleName','${escHtml(name).replace(/'/g,"\'")}')">Rename</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteBundle('${escHtml(name).replace(/'/g,"\'")}')">Delete</button>
+      </div>
+      <div id="${safeId}" style="display:none;padding:10px 12px;background:var(--white)">
+        ${tasks.map((t,i)=>`
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border:1px solid var(--border);border-radius:7px;margin-bottom:5px;background:var(--bg)">
+            <span style="flex:1;font-size:12px;line-height:1.5">${escHtml(t)}</span>
+            <button class="btn-edit" style="flex-shrink:0" onclick="startEditBundleTask('${escHtml(name).replace(/'/g,"\'")}',${i})">Edit</button>
+            <button class="btn-del" style="flex-shrink:0" onclick="deleteBundleTask('${escHtml(name).replace(/'/g,"\'")}',${i})">Del</button>
+          </div>`).join('')}
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <input class="fc" id="new-task-${safeId}" placeholder="Add a task to this bundle..." style="flex:1;font-size:12px;padding:7px 10px"/>
+          <button class="btn-p" onclick="addBundleTask('${escHtml(name).replace(/'/g,"\'")}','${safeId}')" style="padding:7px 12px;font-size:12px;white-space:nowrap">+ Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePMBundle(id){
+  const el = document.getElementById(id);
+  if(el) el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+// ── Simple preset CRUD ────────────────────────────────────────────────
+function addSimplePreset(){
+  const inp = document.getElementById('pm-new-simple');
+  const val = inp.value.trim();
+  if(!val) return;
+  if(PRESETS.includes(val)){ toast('Preset already exists'); return; }
+  PRESETS.push(val);
+  persistPresets();
+  inp.value = '';
+  renderPMSimple();
+  toast('Preset added');
+}
+
+function deleteSimplePreset(i){
+  PRESETS.splice(i,1);
+  persistPresets();
+  renderPMSimple();
+  toast('Preset removed');
+}
+
+// ── Bundle CRUD ───────────────────────────────────────────────────────
+function addBundle(){
+  const inp = document.getElementById('pm-new-bundle-name');
+  const val = inp.value.trim();
+  if(!val) return;
+  if(PRESET_BUNDLES[val]){ toast('Bundle already exists'); return; }
+  PRESET_BUNDLES[val] = [];
+  // Also add to PRESETS list so it appears as a chip
+  if(!PRESETS.includes(val)) PRESETS.push(val);
+  persistBundles(); persistPresets();
+  inp.value = '';
+  renderPMBundles();
+  renderPMSimple();
+  toast('Bundle created');
+}
+
+function deleteBundle(name){
+  if(!confirm('Delete bundle "'+name+'" and all its tasks?')) return;
+  delete PRESET_BUNDLES[name];
+  const idx = PRESETS.indexOf(name);
+  if(idx>-1) PRESETS.splice(idx,1);
+  persistBundles(); persistPresets();
+  renderPMBundles(); renderPMSimple();
+  toast('Bundle deleted');
+}
+
+function addBundleTask(bundleName, safeId){
+  const inp = document.getElementById('new-task-'+safeId);
+  const val = inp.value.trim();
+  if(!val) return;
+  PRESET_BUNDLES[bundleName].push(val);
+  persistBundles();
+  inp.value = '';
+  renderPMBundles();
+  // Re-expand the bundle
+  setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
+  toast('Task added to bundle');
+}
+
+function deleteBundleTask(bundleName, i){
+  PRESET_BUNDLES[bundleName].splice(i,1);
+  persistBundles();
+  const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
+  renderPMBundles();
+  setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
+  toast('Task removed');
+}
+
+// ── Inline edit ───────────────────────────────────────────────────────
+function startEditPreset(type, indexOrName){
+  _editCtx = {type, indexOrName};
+  const overlay = document.createElement('div');
+  overlay.id = 'inline-edit-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:19999;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  let currentVal = '';
+  let titleText = '';
+  if(type === 'simple'){ currentVal = PRESETS[indexOrName]; titleText = 'Edit Preset'; }
+  else if(type === 'bundleName'){ currentVal = indexOrName; titleText = 'Rename Bundle'; }
+
+  overlay.innerHTML = `<div style="background:#fff;border-radius:14px;padding:26px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px">${titleText}</div>
+    <div class="fg"><label class="fl">Name</label>
+    <input class="fc" id="iep-val" value="${escHtml(currentVal)}" style="width:100%"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-sec" onclick="document.getElementById('inline-edit-overlay').remove()">Cancel</button>
+      <button class="btn-p" onclick="saveInlineEdit()">Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('iep-val'); if(el){el.focus();el.select();} }, 50);
+}
+
+function startEditBundleTask(bundleName, taskIdx){
+  _editCtx = {type:'bundleTask', bundleName, taskIdx};
+  const currentVal = PRESET_BUNDLES[bundleName][taskIdx];
+  const overlay = document.createElement('div');
+  overlay.id = 'inline-edit-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:19999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `<div style="background:#fff;border-radius:14px;padding:26px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px">Edit Task</div>
+    <div class="fg"><label class="fl">Task Description</label>
+    <textarea class="fc" id="iep-val" rows="3" style="width:100%">${escHtml(currentVal)}</textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-sec" onclick="document.getElementById('inline-edit-overlay').remove()">Cancel</button>
+      <button class="btn-p" onclick="saveInlineEdit()">Save</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const el = document.getElementById('iep-val'); if(el){el.focus();} }, 50);
+}
+
+function saveInlineEdit(){
+  const val = (document.getElementById('iep-val').value || '').trim();
+  if(!val){ toast('Name cannot be empty'); return; }
+  const {type, indexOrName, bundleName, taskIdx} = _editCtx;
+  if(type === 'simple'){
+    PRESETS[indexOrName] = val;
+    persistPresets();
+    renderPMSimple();
+  } else if(type === 'bundleName'){
+    const oldName = indexOrName;
+    if(oldName !== val){
+      PRESET_BUNDLES[val] = PRESET_BUNDLES[oldName];
+      delete PRESET_BUNDLES[oldName];
+      const i = PRESETS.indexOf(oldName);
+      if(i>-1) PRESETS[i] = val;
+      persistBundles(); persistPresets();
+      renderPMBundles(); renderPMSimple();
+    }
+  } else if(type === 'bundleTask'){
+    PRESET_BUNDLES[bundleName][taskIdx] = val;
+    persistBundles();
+    const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
+    renderPMBundles();
+    setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
+  }
+  document.getElementById('inline-edit-overlay').remove();
+  toast('Saved');
+}
 
 function renderPresets(current){
   document.getElementById('preset-chips').innerHTML = PRESETS.map(p=>{

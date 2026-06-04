@@ -38,6 +38,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .inbox-empty svg{width:40px;height:40px;stroke:var(--faint);fill:none;stroke-width:1.5;margin:0 auto 14px;display:block}
 .msg-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
 .msg-row:hover{background:var(--bg)}
+.msg-row.unread{background:rgba(163,45,45,0.05)}
+.msg-row.unread:hover{background:rgba(163,45,45,0.09)}
 .unread-dot{width:8px;height:8px;border-radius:50%;background:var(--br);flex-shrink:0;margin-top:6px}
 .unread-dot.read{background:transparent}
 .msg-body{flex:1;min-width:0}
@@ -545,7 +547,7 @@ function renderInbox(){
         +(st==='accepted'?'✓ Accepted':st==='rejected'?'✗ Declined':'⏳ Pending')
         +'</span>';
     }
-    html += '<div class="msg-row" onclick="openThread(\''+t.key+'\')">'+
+    html += '<div class="msg-row'+(hasUnread?' unread':'')+'" onclick="openThread(\''+t.key+'\')">'+
       '<div class="unread-dot'+(hasUnread?'':' read')+'"></div>'+
       '<div class="msg-body">'+
         '<div class="msg-meta">'+
