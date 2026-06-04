@@ -521,20 +521,12 @@ async function openCreateModal(){
   try{ await loadStaff(); }catch(e){}
 
   const propSel = document.getElementById('c-prop');
-  if(STAFF_ASSIGNED_PROPS.length===1){
-    propSel.innerHTML = `<option value="${STAFF_ASSIGNED_PROPS[0]}">${STAFF_ASSIGNED_PROPS[0]}</option>`;
-    propSel.disabled = true;
-  } else if(STAFF_ASSIGNED_PROPS.length>1){
-    propSel.innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
-    propSel.disabled = false;
-    if(FILTER.prop!=='all') propSel.value = FILTER.prop;
-  } else {
-    propSel.innerHTML = PROPS.length
-      ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
-      : '<option value="">No properties found</option>';
-    propSel.disabled = false;
-    if(FILTER.prop!=='all') propSel.value = FILTER.prop;
-  }
+  propSel.innerHTML = PROPS.length
+    ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
+    : '<option value="">No properties found</option>';
+  propSel.disabled = false;
+  if(FILTER.prop!=='all') propSel.value = FILTER.prop;
+  else if(STAFF_ASSIGNED_PROPS.length===1) propSel.value = STAFF_ASSIGNED_PROPS[0];
 
   const staffSel = document.getElementById('c-staff');
   if(IS_MOBILE && _me && _me.name){
