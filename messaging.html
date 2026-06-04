@@ -906,6 +906,7 @@ function openCompose(){
   document.getElementById('leave-fields').style.display='none';
   document.getElementById('name-list-wrap').style.display='none';
   document.getElementById('booking-venue').innerHTML='<option value="">— Select venue —</option>';
+  document.getElementById('fg-topic').style.display='block';
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
   if(isAdmin()){
     document.getElementById('fg-recip-toggle').style.display='block';
@@ -923,7 +924,14 @@ async function selectRecipType(type, btn){
   selectedRecipType=type; selectedRecipName=null;
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
   btn.className='recip-pill on-'+type;
-  populateTopics('admin',type);
+  // Admin → Staff: always General, no dropdown needed
+  if(type==='staff'){
+    document.getElementById('fg-topic').style.display='none';
+    document.getElementById('compose-topic').value='General';
+  } else {
+    document.getElementById('fg-topic').style.display='block';
+    populateTopics('admin',type);
+  }
   var wrap=document.getElementById('name-list-wrap'), list=document.getElementById('name-list');
   wrap.style.display='block';
   list.innerHTML='<div class="name-loading">Loading…</div>';
@@ -1163,7 +1171,10 @@ async function loadVenues(){
 async function sendMessage(){
   var body  = document.getElementById('compose-body').value.trim();
   var topic = document.getElementById('compose-topic').value;
-  if(!topic){ showToast('Please select a topic'); return; }
+  // For admin→staff, topic is hardcoded to General — skip dropdown validation
+  var isStaffMsg = isAdmin() && selectedRecipType === 'staff';
+  if(!isStaffMsg && !topic){ showToast('Please select a topic'); return; }
+  if(!topic) topic = 'General';
   if(!body) { showToast('Please write a message'); return; }
   var recipientName, recipientRole;
   if(isAdmin()){

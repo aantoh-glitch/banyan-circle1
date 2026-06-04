@@ -967,9 +967,11 @@ function staffCard(t){
     ? `<span>Due ${new Date(t.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span> · `
     : '';
   const notes = t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;padding-left:8px">${escHtml(t.notes)}</div>` : '';
+  const propTag = t.property_name ? `<div style="font-size:11px;font-weight:500;background:var(--br-l);color:var(--br);padding:2px 8px;border-radius:6px;display:inline-block;margin:4px 0 0 8px">${escHtml(t.property_name)}</div>` : '';
   return `<div class="task-card pri-${pri}" id="sc-${t.id}">
     <div class="task-card-work">${escHtml(t.work)}</div>
     ${notes}
+    ${propTag}
     <div class="task-card-meta">${due}<span style="text-transform:capitalize">${pri} priority</span></div>
     <div class="task-card-ack" style="margin-bottom:0;border-bottom:none;padding-bottom:8px">
       <span class="task-card-ack-label">Information Acknowledged</span>
@@ -1006,21 +1008,45 @@ async function toggleAck(id, field, current, labelEl, view){
   const patch  = {};
   patch[field] = newVal;
 
+  // Rule: if completed=true, also set acknowledged=true
+  if(field === 'completed' && newVal === true){
+    patch['acknowledged'] = true;
+  }
+
   // Capture timestamp fields
   const tsField = field === 'acknowledged' ? 'acknowledged_at' : field === 'completed' ? 'completed_at' : null;
   const now = new Date().toISOString();
   if(tsField) patch[tsField] = newVal ? now : null;
+  // Also stamp acknowledged_at if we're auto-acknowledging via completion
+  if(field === 'completed' && newVal === true){
+    patch['acknowledged_at'] = now;
+  }
 
   try {
     await api('/rest/v1/tasks?id=eq.'+id,'PATCH', patch);
     // Update local arrays
-    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t){ t[field]=newVal; if(tsField) t[tsField]=newVal?now:null; } });
+    [ALL_TASKS, STAFF_TASKS].forEach(arr=>{ const t=arr.find(x=>x.id===id); if(t){ t[field]=newVal; if(tsField) t[tsField]=newVal?now:null; if(field==='completed'&&newVal){t.acknowledged=true;t.acknowledged_at=now;} } });
     // Update widget inline
     const track = labelEl.querySelector('.ack-track');
     const txt   = labelEl.querySelector('.ack-text');
     track.classList.toggle('on', newVal);
     txt.textContent = newVal ? 'Yes' : 'No';
     labelEl.dataset.on = String(newVal);
+    // If completed=true, also update the acknowledged widget in the same row inline
+    if(field === 'completed' && newVal && view === 'admin'){
+      const row = document.getElementById('row-'+id);
+      if(row){
+        const ackLabel = row.querySelector('[data-field="acknowledged"]');
+        if(ackLabel){
+          ackLabel.querySelector('.ack-track').classList.add('on');
+          ackLabel.querySelector('.ack-text').textContent = 'Yes';
+          ackLabel.dataset.on = 'true';
+        }
+      }
+      // Also update ack timestamp cell
+      const tsAckCell = document.getElementById('ts-ack-'+id);
+      if(tsAckCell) tsAckCell.innerHTML = fmtTs(now);
+    }
     // Update timestamp cell inline (admin view)
     if(view === 'admin' && tsField){
       const tsCell = document.getElementById('ts-' + (field==='acknowledged'?'ack':'done') + '-' + id);
