@@ -77,6 +77,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 /* ── Dashboard ── */
 .dash-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.dash-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
 .dash-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .dash-tile{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:22px 24px;cursor:pointer;transition:box-shadow .15s,transform .15s;position:relative;overflow:hidden;display:block;text-decoration:none}
 .dash-tile:hover{box-shadow:0 4px 18px rgba(0,0,0,.09);transform:translateY(-2px)}
@@ -137,7 +138,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="pg-sub" id="dash-date-label">Today</div>
 
   <div class="dash-section-title">Guests · Today</div>
-  <div class="dash-grid-3" style="margin-bottom:28px">
+  <div class="dash-grid-4" style="margin-bottom:28px">
     <div class="dash-tile tile-ci" onclick="goPage('guests', document.querySelector('.sb-btn[onclick*=guests]'))">
       <div class="dash-tile-icon icon-ci">
         <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
@@ -164,6 +165,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="dash-tile-value loading" id="dash-staff">…</div>
       <div class="dash-tile-sub">clocked in today</div>
       <span class="dash-tile-nav">›</span>
+    </div>
+<div class="dash-tile tile-staff" style="cursor:default">
+      <div class="dash-tile-icon icon-ci">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      </div>
+      <div class="dash-tile-label">Occupancy</div>
+      <div class="dash-tile-value loading" id="dash-occupancy">…</div>
+      <div class="dash-tile-sub" id="dash-occupancy-sub">of properties occupied</div>
     </div>
   </div>
 
@@ -2185,6 +2194,19 @@ async function loadDashboard(){
     const el = document.getElementById('dash-checkouts');
     if(el){ el.textContent = co.length; el.className='dash-tile-value'; }
   } catch(e){ const el=document.getElementById('dash-checkouts'); if(el) el.textContent='—'; }
+
+// Occupancy rate
+  try {
+    const today2 = today;
+    const occupied = await api('/rest/v1/guest_profiles?select=id&check_in=lte.'+today2+'&check_out=gte.'+today2) || [];
+    const landlords = await api('/rest/v1/landlords?select=id') || [];
+    const el = document.getElementById('dash-occupancy');
+    const sub = document.getElementById('dash-occupancy-sub');
+    const total = landlords.length || 1;
+    const pct = Math.round((occupied.length / total) * 100);
+    if(el){ el.textContent = pct+'%'; el.className='dash-tile-value'; }
+    if(sub){ sub.textContent = occupied.length+' of '+total+' properties occupied'; }
+  } catch(e){ const el=document.getElementById('dash-occupancy'); if(el) el.textContent='—'; }
 
   // Staff present
   try {

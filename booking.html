@@ -139,6 +139,7 @@
         <div class="main-subtitle" id="activePropertyLabel"></div>
       </div>
       <div class="header-actions">
+        <button class="btn btn-ghost" onclick="openBookingsLog()">📋 Bookings Log</button>
         <button class="btn btn-ghost" onclick="triggerSync()">↻ Sync Now</button>
         <button class="btn btn-primary" onclick="openAddBooking()">+ Manual Booking</button>
       </div>
@@ -193,7 +194,7 @@
             <label class="form-label">Date Range</label>
             <div class="date-row">
               <input type="date" class="form-input" id="blockStart" onchange="const e=document.getElementById('blockEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
-              <input type="date" class="form-input" id="blockEnd">
+              <input type="date" class="form-input" id="blockEnd" onfocus="const s=document.getElementById('blockStart').value;if(s)this.min=s;">
             </div>
           </div>
           <div class="form-group">
@@ -239,8 +240,8 @@
     </div>
     <div class="form-group"><label class="form-label">Dates</label>
       <div class="date-row">
-        <input type="date" class="form-input" id="manualStart">
-        <input type="date" class="form-input" id="manualEnd">
+        <input type="date" class="form-input" id="manualStart" onchange="const e=document.getElementById('manualEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
+        <input type="date" class="form-input" id="manualEnd" onfocus="const s=document.getElementById('manualStart').value;if(s)this.min=s;">
       </div>
     </div>
     <div class="modal-footer">
@@ -273,6 +274,49 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('editPropertyModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEditProperty()">Save URLs</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKINGS LOG MODAL -->
+<div class="modal-overlay" id="bookingsLogModal" style="align-items:flex-start;padding-top:60px;">
+  <div class="modal" style="width:620px;max-width:96vw;">
+    <div class="modal-title">Bookings Log</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">From</label>
+        <input type="date" class="form-input" id="logFrom" onchange="renderLogTable()">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">To</label>
+        <input type="date" class="form-input" id="logTo" onchange="renderLogTable()">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Property</label>
+        <select class="form-select" id="logProperty" onchange="renderLogTable()">
+          <option value="all">All Properties</option>
+        </select>
+      </div>
+    </div>
+    <div style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+      <table id="logTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:var(--surface2);position:sticky;top:0;">
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Guest</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Property</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Source</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Check-in</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Check-out</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-mute);border-bottom:1px solid var(--border);">Nights</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody"></tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;color:var(--ink-mute);margin-top:8px;" id="logCount"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('bookingsLogModal')">Close</button>
+      <button class="btn btn-primary" onclick="downloadLogExcel()">⬇ Download Excel</button>
     </div>
   </div>
 </div>
@@ -672,6 +716,85 @@ function showToast(msg, type='success') {
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target===o) o.classList.remove('open'); });
 });
+
+
+// ─── BOOKINGS LOG ─────────────────────────────────────────────────────────────
+function openBookingsLog() {
+  const sel = document.getElementById('logProperty');
+  sel.innerHTML = '<option value="all">All Properties</option>' +
+    properties.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  const now = new Date();
+  const firstOfMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const today = now.toISOString().split('T')[0];
+  document.getElementById('logFrom').value = firstOfMonth;
+  document.getElementById('logTo').value = today;
+  renderLogTable();
+  document.getElementById('bookingsLogModal').classList.add('open');
+}
+
+function getLogFiltered() {
+  const from = document.getElementById('logFrom').value;
+  const to   = document.getElementById('logTo').value;
+  const prop = document.getElementById('logProperty').value;
+  return bookings.filter(b => {
+    if (b.source === 'blocked') return false;
+    if (prop !== 'all' && b.property !== prop) return false;
+    if (from && b.end < from) return false;
+    if (to   && b.start > to) return false;
+    return true;
+  }).sort((a,b) => a.start.localeCompare(b.start));
+}
+
+function nightsBetween(start, end) {
+  return Math.round((new Date(end+'T00:00:00') - new Date(start+'T00:00:00')) / 86400000);
+}
+
+function renderLogTable() {
+  const rows = getLogFiltered();
+  const tbody = document.getElementById('logTableBody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:24px;text-align:center;color:var(--ink-mute);">No bookings found</td></tr>`;
+    document.getElementById('logCount').textContent = '0 bookings';
+    return;
+  }
+  tbody.innerHTML = rows.map(b => {
+    const prop = properties.find(p => p.id === b.property);
+    const nights = nightsBetween(b.start, b.end);
+    const srcLabel = b.source==='airbnb'?'Airbnb':b.source==='booking'?'Booking.com':'Direct';
+    return `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:9px 12px;">${b.guest}</td>
+      <td style="padding:9px 12px;color:${prop?.color||'#666'};font-weight:500;">${prop?.name||'—'}</td>
+      <td style="padding:9px 12px;">${srcLabel}</td>
+      <td style="padding:9px 12px;">${formatDate(b.start)}</td>
+      <td style="padding:9px 12px;">${formatDate(b.end)}</td>
+      <td style="padding:9px 12px;">${nights}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('logCount').textContent = `${rows.length} booking${rows.length!==1?'s':''}`;
+}
+
+function downloadLogExcel() {
+  const rows = getLogFiltered();
+  if (!rows.length) { showToast('No bookings to export', 'error'); return; }
+  const headers = ['Guest','Property','Source','Check-in','Check-out','Nights'];
+  const csvRows = [headers.join(',')];
+  rows.forEach(b => {
+    const prop = properties.find(p => p.id === b.property);
+    const srcLabel = b.source==='airbnb'?'Airbnb':b.source==='booking'?'Booking.com':'Direct';
+    const nights = nightsBetween(b.start, b.end);
+    csvRows.push([`"${b.guest}"`,`"${prop?.name||''}"`,`"${srcLabel}"`,`"${formatDate(b.start)}"`,`"${formatDate(b.end)}"`,nights].join(','));
+  });
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bookings-log_${document.getElementById('logFrom').value||'all'}_to_${document.getElementById('logTo').value||'all'}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Downloading…');
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 renderSidebar(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
 loadPropertiesFromSupabase(); // Load property names from landlords table
