@@ -485,7 +485,7 @@ async function loadUnreadCount() {
     const staffName = encodeURIComponent(me.name || '');
     // Query messages table for unread messages sent TO this staff member
     const rows = await leaveApi(
-      '/rest/v1/messages?recipient_name=eq.' + staffName + '&is_read=eq.false&select=id'
+      '/rest/v1/messages?recipient_name=ilike.' + staffName + '&read_by_recipient=eq.false&select=id'
     );
     const count = Array.isArray(rows) ? rows.length : 0;
     const badge = document.getElementById('unread-badge');
