@@ -2290,7 +2290,7 @@ window.addEventListener('message',function(e){if(e.data&&e.data.type==='bc_resiz
  // --- FAB unread badge ---
   async function updateFabBadge(){
     try{
-      var res=await fetch(S+'/rest/v1/internal_messages?read_by_recipient=eq.false&recipient_role=eq.admin&select=id',{headers:{apikey:K,Authorization:'Bearer '+K}});
+      var res=await fetch(S+'/rest/v1/messages?read_by_recipient=eq.false&recipient_role=eq.admin&select=id',{headers:{apikey:K,Authorization:'Bearer '+K}});
       var data=await res.json();
       var count=Array.isArray(data)?data.length:0;
       var badge=document.getElementById('msg-fab-badge');
