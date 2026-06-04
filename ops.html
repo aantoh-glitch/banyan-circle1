@@ -388,7 +388,7 @@ async function openLeaveModal() {
   try {
     const staffName = encodeURIComponent(me.name || '');
     const rows = await leaveApi(
-      '/rest/v1/staff_leave?select=staff_name,start_date,end_date,leave_type,status,number_of_days&staff_name=eq.' + staffName + '&order=start_date.desc&limit=50'
+      '/rest/v1/staff_leave?staff_name=eq.' + staffName + '&order=start_date.desc&limit=50'
     );
 
     if (!rows || !rows.length) {
