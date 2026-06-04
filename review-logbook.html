@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Banyan Circle — Review Logbook</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;--pur:#5B21B6;--pur-l:#EDE9FE}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.layout{display:block;min-height:100vh}
+.sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
+.main{flex:1;padding:28px 40px;max-width:1400px;margin:0 auto;width:100%}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.top-bar-left{display:flex;align-items:center;gap:12px}
+.tb-mark{width:38px;height:38px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:500;font-size:14px}
+.tb-name{font-family:'Playfair Display',serif;font-size:20px}
+.tb-sub{font-size:11px;color:var(--muted)}
+.top-bar-right{display:flex;align-items:center;gap:8px}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sb-mark{width:36px;height:36px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:500;font-size:14px}
+.sb-name{font-family:'Playfair Display',serif;font-size:16px}
+.sb-sub{font-size:11px;color:var(--muted)}
+.sb-nav{flex:1;padding:0 12px;overflow-y:auto}
+.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
+.sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sb-btn:hover{background:var(--bg);color:var(--text)}
+.sb-btn.on{background:#222;color:#fff;font-weight:500}
+.sb-btn.on svg{stroke:#fff}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+
+/* ── Page header ── */
+.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:500;font-family:'Playfair Display',serif}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── Tabs ── */
+.log-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.ltab{padding:9px 18px;border-radius:999px;border:1px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.ltab.on{background:var(--br-l);border-color:#D85A30;color:var(--br)}
+.ltab:hover:not(.on){background:var(--bg);color:var(--text)}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative;min-width:200px;max-width:300px;flex:1}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.search-input{width:100%;padding:9px 12px 9px 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.search-input:focus{border-color:var(--br)}
+.filter-select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;cursor:pointer;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235F5E5A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.filter-select:focus{border-color:var(--br)}
+
+/* ── Date range picker ── */
+.date-range{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--white);cursor:pointer;font-size:13px;color:var(--text);transition:border-color .15s;position:relative}
+.date-range:hover{border-color:var(--br)}
+.date-range svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.date-range span{white-space:nowrap}
+.date-range.active{border-color:#D85A30;background:var(--br-l);color:var(--br)}
+.date-range.active svg{stroke:var(--br)}
+.dp-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:400;min-width:300px}
+.dp-dropdown.on{display:block}
+.dp-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.dp-label{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.dp-input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.dp-input:focus{border-color:var(--br)}
+.dp-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.dp-preset{padding:5px 11px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.dp-preset:hover{background:var(--br-l);border-color:#D85A30;color:var(--br)}
+.dp-preset.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.dp-actions{display:flex;gap:8px;justify-content:flex-end}
+.dp-clear{padding:7px 14px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit}
+.dp-clear:hover{border-color:var(--r);color:var(--r)}
+.dp-apply{padding:7px 14px;background:var(--br);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.dp-apply:hover{background:#712B13}
+
+/* ── Action buttons ── */
+.action-btn{padding:9px 14px;background:var(--white);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.action-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.action-btn:hover{border-color:var(--br);color:var(--br)}
+.action-btn.excel{background:var(--g-l);border-color:#b0d990;color:#27500A}
+.action-btn.excel:hover{background:#d4ecb4;border-color:#7ab53a}
+.action-btn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.record-count{font-size:12px;color:var(--muted);margin-left:auto}
+
+/* ── Table card ── */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg);white-space:nowrap}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#FAFAF8}
+
+/* ── Badges ── */
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-a{background:var(--a-l);color:#633806}
+.bdg-r{background:var(--r-l);color:#791F1F}
+.bdg-b{background:var(--b-l);color:#0C447C}
+.bdg-pur{background:var(--pur-l);color:var(--pur)}
+
+/* ── Stars ── */
+.stars{display:inline-flex;gap:2px;align-items:center}
+.star{font-size:13px;line-height:1}
+.star.on{color:#D97706}
+.star.off{color:#D1CFC9}
+
+/* ── Review text ── */
+.review-text{color:var(--muted);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-style:italic}
+.review-text.none{color:#C0BEB8}
+
+/* ── Avatar ── */
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--br-l);color:var(--br);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-right:8px}
+.name-cell{display:flex;align-items:center}
+
+/* ── Property pill ── */
+.prop-pill{display:inline-flex;padding:3px 9px;border-radius:999px;background:var(--b-l);color:#0C447C;font-size:11px;font-weight:500}
+
+/* ── Sentiment badge (feedback) ── */
+.sent-pos{background:#EAF3DE;color:#27500A}
+.sent-neu{background:#E6F1FB;color:#0C447C}
+.sent-neg{background:#FCEBEB;color:#791F1F}
+
+/* ── Empty / loading ── */
+.empty{text-align:center;padding:48px;color:var(--muted);font-size:13px}
+.skeleton{height:14px;border-radius:4px;background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:9000;display:none;white-space:nowrap}
+.toast.show{display:block}
+
+/* ── Detail modal ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:14px;padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.modal-field{margin-bottom:14px}
+.modal-fl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.modal-fv{font-size:14px;color:var(--text);line-height:1.6}
+.modal-close{padding:9px 18px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.modal-close:hover{border-color:var(--br);color:var(--br)}
+.modal-actions{display:flex;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.review-block{background:var(--bg);border-radius:8px;padding:14px 16px;font-size:13px;color:var(--text);line-height:1.7;font-style:italic;border-left:3px solid var(--br-l)}
+.feedback-block{background:var(--pur-l);border-radius:8px;padding:14px 16px;font-size:13px;color:#3B0764;line-height:1.7;border-left:3px solid #C4B5FD;margin-top:10px}
+
+/* ── Config overlay ── */
+.cfg-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:center;justify-content:center;padding:20px}
+.cfg-overlay.on{display:flex}
+.cfg-card{background:var(--white);border-radius:14px;padding:28px;max-width:480px;width:100%}
+.cfg-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
+.cfg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.fc:focus{border-color:var(--br)}
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}
+.cfg-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <div class="tb-mark">BC</div>
+        <div>
+          <div class="tb-name">Banyan Circle</div>
+          <div class="tb-sub">Review Logbook</div>
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <span style="font-size:12px;color:var(--muted)" id="last-synced">Not yet loaded</span>
+        <button class="action-btn" onclick="openCfg()" style="gap:6px">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+      </div>
+    </div>
+
+    <div class="pg-sub" id="pg-sub-text">Loading entries from Supabase…</div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Entries</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+        <div class="kpi-sub">Both tables combined</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Staff Reviews</div>
+        <div class="kpi-value" id="kpi-staff">—</div>
+        <div class="kpi-sub">From staff_reviews</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Talent Ratings</div>
+        <div class="kpi-value" id="kpi-talent">—</div>
+        <div class="kpi-sub">From talent_ratings</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">With Feedback</div>
+        <div class="kpi-value" id="kpi-feedback">—</div>
+        <div class="kpi-sub">Entries with comments</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avg Rating</div>
+        <div class="kpi-value" id="kpi-avg">—</div>
+        <div class="kpi-sub">Across all entries</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="log-tabs">
+      <button class="ltab on" id="tab-all"     onclick="setTab('all')">All Entries</button>
+      <button class="ltab"    id="tab-staff"   onclick="setTab('staff')">Staff Reviews</button>
+      <button class="ltab"    id="tab-talent"  onclick="setTab('talent')">Talent Ratings</button>
+      <button class="ltab"    id="tab-feedback" onclick="setTab('feedback')">
+        <span style="display:inline-flex;align-items:center;gap:6px">
+          <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+        </span>
+      </button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="search-input" type="text" placeholder="Search name, guest, property…" oninput="applyFilters()"/>
+      </div>
+
+      <select class="filter-select" id="filter-rating" onchange="applyFilters()">
+        <option value="">All Ratings</option>
+        <option value="5">5 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="2">2 Stars</option>
+        <option value="1">1 Star</option>
+      </select>
+
+      <select class="filter-select" id="filter-property" onchange="applyFilters()">
+        <option value="">All Properties</option>
+      </select>
+
+      <!-- Date Range -->
+      <div class="date-range" id="date-range-btn" onclick="toggleDatePicker(event)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="date-range-label">All Time</span>
+        <svg viewBox="0 0 24 24" style="width:11px;height:11px"><polyline points="6 9 12 15 18 9"/></svg>
+        <div class="dp-dropdown" id="dp-dropdown" onclick="event.stopPropagation()">
+          <div class="dp-presets" id="dp-presets">
+            <button class="dp-preset on" data-preset="all"   onclick="setPreset('all')">All Time</button>
+            <button class="dp-preset"    data-preset="today" onclick="setPreset('today')">Today</button>
+            <button class="dp-preset"    data-preset="7d"    onclick="setPreset('7d')">Last 7 Days</button>
+            <button class="dp-preset"    data-preset="30d"   onclick="setPreset('30d')">Last 30 Days</button>
+            <button class="dp-preset"    data-preset="90d"   onclick="setPreset('90d')">Last 90 Days</button>
+            <button class="dp-preset"    data-preset="custom" onclick="setPreset('custom')">Custom</button>
+          </div>
+          <div class="dp-row" id="dp-custom-row" style="display:none">
+            <div>
+              <div class="dp-label">From</div>
+              <input class="dp-input" id="dp-from" type="date" onchange="setPreset('custom')"/>
+            </div>
+            <div>
+              <div class="dp-label">To</div>
+              <input class="dp-input" id="dp-to" type="date" onchange="setPreset('custom')"/>
+            </div>
+          </div>
+          <div class="dp-actions">
+            <button class="dp-clear" onclick="clearDate()">Clear</button>
+            <button class="dp-apply" onclick="closeDatePicker()">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refresh -->
+      <button class="action-btn" id="refresh-btn" onclick="loadAll()">
+        <svg id="refresh-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+
+      <!-- Download Excel -->
+      <button class="action-btn excel" onclick="downloadExcel()">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="8 12 10 15 8 18"/><polyline points="12 12 14 15 12 18"/></svg>
+        Export Excel
+      </button>
+
+      <span class="record-count" id="record-count"></span>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <table class="tbl">
+        <thead><tr id="tbl-head"></tr></thead>
+        <tbody id="tbl-body">
+          <tr><td colspan="8" style="padding:48px;text-align:center"><div class="skeleton" style="width:50%;margin:0 auto"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Detail modal -->
+<div class="modal" id="detail-modal">
+  <div class="modal-card">
+    <div class="modal-ttl" id="dm-title">Entry Detail</div>
+    <div class="modal-sub"  id="dm-sub"></div>
+    <div id="dm-body"></div>
+    <div class="modal-actions">
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Config -->
+<div class="cfg-overlay" id="cfg-overlay">
+  <div class="cfg-card">
+    <div class="cfg-ttl">Supabase Connection</div>
+    <div class="cfg-sub">Enter your project URL and anon key to connect the logbook.</div>
+    <div class="fg"><label class="fl">Supabase Project URL</label><input class="fc" id="cfg-url" placeholder="https://xxxx.supabase.co"/></div>
+    <div class="fg"><label class="fl">Anon / Public Key</label><input class="fc" id="cfg-key" placeholder="eyJhb…"/></div>
+    <div class="cfg-actions">
+      <button class="modal-close" onclick="closeCfg()">Cancel</button>
+      <button class="btn-p" onclick="saveCfg()">Save & Load</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ───────────────────────────────────────────────
+let SUPABASE_URL = localStorage.getItem('sb_url') || '';
+let SUPABASE_KEY = localStorage.getItem('sb_key') || '';
+
+// ── State ────────────────────────────────────────────────
+let allRows       = [];
+let filteredRows  = [];
+let activeTab     = 'all';
+let dateFrom      = null; // Date obj
+let dateTo        = null; // Date obj
+let activePreset  = 'all';
+
+// ── Helpers ──────────────────────────────────────────────
+const toast = (msg, dur=2600) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+};
+const initials = (n='') => n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+const fmtDate  = d => { if(!d) return '—'; return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); };
+
+function ratingBadge(r){
+  const n=parseFloat(r);
+  if(!n) return `<span class="bdg bdg-b">N/A</span>`;
+  if(n>=4.5) return `<span class="bdg bdg-g">${n}</span>`;
+  if(n>=3)   return `<span class="bdg bdg-a">${n}</span>`;
+  return `<span class="bdg bdg-r">${n}</span>`;
+}
+function starsHtml(r){
+  const n=Math.round(parseFloat(r)||0);
+  let s='<span class="stars">';
+  for(let i=1;i<=5;i++) s+=`<span class="star ${i<=n?'on':'off'}">★</span>`;
+  return s+'</span>';
+}
+function typeBadge(t){
+  return t==='staff' ? `<span class="bdg bdg-b">Staff</span>` : `<span class="bdg bdg-a">Talent</span>`;
+}
+
+// ── Sentiment analysis (simple keyword-based) ────────────
+function getSentiment(text=''){
+  if(!text) return null;
+  const t = text.toLowerCase();
+  const pos = ['excellent','amazing','great','fantastic','wonderful','outstanding','perfect','love','best','awesome','brilliant','superb','exceptional','recommend','impressed','pleasure','friendly','professional','helpful','clean','comfortable','delicious','beautiful','lovely','enjoy','enjoyed'];
+  const neg = ['bad','terrible','awful','horrible','disappointing','poor','worst','rude','dirty','slow','cold','wrong','broken','unhappy','unpleasant','uncomfortable','noisy','failed','unprofessional','unacceptable','never','dislike'];
+  let score = 0;
+  pos.forEach(w=>{ if(t.includes(w)) score++; });
+  neg.forEach(w=>{ if(t.includes(w)) score--; });
+  if(score>0) return 'positive';
+  if(score<0) return 'negative';
+  return 'neutral';
+}
+function sentimentBadge(s){
+  if(s==='positive') return `<span class="bdg sent-pos">😊 Positive</span>`;
+  if(s==='negative') return `<span class="bdg sent-neg">😞 Negative</span>`;
+  if(s==='neutral')  return `<span class="bdg sent-neu">😐 Neutral</span>`;
+  return `<span class="bdg bdg-b">No text</span>`;
+}
+
+// ── Fetch ─────────────────────────────────────────────────
+async function sbFetch(table){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=created_at.desc&limit=1000`,{
+    headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+  });
+  if(!res.ok) throw new Error(`${table}: ${res.status}`);
+  return res.json();
+}
+
+async function loadAll(){
+  if(!SUPABASE_URL||!SUPABASE_KEY){ openCfg(); return; }
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  document.getElementById('tbl-body').innerHTML = `<tr><td colspan="9" style="padding:48px;text-align:center;color:var(--muted)">Loading…</td></tr>`;
+  try {
+    const [staff, talent] = await Promise.all([sbFetch('staff_reviews'), sbFetch('talent_ratings')]);
+    const staffRows  = (staff||[]).map(r=>({...r, _type:'staff',  _display_name:r.staff_name}));
+    const talentRows = (talent||[]).map(r=>({...r, _type:'talent', _display_name:r.talent_name}));
+    allRows = [...staffRows,...talentRows].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+
+    // Enrich with sentiment
+    allRows.forEach(r=>{ r._sentiment = getSentiment(r.comment||r.review||''); });
+
+    // KPIs (unfiltered)
+    const nums = allRows.filter(r=>r.rating).map(r=>parseFloat(r.rating));
+    const avg  = nums.length ? (nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1) : '—';
+    const feedbackCount = allRows.filter(r=>(r.comment||r.review||'').trim().length>0).length;
+    document.getElementById('kpi-total').textContent    = allRows.length;
+    document.getElementById('kpi-staff').textContent    = staffRows.length;
+    document.getElementById('kpi-talent').textContent   = talentRows.length;
+    document.getElementById('kpi-feedback').textContent = feedbackCount;
+    document.getElementById('kpi-avg').textContent      = avg;
+    document.getElementById('pg-sub-text').textContent  = `${allRows.length} entries across staff reviews, talent ratings and feedback`;
+
+    // Build property filter
+    const props = [...new Set(allRows.map(r=>r.property_name).filter(Boolean))].sort();
+    const pSel  = document.getElementById('filter-property');
+    pSel.innerHTML = '<option value="">All Properties</option>';
+    props.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; pSel.appendChild(o); });
+
+    document.getElementById('last-synced').textContent = `Synced ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+    applyFilters();
+    toast('Logbook refreshed');
+  } catch(e){
+    document.getElementById('tbl-body').innerHTML = `<tr><td colspan="9"><div class="empty">⚠️ ${e.message}</div></td></tr>`;
+    toast('Failed to load — check credentials');
+  }
+  btn.classList.remove('spinning');
+}
+
+// ── Tabs ─────────────────────────────────────────────────
+function setTab(t){
+  activeTab = t;
+  ['all','staff','talent','feedback'].forEach(id=>{
+    document.getElementById('tab-'+id).classList.toggle('on', id===t);
+  });
+  applyFilters();
+}
+
+// ── Date picker ──────────────────────────────────────────
+function toggleDatePicker(e){
+  e.stopPropagation();
+  document.getElementById('dp-dropdown').classList.toggle('on');
+}
+function closeDatePicker(){
+  document.getElementById('dp-dropdown').classList.remove('on');
+  applyFilters();
+}
+function clearDate(){
+  dateFrom=null; dateTo=null; activePreset='all';
+  document.getElementById('dp-from').value='';
+  document.getElementById('dp-to').value='';
+  document.querySelectorAll('.dp-preset').forEach(b=>b.classList.toggle('on', b.dataset.preset==='all'));
+  document.getElementById('dp-custom-row').style.display='none';
+  document.getElementById('date-range-label').textContent='All Time';
+  document.getElementById('date-range-btn').classList.remove('active');
+  closeDatePicker();
+}
+function setPreset(p){
+  activePreset = p;
+  document.querySelectorAll('.dp-preset').forEach(b=>b.classList.toggle('on', b.dataset.preset===p));
+  const now = new Date(); now.setHours(23,59,59,999);
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  if(p==='all'){     dateFrom=null; dateTo=null; document.getElementById('dp-custom-row').style.display='none'; }
+  else if(p==='today'){ dateFrom=today; dateTo=now; document.getElementById('dp-custom-row').style.display='none'; }
+  else if(p==='7d'){  dateFrom=new Date(now-6*864e5); dateFrom.setHours(0,0,0,0); dateTo=now; document.getElementById('dp-custom-row').style.display='none'; }
+  else if(p==='30d'){ dateFrom=new Date(now-29*864e5); dateFrom.setHours(0,0,0,0); dateTo=now; document.getElementById('dp-custom-row').style.display='none'; }
+  else if(p==='90d'){ dateFrom=new Date(now-89*864e5); dateFrom.setHours(0,0,0,0); dateTo=now; document.getElementById('dp-custom-row').style.display='none'; }
+  else if(p==='custom'){
+    document.getElementById('dp-custom-row').style.display='grid';
+    const f=document.getElementById('dp-from').value;
+    const t=document.getElementById('dp-to').value;
+    dateFrom = f ? new Date(f) : null;
+    dateTo   = t ? (()=>{ const d=new Date(t); d.setHours(23,59,59,999); return d; })() : null;
+  }
+  updateDateLabel();
+}
+function updateDateLabel(){
+  const btn = document.getElementById('date-range-btn');
+  const lbl = document.getElementById('date-range-label');
+  const labels = {all:'All Time', today:'Today', '7d':'Last 7 Days', '30d':'Last 30 Days', '90d':'Last 90 Days'};
+  if(activePreset in labels){
+    lbl.textContent = labels[activePreset];
+    btn.classList.toggle('active', activePreset!=='all');
+  } else if(activePreset==='custom' && dateFrom && dateTo){
+    lbl.textContent = `${fmtDate(dateFrom)} – ${fmtDate(dateTo)}`;
+    btn.classList.add('active');
+  } else {
+    lbl.textContent = 'Custom Range';
+    btn.classList.add('active');
+  }
+}
+document.addEventListener('click', e=>{
+  if(!document.getElementById('date-range-btn').contains(e.target))
+    document.getElementById('dp-dropdown').classList.remove('on');
+});
+
+// ── Filters + render ─────────────────────────────────────
+function applyFilters(){
+  const q  = document.getElementById('search-input').value.toLowerCase();
+  const rF = document.getElementById('filter-rating').value;
+  const pF = document.getElementById('filter-property').value;
+
+  let rows = allRows;
+
+  // Tab filter
+  if(activeTab==='staff')    rows = rows.filter(r=>r._type==='staff');
+  if(activeTab==='talent')   rows = rows.filter(r=>r._type==='talent');
+  if(activeTab==='feedback') rows = rows.filter(r=>(r.comment||r.review||'').trim().length>0);
+
+  // Search
+  if(q) rows = rows.filter(r=>[r._display_name,r.guest_name,r.property_name,r.comment,r.review].join(' ').toLowerCase().includes(q));
+
+  // Rating
+  if(rF) rows = rows.filter(r=>Math.round(parseFloat(r.rating||0))===parseInt(rF));
+
+  // Property
+  if(pF) rows = rows.filter(r=>r.property_name===pF);
+
+  // Date range
+  if(dateFrom) rows = rows.filter(r=>r.created_at && new Date(r.created_at)>=dateFrom);
+  if(dateTo)   rows = rows.filter(r=>r.created_at && new Date(r.created_at)<=dateTo);
+
+  filteredRows = rows;
+  document.getElementById('record-count').textContent = `${rows.length} entr${rows.length===1?'y':'ies'}`;
+  renderTable(rows);
+}
+
+function renderTable(rows){
+  const thead = document.getElementById('tbl-head');
+  const tbody = document.getElementById('tbl-body');
+  const showType     = activeTab==='all';
+  const showFeedback = activeTab==='feedback';
+  const cols = showType ? 9 : (showFeedback ? 8 : 8);
+
+  thead.innerHTML = `
+    <th>#</th>
+    ${showType?'<th>Type</th>':''}
+    <th>Name</th>
+    <th>Guest</th>
+    <th>Property</th>
+    <th>Rating</th>
+    <th>${showFeedback?'Sentiment':'Review / Comment'}</th>
+    ${showFeedback?'<th>Comment Preview</th>':''}
+    <th>Date</th>
+  `;
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="${cols}"><div class="empty">No entries match your filters.</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r,i)=>{
+    const reviewText = r.comment||r.review||'';
+    const preview    = reviewText.length>55 ? reviewText.slice(0,55)+'…' : reviewText;
+    return `<tr style="cursor:pointer" onclick="openDetail(${JSON.stringify(JSON.stringify(r))})">
+      <td style="color:var(--muted);font-size:12px">${i+1}</td>
+      ${showType?`<td>${typeBadge(r._type)}</td>`:''}
+      <td><div class="name-cell"><div class="avatar">${initials(r._display_name)}</div>${r._display_name||'—'}</div></td>
+      <td>${r.guest_name||'—'}</td>
+      <td>${r.property_name?`<span class="prop-pill">${r.property_name}</span>`:'—'}</td>
+      <td>${starsHtml(r.rating)} ${ratingBadge(r.rating)}</td>
+      <td>${showFeedback ? sentimentBadge(r._sentiment) : `<span class="review-text ${!reviewText?'none':''}">${preview||'No text'}</span>`}</td>
+      ${showFeedback?`<td><span class="review-text ${!reviewText?'none':''}">${preview||'No text'}</span></td>`:''}
+      <td style="white-space:nowrap;color:var(--muted)">${fmtDate(r.created_at)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Detail modal ─────────────────────────────────────────
+function openDetail(jsonStr){
+  const r = JSON.parse(jsonStr);
+  const reviewText = r.comment||r.review||'';
+  document.getElementById('dm-title').textContent = r._display_name||'Entry Detail';
+  document.getElementById('dm-sub').innerHTML = `${typeBadge(r._type)} &nbsp;·&nbsp; ${fmtDate(r.created_at)}`;
+  document.getElementById('dm-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div class="modal-field"><div class="modal-fl">Guest</div><div class="modal-fv">${r.guest_name||'—'}</div></div>
+      <div class="modal-field"><div class="modal-fl">Property</div><div class="modal-fv">${r.property_name||'—'}</div></div>
+      <div class="modal-field"><div class="modal-fl">Rating</div><div class="modal-fv">${starsHtml(r.rating)} ${ratingBadge(r.rating)}</div></div>
+      <div class="modal-field"><div class="modal-fl">Sentiment</div><div class="modal-fv">${sentimentBadge(r._sentiment)}</div></div>
+      <div class="modal-field" style="grid-column:1/-1"><div class="modal-fl">ID</div><div class="modal-fv" style="font-size:11px;color:var(--muted);word-break:break-all">${r.id||'—'}</div></div>
+    </div>
+    ${reviewText?`
+      <div class="modal-field">
+        <div class="modal-fl">Review / Comment</div>
+        <div class="review-block">"${reviewText}"</div>
+      </div>
+      ${r._sentiment==='positive'?'<div class="feedback-block">✨ This review contains positive sentiment — great for highlighting in reports.</div>':''}
+      ${r._sentiment==='negative'?'<div class="feedback-block" style="background:#FCEBEB;border-left-color:#FCA5A5;color:#7F1D1D">⚠️ This review contains negative signals — consider following up.</div>':''}
+    `:''}
+  `;
+  document.getElementById('detail-modal').classList.add('on');
+}
+function closeModal(){ document.getElementById('detail-modal').classList.remove('on'); }
+
+// ── Excel Export ─────────────────────────────────────────
+function downloadExcel(){
+  if(!filteredRows.length){ toast('No data to export'); return; }
+
+  const wb = XLSX.utils.book_new();
+
+  // Build export rows
+  const toRow = r => ({
+    'Type':       r._type==='staff' ? 'Staff Review' : 'Talent Rating',
+    'Name':       r._display_name||'',
+    'Guest Name': r.guest_name||'',
+    'Property':   r.property_name||'',
+    'Rating':     r.rating||'',
+    'Review / Comment': r.comment||r.review||'',
+    'Sentiment':  r._sentiment||'',
+    'Date':       r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB') : '',
+    'ID':         r.id||''
+  });
+
+  // Sheet 1: All filtered
+  const ws1 = XLSX.utils.json_to_sheet(filteredRows.map(toRow));
+  ws1['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws1, 'All Entries');
+
+  // Sheet 2: Staff only
+  const staffData = filteredRows.filter(r=>r._type==='staff').map(toRow);
+  if(staffData.length){
+    const ws2 = XLSX.utils.json_to_sheet(staffData);
+    ws2['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws2, 'Staff Reviews');
+  }
+
+  // Sheet 3: Talent only
+  const talentData = filteredRows.filter(r=>r._type==='talent').map(toRow);
+  if(talentData.length){
+    const ws3 = XLSX.utils.json_to_sheet(talentData);
+    ws3['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws3, 'Talent Ratings');
+  }
+
+  // Sheet 4: Feedback (with text)
+  const feedbackData = filteredRows.filter(r=>(r.comment||r.review||'').trim()).map(toRow);
+  if(feedbackData.length){
+    const ws4 = XLSX.utils.json_to_sheet(feedbackData);
+    ws4['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws4, 'Feedback');
+  }
+
+  const dateStr = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `banyan-circle-reviews-${dateStr}.xlsx`);
+  toast(`Exported ${filteredRows.length} entries to Excel`);
+}
+
+// ── Config ────────────────────────────────────────────────
+function openCfg(){
+  document.getElementById('cfg-url').value = SUPABASE_URL;
+  document.getElementById('cfg-key').value = SUPABASE_KEY;
+  document.getElementById('cfg-overlay').classList.add('on');
+}
+function closeCfg(){ document.getElementById('cfg-overlay').classList.remove('on'); }
+function saveCfg(){
+  SUPABASE_URL = document.getElementById('cfg-url').value.trim().replace(/\/$/,'');
+  SUPABASE_KEY = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('sb_url', SUPABASE_URL);
+  localStorage.setItem('sb_key', SUPABASE_KEY);
+  closeCfg(); loadAll();
+}
+
+// ── Backdrop close ────────────────────────────────────────
+document.getElementById('detail-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('cfg-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeCfg(); });
+
+// ── Init ──────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  if(SUPABASE_URL && SUPABASE_KEY){ loadAll(); }
+  else {
+    document.getElementById('pg-sub-text').textContent = 'Connect your Supabase project to load entries.';
+    document.getElementById('tbl-body').innerHTML = `<tr><td colspan="9"><div class="empty">No connection — click <strong>Settings</strong> in the sidebar to add your Supabase credentials.</div></td></tr>`;
+    openCfg();
+  }
+});
+</script>
+</body>
+</html>
