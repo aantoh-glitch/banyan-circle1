@@ -308,12 +308,14 @@ const BUCKET = 'lost-and-found-photos';
 let allItems = [], PROPS = [], IS_MOBILE = false;
 let photoFile = null, existingPhotoUrl = null;
 let mobileStatusFilter = 'all';
+let OPS_ASSIGNED_PROPS = []; // populated from Supabase for ops role
 
 /* ── Role detection ── */
 const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!_me) location.href = '/index.html';
 
 IS_MOBILE = (_me.role === 'staff');
+const IS_OPS = (_me.role === 'ops');
 
 if (IS_MOBILE) {
   document.body.classList.add('mobile');
@@ -347,15 +349,42 @@ async function uploadPhoto(file) {
   return SB+'/storage/v1/object/public/'+BUCKET+'/'+filePath;
 }
 
+/* ── Resolve ops scope from Supabase ── */
+async function resolveOpsScope() {
+  if (!IS_OPS || !_me.name) return;
+  const rows = await api('/rest/v1/landlords?select=property_name&email=eq.'+encodeURIComponent(_me.email||'')).catch(()=>[]);
+  const assigned = (rows||[]).map(r=>r.property_name).filter(Boolean);
+  if (assigned.length) OPS_ASSIGNED_PROPS = assigned;
+}
+
 /* ── Boot ── */
 async function boot() {
   const [items, landlords] = await Promise.all([
     api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]),
     api('/rest/v1/landlords?select=property_name&order=property_name').catch(()=>[])
   ]);
-  allItems = items||[];
+
   const seen = new Set();
-  PROPS = (landlords||[]).filter(l=>l.property_name&&!seen.has(l.property_name)&&seen.add(l.property_name)).map(l=>({id:l.property_name,name:l.property_name}));
+  const allProps = (landlords||[])
+    .filter(l=>l.property_name&&!seen.has(l.property_name)&&seen.add(l.property_name))
+    .map(l=>({id:l.property_name,name:l.property_name}));
+
+  // ops: fetch assigned properties live from Supabase
+  if (IS_OPS) await resolveOpsScope();
+
+  // scope items + props if ops or staff has assigned properties
+  const scopeProps = IS_OPS ? OPS_ASSIGNED_PROPS
+    : (IS_MOBILE && _me.property_name
+        ? (Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name])
+        : []);
+
+  if (scopeProps.length > 0) {
+    allItems = (items||[]).filter(i => scopeProps.includes(i.property_id));
+    PROPS = allProps.filter(p => scopeProps.includes(p.id));
+  } else {
+    allItems = items||[];
+    PROPS = allProps;
+  }
 
   if (!IS_MOBILE) {
     const pf = document.getElementById('filter-prop');
@@ -462,17 +491,27 @@ async function patchStatus(id, status) {
 }
 
 async function loadItems() {
-  allItems = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]);
+  const fetched = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]);
+  const scopeProps = IS_OPS ? OPS_ASSIGNED_PROPS
+    : (IS_MOBILE && _me.property_name
+        ? (Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name])
+        : []);
+  allItems = scopeProps.length > 0 ? (fetched||[]).filter(i => scopeProps.includes(i.property_id)) : (fetched||[]);
   if (!IS_MOBILE) { updateKPIs(); renderDesktop(); } else { renderMobile(); }
 }
 
 /* ── Modal ── */
 function fillPropertySelect() {
+  // PROPS is already scoped for ops/staff — just render it
   document.getElementById('f-property').innerHTML = '<option value="">— select —</option>'+PROPS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
-  // For staff, pre-select their property
-  if (IS_MOBILE && _me.property_name) {
-    const props = Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name];
-    if (props.length === 1) document.getElementById('f-property').value = props[0];
+  // Auto-select if only one property assigned
+  const scopeProps = IS_OPS ? OPS_ASSIGNED_PROPS
+    : (IS_MOBILE && _me.property_name
+        ? (Array.isArray(_me.property_name) ? _me.property_name : [_me.property_name])
+        : []);
+  if (scopeProps.length === 1) {
+    document.getElementById('f-property').value = scopeProps[0];
+    if (IS_OPS) document.getElementById('f-property').disabled = true;
   }
 }
 
