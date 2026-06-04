@@ -217,10 +217,10 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .rev-stars{font-size:14px;letter-spacing:1px;color:#E8A020;margin-top:3px}
 .rev-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
 
-/* Task badge */
+/* Task / messages counter badge */
 .task-badge{
   display:inline-flex;align-items:center;gap:3px;
-  font-size:11px;font-weight:700;line-height:1;
+  font-size:12px;font-weight:700;line-height:1;
   margin-top:6px;
 }
 .task-badge-ack{color:#185FA5}
@@ -283,6 +283,11 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div>
         <div class="db-label">Messages</div>
         <div class="db-sub">Chat with admin</div>
+        <div class="task-badge" id="msg-badge" style="display:none">
+          <span class="task-badge-ack" id="msg-badge-unread">0</span>
+          <span class="task-badge-sep">/</span>
+          <span class="task-badge-total" id="msg-badge-total">0</span>
+        </div>
       </div>
     </a>
 
@@ -500,15 +505,22 @@ async function loadUnreadCount() {
     const staffName = encodeURIComponent(me.name || '');
     // Query messages table for unread messages sent TO this staff member
     const rows = await leaveApi(
-      '/rest/v1/messages?recipient_name=ilike.' + staffName + '&read_by_recipient=eq.false&select=id'
+      '/rest/v1/messages?recipient_name=ilike.' + staffName + '&select=id,read_by_recipient'
     );
-    const count = Array.isArray(rows) ? rows.length : 0;
+    const total  = Array.isArray(rows) ? rows.length : 0;
+    const unread = Array.isArray(rows) ? rows.filter(r => !r.read_by_recipient).length : 0;
     const badge = document.getElementById('unread-badge');
-    if (count > 0) {
-      badge.textContent = count > 99 ? '99+' : count;
+    if (unread > 0) {
+      badge.textContent = unread > 99 ? '99+' : unread;
       badge.style.display = 'flex';
     } else {
       badge.style.display = 'none';
+    }
+    // msg-badge: unread (blue) / total (red)
+    if (total > 0) {
+      document.getElementById('msg-badge-unread').textContent = unread;
+      document.getElementById('msg-badge-total').textContent  = total;
+      document.getElementById('msg-badge').style.display = 'inline-flex';
     }
   } catch (e) { /* silently fail — badge stays hidden */ }
 }
