@@ -352,8 +352,9 @@ async function uploadPhoto(file) {
 /* ── Resolve ops scope from Supabase ── */
 async function resolveOpsScope() {
   if (!IS_OPS || !_me.name) return;
-  const rows = await api('/rest/v1/landlords?select=property_name&email=eq.'+encodeURIComponent(_me.email||'')).catch(()=>[]);
-  const assigned = (rows||[]).map(r=>r.property_name).filter(Boolean);
+  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(_me.name)).catch(()=>[]);
+  const record = (rows||[])[0];
+  const assigned = (record?.assigned_properties||[]).filter(Boolean);
   if (assigned.length) OPS_ASSIGNED_PROPS = assigned;
 }
 
