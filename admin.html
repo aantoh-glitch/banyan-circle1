@@ -1951,14 +1951,14 @@ try {
   if(el){ el.textContent = lv.length; el.className='dash-tile-value'; }
 } catch(e){ const el=document.getElementById('dash-leave'); if(el){ el.textContent='—'; el.className='dash-tile-value'; } }
 
-  // Critical stocks: count warehouse + property entries below critical_quantity
+  // Critical stocks: count warehouse + property entries below critical_level
   try {
     const [warehouseItems, propertyItems] = await Promise.all([
-      api('/rest/v1/stock_items?select=id,quantity,critical_quantity&critical_quantity=gt.0') || [],
-      api('/rest/v1/stock_item_properties?select=id,quantity,critical_quantity&critical_quantity=gt.0') || []
+      api('/rest/v1/stock_items?select=id,quantity,critical_level&critical_level=gt.0') || [],
+      api('/rest/v1/stock_item_properties?select=id,quantity,critical_level&critical_level=gt.0') || []
     ]);
-    const lowWarehouse = (warehouseItems || []).filter(i => i.quantity < i.critical_quantity);
-    const lowProperty  = (propertyItems  || []).filter(i => i.quantity < i.critical_quantity);
+    const lowWarehouse = (warehouseItems || []).filter(i => i.critical_level != null && i.quantity < i.critical_level);
+    const lowProperty  = (propertyItems  || []).filter(i => i.critical_level != null && i.quantity < i.critical_level);
     const total = lowWarehouse.length + lowProperty.length;
     const el  = document.getElementById('dash-stocks');
     const sub = document.getElementById('dash-stocks-sub');
