@@ -391,7 +391,7 @@ async function loadAll(){
     const [staff, talent, messages] = await Promise.all([
       sbFetch('staff_reviews'),
       sbFetch('talent_ratings'),
-      sbFetch('messages', 'topic=eq.feedback&')
+      sbFetch('messages', 'topic=ilike.feedback&')
     ]);
 
     const staffRows  = (staff||[]).map(r=>({...r, _type:'staff',  _display_name:r.staff_name}));
