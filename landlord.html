@@ -553,8 +553,15 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 const IS_ADMIN_VIEW = new URLSearchParams(location.search).get('viewer') === 'admin';
-if (!me || (me.role !== 'landlord' && !IS_ADMIN_VIEW)) { location.href='/index.html'; throw new Error('No auth'); }
+if (!me || (me.role !== 'landlord' && !IS_ADMIN_VIEW)) { location.href='/landlogin.html'; throw new Error('No auth'); }
 if (IS_ADMIN_VIEW) document.querySelector('.top-bar').style.display = 'none';
+// Hide Edit Details button when accessed via landlord PIN login (not admin view)
+if (!IS_ADMIN_VIEW) {
+  const editToggle = document.getElementById('desc-edit-toggle');
+  if (editToggle) editToggle.style.display = 'none';
+  const editSection = document.getElementById('desc-edit-section');
+  if (editSection) editSection.style.display = 'none';
+}
 const PROP = me.prop || me.property_name;
 
 // Top bar
@@ -577,7 +584,7 @@ async function api(path, method, body) {
   return r.json().catch(()=>null);
 }
 
-function signOut() { localStorage.removeItem('bc_me'); location.href='/index.html'; }
+function signOut() { localStorage.removeItem('bc_me'); location.href='/landlogin.html'; }
 function toast(msg, err) {
   const t=document.getElementById('toast');
   t.textContent=msg;
