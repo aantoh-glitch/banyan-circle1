@@ -19,7 +19,7 @@
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
-.page{max-width:430px;margin:0 auto;padding:20px 16px 80px;min-height:100dvh}
+.page{max-width:430px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
 .pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
 .pg-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:3px}
 .pg-sub{font-size:12px;color:var(--faint);letter-spacing:.2px}
@@ -41,19 +41,36 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .btn-edit{flex:1;padding:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-del{padding:8px 14px;background:var(--r-l);color:var(--r);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 
-.btn-add{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0}
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;transition:background .15s}
 .btn-add:active{background:var(--br-d)}
+.btn-add.is-open{background:var(--br-d)}
 
 .empty{text-align:center;padding:40px 16px;color:var(--faint);font-size:13px;line-height:1.7}
 .empty-icon{font-size:32px;margin-bottom:8px}
 
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:0 20px max(32px,env(safe-area-inset-bottom));max-width:430px;width:100%;max-height:92vh;max-height:92dvh;overflow-y:auto}
-.modal-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:12px auto 18px}
-.modal-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:600;margin-bottom:4px}
-.modal-prop{font-size:12px;color:var(--muted);margin-bottom:18px}
+/* Inline slide panel */
+.slide-panel{
+  overflow:hidden;
+  max-height:0;
+  opacity:0;
+  transition:max-height .38s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+  margin-bottom:0;
+}
+.slide-panel.open{
+  max-height:1400px;
+  opacity:1;
+  margin-bottom:16px;
+}
+.slide-panel-inner{
+  background:var(--white);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  padding:20px;
+}
+.panel-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:600;margin-bottom:3px}
+.panel-prop{font-size:12px;color:var(--muted);margin-bottom:18px}
+
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
 .req{color:var(--r)}
@@ -62,7 +79,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .fc:focus{border-color:var(--br);background:var(--white)}
 .fc-hint{font-size:11px;color:var(--faint);margin-top:4px}
 .fc-err{font-size:11px;color:var(--r);margin-top:4px;display:none}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);padding-bottom:4px}
+.panel-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 .btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:active{background:var(--br-d)}
 .btn-sec{padding:10px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
@@ -77,57 +94,57 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div class="pg-title">Vendors</div>
       <div class="pg-sub" id="prop-label">Property vendors</div>
     </div>
-    <button class="btn-add" id="add-vendor-btn" onclick="openAddModal()">
+    <button class="btn-add" id="add-vendor-btn" onclick="openAddPanel()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Vendor
     </button>
   </div>
+
+  <!-- Inline slide panel -->
+  <div class="slide-panel" id="slide-panel">
+    <div class="slide-panel-inner">
+      <div class="panel-title" id="panel-title">Add Vendor</div>
+      <div class="panel-prop" id="panel-prop-line"></div>
+      <input type="hidden" id="v-id"/>
+      <div class="fg">
+        <label class="fl">Vendor Name <span class="req">*</span></label>
+        <input class="fc" id="v-name" placeholder="e.g. Sai Electricals" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Services Provided <span class="req">*</span></label>
+        <input class="fc" id="v-services" placeholder="e.g. Plumbing, Electrical, Cleaning" autocomplete="off"/>
+        <div class="fc-hint">Separate multiple services with commas</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Phone Number <span class="req">*</span></label>
+        <input class="fc" id="v-phone" type="tel" inputmode="numeric" placeholder="e.g. 9876543210" maxlength="15"/>
+        <div class="fc-err" id="v-phone-err">Minimum 10 digits required</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Email <span class="opt">(optional)</span></label>
+        <input class="fc" id="v-email" type="email" placeholder="vendor@example.com"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Address <span class="opt">(optional)</span></label>
+        <input class="fc" id="v-address" placeholder="e.g. 12 MG Road, Koramangala" autocomplete="off"/>
+      </div>
+      <div class="fg">
+        <label class="fl">GST Number <span class="opt">(optional)</span></label>
+        <input class="fc" id="v-gst" placeholder="e.g. 29AABCU9603R1ZX" maxlength="15" style="text-transform:uppercase"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Google Maps Link <span class="opt">(optional)</span></label>
+        <input class="fc" id="v-maps" type="url" placeholder="https://maps.google.com/…"/>
+      </div>
+      <div class="panel-actions">
+        <button class="btn-sec" onclick="closePanel()">Cancel</button>
+        <button class="btn-p" id="v-save-btn" onclick="saveVendor()">Save Vendor</button>
+      </div>
+    </div>
+  </div>
+
   <div id="vendors-list">
     <div class="empty"><div class="empty-icon">🔄</div>Loading vendors…</div>
-  </div>
-</div>
-
-<!-- Modal -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal-sheet" id="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-title">Add Vendor</div>
-    <div class="modal-prop" id="modal-prop-line"></div>
-    <input type="hidden" id="v-id"/>
-    <div class="fg">
-      <label class="fl">Vendor Name <span class="req">*</span></label>
-      <input class="fc" id="v-name" placeholder="e.g. Sai Electricals" autocomplete="off"/>
-    </div>
-    <div class="fg">
-      <label class="fl">Services Provided <span class="req">*</span></label>
-      <input class="fc" id="v-services" placeholder="e.g. Plumbing, Electrical, Cleaning" autocomplete="off"/>
-      <div class="fc-hint">Separate multiple services with commas</div>
-    </div>
-    <div class="fg">
-      <label class="fl">Phone Number <span class="req">*</span></label>
-      <input class="fc" id="v-phone" type="tel" inputmode="numeric" placeholder="e.g. 9876543210" maxlength="15"/>
-      <div class="fc-err" id="v-phone-err">Minimum 10 digits required</div>
-    </div>
-    <div class="fg">
-      <label class="fl">Email <span class="opt">(optional)</span></label>
-      <input class="fc" id="v-email" type="email" placeholder="vendor@example.com"/>
-    </div>
-    <div class="fg">
-      <label class="fl">Address <span class="opt">(optional)</span></label>
-      <input class="fc" id="v-address" placeholder="e.g. 12 MG Road, Koramangala" autocomplete="off"/>
-    </div>
-    <div class="fg">
-      <label class="fl">GST Number <span class="opt">(optional)</span></label>
-      <input class="fc" id="v-gst" placeholder="e.g. 29AABCU9603R1ZX" maxlength="15" style="text-transform:uppercase"/>
-    </div>
-    <div class="fg">
-      <label class="fl">Google Maps Link <span class="opt">(optional)</span></label>
-      <input class="fc" id="v-maps" type="url" placeholder="https://maps.google.com/…"/>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal()">Cancel</button>
-      <button class="btn-p" id="v-save-btn" onclick="saveVendor()">Save Vendor</button>
-    </div>
   </div>
 </div>
 
@@ -148,11 +165,8 @@ if (!PROP) {
   } catch(e) {}
 }
 
-
-// Vendor cache for edit (avoids inline onclick encoding issues)
 var _vendorCache = {};
 
-// Hide Add button if not admin
 if (!IS_ADMIN) {
   document.getElementById('add-vendor-btn').style.display = 'none';
 }
@@ -239,7 +253,7 @@ function renderVendor(v) {
   }
   if (IS_ADMIN) {
     out += '<div class="vendor-admin-row">';
-    out += '<button class="btn-edit" onclick="openEditModal(\'' + esc(v.id) + '\')">Edit</button>';
+    out += '<button class="btn-edit" onclick="openEditPanel(\'' + esc(v.id) + '\')">Edit</button>';
     out += '<button class="btn-del" onclick="deleteVendor(\'' + esc(v.id) + '\')">Delete</button>';
     out += '</div>';
   }
@@ -261,15 +275,23 @@ function clearForm() {
   document.getElementById('v-save-btn').textContent = 'Save Vendor';
 }
 
-function openAddModal() {
+function openAddPanel() {
+  var panel = document.getElementById('slide-panel');
+  var btn   = document.getElementById('add-vendor-btn');
+  // Toggle: if already open for Add, close it
+  if (panel.classList.contains('open') && !document.getElementById('v-id').value) {
+    closePanel(); return;
+  }
   clearForm();
-  document.getElementById('modal-title').textContent   = 'Add Vendor';
-  document.getElementById('modal-prop-line').textContent = PROP || '';
-  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('panel-title').textContent    = 'Add Vendor';
+  document.getElementById('panel-prop-line').textContent = PROP || '';
+  panel.classList.add('open');
+  btn.classList.add('is-open');
   setTimeout(function(){ document.getElementById('v-name').focus(); }, 80);
+  setTimeout(notifyHeight, 400);
 }
 
-function openEditModal(id) {
+function openEditPanel(id) {
   var v = _vendorCache[id];
   if (!v) { toast('Vendor not found', true); return; }
   clearForm();
@@ -281,13 +303,18 @@ function openEditModal(id) {
   document.getElementById('v-address').value  = v.address  || '';
   document.getElementById('v-gst').value      = v.gst_number || '';
   document.getElementById('v-maps').value     = v.maps_link  || '';
-  document.getElementById('modal-title').textContent    = 'Edit Vendor';
-  document.getElementById('modal-prop-line').textContent = PROP || '';
-  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('panel-title').textContent    = 'Edit Vendor';
+  document.getElementById('panel-prop-line').textContent = PROP || '';
+  document.getElementById('slide-panel').classList.add('open');
+  document.getElementById('add-vendor-btn').classList.add('is-open');
+  document.getElementById('slide-panel').scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(notifyHeight, 400);
 }
 
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
+function closePanel() {
+  document.getElementById('slide-panel').classList.remove('open');
+  document.getElementById('add-vendor-btn').classList.remove('is-open');
+  setTimeout(notifyHeight, 400);
 }
 
 function saveVendor() {
@@ -326,10 +353,9 @@ function saveVendor() {
 
   api(path, method, body).then(function(res) {
     btn.disabled = false; btn.textContent = 'Save Vendor';
-    // res can be true (204), an array (POST/PATCH with return=representation), or null (error)
     if (res !== null && res !== undefined) {
       toast(id ? 'Vendor updated ✓' : 'Vendor added ✓');
-      closeModal();
+      closePanel();
       loadVendors();
     } else {
       toast('Save failed — check console', true);
@@ -344,11 +370,6 @@ function deleteVendor(id) {
     else toast('Delete failed', true);
   });
 }
-
-// Backdrop close (only if clicking the overlay itself, not the sheet)
-document.getElementById('modal-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
 
 // Live phone validation
 document.getElementById('v-phone').addEventListener('input', function() {
