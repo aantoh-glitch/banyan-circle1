@@ -241,7 +241,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
       <div class="dash-tile-label">Stocks</div>
       <div class="dash-tile-value loading" id="dash-stocks">…</div>
-      <div class="dash-tile-sub">items in stock</div>
+      <div class="dash-tile-sub" id="dash-stocks-sub">below critical level</div>
       <span class="dash-tile-nav">›</span>
     </div>
   </div>
@@ -1949,7 +1949,35 @@ try {
   const lv = await api(`/rest/v1/staff_leave?select=id&status=eq.approved&start_date=lte.${today}&end_date=gte.${today}`) || [];
   const el = document.getElementById('dash-leave');
   if(el){ el.textContent = lv.length; el.className='dash-tile-value'; }
-} catch(e){ const el=document.getElementById('dash-leave'); if(el){ el.textContent='—'; el.className='dash-tile-value'; } }}
+} catch(e){ const el=document.getElementById('dash-leave'); if(el){ el.textContent='—'; el.className='dash-tile-value'; } }
+
+  // Critical stocks: count warehouse + property entries below critical_quantity
+  try {
+    const [warehouseItems, propertyItems] = await Promise.all([
+      api('/rest/v1/stock_items?select=id,quantity,critical_quantity&critical_quantity=gt.0') || [],
+      api('/rest/v1/stock_item_properties?select=id,quantity,critical_quantity&critical_quantity=gt.0') || []
+    ]);
+    const lowWarehouse = (warehouseItems || []).filter(i => i.quantity < i.critical_quantity);
+    const lowProperty  = (propertyItems  || []).filter(i => i.quantity < i.critical_quantity);
+    const total = lowWarehouse.length + lowProperty.length;
+    const el  = document.getElementById('dash-stocks');
+    const sub = document.getElementById('dash-stocks-sub');
+    if(el){ el.textContent = total; el.className = 'dash-tile-value'; }
+    if(sub){
+      if(total === 0){
+        sub.textContent = 'all stocks healthy';
+      } else {
+        const parts = [];
+        if(lowWarehouse.length) parts.push(lowWarehouse.length + ' warehouse');
+        if(lowProperty.length)  parts.push(lowProperty.length  + ' property');
+        sub.textContent = parts.join(', ') + ' below critical';
+      }
+    }
+  } catch(e){
+    const el = document.getElementById('dash-stocks');
+    if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
+  }
+}
 
 // Boot
 loadDashboard();
