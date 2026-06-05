@@ -536,6 +536,12 @@ function applyFilters(){
 
   filteredRows = rows;
   document.getElementById('record-count').textContent = `${rows.length} entr${rows.length===1?'y':'ies'}`;
+
+  // Recalculate average rating based on filtered rows
+  const nums = rows.filter(r=>r.rating).map(r=>parseFloat(r.rating));
+  const avg  = nums.length ? (nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1) : '—';
+  document.getElementById('kpi-avg').textContent = avg;
+
   renderTable(rows);
 }
 
