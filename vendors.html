@@ -201,9 +201,18 @@ function toast(msg, isErr) {
   t._t = setTimeout(function(){ t.style.display = 'none'; }, 2400);
 }
 
+var _lastNotifiedHeight = 0;
+var _notifyTimer;
 function notifyHeight() {
   if (window.parent !== window) {
-    window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*');
+    clearTimeout(_notifyTimer);
+    _notifyTimer = setTimeout(function() {
+      var h = document.body.scrollHeight;
+      if (Math.abs(h - _lastNotifiedHeight) > 4) {
+        _lastNotifiedHeight = h;
+        window.parent.postMessage({type: 'bc_resize', height: h}, '*');
+      }
+    }, 80);
   }
 }
 

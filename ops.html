@@ -595,12 +595,21 @@ document.getElementById('modal-vendors').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('on');
 });
 
-// Auto-resize vendors iframe inside modal
+// Auto-resize vendors iframe — debounced + delta-gated to prevent scroll loop
+var _ifrVendorTimer;
 window.addEventListener('message', function(e) {
   if (!e.data) return;
   if (e.data.type === 'bc_resize' && e.data.height) {
     const fr = document.getElementById('iframe-vendors-ops');
-    try { if (fr && fr.contentWindow === e.source) fr.style.height = (e.data.height + 24) + 'px'; } catch(err){}
+    try {
+      if (fr && fr.contentWindow === e.source) {
+        clearTimeout(_ifrVendorTimer);
+        _ifrVendorTimer = setTimeout(function() {
+          var newH = (e.data.height + 24) + 'px';
+          if (fr.style.height !== newH) fr.style.height = newH;
+        }, 80);
+      }
+    } catch(err){}
   }
 });
 
