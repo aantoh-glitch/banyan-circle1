@@ -59,6 +59,7 @@ textarea.fc{resize:none;min-height:0;height:auto;overflow:hidden;line-height:1.6
 .empty-icon{font-size:28px;margin-bottom:6px}
 .admin-only{display:none}
 .is-admin .admin-only{display:inline-flex}
+.is-guest .hide-guest{display:none!important}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:200;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25)}
 </style>
 </head>
@@ -115,7 +116,7 @@ textarea.fc{resize:none;min-height:0;height:auto;overflow:hidden;line-height:1.6
 
 <div class="sec-hdg" style="margin-top:28px">
   <span>Notes</span>
-  <span class="save-indicator" id="notes-save-ind">
+  <span class="save-indicator hide-guest" id="notes-save-ind">
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
     Saved
   </span>
@@ -163,18 +164,11 @@ window.addEventListener('DOMContentLoaded',function(){
     document.body.classList.add('is-admin');
   }
   if(isGuest||isLandlord){
+    document.body.classList.add('is-guest');
     var ta=document.getElementById('notes-area');
     if(ta){ta.readOnly=true;ta.style.color='var(--text)';ta.style.cursor='default';ta.style.background='var(--bg)';}
     // Remove all add-forms so they can't be submitted
     document.querySelectorAll('.add-form').forEach(function(f){f.remove();});
-    // Show read-only badge in header
-    var hdg=document.querySelector('.sec-hdg');
-    if(hdg){
-      var badge=document.createElement('span');
-      badge.textContent='View only';
-      badge.style.cssText='font-size:10px;font-weight:500;color:var(--faint);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:2px 9px;letter-spacing:.3px;flex-shrink:0';
-      hdg.appendChild(badge);
-    }
   }
 });
 
