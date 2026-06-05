@@ -448,8 +448,8 @@ async function uploadDoc(file, prefix, bucket='finance-docs'){
   if(!file) return null;
   const path = prefix.replace(/\s+/g,'_')+'/'+Date.now()+'_'+file.name;
   const res = await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{
-    method:'POST',
-    headers:{apikey:KEY, 'Content-Type':file.type||'application/octet-stream', 'x-upsert':'true'},
+    method:'PUT',
+    headers:{apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':file.type||'application/octet-stream', 'x-upsert':'true'},
     body:file
   });
   if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error('Upload failed: '+(e.message||e.error||res.status));}
