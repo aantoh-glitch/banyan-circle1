@@ -117,7 +117,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="sb-nav">
     <button class="sb-btn on" id="sb-dashboard" onclick="goPage('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</button>
     <button class="sb-btn" onclick="goPage('properties',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Properties</button>
-    <button class="sb-btn" onclick="goPage('staff',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team</button>
+    <button class="sb-btn" onclick="goPage('staff',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</button>
     <button class="sb-btn" onclick="goPage('guests',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guests</button>
     <button class="sb-btn" onclick="goPage('utilities',this)"><svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>Financials</button>
     <button class="sb-btn" onclick="goPage('maint',this)"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button>
@@ -606,13 +606,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Designation</label>
-      <input class="fc" id="ms-role" placeholder="e.g. Homekeeper, Manager…"/>
+      <select class="fc" id="ms-role"><option>Manager</option><option>Homekeeper</option><option>Relationship Manager</option><option>Guest Experience Coordinator</option><option>Cluster Operations Manager</option><option>Space Experience Designer</option><option>Space Experience Lead</option><option>Finance &amp; Admin Manager</option></select>
     </div>
     <div class="fg"><label class="fl">Email (optional)</label><input class="fc" id="ms-email"/></div>
-  </div>
-  <div class="row-grid">
-    <div class="fg"><label class="fl">Phone (optional)</label><input class="fc" id="ms-phone" placeholder="+91…"/></div>
-    <div class="fg"></div>
   </div>
   <div class="fg">
     <label class="fl">Assigned Properties</label>
@@ -1008,40 +1004,22 @@ async function renderStaffPropPills(selected=[]){
   const container=document.getElementById('ms-props-pills');
   const placeholder=document.getElementById('ms-props-placeholder');
   if(placeholder) placeholder.remove();
+  // Remove existing pills but keep placeholder ref
   container.innerHTML='';
-  // "All" pill
-  const allPill=document.createElement('span');
-  const allNames=PROPS.map(p=>p.name);
-  const allSelected=allNames.length>0&&allNames.every(n=>selected.includes(n));
-  allPill.className='venue-pill'+(allSelected?' on':'');
-  allPill.textContent='All';
-  allPill.dataset.prop='__all__';
-  allPill.onclick=()=>{
-    const nowOn=!allPill.classList.contains('on');
-    allPill.classList.toggle('on',nowOn);
-    container.querySelectorAll('.venue-pill[data-prop]:not([data-prop="__all__"])').forEach(p=>p.classList.toggle('on',nowOn));
-  };
-  container.appendChild(allPill);
   PROPS.forEach(p=>{
     const pill=document.createElement('span');
     pill.className='venue-pill'+(selected.includes(p.name)?' on':'');
     pill.textContent=p.name;
     pill.dataset.prop=p.name;
-    pill.onclick=()=>{
-      pill.classList.toggle('on');
-      // Sync All pill
-      const allNames=PROPS.map(pr=>pr.name);
-      const anyOff=allNames.some(n=>!container.querySelector('.venue-pill[data-prop="'+n+'"]')?.classList.contains('on'));
-      allPill.classList.toggle('on',!anyOff);
-    };
+    pill.onclick=()=>{ pill.classList.toggle('on'); };
     container.appendChild(pill);
   });
   if(!PROPS.length) container.innerHTML='<span style="font-size:12px;color:var(--muted)">No properties found</span>';
 }
-function getSelectedStaffProps(){ return [...document.querySelectorAll('#ms-props-pills .venue-pill.on')].map(p=>p.dataset.prop).filter(v=>v!=='__all__'); }
-async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email','ms-phone','ms-role'].forEach(i=>document.getElementById(i).value=''); await renderStaffPropPills([]); openModal('modal-staff'); }
-async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-phone').value=s.phone||''; document.getElementById('ms-role').value=s.designation||''; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
-async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,email:document.getElementById('ms-email').value.trim()||null,phone:document.getElementById('ms-phone').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id)await api('/rest/v1/staff?id=eq.'+id,'PATCH',body); else await api('/rest/v1/staff','POST',body); closeModal('modal-staff'); toast('Saved'); loadStaff(); }
+function getSelectedStaffProps(){ return [...document.querySelectorAll('#ms-props-pills .venue-pill.on')].map(p=>p.dataset.prop); }
+async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-role').value='Homekeeper'; await renderStaffPropPills([]); openModal('modal-staff'); }
+async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-role').value=s.designation||'Homekeeper'; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
+async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id)await api('/rest/v1/staff?id=eq.'+id,'PATCH',body); else await api('/rest/v1/staff','POST',body); closeModal('modal-staff'); toast('Saved'); loadStaff(); }
 let _pendingRemove = null;
 let _pcPin = '';
 let _pendingAction = null; // generic callback for PIN-gated actions
@@ -1973,28 +1951,69 @@ try {
   if(el){ el.textContent = lv.length; el.className='dash-tile-value'; }
 } catch(e){ const el=document.getElementById('dash-leave'); if(el){ el.textContent='—'; el.className='dash-tile-value'; } }
 
-  // Critical stocks: count warehouse + property entries below critical_level
+  // Critical stocks — mirrors stock.html logic exactly
+  // Warehouse qty per item = SUM(log type=warehouse) - SUM(log type=add, all props)
+  // Property qty per item  = SUM(log type=add, prop)  - SUM(log type=use, prop)
+  // Critical when qty <= critical_qty from stock-item-settings
   try {
-    const [warehouseItems, propertyItems] = await Promise.all([
-      api('/rest/v1/stock_items?select=id,quantity,critical_level&critical_level=gt.0') || [],
-      api('/rest/v1/stock_item_properties?select=id,quantity,critical_level&critical_level=gt.0') || []
+    const [items, logs, settings] = await Promise.all([
+      api('/rest/v1/stock-item-list?select=id,name&order=name') || [],
+      api('/rest/v1/stock-log?select=item_id,type,quantity,property') || [],
+      api('/rest/v1/stock-item-settings?select=item_id,property,critical_qty') || []
     ]);
-    const lowWarehouse = (warehouseItems || []).filter(i => i.critical_level != null && i.quantity < i.critical_level);
-    const lowProperty  = (propertyItems  || []).filter(i => i.critical_level != null && i.quantity < i.critical_level);
-    const total = lowWarehouse.length + lowProperty.length;
+
+    // Build qty maps
+    const whIn={}, propOut={};
+    const propAdd={}, propUse={};  // keyed "item_id::property"
+    (logs||[]).forEach(r=>{
+      if(r.type==='warehouse') whIn[r.item_id]=(whIn[r.item_id]||0)+(r.quantity||0);
+      if(r.type==='add'){
+        propOut[r.item_id]=(propOut[r.item_id]||0)+(r.quantity||0);
+        const k=r.item_id+'::'+r.property;
+        propAdd[k]=(propAdd[k]||0)+(r.quantity||0);
+      }
+      if(r.type==='use'){
+        const k=r.item_id+'::'+r.property;
+        propUse[k]=(propUse[k]||0)+(r.quantity||0);
+      }
+    });
+
+    // Build settings map keyed "item_id::property"
+    const settingsMap={};
+    (settings||[]).forEach(s=>{ settingsMap[s.item_id+'::'+s.property]=s; });
+
+    // Get distinct property list from settings
+    const propNames=[...new Set((settings||[]).map(s=>s.property).filter(p=>p&&p!=='warehouse'))];
+
+    let totalLow=0, totalTracked=0;
+
+    (items||[]).forEach(i=>{
+      // Warehouse
+      const whS = settingsMap[i.id+'::warehouse'];
+      if(whS && whS.critical_qty != null){
+        totalTracked++;
+        const qty=(whIn[i.id]||0)-(propOut[i.id]||0);
+        if(qty <= whS.critical_qty) totalLow++;
+      }
+      // Each property
+      propNames.forEach(prop=>{
+        const pS = settingsMap[i.id+'::'+prop];
+        if(pS && pS.critical_qty != null){
+          totalTracked++;
+          const k=i.id+'::'+prop;
+          const qty=(propAdd[k]||0)-(propUse[k]||0);
+          if(qty <= pS.critical_qty) totalLow++;
+        }
+      });
+    });
+
     const el  = document.getElementById('dash-stocks');
     const sub = document.getElementById('dash-stocks-sub');
-    if(el){ el.textContent = total; el.className = 'dash-tile-value'; }
-    if(sub){
-      if(total === 0){
-        sub.textContent = 'all stocks healthy';
-      } else {
-        const parts = [];
-        if(lowWarehouse.length) parts.push(lowWarehouse.length + ' warehouse');
-        if(lowProperty.length)  parts.push(lowProperty.length  + ' property');
-        sub.textContent = parts.join(', ') + ' below critical';
-      }
+    if(el){
+      el.innerHTML = `<span style="color:${totalLow>0?'var(--r)':'inherit'}">${totalLow}</span><span style="font-size:20px;color:var(--muted)"> / ${totalTracked}</span>`;
+      el.className = 'dash-tile-value';
     }
+    if(sub) sub.textContent = totalLow===0 ? 'all stocks healthy' : totalLow+' location'+(totalLow!==1?'s':'')+' below critical';
   } catch(e){
     const el = document.getElementById('dash-stocks');
     if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
