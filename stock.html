@@ -760,7 +760,7 @@ async function saveWarehouseStock(){
 
     // 2. Increment stock_items.current_qty by net qty (quantity - damaged)
     if(netQty !== 0){
-      const item = ALL_ITEMS.find(i=>i.id===itemId);
+      const item = ALL_ITEMS.find(i=>String(i.id)===String(itemId));
       const currentWh = item?.current_qty ?? 0;
       await api('/rest/v1/stock_items?id=eq.'+itemId,'PATCH',{current_qty: currentWh + netQty});
       // Update local cache
