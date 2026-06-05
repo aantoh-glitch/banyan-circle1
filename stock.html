@@ -918,9 +918,10 @@ async function saveAddStock(prefix){
       });
     }
 
-    // 2. Decrement stock_items.current_qty (warehouse)
-    const warehouseItem = ADD_STOCK_ITEMS.find(i => i.id === ADD_SELECTED.id);
-    const newWhQty = (warehouseItem?.qty ?? 0) - qty;
+    // 2. Decrement stock_items.current_qty (warehouse) — fetch fresh to avoid stale cache
+    const freshItem = await api('/rest/v1/stock_items?select=current_qty&id=eq.'+encItem);
+    const currentWhQty = (freshItem && freshItem[0]?.current_qty) ?? ADD_STOCK_ITEMS.find(i=>String(i.id)===String(ADD_SELECTED.id))?.qty ?? 0;
+    const newWhQty = currentWhQty - qty;
     await api('/rest/v1/stock_items?id=eq.'+encItem, 'PATCH', {current_qty: newWhQty});
 
     toast('Stock added ✓');
@@ -1094,17 +1095,31 @@ async function loadStockLog(source){
   const container = document.getElementById('log-content');
   container.innerHTML = '<div class="empty">Loading…</div>';
   try{
-    const whRows = await api('/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.desc&limit=200') || [];
+    // Fetch oldest-first so we can compute a correct running total per item
+    const whRows = await api('/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.asc&limit=200') || [];
 
     const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
 
     if(!whRows.length){ container.innerHTML='<div class="empty">No warehouse stock entries yet.</div>'; return; }
 
+    // Compute per-item cumulative totals (oldest → newest)
+    const runningTotals = {};
+    whRows.forEach(r => {
+      const key = r.item_id;
+      if(runningTotals[key] == null) runningTotals[key] = 0;
+      const net = (r.quantity ?? 0) - (r.damaged_qty ?? 0);
+      runningTotals[key] += net;
+      r._cumulative = runningTotals[key];
+    });
+
+    // Display newest-first
+    const displayRows = [...whRows].reverse();
+
     container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
       <thead><tr>
-        <th>Date</th><th>Item</th><th>Qty</th><th>Price/Unit</th><th>Total</th><th>Status</th>
+        <th>Date</th><th>Item</th><th>Qty</th><th>Cumulative Stock</th><th>Price/Unit</th><th>Total</th><th>Status</th>
       </tr></thead>
-      <tbody>${whRows.map(r=>{
+      <tbody>${displayRows.map(r=>{
         const flags = [
           r.delivered?'Delivered':null,
           r.checked?'Checked':null,
@@ -1115,6 +1130,7 @@ async function loadStockLog(source){
           <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
           <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
           <td>${r.quantity??'—'}</td>
+          <td style="font-weight:600;color:var(--teal)">${r._cumulative}</td>
           <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
           <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
           <td style="font-size:12px;color:var(--muted)">${flags}</td>
