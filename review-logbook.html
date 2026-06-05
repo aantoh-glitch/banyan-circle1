@@ -153,19 +153,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .review-block{background:var(--bg);border-radius:8px;padding:14px 16px;font-size:13px;color:var(--text);line-height:1.7;font-style:italic;border-left:3px solid var(--br-l)}
 .feedback-block{background:var(--pur-l);border-radius:8px;padding:14px 16px;font-size:13px;color:#3B0764;line-height:1.7;border-left:3px solid #C4B5FD;margin-top:10px}
 
-/* ── Config overlay ── */
-.cfg-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:center;justify-content:center;padding:20px}
-.cfg-overlay.on{display:flex}
-.cfg-card{background:var(--white);border-radius:14px;padding:28px;max-width:480px;width:100%}
-.cfg-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
-.cfg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-.fg{margin-bottom:14px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
-.fc:focus{border-color:var(--br)}
-.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-p:hover{background:#712B13}
-.cfg-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+/* ── Config overlay (unused — credentials are hardcoded) ── */
 </style>
 </head>
 <body>
@@ -185,10 +173,6 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       </div>
       <div class="top-bar-right">
         <span style="font-size:12px;color:var(--muted)" id="last-synced">Not yet loaded</span>
-        <button class="action-btn" onclick="openCfg()" style="gap:6px">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Settings
-        </button>
       </div>
     </div>
 
@@ -214,7 +198,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       <div class="kpi">
         <div class="kpi-label">With Feedback</div>
         <div class="kpi-value" id="kpi-feedback">—</div>
-        <div class="kpi-sub">Entries with comments</div>
+        <div class="kpi-sub">Messages · feedback topic</div>
       </div>
       <div class="kpi">
         <div class="kpi-label">Avg Rating</div>
@@ -326,29 +310,18 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 </div>
 
-<!-- Config -->
-<div class="cfg-overlay" id="cfg-overlay">
-  <div class="cfg-card">
-    <div class="cfg-ttl">Supabase Connection</div>
-    <div class="cfg-sub">Enter your project URL and anon key to connect the logbook.</div>
-    <div class="fg"><label class="fl">Supabase Project URL</label><input class="fc" id="cfg-url" placeholder="https://xxxx.supabase.co"/></div>
-    <div class="fg"><label class="fl">Anon / Public Key</label><input class="fc" id="cfg-key" placeholder="eyJhb…"/></div>
-    <div class="cfg-actions">
-      <button class="modal-close" onclick="closeCfg()">Cancel</button>
-      <button class="btn-p" onclick="saveCfg()">Save & Load</button>
-    </div>
-  </div>
-</div>
+
 
 <div class="toast" id="toast"></div>
 
 <script>
 // ── Config ───────────────────────────────────────────────
-let SUPABASE_URL = localStorage.getItem('sb_url') || '';
-let SUPABASE_KEY = localStorage.getItem('sb_key') || '';
+const SUPABASE_URL = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 // ── State ────────────────────────────────────────────────
 let allRows       = [];
+let feedbackRows  = []; // from messages table, topic='feedback'
 let filteredRows  = [];
 let activeTab     = 'all';
 let dateFrom      = null; // Date obj
@@ -402,8 +375,8 @@ function sentimentBadge(s){
 }
 
 // ── Fetch ─────────────────────────────────────────────────
-async function sbFetch(table){
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&order=created_at.desc&limit=1000`,{
+async function sbFetch(table, query=''){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}select=*&order=created_at.desc&limit=1000`,{
     headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
   });
   if(!res.ok) throw new Error(`${table}: ${res.status}`);
@@ -411,29 +384,41 @@ async function sbFetch(table){
 }
 
 async function loadAll(){
-  if(!SUPABASE_URL||!SUPABASE_KEY){ openCfg(); return; }
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('spinning');
   document.getElementById('tbl-body').innerHTML = `<tr><td colspan="9" style="padding:48px;text-align:center;color:var(--muted)">Loading…</td></tr>`;
   try {
-    const [staff, talent] = await Promise.all([sbFetch('staff_reviews'), sbFetch('talent_ratings')]);
+    const [staff, talent, messages] = await Promise.all([
+      sbFetch('staff_reviews'),
+      sbFetch('talent_ratings'),
+      sbFetch('messages', 'topic=eq.feedback&')
+    ]);
+
     const staffRows  = (staff||[]).map(r=>({...r, _type:'staff',  _display_name:r.staff_name}));
     const talentRows = (talent||[]).map(r=>({...r, _type:'talent', _display_name:r.talent_name}));
     allRows = [...staffRows,...talentRows].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 
-    // Enrich with sentiment
+    // Feedback rows from messages table (topic='feedback')
+    feedbackRows = (messages||[]).map(r=>({
+      ...r,
+      _type: 'feedback',
+      _display_name: r.name || '—',
+      comment: r.body || '',
+      _sentiment: getSentiment(r.body||'')
+    }));
+
+    // Enrich staff/talent with sentiment
     allRows.forEach(r=>{ r._sentiment = getSentiment(r.comment||r.review||''); });
 
     // KPIs (unfiltered)
     const nums = allRows.filter(r=>r.rating).map(r=>parseFloat(r.rating));
     const avg  = nums.length ? (nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1) : '—';
-    const feedbackCount = allRows.filter(r=>(r.comment||r.review||'').trim().length>0).length;
     document.getElementById('kpi-total').textContent    = allRows.length;
     document.getElementById('kpi-staff').textContent    = staffRows.length;
     document.getElementById('kpi-talent').textContent   = talentRows.length;
-    document.getElementById('kpi-feedback').textContent = feedbackCount;
+    document.getElementById('kpi-feedback').textContent = feedbackRows.length;
     document.getElementById('kpi-avg').textContent      = avg;
-    document.getElementById('pg-sub-text').textContent  = `${allRows.length} entries across staff reviews, talent ratings and feedback`;
+    document.getElementById('pg-sub-text').textContent  = `${allRows.length} entries across staff reviews and talent ratings · ${feedbackRows.length} feedback messages`;
 
     // Build property filter
     const props = [...new Set(allRows.map(r=>r.property_name).filter(Boolean))].sort();
@@ -446,7 +431,7 @@ async function loadAll(){
     toast('Logbook refreshed');
   } catch(e){
     document.getElementById('tbl-body').innerHTML = `<tr><td colspan="9"><div class="empty">⚠️ ${e.message}</div></td></tr>`;
-    toast('Failed to load — check credentials');
+    toast('Failed to load — check connection');
   }
   btn.classList.remove('spinning');
 }
@@ -525,12 +510,23 @@ function applyFilters(){
   const rF = document.getElementById('filter-rating').value;
   const pF = document.getElementById('filter-property').value;
 
+  // Feedback tab uses the messages table rows (separate dataset)
+  if(activeTab==='feedback'){
+    let rows = feedbackRows;
+    if(q) rows = rows.filter(r=>[r._display_name, r.comment].join(' ').toLowerCase().includes(q));
+    if(dateFrom) rows = rows.filter(r=>r.created_at && new Date(r.created_at)>=dateFrom);
+    if(dateTo)   rows = rows.filter(r=>r.created_at && new Date(r.created_at)<=dateTo);
+    filteredRows = rows;
+    document.getElementById('record-count').textContent = `${rows.length} entr${rows.length===1?'y':'ies'}`;
+    renderTable(rows);
+    return;
+  }
+
   let rows = allRows;
 
   // Tab filter
-  if(activeTab==='staff')    rows = rows.filter(r=>r._type==='staff');
-  if(activeTab==='talent')   rows = rows.filter(r=>r._type==='talent');
-  if(activeTab==='feedback') rows = rows.filter(r=>(r.comment||r.review||'').trim().length>0);
+  if(activeTab==='staff')  rows = rows.filter(r=>r._type==='staff');
+  if(activeTab==='talent') rows = rows.filter(r=>r._type==='talent');
 
   // Search
   if(q) rows = rows.filter(r=>[r._display_name,r.guest_name,r.property_name,r.comment,r.review].join(' ').toLowerCase().includes(q));
@@ -555,8 +551,34 @@ function renderTable(rows){
   const tbody = document.getElementById('tbl-body');
   const showType     = activeTab==='all';
   const showFeedback = activeTab==='feedback';
-  const cols = showType ? 9 : (showFeedback ? 8 : 8);
 
+  if(showFeedback){
+    // Feedback tab: messages table — name, comment preview, date
+    const cols = 4;
+    thead.innerHTML = `
+      <th>#</th>
+      <th>Name</th>
+      <th>Comment Preview</th>
+      <th>Date</th>
+    `;
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="${cols}"><div class="empty">No feedback messages found.</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map((r,i)=>{
+      const body = r.comment||'';
+      const preview = body.length>80 ? body.slice(0,80)+'…' : body;
+      return `<tr style="cursor:pointer" onclick="openFeedbackDetail(${JSON.stringify(JSON.stringify(r))})">
+        <td style="color:var(--muted);font-size:12px">${i+1}</td>
+        <td><div class="name-cell"><div class="avatar">${initials(r._display_name)}</div>${r._display_name}</div></td>
+        <td><span class="review-text ${!body?'none':''}">${preview||'No text'}</span></td>
+        <td style="white-space:nowrap;color:var(--muted)">${fmtDate(r.created_at)}</td>
+      </tr>`;
+    }).join('');
+    return;
+  }
+
+  const cols = showType ? 9 : 8;
   thead.innerHTML = `
     <th>#</th>
     ${showType?'<th>Type</th>':''}
@@ -564,8 +586,7 @@ function renderTable(rows){
     <th>Guest</th>
     <th>Property</th>
     <th>Rating</th>
-    <th>${showFeedback?'Sentiment':'Review / Comment'}</th>
-    ${showFeedback?'<th>Comment Preview</th>':''}
+    <th>Review / Comment</th>
     <th>Date</th>
   `;
 
@@ -584,8 +605,7 @@ function renderTable(rows){
       <td>${r.guest_name||'—'}</td>
       <td>${r.property_name?`<span class="prop-pill">${r.property_name}</span>`:'—'}</td>
       <td>${starsHtml(r.rating)} ${ratingBadge(r.rating)}</td>
-      <td>${showFeedback ? sentimentBadge(r._sentiment) : `<span class="review-text ${!reviewText?'none':''}">${preview||'No text'}</span>`}</td>
-      ${showFeedback?`<td><span class="review-text ${!reviewText?'none':''}">${preview||'No text'}</span></td>`:''}
+      <td><span class="review-text ${!reviewText?'none':''}">${preview||'No text'}</span></td>
       <td style="white-space:nowrap;color:var(--muted)">${fmtDate(r.created_at)}</td>
     </tr>`;
   }).join('');
@@ -616,16 +636,40 @@ function openDetail(jsonStr){
   `;
   document.getElementById('detail-modal').classList.add('on');
 }
+
+function openFeedbackDetail(jsonStr){
+  const r = JSON.parse(jsonStr);
+  const body = r.comment||r.body||'';
+  document.getElementById('dm-title').textContent = r._display_name||'Feedback';
+  document.getElementById('dm-sub').innerHTML = `<span class="bdg bdg-pur">Feedback</span> &nbsp;·&nbsp; ${fmtDate(r.created_at)}`;
+  document.getElementById('dm-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div class="modal-field"><div class="modal-fl">Name</div><div class="modal-fv">${r._display_name||'—'}</div></div>
+      <div class="modal-field"><div class="modal-fl">Date</div><div class="modal-fv">${fmtDate(r.created_at)}</div></div>
+      ${r._sentiment?`<div class="modal-field"><div class="modal-fl">Sentiment</div><div class="modal-fv">${sentimentBadge(r._sentiment)}</div></div>`:''}
+      <div class="modal-field" style="grid-column:1/-1"><div class="modal-fl">ID</div><div class="modal-fv" style="font-size:11px;color:var(--muted);word-break:break-all">${r.id||'—'}</div></div>
+    </div>
+    ${body?`
+      <div class="modal-field">
+        <div class="modal-fl">Feedback Message</div>
+        <div class="review-block">"${body}"</div>
+      </div>
+      ${r._sentiment==='positive'?'<div class="feedback-block">✨ Positive feedback — great for highlighting in reports.</div>':''}
+      ${r._sentiment==='negative'?'<div class="feedback-block" style="background:#FCEBEB;border-left-color:#FCA5A5;color:#7F1D1D">⚠️ Negative feedback — consider following up.</div>':''}
+    `:'<div class="modal-field"><div class="modal-fl">Message</div><div class="modal-fv" style="color:var(--muted)">No message body.</div></div>'}
+  `;
+  document.getElementById('detail-modal').classList.add('on');
+}
+
 function closeModal(){ document.getElementById('detail-modal').classList.remove('on'); }
 
 // ── Excel Export ─────────────────────────────────────────
 function downloadExcel(){
-  if(!filteredRows.length){ toast('No data to export'); return; }
+  if(!filteredRows.length && !feedbackRows.length){ toast('No data to export'); return; }
 
   const wb = XLSX.utils.book_new();
 
-  // Build export rows
-  const toRow = r => ({
+  const toReviewRow = r => ({
     'Type':       r._type==='staff' ? 'Staff Review' : 'Talent Rating',
     'Name':       r._display_name||'',
     'Guest Name': r.guest_name||'',
@@ -637,13 +681,23 @@ function downloadExcel(){
     'ID':         r.id||''
   });
 
-  // Sheet 1: All filtered
-  const ws1 = XLSX.utils.json_to_sheet(filteredRows.map(toRow));
-  ws1['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb, ws1, 'All Entries');
+  const toFeedbackRow = r => ({
+    'Name':     r._display_name||'',
+    'Message':  r.comment||'',
+    'Sentiment':r._sentiment||'',
+    'Date':     r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB') : '',
+    'ID':       r.id||''
+  });
+
+  // Sheet 1: All filtered reviews
+  if(allRows.length){
+    const ws1 = XLSX.utils.json_to_sheet(allRows.map(toReviewRow));
+    ws1['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws1, 'All Entries');
+  }
 
   // Sheet 2: Staff only
-  const staffData = filteredRows.filter(r=>r._type==='staff').map(toRow);
+  const staffData = allRows.filter(r=>r._type==='staff').map(toReviewRow);
   if(staffData.length){
     const ws2 = XLSX.utils.json_to_sheet(staffData);
     ws2['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
@@ -651,54 +705,30 @@ function downloadExcel(){
   }
 
   // Sheet 3: Talent only
-  const talentData = filteredRows.filter(r=>r._type==='talent').map(toRow);
+  const talentData = allRows.filter(r=>r._type==='talent').map(toReviewRow);
   if(talentData.length){
     const ws3 = XLSX.utils.json_to_sheet(talentData);
     ws3['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws3, 'Talent Ratings');
   }
 
-  // Sheet 4: Feedback (with text)
-  const feedbackData = filteredRows.filter(r=>(r.comment||r.review||'').trim()).map(toRow);
-  if(feedbackData.length){
-    const ws4 = XLSX.utils.json_to_sheet(feedbackData);
-    ws4['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
+  // Sheet 4: Feedback messages
+  if(feedbackRows.length){
+    const ws4 = XLSX.utils.json_to_sheet(feedbackRows.map(toFeedbackRow));
+    ws4['!cols'] = [20,60,12,14,36].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws4, 'Feedback');
   }
 
   const dateStr = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, `banyan-circle-reviews-${dateStr}.xlsx`);
-  toast(`Exported ${filteredRows.length} entries to Excel`);
-}
-
-// ── Config ────────────────────────────────────────────────
-function openCfg(){
-  document.getElementById('cfg-url').value = SUPABASE_URL;
-  document.getElementById('cfg-key').value = SUPABASE_KEY;
-  document.getElementById('cfg-overlay').classList.add('on');
-}
-function closeCfg(){ document.getElementById('cfg-overlay').classList.remove('on'); }
-function saveCfg(){
-  SUPABASE_URL = document.getElementById('cfg-url').value.trim().replace(/\/$/,'');
-  SUPABASE_KEY = document.getElementById('cfg-key').value.trim();
-  localStorage.setItem('sb_url', SUPABASE_URL);
-  localStorage.setItem('sb_key', SUPABASE_KEY);
-  closeCfg(); loadAll();
+  toast(`Exported to Excel`);
 }
 
 // ── Backdrop close ────────────────────────────────────────
 document.getElementById('detail-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
-document.getElementById('cfg-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeCfg(); });
 
 // ── Init ──────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  if(SUPABASE_URL && SUPABASE_KEY){ loadAll(); }
-  else {
-    document.getElementById('pg-sub-text').textContent = 'Connect your Supabase project to load entries.';
-    document.getElementById('tbl-body').innerHTML = `<tr><td colspan="9"><div class="empty">No connection — click <strong>Settings</strong> in the sidebar to add your Supabase credentials.</div></td></tr>`;
-    openCfg();
-  }
-});
+window.addEventListener('DOMContentLoaded', loadAll);
 </script>
 </body>
 </html>
