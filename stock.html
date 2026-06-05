@@ -9,7 +9,6 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --br:#993C1D;--br-l:#FAECE7;
-  --br:#993C1D;--br-l:#FAECE7;
   --g:#3B6D11;--g-l:#EAF3DE;
   --a:#854F0B;--a-l:#FAEEDA;
   --r:#A32D2D;--r-l:#FCEBEB;
@@ -18,42 +17,46 @@
   --text:#2C2C2A;--muted:#5F5E5A;
   --border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;
 }
-
-/* ═══════════════════════════════
-   SHARED
-═══════════════════════════════ */
 html,body{min-height:100%;background:var(--bg);color:var(--text)}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
-.bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:var(--b-l);color:#0C447C}
-.bdg-teal{background:var(--teal-l);color:#0e7060}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-r{background:var(--r-l);color:#791F1F}
+.bdg-a{background:var(--a-l);color:#633806}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.ptab{padding:7px 15px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s;white-space:nowrap}
+.ptab.on{background:var(--teal-l);border-color:var(--teal);color:var(--teal);font-weight:500}
+/* toggle switch */
+.tog-wrap{display:flex;align-items:center;gap:10px}
+.tog{position:relative;width:44px;height:24px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.tog-slider{position:absolute;inset:0;background:#ddd;border-radius:999px;cursor:pointer;transition:.2s}
+.tog-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.tog input:checked+.tog-slider{background:var(--teal)}
+.tog input:checked+.tog-slider:before{transform:translateX(20px)}
+.tog-label{font-size:13px;color:var(--text)}
 
-/* ═══════════════════════════════
-   DESKTOP (admin)
-═══════════════════════════════ */
+/* ═══ DESKTOP ═══ */
 body.desktop{font-family:'DM Sans',sans-serif}
 .d-main{padding:28px 32px;max-width:1280px}
 .pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
-.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+.pg-sub{font-size:14px;color:var(--muted);margin-bottom:20px}
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
 .card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
-.ptab{padding:8px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.ptab.on{background:var(--teal-l);border-color:var(--teal);color:var(--teal);font-weight:500}
-.prop-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:12px;align-items:center}
+.prop-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:14px 18px;background:var(--white);border:1px solid var(--border);border-radius:12px;align-items:center}
 .prop-filter-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-right:4px;white-space:nowrap}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
 .tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
-.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-edit:hover{background:var(--teal-l);color:var(--teal)}
-.btn-del{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-del{padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.critical-row td{background:#fff8f8}
+.critical-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--r);margin-right:6px;flex-shrink:0}
+.ok-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin-right:6px;flex-shrink:0}
 
 body.desktop .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
 body.desktop .modal.on{display:flex}
-body.desktop .modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
+body.desktop .modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
 body.desktop .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
 body.desktop .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 body.desktop .modal-handle{display:none}
@@ -61,37 +64,37 @@ body.desktop .fg{margin-bottom:12px}
 body.desktop .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 body.desktop .fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
 body.desktop .fc:focus{border-color:var(--teal)}
-body.desktop textarea.fc{resize:vertical;min-height:68px;line-height:1.6}
 body.desktop .btn-p{padding:10px 18px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 body.desktop .btn-p:hover{background:#0a5548}
 body.desktop .btn-p:disabled{opacity:.6;cursor:not-allowed}
 body.desktop .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 body.desktop .btn-sec:hover{border-color:var(--teal);color:var(--teal)}
 body.desktop .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.refund-section{display:none;padding:12px;background:var(--bg);border-radius:8px;margin-top:4px}
 
-/* ═══════════════════════════════
-   MOBILE (staff)
-═══════════════════════════════ */
+/* ═══ MOBILE ═══ */
 body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 0 48px}
-.m-hdr{padding:24px 24px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--white)}
+.m-hdr{padding:20px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--white)}
 .m-hdr-back{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center}
 .m-hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .m-hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;flex:1}
-.m-btn-log{width:100%;padding:16px;background:var(--teal);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.m-hdr-prop{font-size:12px;color:var(--muted);margin-top:1px}
+.m-btn-log{width:100%;padding:15px;background:var(--teal);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
 .m-btn-log svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .m-btn-log:active{background:#0a5548}
-.m-btn-secondary{width:100%;padding:14px;background:var(--white);color:var(--teal);border:1.5px solid var(--teal);border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.m-btn-secondary{width:100%;padding:13px;background:var(--white);color:var(--teal);border:1.5px solid var(--teal);border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
 .m-btn-secondary svg{width:18px;height:18px;stroke:var(--teal);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .m-btn-secondary:active{background:var(--teal-l)}
-.m-btn-wrap{padding:20px 24px;display:flex;flex-direction:column;gap:10px}
-.m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 24px 8px}
+.m-btn-wrap{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 20px 8px}
 .m-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .stock-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
+.stock-card.low{border-color:#ffcdd2}
 .card-left{flex:1;min-width:0}
 .card-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{font-size:11px;color:var(--muted);margin-top:3px}
-.card-right{flex-shrink:0}
+.card-right{flex-shrink:0;text-align:right}
 .btn-use{padding:9px 14px;background:var(--teal-l);color:var(--teal);border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
 .btn-use:active{background:#b2e0d8}
 
@@ -101,31 +104,33 @@ body.mobile .modal-card{background:var(--white);border-radius:20px 20px 0 0;padd
 body.mobile .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
 body.mobile .modal-ttl{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;margin-bottom:18px}
 body.mobile .modal-actions{display:flex;gap:10px;margin-top:20px}
-body.mobile .modal-actions .btn-p{flex:1}
-body.mobile .modal-actions .btn-sec{flex:1}
+body.mobile .modal-actions .btn-p,.modal-actions .btn-sec{flex:1}
 body.mobile .fg{margin-bottom:14px}
 body.mobile .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
 body.mobile .fc{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;-webkit-appearance:none;appearance:none}
 body.mobile .fc:focus{border-color:var(--teal)}
-body.mobile textarea.fc{resize:none;min-height:72px;line-height:1.6}
 body.mobile .btn-p{padding:14px 18px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;width:100%}
 body.mobile .btn-p:active{background:#0a5548}
 body.mobile .btn-p:disabled{opacity:.6;cursor:not-allowed}
 body.mobile .btn-sec{padding:13px 18px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit;width:100%}
 body.mobile .btn-sec:active{background:var(--bg)}
+body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px;margin-top:4px;display:none}
 </style>
 </head>
 <body>
 <script>
-// Detect context: if loaded inside admin.html iframe → desktop; if accessed directly from ops → mobile
 (function(){
-  var isInIframe = window.self !== window.top;
-  var isMobile = !isInIframe && (window.innerWidth < 600 || /Mobi|Android/i.test(navigator.userAgent));
-  document.body.classList.add(isInIframe ? 'desktop' : isMobile ? 'mobile' : 'desktop');
+  var params = new URLSearchParams(window.location.search);
+  var role = params.get('role') || (window.self !== window.top ? 'admin' : 'staff');
+  var prop = params.get('property') || '';
+  window.ROLE = role;
+  window.STAFF_PROPERTY = prop;
+  var isDesktop = (role === 'admin') || (window.self !== window.top);
+  document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
 })();
 </script>
 
-<!-- ═══════════════ DESKTOP VIEW ═══════════════ -->
+<!-- ═══════════════ DESKTOP VIEW (admin) ═══════════════ -->
 <div class="d-main" id="desktop-view">
   <div class="pg-title">Stocks</div>
   <div class="pg-sub">Manage inventory across all properties</div>
@@ -134,51 +139,39 @@ body.mobile .btn-sec:active{background:var(--bg)}
   <div class="prop-filter-bar" id="d-prop-filter-bar">
     <span class="prop-filter-label">Filter:</span>
     <button class="ptab on" data-prop="all" onclick="setPropFilter('all',this)">All</button>
-    <!-- property tabs + Warehouse rendered here by JS -->
   </div>
 
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-    <div style="flex:1"></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn-sec" id="d-btn-warehouse" style="display:flex;align-items:center;gap:6px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M2 10h20M12 7V3M8 7V4M16 7V4"/></svg>
-        Add Warehouse Stock
-      </button>
-      <button class="btn-sec" id="d-btn-use" style="display:flex;align-items:center;gap:6px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        Use Stock
-      </button>
-      <button class="btn-p" id="d-btn-add" style="display:flex;align-items:center;gap:6px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Stock
-      </button>
-    </div>
+  <!-- Action buttons (admin only) -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:flex-end" id="d-action-row">
+    <button class="btn-sec" id="d-btn-item" style="display:flex;align-items:center;gap:6px;font-size:13px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Item
+    </button>
+    <button class="btn-sec" id="d-btn-warehouse" style="display:flex;align-items:center;gap:6px;font-size:13px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M2 10h20M12 7V3M8 7V4M16 7V4"/></svg>
+      Add Warehouse Stock
+    </button>
+    <button class="btn-sec" id="d-btn-use" style="display:flex;align-items:center;gap:6px;font-size:13px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Use Stock
+    </button>
+    <button class="btn-p" id="d-btn-add" style="display:flex;align-items:center;gap:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Stock
+    </button>
   </div>
 
   <div class="card">
-    <div class="card-ttl">Current Inventory</div>
-    <div class="empty" id="d-empty-state">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
-      Stock management coming soon
-    </div>
+    <div class="card-ttl" id="d-stock-title">Current Inventory</div>
+    <div class="empty" id="d-empty-state">Select a filter or load data</div>
     <table class="tbl" id="d-stock-tbl" style="display:none">
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Category</th>
-          <th>Property</th>
-          <th>Qty</th>
-          <th>Unit</th>
-          <th>Last Updated</th>
-          <th></th>
-        </tr>
-      </thead>
+      <thead id="d-stock-thead"></thead>
       <tbody id="d-stock-tbody"></tbody>
     </table>
   </div>
 </div>
 
-<!-- MOBILE VIEW -->
+<!-- ═══════════════ MOBILE VIEW (staff) ═══════════════ -->
 <div class="m-shell" id="mobile-view" style="display:none">
   <div class="m-hdr">
     <button class="m-hdr-back" onclick="history.back()">
@@ -186,105 +179,158 @@ body.mobile .btn-sec:active{background:var(--bg)}
     </button>
     <div>
       <div class="m-hdr-title">Stocks</div>
+      <div class="m-hdr-prop" id="m-prop-label"></div>
     </div>
   </div>
 
   <div class="m-btn-wrap">
-    <button class="m-btn-log" id="m-btn-add" onclick="openMobileAddModal()">
+    <button class="m-btn-log" onclick="openModal('modal-m-add')">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Stock
     </button>
-    <button class="m-btn-secondary" id="m-btn-warehouse" onclick="openModal('modal-m-warehouse')">
-      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M2 10h20M12 7V3M8 7V4M16 7V4"/></svg>
-      Add Warehouse Stock
-    </button>
-    <button class="m-btn-secondary" id="m-btn-use" onclick="openMobileUseModal()">
+    <button class="m-btn-secondary" onclick="openModal('modal-m-use')">
       <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Use Stock
     </button>
   </div>
 
-  <!-- Mobile Property Filter Pills -->
-  <div class="m-sec-label">Filter by Property</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 16px;overflow-x:auto" id="m-prop-pills">
-    <button class="ptab on" data-prop="all" onclick="setPropFilter('all',this)">All</button>
-  </div>
-
   <div class="m-sec-label">Current Stock</div>
   <div class="m-cards" id="m-stock-list">
-    <div class="empty">Stock management coming soon</div>
+    <div class="empty">Loading…</div>
   </div>
 </div>
 
-<!-- DESKTOP: Add Warehouse Stock Modal (empty — placeholder) -->
-<div class="modal" id="modal-d-warehouse">
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- Add Item -->
+<div class="modal" id="modal-item">
   <div class="modal-card">
     <span class="modal-handle"></span>
-    <div class="modal-ttl">Add Warehouse Stock</div>
-    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
+    <div class="modal-ttl">Add Item</div>
+    <div class="fg">
+      <label class="fl">Item Name <span style="color:var(--r)">*</span></label>
+      <input class="fc" id="item-name" type="text" placeholder="e.g. Hand Sanitiser"/>
+    </div>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Required Quantity <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="item-req-qty" type="number" min="0" placeholder="0"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Critical Quantity <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="item-crit-qty" type="number" min="0" placeholder="0"/>
+      </div>
+    </div>
     <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-d-warehouse')">Close</button>
+      <button class="btn-sec" onclick="closeModal('modal-item')">Cancel</button>
+      <button class="btn-p" id="item-btn" onclick="saveItem()">Save Item</button>
     </div>
   </div>
 </div>
 
-<!-- DESKTOP: Add Stock Modal (empty — placeholder) -->
+<!-- Add Warehouse Stock -->
+<div class="modal" id="modal-warehouse">
+  <div class="modal-card">
+    <span class="modal-handle"></span>
+    <div class="modal-ttl">Add Warehouse Stock</div>
+    <div class="fg">
+      <label class="fl">Item <span style="color:var(--r)">*</span></label>
+      <select class="fc" id="wh-item"><option value="">Select item…</option></select>
+    </div>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Date <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="wh-date" type="date"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Price per Unit (₹)</label>
+        <input class="fc" id="wh-price-per" type="number" min="0" step="0.01" placeholder="0" oninput="calcTotal()"/>
+      </div>
+    </div>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Quantity</label>
+        <input class="fc" id="wh-qty" type="number" min="0" placeholder="0" oninput="calcTotal()"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Total Price (₹)</label>
+        <input class="fc" id="wh-total" type="number" min="0" step="0.01" placeholder="Auto-calculated" readonly style="background:var(--bg)"/>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:14px;background:var(--bg);border-radius:10px;margin-bottom:12px">
+      <div class="tog-wrap">
+        <label class="tog"><input type="checkbox" id="wh-delivered"/><span class="tog-slider"></span></label>
+        <span class="tog-label">Delivered</span>
+      </div>
+      <div class="tog-wrap">
+        <label class="tog"><input type="checkbox" id="wh-checked"/><span class="tog-slider"></span></label>
+        <span class="tog-label">Checked / Verified</span>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Damaged Items</label>
+      <input class="fc" id="wh-damaged" type="number" min="0" placeholder="0" oninput="toggleRefund()"/>
+    </div>
+    <div class="refund-section" id="wh-refund-section">
+      <div class="fg">
+        <div class="tog-wrap" style="margin-bottom:10px">
+          <label class="tog"><input type="checkbox" id="wh-returned"/><span class="tog-slider"></span></label>
+          <span class="tog-label">Returned to Supplier</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Refund Amount (₹)</label>
+        <input class="fc" id="wh-refund-amt" type="number" min="0" step="0.01" placeholder="0"/>
+      </div>
+      <div class="tog-wrap">
+        <label class="tog"><input type="checkbox" id="wh-refund-received"/><span class="tog-slider"></span></label>
+        <span class="tog-label">Refund Received</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-warehouse')">Cancel</button>
+      <button class="btn-p" id="wh-btn" onclick="saveWarehouseStock()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Desktop: Add Stock (placeholder) -->
 <div class="modal" id="modal-d-add">
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Stock</div>
     <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-d-add')">Close</button>
-    </div>
+    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-d-add')">Close</button></div>
   </div>
 </div>
 
-<!-- DESKTOP: Use Stock Modal (empty — placeholder) -->
+<!-- Desktop: Use Stock (placeholder) -->
 <div class="modal" id="modal-d-use">
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Use Stock</div>
     <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-d-use')">Close</button>
-    </div>
+    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-d-use')">Close</button></div>
   </div>
 </div>
 
-<!-- MOBILE: Add Warehouse Stock Modal (empty — placeholder) -->
-<div class="modal" id="modal-m-warehouse">
-  <div class="modal-card">
-    <span class="modal-handle"></span>
-    <div class="modal-ttl">Add Warehouse Stock</div>
-    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-m-warehouse')">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- MOBILE: Add Stock Modal (empty — placeholder) -->
+<!-- Mobile: Add Stock (placeholder) -->
 <div class="modal" id="modal-m-add">
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Stock</div>
     <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-m-add')">Close</button>
-    </div>
+    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-m-add')">Close</button></div>
   </div>
 </div>
 
-<!-- MOBILE: Use Stock Modal (empty — placeholder) -->
+<!-- Mobile: Use Stock (placeholder) -->
 <div class="modal" id="modal-m-use">
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Use Stock</div>
     <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="closeModal('modal-m-use')">Close</button>
-    </div>
+    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-m-use')">Close</button></div>
   </div>
 </div>
 
@@ -293,101 +339,235 @@ body.mobile .btn-sec:active{background:var(--bg)}
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
-const HDR = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json'};
+const HDR = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
 
-async function api(path){
-  const r = await fetch(SB+path,{headers:HDR});
-  if(!r.ok) throw new Error(r.status);
+async function api(path, method, body){
+  const r = await fetch(SB+path,{method:method||'GET',headers:HDR,body:body?JSON.stringify(body):undefined});
+  if(!r.ok && r.status!==204){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.status);}
+  if(r.status===204) return null;
   return r.json();
 }
 
 const IS_MOBILE = document.body.classList.contains('mobile');
+const IS_ADMIN  = window.ROLE === 'admin' || !IS_MOBILE;
 let ACTIVE_PROP = 'all';
+let ALL_ITEMS   = [];
 
 // Show correct view
 if(IS_MOBILE){
-  document.getElementById('mobile-view').style.display = 'flex';
-  document.getElementById('desktop-view').style.display = 'none';
+  document.getElementById('mobile-view').style.display='flex';
+  document.getElementById('desktop-view').style.display='none';
+  // Show staff's property name
+  if(window.STAFF_PROPERTY){
+    document.getElementById('m-prop-label').textContent = window.STAFF_PROPERTY;
+  }
 } else {
-  document.getElementById('desktop-view').style.display = 'block';
-  document.getElementById('mobile-view').style.display = 'none';
+  document.getElementById('desktop-view').style.display='block';
+  document.getElementById('mobile-view').style.display='none';
+  // Hide admin-only buttons if not admin (shouldn't normally happen in desktop view, but safety check)
+  if(!IS_ADMIN){
+    document.getElementById('d-btn-item').style.display='none';
+    document.getElementById('d-btn-warehouse').style.display='none';
+  }
 }
 
-// Modal helpers
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500); }
+function setBtn(id,loading,label){ const b=document.getElementById(id);if(b){b.disabled=loading;b.textContent=loading?'Saving…':(label||'Save');} }
+function fmt(n){ return n!=null?'₹'+Number(n).toLocaleString('en-IN'):'—'; }
 
-// Toast
-function toast(msg){
-  var t = document.getElementById('toast');
-  t.textContent = msg; t.style.display='block';
-  setTimeout(()=>{ t.style.display='none'; }, 2500);
-}
-
-// Property filter
+// ── Property filter pills ──
 function setPropFilter(prop, el){
   ACTIVE_PROP = prop;
   document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-  // future: filter displayed stock by ACTIVE_PROP
+  if(prop === 'warehouse'){
+    loadWarehouseView();
+  } else {
+    loadStockView(prop);
+  }
 }
 
-// Load properties from landlords table and render filter pills
 async function loadProps(){
   try{
     const data = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
     const unique = [...new Set(data.map(p=>p.property_name).filter(Boolean))];
-
-    // Desktop filter bar
     const dBar = document.getElementById('d-prop-filter-bar');
     unique.forEach(name=>{
-      const b = document.createElement('button');
-      b.className='ptab'; b.dataset.prop=name; b.textContent=name;
+      const b=document.createElement('button');
+      b.className='ptab';b.dataset.prop=name;b.textContent=name;
       b.onclick=()=>setPropFilter(name,b);
       dBar.appendChild(b);
     });
-    // Add Warehouse pill at the end
-    const wD = document.createElement('button');
-    wD.className='ptab'; wD.dataset.prop='warehouse'; wD.textContent='Warehouse';
-    wD.onclick=()=>setPropFilter('warehouse',wD);
-    dBar.appendChild(wD);
-
-    // Mobile filter pills
-    const mPills = document.getElementById('m-prop-pills');
-    unique.forEach(name=>{
-      const b = document.createElement('button');
-      b.className='ptab'; b.dataset.prop=name; b.textContent=name;
-      b.onclick=()=>setPropFilter(name,b);
-      mPills.appendChild(b);
-    });
-    // Add Warehouse pill at the end
-    const wM = document.createElement('button');
-    wM.className='ptab'; wM.dataset.prop='warehouse'; wM.textContent='Warehouse';
-    wM.onclick=()=>setPropFilter('warehouse',wM);
-    mPills.appendChild(wM);
-
-  } catch(e){ console.error('Failed to load properties',e); }
+    const wBtn=document.createElement('button');
+    wBtn.className='ptab';wBtn.dataset.prop='warehouse';wBtn.textContent='Warehouse';
+    wBtn.onclick=()=>setPropFilter('warehouse',wBtn);
+    dBar.appendChild(wBtn);
+  } catch(e){ console.error('loadProps',e); }
 }
 
-// Desktop buttons
-var btnAdd = document.getElementById('d-btn-add');
-var btnUse = document.getElementById('d-btn-use');
-var btnWarehouse = document.getElementById('d-btn-warehouse');
-if(btnAdd) btnAdd.addEventListener('click', ()=>openModal('modal-d-add'));
-if(btnUse) btnUse.addEventListener('click', ()=>openModal('modal-d-use'));
-if(btnWarehouse) btnWarehouse.addEventListener('click', ()=>openModal('modal-d-warehouse'));
+// ── Load items catalogue ──
+async function loadItems(){
+  try{
+    ALL_ITEMS = await api('/rest/v1/stock_items?select=*&order=name') || [];
+    populateItemSelects();
+  } catch(e){ console.error('loadItems',e); }
+}
 
-// Mobile buttons
-function openMobileAddModal(){ openModal('modal-m-add'); }
-function openMobileUseModal(){ openModal('modal-m-use'); }
+function populateItemSelects(){
+  const sel = document.getElementById('wh-item');
+  sel.innerHTML = '<option value="">Select item…</option>' +
+    ALL_ITEMS.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
+}
+
+// ── Warehouse stock view ──
+async function loadWarehouseView(){
+  const tbl = document.getElementById('d-stock-tbl');
+  const empty = document.getElementById('d-empty-state');
+  const title = document.getElementById('d-stock-title');
+  title.textContent = 'Warehouse Stock';
+  empty.textContent = 'Loading…'; empty.style.display='block'; tbl.style.display='none';
+  try{
+    const rows = await api('/rest/v1/warehouse_stock?select=*,stock_items(name,required_qty,critical_qty)&order=created_at.desc') || [];
+    if(!rows.length){ empty.textContent='No warehouse stock entries yet.'; return; }
+    // Aggregate by item: sum qty, latest entry
+    const byItem = {};
+    rows.forEach(r=>{
+      const name = r.stock_items?.name || r.item_id;
+      if(!byItem[name]) byItem[name]={name,qty:0,req:r.stock_items?.required_qty,crit:r.stock_items?.critical_qty};
+      byItem[name].qty += (r.quantity||0) - (r.damaged_qty||0);
+    });
+    const items = Object.values(byItem);
+    document.getElementById('d-stock-thead').innerHTML=`<tr>
+      <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
+    </tr>`;
+    document.getElementById('d-stock-tbody').innerHTML = items.map(i=>{
+      const isCrit = i.crit!=null && i.qty <= i.crit;
+      return `<tr class="${isCrit?'critical-row':''}">
+        <td style="font-weight:500">${i.name}</td>
+        <td>${i.qty}</td>
+        <td>${i.req??'—'}</td>
+        <td>${i.crit??'—'}</td>
+        <td>${isCrit
+          ? '<span class="bdg bdg-r"><span class="critical-dot"></span>Below Critical</span>'
+          : '<span class="bdg bdg-g"><span class="ok-dot"></span>OK</span>'}</td>
+      </tr>`;
+    }).join('');
+    empty.style.display='none'; tbl.style.display='table';
+  } catch(e){ empty.textContent='Error loading warehouse data.'; console.error(e); }
+}
+
+// ── General stock view ──
+async function loadStockView(prop){
+  const tbl = document.getElementById('d-stock-tbl');
+  const empty = document.getElementById('d-empty-state');
+  const title = document.getElementById('d-stock-title');
+  title.textContent = prop==='all' ? 'All Properties — Inventory' : prop+' — Inventory';
+  empty.textContent='Loading…';empty.style.display='block';tbl.style.display='none';
+  // placeholder — stock usage table to be filled when Add Stock / Use Stock are implemented
+  empty.textContent = prop==='all'
+    ? 'Select a property to view its stock, or select Warehouse.'
+    : 'Stock log for '+prop+' coming soon.';
+}
+
+// ── Add Item ──
+async function saveItem(){
+  const name = document.getElementById('item-name').value.trim();
+  const req  = parseInt(document.getElementById('item-req-qty').value)||0;
+  const crit = parseInt(document.getElementById('item-crit-qty').value)||0;
+  if(!name){ alert('Item name is required'); return; }
+  setBtn('item-btn',true);
+  try{
+    await api('/rest/v1/stock_items','POST',{name,required_qty:req,critical_qty:crit});
+    toast('Item added ✓');
+    closeModal('modal-item');
+    document.getElementById('item-name').value='';
+    document.getElementById('item-req-qty').value='';
+    document.getElementById('item-crit-qty').value='';
+    await loadItems();
+  } catch(e){ alert('Error: '+e.message); }
+  finally{ setBtn('item-btn',false,'Save Item'); }
+}
+
+// ── Warehouse stock helpers ──
+function calcTotal(){
+  const qty   = parseFloat(document.getElementById('wh-qty').value)||0;
+  const price = parseFloat(document.getElementById('wh-price-per').value)||0;
+  document.getElementById('wh-total').value = qty && price ? (qty*price).toFixed(2) : '';
+}
+
+function toggleRefund(){
+  const dmg = parseInt(document.getElementById('wh-damaged').value)||0;
+  document.getElementById('wh-refund-section').style.display = dmg > 0 ? 'block' : 'none';
+}
+
+// ── Save Warehouse Stock ──
+async function saveWarehouseStock(){
+  const itemId = document.getElementById('wh-item').value;
+  const date   = document.getElementById('wh-date').value;
+  if(!itemId){ alert('Please select an item'); return; }
+  if(!date){   alert('Please enter a date');   return; }
+  const body = {
+    item_id:          itemId,
+    date:             date,
+    price_per_unit:   parseFloat(document.getElementById('wh-price-per').value)||null,
+    quantity:         parseFloat(document.getElementById('wh-qty').value)||null,
+    total_price:      parseFloat(document.getElementById('wh-total').value)||null,
+    delivered:        document.getElementById('wh-delivered').checked,
+    checked:          document.getElementById('wh-checked').checked,
+    damaged_qty:      parseInt(document.getElementById('wh-damaged').value)||0,
+    returned:         document.getElementById('wh-returned').checked,
+    refund_amount:    parseFloat(document.getElementById('wh-refund-amt').value)||null,
+    refund_received:  document.getElementById('wh-refund-received').checked,
+  };
+  setBtn('wh-btn',true);
+  try{
+    await api('/rest/v1/warehouse_stock','POST',body);
+    toast('Warehouse stock saved ✓');
+    closeModal('modal-warehouse');
+    // reset
+    ['wh-item','wh-date','wh-price-per','wh-qty','wh-total','wh-damaged','wh-refund-amt'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    ['wh-delivered','wh-checked','wh-returned','wh-refund-received'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.checked=false;
+    });
+    document.getElementById('wh-refund-section').style.display='none';
+    if(ACTIVE_PROP==='warehouse') loadWarehouseView();
+  } catch(e){ alert('Error: '+e.message); }
+  finally{ setBtn('wh-btn',false,'Save'); }
+}
+
+// ── Desktop button wiring ──
+document.getElementById('d-btn-item')?.addEventListener('click',()=>{
+  document.getElementById('item-name').value='';
+  document.getElementById('item-req-qty').value='';
+  document.getElementById('item-crit-qty').value='';
+  openModal('modal-item');
+});
+document.getElementById('d-btn-warehouse')?.addEventListener('click',()=>{
+  document.getElementById('wh-date').value=new Date().toISOString().split('T')[0];
+  openModal('modal-warehouse');
+});
+document.getElementById('d-btn-add')?.addEventListener('click',()=>openModal('modal-d-add'));
+document.getElementById('d-btn-use')?.addEventListener('click',()=>openModal('modal-d-use'));
 
 // Close modals on backdrop click
-['modal-d-add','modal-d-use','modal-d-warehouse','modal-m-add','modal-m-use','modal-m-warehouse'].forEach(id=>{
-  var el = document.getElementById(id);
-  if(el) el.addEventListener('click', function(e){ if(e.target===this) closeModal(id); });
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',function(e){ if(e.target===this) closeModal(this.id); });
 });
 
-loadProps();
+// ── Init ──
+(async function init(){
+  if(!IS_MOBILE){
+    await Promise.all([loadProps(), loadItems()]);
+    loadStockView('all');
+  } else {
+    // Mobile staff: show their property's stock (placeholder)
+    document.getElementById('m-stock-list').innerHTML='<div class="empty">Stock log coming soon.</div>';
+  }
+})();
 </script>
 </body>
 </html>
