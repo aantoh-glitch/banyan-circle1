@@ -233,23 +233,26 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 
 <!-- Add Item -->
 <div class="modal" id="modal-item">
-  <div class="modal-card" style="max-width:480px">
+  <div class="modal-card" style="max-width:560px">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Item</div>
     <div class="fg">
       <label class="fl">Item Name <span style="color:var(--r)">*</span></label>
       <input class="fc" id="item-name" type="text" placeholder="e.g. Hand Sanitiser"/>
     </div>
-    <div class="row-grid">
-      <div class="fg">
-        <label class="fl">Required Qty</label>
-        <input class="fc" id="item-req-qty" type="number" min="0" placeholder="0"/>
+
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Required &amp; Critical Quantities</div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 110px 110px;background:var(--bg);padding:7px 12px;border-bottom:1px solid var(--border)">
+        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Location</span>
+        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Required</span>
+        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Critical</span>
       </div>
-      <div class="fg">
-        <label class="fl">Critical Qty</label>
-        <input class="fc" id="item-crit-qty" type="number" min="0" placeholder="0"/>
+      <div id="item-settings-rows" style="max-height:260px;overflow-y:auto">
+        <div class="empty" style="padding:20px">Loading…</div>
       </div>
     </div>
+
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal('modal-item')">Cancel</button>
       <button class="btn-p" id="item-btn" onclick="saveItem()">Save Item</button>
@@ -273,7 +276,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 
 <!-- Edit Single Item -->
 <div class="modal" id="modal-edit-single">
-  <div class="modal-card" style="max-width:420px">
+  <div class="modal-card" style="max-width:560px">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Edit Item</div>
     <input type="hidden" id="edit-item-id"/>
@@ -281,16 +284,19 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
       <label class="fl">Item Name <span style="color:var(--r)">*</span></label>
       <input class="fc" id="edit-item-name" type="text"/>
     </div>
-    <div class="row-grid">
-      <div class="fg">
-        <label class="fl">Required Qty</label>
-        <input class="fc" id="edit-item-req" type="number" min="0"/>
+
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Required &amp; Critical Quantities</div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 110px 110px;background:var(--bg);padding:7px 12px;border-bottom:1px solid var(--border)">
+        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Location</span>
+        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Required</span>
+        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Critical</span>
       </div>
-      <div class="fg">
-        <label class="fl">Critical Qty</label>
-        <input class="fc" id="edit-item-crit" type="number" min="0"/>
+      <div id="edit-settings-rows" style="max-height:260px;overflow-y:auto">
+        <div class="empty" style="padding:20px">Loading…</div>
       </div>
     </div>
+
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal('modal-edit-single')">Cancel</button>
       <button class="btn-p" id="edit-single-btn" onclick="saveEditItem()">Save</button>
@@ -621,22 +627,22 @@ async function loadProps(){
     const data = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
     PROPS_LIST = [...new Set(data.map(p=>p.property_name).filter(Boolean))];
     const dBar = document.getElementById('d-prop-filter-bar');
+
+    // Warehouse tab first
+    const wBtn=document.createElement('button');
+    wBtn.className='ptab'; wBtn.dataset.prop='warehouse'; wBtn.textContent='Warehouse';
+    wBtn.onclick=()=>setPropFilter('warehouse',wBtn);
+    dBar.appendChild(wBtn);
+
     PROPS_LIST.forEach(name=>{
       const b=document.createElement('button');
       b.className='ptab'; b.dataset.prop=name; b.textContent=name;
       b.onclick=()=>setPropFilter(name,b);
       dBar.appendChild(b);
     });
-    // Warehouse tab always last
-    const wBtn=document.createElement('button');
-    wBtn.className='ptab'; wBtn.dataset.prop='warehouse'; wBtn.textContent='Warehouse';
-    wBtn.onclick=()=>setPropFilter('warehouse',wBtn);
-    dBar.appendChild(wBtn);
-    // Auto-select first tab
-    if(PROPS_LIST.length){
-      const first = dBar.querySelector('.ptab[data-prop]');
-      if(first) first.click();
-    }
+
+    // Auto-select warehouse first
+    wBtn.click();
   } catch(e){ console.error('loadProps',e); }
 }
 
@@ -667,30 +673,33 @@ async function loadWarehouseView(){
   title.textContent = 'Warehouse Stock';
   empty.textContent='Loading…'; empty.style.display='block'; tbl.style.display='none';
   try{
-    const [items, logs] = await Promise.all([
-      api('/rest/v1/stock-item-list?select=id,name,required_qty,critical_qty&order=name'),
+    const [items, logs, settings] = await Promise.all([
+      api('/rest/v1/stock-item-list?select=id,name&order=name'),
       api('/rest/v1/stock-log?select=item_id,type,quantity'),
+      api('/rest/v1/stock-item-settings?select=item_id,property,required_qty,critical_qty&property=eq.warehouse'),
     ]);
     if(!(items||[]).length){ empty.textContent='No items found.'; return; }
 
-    // Warehouse in-stock = SUM(type='warehouse' qty) - SUM(type='add' qty) [transfers out to properties]
     const whIn={}, propOut={};
     (logs||[]).forEach(r=>{
       if(r.type==='warehouse') whIn[r.item_id]=(whIn[r.item_id]||0)+(r.quantity||0);
       if(r.type==='add')       propOut[r.item_id]=(propOut[r.item_id]||0)+(r.quantity||0);
     });
+    const settingsMap={};
+    (settings||[]).forEach(s=>{ settingsMap[s.item_id]=s; });
 
     document.getElementById('d-stock-thead').innerHTML=`<tr>
       <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
     </tr>`;
     document.getElementById('d-stock-tbody').innerHTML = items.map(i=>{
       const qty = (whIn[i.id]||0) - (propOut[i.id]||0);
-      const isCrit = i.critical_qty != null && qty <= i.critical_qty;
+      const s = settingsMap[i.id]||{};
+      const isCrit = s.critical_qty != null && qty <= s.critical_qty;
       return `<tr class="${isCrit?'critical-row':''}">
         <td style="font-weight:500">${i.name}</td>
         <td style="font-weight:600;color:${isCrit?'var(--r)':'var(--teal)'}">${qty}</td>
-        <td>${i.required_qty??'—'}</td>
-        <td>${i.critical_qty??'—'}</td>
+        <td>${s.required_qty??'—'}</td>
+        <td>${s.critical_qty??'—'}</td>
         <td>${isCrit
           ? '<span class="bdg bdg-r"><span class="critical-dot"></span>Below Critical</span>'
           : '<span class="bdg bdg-g"><span class="ok-dot"></span>OK</span>'}</td>
@@ -711,20 +720,21 @@ async function loadPropertyView(prop){
   title.textContent = prop + ' — Inventory';
   empty.textContent='Loading…'; empty.style.display='block'; tbl.style.display='none';
   try{
-    const [items, logs] = await Promise.all([
-      api('/rest/v1/stock-item-list?select=id,name,required_qty,critical_qty&order=name'),
+    const [items, logs, settings] = await Promise.all([
+      api('/rest/v1/stock-item-list?select=id,name&order=name'),
       api('/rest/v1/stock-log?select=item_id,type,quantity&property=eq.'+encodeURIComponent(prop)),
+      api('/rest/v1/stock-item-settings?select=item_id,required_qty,critical_qty&property=eq.'+encodeURIComponent(prop)),
     ]);
     if(!(items||[]).length){ empty.textContent='No items found.'; return; }
 
-    // In stock per item = SUM(add) - SUM(use)
     const addMap={}, useMap={};
     (logs||[]).forEach(r=>{
       if(r.type==='add') addMap[r.item_id]=(addMap[r.item_id]||0)+(r.quantity||0);
       if(r.type==='use') useMap[r.item_id]=(useMap[r.item_id]||0)+(r.quantity||0);
     });
+    const settingsMap={};
+    (settings||[]).forEach(s=>{ settingsMap[s.item_id]=s; });
 
-    // Only show items that have had any movement
     const activeItems = items.filter(i => (addMap[i.id]||0) > 0 || (useMap[i.id]||0) > 0);
     if(!activeItems.length){ empty.textContent='No stock entries for '+prop+'.'; return; }
 
@@ -733,12 +743,13 @@ async function loadPropertyView(prop){
     </tr>`;
     document.getElementById('d-stock-tbody').innerHTML = activeItems.map(i=>{
       const qty = (addMap[i.id]||0) - (useMap[i.id]||0);
-      const isCrit = i.critical_qty != null && qty <= i.critical_qty;
+      const s = settingsMap[i.id]||{};
+      const isCrit = s.critical_qty != null && qty <= s.critical_qty;
       return `<tr class="${isCrit?'critical-row':''}">
         <td style="font-weight:500">${i.name}</td>
         <td style="font-weight:600;color:${isCrit?'var(--r)':'var(--teal)'}">${qty}</td>
-        <td>${i.required_qty??'—'}</td>
-        <td>${i.critical_qty??'—'}</td>
+        <td>${s.required_qty??'—'}</td>
+        <td>${s.critical_qty??'—'}</td>
         <td>${isCrit
           ? '<span class="bdg bdg-r"><span class="critical-dot"></span>Below Critical</span>'
           : '<span class="bdg bdg-g"><span class="ok-dot"></span>OK</span>'}</td>
@@ -749,23 +760,69 @@ async function loadPropertyView(prop){
 }
 
 // ════════════════════════════════
+//  SETTINGS ROWS RENDERER
+//  Used by both Add Item and Edit Item modals
+//  locations = ['warehouse', ...PROPS_LIST]
+//  existing = array of {property, required_qty, critical_qty} (for edit)
+// ════════════════════════════════
+function renderSettingsRows(containerId, existing=[]){
+  const container = document.getElementById(containerId);
+  const locations = ['warehouse', ...PROPS_LIST];
+  const existingMap = {};
+  existing.forEach(r=>{ existingMap[r.property]=r; });
+
+  container.innerHTML = locations.map(loc=>{
+    const ex = existingMap[loc]||{};
+    const isWh = loc==='warehouse';
+    return `<div style="display:grid;grid-template-columns:1fr 110px 110px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);${isWh?'background:var(--teal-l);':''}">
+      <span style="font-size:13px;font-weight:${isWh?'600':'500'};color:${isWh?'var(--teal)':'var(--text)'}">${isWh?'🏭 Warehouse':loc}</span>
+      <input type="number" min="0" placeholder="—" value="${ex.required_qty??''}"
+        data-loc="${loc}" data-type="req"
+        style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;outline:none"
+        onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+      <input type="number" min="0" placeholder="—" value="${ex.critical_qty??''}"
+        data-loc="${loc}" data-type="crit"
+        style="width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;outline:none"
+        onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>`;
+  }).join('') + '<div style="height:4px"></div>';
+}
+
+// Collect settings rows from a container into array for upsert
+function collectSettingsRows(containerId){
+  const inputs = document.querySelectorAll('#'+containerId+' input[data-loc]');
+  const byLoc = {};
+  inputs.forEach(inp=>{
+    const loc = inp.dataset.loc;
+    if(!byLoc[loc]) byLoc[loc]={property:loc};
+    byLoc[loc][inp.dataset.type==='req'?'required_qty':'critical_qty'] = parseInt(inp.value)||null;
+  });
+  return Object.values(byLoc).filter(r=>r.required_qty!=null||r.critical_qty!=null);
+}
+
+// ════════════════════════════════
 //  ADD ITEM
 // ════════════════════════════════
 function openAddItem(){
   document.getElementById('item-name').value='';
-  document.getElementById('item-req-qty').value='';
-  document.getElementById('item-crit-qty').value='';
+  renderSettingsRows('item-settings-rows');
   openModal('modal-item');
 }
 
 async function saveItem(){
   const name = document.getElementById('item-name').value.trim();
-  const req  = parseInt(document.getElementById('item-req-qty').value)||null;
-  const crit = parseInt(document.getElementById('item-crit-qty').value)||null;
   if(!name){ alert('Item name is required'); return; }
   setBtn('item-btn',true);
   try{
-    await api('/rest/v1/stock-item-list','POST',{name,required_qty:req,critical_qty:crit});
+    const [saved] = await api('/rest/v1/stock-item-list','POST',{name});
+    const itemId = saved.id;
+
+    const rows = collectSettingsRows('item-settings-rows')
+      .map(r=>({...r, item_id:itemId}));
+    if(rows.length){
+      await api('/rest/v1/stock-item-settings','POST',rows);
+    }
+
     toast('Item added ✓');
     closeModal('modal-item');
     await loadItems();
@@ -784,40 +841,50 @@ async function openEditItems(){
     const items = await api('/rest/v1/stock-item-list?select=*&order=name') || [];
     if(!items.length){ container.innerHTML='<div class="empty">No items yet.</div>'; return; }
     container.innerHTML = `<table class="tbl">
-      <thead><tr><th>Name</th><th>Required</th><th>Critical</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th></th></tr></thead>
       <tbody>${items.map(i=>`<tr>
         <td style="font-weight:500">${i.name}</td>
-        <td>${i.required_qty??'—'}</td>
-        <td>${i.critical_qty??'—'}</td>
         <td>
-          <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="openEditSingle('${i.id}','${i.name.replace(/'/g,"\\'")}',${i.required_qty??'null'},${i.critical_qty??'null'})">Edit</button>
+          <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="openEditSingle('${i.id}','${i.name.replace(/'/g,"\\'")}')">Edit</button>
         </td>
       </tr>`).join('')}</tbody>
     </table>`;
   } catch(e){ container.innerHTML='<div class="empty">Error: '+e.message+'</div>'; }
 }
 
-function openEditSingle(id,name,req,crit){
+async function openEditSingle(id, name){
   document.getElementById('edit-item-id').value = id;
   document.getElementById('edit-item-name').value = name;
-  document.getElementById('edit-item-req').value = req==='null'?'':req;
-  document.getElementById('edit-item-crit').value = crit==='null'?'':crit;
+  document.getElementById('edit-settings-rows').innerHTML = '<div class="empty" style="padding:20px">Loading…</div>';
   openModal('modal-edit-single');
+
+  try{
+    const existing = await api('/rest/v1/stock-item-settings?item_id=eq.'+id+'&select=property,required_qty,critical_qty') || [];
+    renderSettingsRows('edit-settings-rows', existing);
+  } catch(e){
+    document.getElementById('edit-settings-rows').innerHTML='<div class="empty">Error loading settings.</div>';
+  }
 }
 
 async function saveEditItem(){
   const id   = document.getElementById('edit-item-id').value;
   const name = document.getElementById('edit-item-name').value.trim();
-  const req  = parseInt(document.getElementById('edit-item-req').value)||null;
-  const crit = parseInt(document.getElementById('edit-item-crit').value)||null;
   if(!name){ alert('Name required'); return; }
   setBtn('edit-single-btn',true);
   try{
-    await api('/rest/v1/stock-item-list?id=eq.'+id,'PATCH',{name,required_qty:req,critical_qty:crit});
+    await api('/rest/v1/stock-item-list?id=eq.'+id,'PATCH',{name});
+
+    // Delete existing settings then re-insert (upsert approach)
+    await api('/rest/v1/stock-item-settings?item_id=eq.'+id,'DELETE');
+    const rows = collectSettingsRows('edit-settings-rows').map(r=>({...r, item_id:id}));
+    if(rows.length){
+      await api('/rest/v1/stock-item-settings','POST',rows);
+    }
+
     toast('Item updated ✓');
     closeModal('modal-edit-single');
     await loadItems();
-    openEditItems(); // refresh list
+    openEditItems();
   } catch(e){ alert('Error: '+e.message); }
   finally{ setBtn('edit-single-btn',false,'Save'); }
 }
@@ -1242,24 +1309,29 @@ async function loadMobileStock(){
   const listEl = document.getElementById('m-stock-list');
   if(!prop){ listEl.innerHTML='<div class="empty">No property assigned.</div>'; return; }
   try{
-    const logs = await api('/rest/v1/stock-log?select=item_id,type,quantity&property=eq.'+encodeURIComponent(prop)) || [];
+    const [logs, settings] = await Promise.all([
+      api('/rest/v1/stock-log?select=item_id,type,quantity&property=eq.'+encodeURIComponent(prop)),
+      api('/rest/v1/stock-item-settings?select=item_id,required_qty,critical_qty&property=eq.'+encodeURIComponent(prop)),
+    ]);
     const addMap={}, useMap={};
     logs.forEach(r=>{
       if(r.type==='add') addMap[r.item_id]=(addMap[r.item_id]||0)+(r.quantity||0);
       if(r.type==='use') useMap[r.item_id]=(useMap[r.item_id]||0)+(r.quantity||0);
     });
+    const settingsMap={};
+    (settings||[]).forEach(s=>{ settingsMap[s.item_id]=s; });
 
     const activeItems = ALL_ITEMS
-      .map(i=>({...i, qty:(addMap[i.id]||0)-(useMap[i.id]||0)}))
+      .map(i=>({...i, qty:(addMap[i.id]||0)-(useMap[i.id]||0), s:settingsMap[i.id]||{}}))
       .filter(i=>i.qty>0||(addMap[i.id]||0)>0);
 
     if(!activeItems.length){ listEl.innerHTML='<div class="empty">No stock for this property yet.</div>'; return; }
     listEl.innerHTML = activeItems.map(i=>{
-      const isCrit = i.critical_qty!=null && i.qty<=i.critical_qty;
+      const isCrit = i.s.critical_qty!=null && i.qty<=i.s.critical_qty;
       return `<div class="stock-card${isCrit?' low':''}">
         <div class="card-left">
           <div class="card-name">${i.name}</div>
-          <div class="card-meta">Required: ${i.required_qty??'—'} · Critical: ${i.critical_qty??'—'}</div>
+          <div class="card-meta">Required: ${i.s.required_qty??'—'} · Critical: ${i.s.critical_qty??'—'}</div>
         </div>
         <div class="card-right">
           <div style="font-size:18px;font-weight:700;color:${isCrit?'var(--r)':'var(--g)'}">${i.qty}</div>

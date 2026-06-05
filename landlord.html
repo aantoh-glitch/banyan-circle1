@@ -338,6 +338,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <div class="fg"><label class="fl">Address</label><input class="fc" id="edit-prop-addr" type="text" placeholder="Address"/></div>
       <div class="fg"><label class="fl">Number of Rooms</label><input class="fc" id="edit-prop-beds" type="number" placeholder="Number of rooms"/></div>
       <div class="fg"><label class="fl">Description</label><textarea class="fc" id="edit-prop-desc" placeholder="Property description&hellip;"></textarea></div>
+      <div class="fg"><label class="fl">Google Maps Link</label><input class="fc" id="edit-prop-link" type="url" placeholder="https://maps.google.com/…"/></div>
       <button class="btn-p" onclick="saveDescription()">Save Changes</button>
     </div>
   </div>
@@ -730,6 +731,7 @@ async function loadDescription() {
       <div class="desc-prop-addr">${esc(p.address||'Address not set')}</div>
       <div class="desc-divider"></div>
       <div class="desc-text">${((p.property_description||'No description added yet.').replace(/\n/g,'<br>'))}</div>
+      ${p['property-link'] ? `<div style="margin-top:14px"><a href="${esc(p['property-link'])}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--b);text-decoration:none;background:var(--b-l);padding:7px 14px;border-radius:20px;border:1px solid #C5D9F0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>View on Google Maps</a></div>` : ''}
     </div>
     <div class="card">
       <div class="card-ttl">Property Details</div>
@@ -741,6 +743,7 @@ async function loadDescription() {
   document.getElementById('edit-prop-addr').value = p.address||'';
   document.getElementById('edit-prop-beds').value = p.number_of_rooms||'';
   document.getElementById('edit-prop-desc').value = p.property_description||'';
+  document.getElementById('edit-prop-link').value = p['property-link']||'';
 }
 
 // ── EARNINGS ──
@@ -981,7 +984,8 @@ async function saveDescription() {
   const update = {
     address:              (document.getElementById('edit-prop-addr').value||'').trim() || null,
     number_of_rooms:      parseInt(document.getElementById('edit-prop-beds').value)||null,
-    property_description: (document.getElementById('edit-prop-desc').value||'').trim() || null
+    property_description: (document.getElementById('edit-prop-desc').value||'').trim() || null,
+    'property-link':      (document.getElementById('edit-prop-link').value||'').trim() || null
   };
   // Remove null values so we don't overwrite with nulls unintentionally
   Object.keys(update).forEach(k => { if (update[k] === null) delete update[k]; });
