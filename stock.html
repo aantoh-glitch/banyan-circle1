@@ -624,13 +624,24 @@ async function loadWarehouseView(){
   title.textContent = 'Warehouse Stock';
   empty.textContent = 'Loading…'; empty.style.display='block'; tbl.style.display='none';
   try{
-    const items = await api('/rest/v1/stock_items?select=id,name,current_qty,required_qty,critical_qty&order=name') || [];
+    const [items, logs] = await Promise.all([
+      api('/rest/v1/stock_items?select=id,name,current_qty,required_qty,critical_qty&order=name') || [],
+      api('/rest/v1/warehouse_stock?select=item_id,quantity,damaged_qty') || [],
+    ]);
     if(!items.length){ empty.textContent='No items found.'; return; }
+
+    // Compute cumulative qty per item from warehouse_stock log
+    const qtyMap = {};
+    (logs||[]).forEach(r => {
+      const net = (r.quantity ?? 0) - (r.damaged_qty ?? 0);
+      qtyMap[r.item_id] = (qtyMap[r.item_id] ?? 0) + net;
+    });
+
     document.getElementById('d-stock-thead').innerHTML=`<tr>
       <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
     </tr>`;
     document.getElementById('d-stock-tbody').innerHTML = items.map(i=>{
-      const qty    = i.current_qty ?? 0;
+      const qty    = qtyMap[i.id] ?? 0;
       const isCrit = i.critical_qty != null && qty <= i.critical_qty;
       return `<tr class="${isCrit?'critical-row':''}">
         <td style="font-weight:500">${i.name}</td>
@@ -757,16 +768,6 @@ async function saveWarehouseStock(){
   try{
     // 1. Insert warehouse_stock row
     await api('/rest/v1/warehouse_stock','POST',body);
-
-    // 2. Increment stock_items.current_qty — fetch fresh to avoid stale cache
-    if(netQty !== 0){
-      const freshItem = await api('/rest/v1/stock_items?select=current_qty&id=eq.'+itemId);
-      const currentWh = (freshItem && freshItem[0]?.current_qty) ?? ALL_ITEMS.find(i=>String(i.id)===String(itemId))?.current_qty ?? 0;
-      await api('/rest/v1/stock_items?id=eq.'+itemId,'PATCH',{current_qty: currentWh + netQty});
-      // Update local cache
-      const cached = ALL_ITEMS.find(i=>String(i.id)===String(itemId));
-      if(cached) cached.current_qty = currentWh + netQty;
-    }
 
     toast('Warehouse stock saved ✓');
     closeModal('modal-warehouse');
