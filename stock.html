@@ -26,7 +26,6 @@ html,body{min-height:100%;background:var(--bg);color:var(--text)}
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
 .ptab{padding:7px 15px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s;white-space:nowrap}
 .ptab.on{background:var(--teal-l);border-color:var(--teal);color:var(--teal);font-weight:500}
-/* toggle switch */
 .tog-wrap{display:flex;align-items:center;gap:10px}
 .tog{position:relative;width:44px;height:24px;flex-shrink:0}
 .tog input{opacity:0;width:0;height:0}
@@ -72,6 +71,13 @@ body.desktop .btn-sec:hover{border-color:var(--teal);color:var(--teal)}
 body.desktop .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .refund-section{display:none;padding:12px;background:var(--bg);border-radius:8px;margin-top:4px}
 
+/* dropdown menu */
+.dropdown{position:relative;display:inline-block}
+.dropdown-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);min-width:160px;z-index:100;overflow:hidden}
+.dropdown-menu.on{display:block}
+.dropdown-item{display:block;width:100%;padding:10px 14px;background:none;border:none;font-size:13px;font-family:inherit;color:var(--text);cursor:pointer;text-align:left;transition:background .1s}
+.dropdown-item:hover{background:var(--bg)}
+
 /* ═══ MOBILE ═══ */
 body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 0 48px}
@@ -87,11 +93,6 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-btn-secondary svg{width:18px;height:18px;stroke:var(--teal);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .m-btn-secondary:active{background:var(--teal-l)}
 .m-btn-wrap{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
-.log-filter-btn{padding:5px 12px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
-.log-filter-btn.on{background:#222;color:#fff;border-color:#222}
-.log-source-badge-warehouse{background:#e3f2fd;color:#1565c0}
-.log-source-badge-add{background:var(--g-l);color:#27500A}
-.log-source-badge-use{background:var(--a-l);color:#633806}
 .m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 20px 8px}
 .m-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .stock-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
@@ -143,41 +144,55 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   <!-- Property Filter Bar -->
   <div class="prop-filter-bar" id="d-prop-filter-bar">
     <span class="prop-filter-label">Filter:</span>
-    <button class="ptab on" data-prop="all" onclick="setPropFilter('all',this)">All</button>
+    <!-- property tabs injected dynamically; no "All" tab -->
   </div>
 
-  <!-- Action buttons (admin only) -->
+  <!-- Action buttons -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap" id="d-action-row">
-    <!-- Add Item: small, far left -->
-    <button class="btn-sec" id="d-btn-item" style="display:flex;align-items:center;gap:5px;font-size:11px;padding:6px 11px;color:var(--muted)">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Item
-    </button>
-    <!-- Spacer -->
+
+    <!-- Items dropdown (Add + Edit) -->
+    <div class="dropdown" id="items-dropdown">
+      <button class="btn-sec" id="d-btn-items" style="display:flex;align-items:center;gap:5px;font-size:13px" onclick="toggleDropdown('items-dd-menu')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Items
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="dropdown-menu" id="items-dd-menu">
+        <button class="dropdown-item" onclick="openAddItem()">+ Add Item</button>
+        <button class="dropdown-item" onclick="openEditItems()">✎ Edit Items</button>
+      </div>
+    </div>
+
     <div style="flex:1"></div>
+
     <!-- Show Log -->
     <button class="btn-sec" id="d-btn-log" style="display:flex;align-items:center;gap:6px;font-size:13px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
       Show Log
     </button>
+
     <!-- Add Warehouse Stock: blue -->
     <button id="d-btn-warehouse" style="display:flex;align-items:center;gap:6px;font-size:13px;padding:9px 16px;background:var(--b-l);color:var(--b);border:1.5px solid #bbdefb;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:500">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M2 10h20M12 7V3M8 7V4M16 7V4"/></svg>
       Add Warehouse Stock
     </button>
-    <button class="btn-sec" id="d-btn-use" style="display:flex;align-items:center;gap:6px;font-size:13px">
+
+    <!-- Add Stock -->
+    <button class="btn-sec" id="d-btn-add" style="display:flex;align-items:center;gap:6px;font-size:13px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Stock
+    </button>
+
+    <!-- Use Stock -->
+    <button class="btn-p" id="d-btn-use" style="display:flex;align-items:center;gap:6px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Use Stock
-    </button>
-    <button class="btn-p" id="d-btn-add" style="display:flex;align-items:center;gap:6px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Stock
     </button>
   </div>
 
   <div class="card">
-    <div class="card-ttl" id="d-stock-title">Current Inventory</div>
-    <div class="empty" id="d-empty-state">Select a filter or load data</div>
+    <div class="card-ttl" id="d-stock-title">Select a property or warehouse</div>
+    <div class="empty" id="d-empty-state">Select a filter above to view inventory</div>
     <table class="tbl" id="d-stock-tbl" style="display:none">
       <thead id="d-stock-thead"></thead>
       <tbody id="d-stock-tbody"></tbody>
@@ -218,44 +233,67 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 
 <!-- Add Item -->
 <div class="modal" id="modal-item">
-  <div class="modal-card" style="max-width:640px">
+  <div class="modal-card" style="max-width:480px">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Item</div>
-
     <div class="fg">
       <label class="fl">Item Name <span style="color:var(--r)">*</span></label>
       <input class="fc" id="item-name" type="text" placeholder="e.g. Hand Sanitiser"/>
     </div>
-
-    <div style="background:var(--teal-l);border-radius:8px;padding:12px 14px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--teal);margin-bottom:10px">Warehouse Defaults</div>
-      <div class="row-grid">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Required Qty</label>
-          <input class="fc" id="item-req-qty" type="number" min="0" placeholder="0"/>
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Critical Qty</label>
-          <input class="fc" id="item-crit-qty" type="number" min="0" placeholder="0"/>
-        </div>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Required Qty</label>
+        <input class="fc" id="item-req-qty" type="number" min="0" placeholder="0"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Critical Qty</label>
+        <input class="fc" id="item-crit-qty" type="number" min="0" placeholder="0"/>
       </div>
     </div>
-
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Per-Property Quantities</div>
-    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px">
-      <div style="display:grid;grid-template-columns:1fr 100px 100px;background:var(--bg);padding:7px 12px;border-bottom:1px solid var(--border)">
-        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Property</span>
-        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Required</span>
-        <span style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Critical</span>
-      </div>
-      <div id="item-prop-rows" style="max-height:240px;overflow-y:auto">
-        <div class="empty" style="padding:20px">Loading properties...</div>
-      </div>
-    </div>
-
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal('modal-item')">Cancel</button>
       <button class="btn-p" id="item-btn" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Items -->
+<div class="modal" id="modal-edit-items">
+  <div class="modal-card" style="max-width:560px">
+    <span class="modal-handle"></span>
+    <div class="modal-ttl">Edit Items</div>
+    <div id="edit-items-list" style="max-height:60vh;overflow-y:auto;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:4px">
+      <div class="empty">Loading…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-edit-items')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Single Item -->
+<div class="modal" id="modal-edit-single">
+  <div class="modal-card" style="max-width:420px">
+    <span class="modal-handle"></span>
+    <div class="modal-ttl">Edit Item</div>
+    <input type="hidden" id="edit-item-id"/>
+    <div class="fg">
+      <label class="fl">Item Name <span style="color:var(--r)">*</span></label>
+      <input class="fc" id="edit-item-name" type="text"/>
+    </div>
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl">Required Qty</label>
+        <input class="fc" id="edit-item-req" type="number" min="0"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Critical Qty</label>
+        <input class="fc" id="edit-item-crit" type="number" min="0"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-edit-single')">Cancel</button>
+      <button class="btn-p" id="edit-single-btn" onclick="saveEditItem()">Save</button>
     </div>
   </div>
 </div>
@@ -291,34 +329,35 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;padding:14px;background:var(--bg);border-radius:10px;margin-bottom:12px">
       <div class="tog-wrap">
-        <label class="tog"><input type="checkbox" id="wh-delivered"/><span class="tog-slider"></span></label>
-        <span class="tog-label">Delivered</span>
+        <label class="tog"><input type="checkbox" id="wh-checked"/><span class="tog-slider"></span></label>
+        <span class="tog-label">Checked for Damage</span>
       </div>
       <div class="tog-wrap">
-        <label class="tog"><input type="checkbox" id="wh-checked"/><span class="tog-slider"></span></label>
-        <span class="tog-label">Checked / Verified</span>
+        <label class="tog"><input type="checkbox" id="wh-returned" onchange="toggleReturnedSection()"/><span class="tog-slider"></span></label>
+        <span class="tog-label">Returned to Supplier</span>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl">Damaged Items</label>
-      <input class="fc" id="wh-damaged" type="number" min="0" placeholder="0" oninput="toggleRefund()"/>
-    </div>
+
+    <!-- Returned sub-section -->
     <div class="refund-section" id="wh-refund-section">
       <div class="fg">
         <div class="tog-wrap" style="margin-bottom:10px">
-          <label class="tog"><input type="checkbox" id="wh-returned"/><span class="tog-slider"></span></label>
-          <span class="tog-label">Returned to Supplier</span>
+          <label class="tog"><input type="checkbox" id="wh-refund-expected"/><span class="tog-slider"></span></label>
+          <span class="tog-label">Refund Expected</span>
         </div>
       </div>
       <div class="fg">
+        <div class="tog-wrap" style="margin-bottom:10px">
+          <label class="tog"><input type="checkbox" id="wh-refund-received" onchange="toggleRefundAmount()"/><span class="tog-slider"></span></label>
+          <span class="tog-label">Refund Received</span>
+        </div>
+      </div>
+      <div id="wh-refund-amt-wrap" style="display:none">
         <label class="fl">Refund Amount (₹)</label>
         <input class="fc" id="wh-refund-amt" type="number" min="0" step="0.01" placeholder="0"/>
       </div>
-      <div class="tog-wrap">
-        <label class="tog"><input type="checkbox" id="wh-refund-received"/><span class="tog-slider"></span></label>
-        <span class="tog-label">Refund Received</span>
-      </div>
     </div>
+
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal('modal-warehouse')">Cancel</button>
       <button class="btn-p" id="wh-btn" onclick="saveWarehouseStock()">Save</button>
@@ -326,12 +365,23 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   </div>
 </div>
 
-<!-- Show Log Modal -->
+<!-- Stock Log Modal -->
 <div class="modal" id="modal-log">
-  <div class="modal-card" style="max-width:780px;width:100%">
+  <div class="modal-card" style="max-width:860px;width:100%">
     <span class="modal-handle"></span>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div class="modal-ttl" style="margin-bottom:0">Warehouse Stock Log</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <div class="modal-ttl" style="margin-bottom:0">Stock Log</div>
+      <button onclick="downloadLogExcel()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--g-l);color:var(--g);border:1px solid #c5e6a0;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Excel
+      </button>
+    </div>
+    <!-- Log filter chips -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="log-filter-bar">
+      <button class="ptab on" data-lf="all" onclick="setLogFilter('all',this)">All</button>
+      <button class="ptab" data-lf="warehouse" onclick="setLogFilter('warehouse',this)">Warehouse In</button>
+      <button class="ptab" data-lf="add" onclick="setLogFilter('add',this)">Property In</button>
+      <button class="ptab" data-lf="use" onclick="setLogFilter('use',this)">Used</button>
     </div>
     <div id="log-content" style="min-height:120px">
       <div class="empty">Loading…</div>
@@ -346,26 +396,21 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 <div class="modal" id="modal-d-add">
   <div class="modal-card" style="max-width:600px;width:100%">
     <span class="modal-handle"></span>
-    <div class="modal-ttl">Add Stock</div>
-
-    <!-- Step 1: Item picker list -->
+    <div class="modal-ttl">Add Stock to Property</div>
     <div id="d-add-step1">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item to add stock to:</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item:</div>
       <input class="fc" id="d-add-search" type="text" placeholder="Search items…" oninput="filterAddItems('d')" style="margin-bottom:12px"/>
       <div id="d-add-items-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:320px;overflow-y:auto">
-        <div class="empty">Loading warehouse items…</div>
+        <div class="empty">Loading items…</div>
       </div>
     </div>
-
-    <!-- Step 2: Quantity entry -->
     <div id="d-add-step2" style="display:none">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 14px;background:var(--teal-l);border-radius:8px">
         <div>
           <div style="font-size:14px;font-weight:600" id="d-add-item-name"></div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Currently in warehouse: <strong id="d-add-item-current"></strong></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Property: <strong id="d-add-prop-label" style="color:var(--teal)"></strong></div>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Adding stock to: <strong id="d-add-prop-label" style="color:var(--teal)"></strong></div>
       <div class="fg">
         <label class="fl">Quantity to Add <span style="color:var(--r)">*</span></label>
         <input class="fc" id="d-add-qty" type="number" min="1" placeholder="Enter quantity"/>
@@ -375,7 +420,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
         <input class="fc" id="d-add-notes" type="text" placeholder="Optional notes"/>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-sec" id="d-add-back-btn" onclick="addStockBack('d')" style="display:none">← Back</button>
       <button class="btn-sec" onclick="closeModal('modal-d-add')">Cancel</button>
@@ -389,17 +433,13 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   <div class="modal-card" style="max-width:600px;width:100%">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Use Stock</div>
-
-    <!-- Step 1: Property inventory list -->
     <div id="d-use-step1">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Showing inventory for: <strong id="d-use-prop-label" style="color:var(--teal)"></strong></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Inventory for: <strong id="d-use-prop-label" style="color:var(--teal)"></strong></div>
       <input class="fc" id="d-use-search" type="text" placeholder="Search items…" oninput="filterUseItems('d')" style="margin:10px 0 12px"/>
       <div id="d-use-items-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:340px;overflow-y:auto">
         <div class="empty">Loading inventory…</div>
       </div>
     </div>
-
-    <!-- Step 2: Quantity entry -->
     <div id="d-use-step2" style="display:none">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 14px;background:var(--a-l);border-radius:8px">
         <div>
@@ -416,7 +456,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
         <input class="fc" id="d-use-notes" type="text" placeholder="Optional notes"/>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-sec" id="d-use-back-btn" onclick="useStockBack('d')" style="display:none">← Back</button>
       <button class="btn-sec" onclick="closeModal('modal-d-use')">Cancel</button>
@@ -430,25 +469,20 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Stock</div>
-
-    <!-- Step 1: Item picker list -->
     <div id="m-add-step1">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item to add stock to:</div>
       <input class="fc" id="m-add-search" type="text" placeholder="Search items…" oninput="filterAddItems('m')" style="margin-bottom:12px"/>
       <div id="m-add-items-list" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
-        <div class="empty">Loading warehouse items…</div>
+        <div class="empty">Loading items…</div>
       </div>
     </div>
-
-    <!-- Step 2: Quantity entry -->
     <div id="m-add-step2" style="display:none">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:14px;background:var(--teal-l);border-radius:10px">
         <div>
           <div style="font-size:16px;font-weight:600" id="m-add-item-name"></div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px">Currently in warehouse: <strong id="m-add-item-current"></strong></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">Property: <strong id="m-add-prop-label" style="color:var(--teal)"></strong></div>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Adding stock to: <strong id="m-add-prop-label" style="color:var(--teal)"></strong></div>
       <div class="fg">
         <label class="fl">Quantity to Add <span style="color:var(--r)">*</span></label>
         <input class="fc" id="m-add-qty" type="number" min="1" placeholder="Enter quantity"/>
@@ -458,7 +492,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
         <input class="fc" id="m-add-notes" type="text" placeholder="Optional notes"/>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-sec" id="m-add-back-btn" onclick="addStockBack('m')" style="display:none">← Back</button>
       <button class="btn-sec" onclick="closeModal('modal-m-add')">Cancel</button>
@@ -472,8 +505,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Use Stock</div>
-
-    <!-- Step 1: Property inventory list -->
     <div id="m-use-step1">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Inventory for: <strong id="m-use-prop-label" style="color:var(--teal)"></strong></div>
       <input class="fc" id="m-use-search" type="text" placeholder="Search items…" oninput="filterUseItems('m')" style="margin:10px 0 12px"/>
@@ -481,8 +512,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
         <div class="empty">Loading inventory…</div>
       </div>
     </div>
-
-    <!-- Step 2: Quantity entry -->
     <div id="m-use-step2" style="display:none">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:14px;background:var(--a-l);border-radius:10px">
         <div>
@@ -499,7 +528,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
         <input class="fc" id="m-use-notes" type="text" placeholder="Optional notes"/>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-sec" id="m-use-back-btn" onclick="useStockBack('m')" style="display:none">← Back</button>
       <button class="btn-sec" onclick="closeModal('modal-m-use')">Cancel</button>
@@ -511,6 +539,17 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 <div class="toast" id="toast"></div>
 
 <script>
+/* ═══════════════════════════════════════════════
+   SUPABASE CONFIG
+   Tables:
+     stock-item-list  — id, name, required_qty, critical_qty
+     stock-log        — id, item_id, item_name, property (null=warehouse),
+                        type ('warehouse'|'add'|'use'),
+                        quantity, price_per_unit, total_price,
+                        checked (bool), returned (bool),
+                        refund_expected (bool), refund_received (bool),
+                        refund_amount, notes, date, created_at
+   ═══════════════════════════════════════════════ */
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 const HDR = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
@@ -524,11 +563,12 @@ async function api(path, method, body){
 
 const IS_MOBILE = document.body.classList.contains('mobile');
 const IS_ADMIN  = window.ROLE === 'admin' || !IS_MOBILE;
-let ACTIVE_PROP = 'all';
-let ALL_ITEMS   = [];
-let PROPS_LIST  = []; // unique property names from landlords
+let ACTIVE_PROP = null; // null until a tab is selected
+let ALL_ITEMS   = [];   // from stock-item-list
+let PROPS_LIST  = [];   // from landlords
+let LOG_FILTER  = 'all';
 
-// Show correct view
+// ── Init views ──
 if(IS_MOBILE){
   document.getElementById('mobile-view').style.display='flex';
   document.getElementById('desktop-view').style.display='none';
@@ -539,16 +579,30 @@ if(IS_MOBILE){
   document.getElementById('desktop-view').style.display='block';
   document.getElementById('mobile-view').style.display='none';
   if(!IS_ADMIN){
-    document.getElementById('d-btn-item').style.display='none';
+    document.getElementById('d-btn-items').style.display='none';
     document.getElementById('d-btn-warehouse').style.display='none';
   }
 }
 
+// ── Helpers ──
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
 function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500); }
 function setBtn(id,loading,label){ const b=document.getElementById(id);if(b){b.disabled=loading;b.textContent=loading?'Saving…':(label||'Save');} }
 function fmt(n){ return n!=null?'₹'+Number(n).toLocaleString('en-IN'):'—'; }
+function fmtDate(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
+
+// Dropdown toggle
+function toggleDropdown(id){
+  const m = document.getElementById(id);
+  m.classList.toggle('on');
+}
+// Close dropdowns on outside click
+document.addEventListener('click', e => {
+  if(!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.remove('on'));
+  }
+});
 
 // ── Property filter pills ──
 function setPropFilter(prop, el){
@@ -558,7 +612,7 @@ function setPropFilter(prop, el){
   if(prop === 'warehouse'){
     loadWarehouseView();
   } else {
-    loadStockView(prop);
+    loadPropertyView(prop);
   }
 }
 
@@ -569,83 +623,72 @@ async function loadProps(){
     const dBar = document.getElementById('d-prop-filter-bar');
     PROPS_LIST.forEach(name=>{
       const b=document.createElement('button');
-      b.className='ptab';b.dataset.prop=name;b.textContent=name;
+      b.className='ptab'; b.dataset.prop=name; b.textContent=name;
       b.onclick=()=>setPropFilter(name,b);
       dBar.appendChild(b);
     });
+    // Warehouse tab always last
     const wBtn=document.createElement('button');
-    wBtn.className='ptab';wBtn.dataset.prop='warehouse';wBtn.textContent='Warehouse';
+    wBtn.className='ptab'; wBtn.dataset.prop='warehouse'; wBtn.textContent='Warehouse';
     wBtn.onclick=()=>setPropFilter('warehouse',wBtn);
     dBar.appendChild(wBtn);
+    // Auto-select first tab
+    if(PROPS_LIST.length){
+      const first = dBar.querySelector('.ptab[data-prop]');
+      if(first) first.click();
+    }
   } catch(e){ console.error('loadProps',e); }
 }
 
-// ── Render per-property rows in Add Item modal ──
-function renderPropRows(){
-  const container = document.getElementById('item-prop-rows');
-  if(!PROPS_LIST.length){
-    container.innerHTML='<div class="empty" style="padding:16px">No properties found.</div>';
-    return;
-  }
-  container.innerHTML = PROPS_LIST.map(name=>`
-    <div style="display:grid;grid-template-columns:1fr 100px 100px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;font-weight:500">${name}</span>
-      <input type="number" min="0" placeholder="—"
-        data-prop="${name}" data-type="req"
-        style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;outline:none"
-        onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
-      <input type="number" min="0" placeholder="—"
-        data-prop="${name}" data-type="crit"
-        style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;outline:none"
-        onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"/>
-    </div>
-  `).join('') + '<div style="height:4px"></div>';
-}
-
-// ── Load items catalogue ──
+// ── Load Items catalogue ──
 async function loadItems(){
   try{
-    ALL_ITEMS = await api('/rest/v1/stock_items?select=*&order=name') || [];
+    ALL_ITEMS = await api('/rest/v1/stock-item-list?select=*&order=name') || [];
     populateItemSelects();
   } catch(e){ console.error('loadItems',e); }
 }
 
 function populateItemSelects(){
   const sel = document.getElementById('wh-item');
-  sel.innerHTML = '<option value="">Select item…</option>' +
+  if(sel) sel.innerHTML = '<option value="">Select item…</option>' +
     ALL_ITEMS.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
 }
 
-// ── Warehouse stock view ──
+// ════════════════════════════════
+//  WAREHOUSE VIEW
+//  In Stock = cumulative warehouse-in (type='warehouse') minus damaged…
+//  Actually: warehouse in-stock = SUM(warehouse qty) - SUM(add qty to all properties)
+//  Because "add stock" moves items from warehouse → property
+// ════════════════════════════════
 async function loadWarehouseView(){
   const tbl = document.getElementById('d-stock-tbl');
   const empty = document.getElementById('d-empty-state');
   const title = document.getElementById('d-stock-title');
   title.textContent = 'Warehouse Stock';
-  empty.textContent = 'Loading…'; empty.style.display='block'; tbl.style.display='none';
+  empty.textContent='Loading…'; empty.style.display='block'; tbl.style.display='none';
   try{
     const [items, logs] = await Promise.all([
-      api('/rest/v1/stock_items?select=id,name,current_qty,required_qty,critical_qty&order=name') || [],
-      api('/rest/v1/warehouse_stock?select=item_id,quantity,damaged_qty') || [],
+      api('/rest/v1/stock-item-list?select=id,name,required_qty,critical_qty&order=name'),
+      api('/rest/v1/stock-log?select=item_id,type,quantity'),
     ]);
-    if(!items.length){ empty.textContent='No items found.'; return; }
+    if(!(items||[]).length){ empty.textContent='No items found.'; return; }
 
-    // Compute cumulative qty per item from warehouse_stock log
-    const qtyMap = {};
-    (logs||[]).forEach(r => {
-      const net = (r.quantity ?? 0) - (r.damaged_qty ?? 0);
-      qtyMap[r.item_id] = (qtyMap[r.item_id] ?? 0) + net;
+    // Warehouse in-stock = SUM(type='warehouse' qty) - SUM(type='add' qty) [transfers out to properties]
+    const whIn={}, propOut={};
+    (logs||[]).forEach(r=>{
+      if(r.type==='warehouse') whIn[r.item_id]=(whIn[r.item_id]||0)+(r.quantity||0);
+      if(r.type==='add')       propOut[r.item_id]=(propOut[r.item_id]||0)+(r.quantity||0);
     });
 
     document.getElementById('d-stock-thead').innerHTML=`<tr>
       <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
     </tr>`;
     document.getElementById('d-stock-tbody').innerHTML = items.map(i=>{
-      const qty    = qtyMap[i.id] ?? 0;
+      const qty = (whIn[i.id]||0) - (propOut[i.id]||0);
       const isCrit = i.critical_qty != null && qty <= i.critical_qty;
       return `<tr class="${isCrit?'critical-row':''}">
         <td style="font-weight:500">${i.name}</td>
-        <td>${qty}</td>
+        <td style="font-weight:600;color:${isCrit?'var(--r)':'var(--teal)'}">${qty}</td>
         <td>${i.required_qty??'—'}</td>
         <td>${i.critical_qty??'—'}</td>
         <td>${isCrit
@@ -654,145 +697,217 @@ async function loadWarehouseView(){
       </tr>`;
     }).join('');
     empty.style.display='none'; tbl.style.display='table';
-  } catch(e){ empty.textContent='Error loading warehouse data.'; console.error(e); }
+  } catch(e){ empty.textContent='Error: '+e.message; console.error(e); }
 }
 
-// ── General stock view ──
-async function loadStockView(prop){
+// ════════════════════════════════
+//  PROPERTY VIEW
+//  In Stock = SUM(type='add', property=prop, item) - SUM(type='use', property=prop, item)
+// ════════════════════════════════
+async function loadPropertyView(prop){
   const tbl = document.getElementById('d-stock-tbl');
   const empty = document.getElementById('d-empty-state');
   const title = document.getElementById('d-stock-title');
-  title.textContent = prop==='all' ? 'All Properties — Inventory' : prop+' — Inventory';
+  title.textContent = prop + ' — Inventory';
   empty.textContent='Loading…'; empty.style.display='block'; tbl.style.display='none';
-  if(prop==='all'){
-    empty.textContent='Select a property to view its stock, or select Warehouse.';
-    return;
-  }
   try{
-    const rows = await api('/rest/v1/stock_item_properties?select=item_id,property_name,current_qty,required_qty,critical_qty,stock_items(name)&property_name=eq.'+encodeURIComponent(prop)+'&order=stock_items(name)') || [];
-    if(!rows.length){ empty.textContent='No stock entries for '+prop+'.'; return; }
+    const [items, logs] = await Promise.all([
+      api('/rest/v1/stock-item-list?select=id,name,required_qty,critical_qty&order=name'),
+      api('/rest/v1/stock-log?select=item_id,type,quantity&property=eq.'+encodeURIComponent(prop)),
+    ]);
+    if(!(items||[]).length){ empty.textContent='No items found.'; return; }
+
+    // In stock per item = SUM(add) - SUM(use)
+    const addMap={}, useMap={};
+    (logs||[]).forEach(r=>{
+      if(r.type==='add') addMap[r.item_id]=(addMap[r.item_id]||0)+(r.quantity||0);
+      if(r.type==='use') useMap[r.item_id]=(useMap[r.item_id]||0)+(r.quantity||0);
+    });
+
+    // Only show items that have had any movement
+    const activeItems = items.filter(i => (addMap[i.id]||0) > 0 || (useMap[i.id]||0) > 0);
+    if(!activeItems.length){ empty.textContent='No stock entries for '+prop+'.'; return; }
+
     document.getElementById('d-stock-thead').innerHTML=`<tr>
       <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
     </tr>`;
-    document.getElementById('d-stock-tbody').innerHTML = rows.map(r=>{
-      const qty    = r.current_qty ?? 0;
-      const isCrit = r.critical_qty != null && qty <= r.critical_qty;
+    document.getElementById('d-stock-tbody').innerHTML = activeItems.map(i=>{
+      const qty = (addMap[i.id]||0) - (useMap[i.id]||0);
+      const isCrit = i.critical_qty != null && qty <= i.critical_qty;
       return `<tr class="${isCrit?'critical-row':''}">
-        <td style="font-weight:500">${r.stock_items?.name ?? r.item_id}</td>
-        <td>${qty}</td>
-        <td>${r.required_qty??'—'}</td>
-        <td>${r.critical_qty??'—'}</td>
+        <td style="font-weight:500">${i.name}</td>
+        <td style="font-weight:600;color:${isCrit?'var(--r)':'var(--teal)'}">${qty}</td>
+        <td>${i.required_qty??'—'}</td>
+        <td>${i.critical_qty??'—'}</td>
         <td>${isCrit
           ? '<span class="bdg bdg-r"><span class="critical-dot"></span>Below Critical</span>'
           : '<span class="bdg bdg-g"><span class="ok-dot"></span>OK</span>'}</td>
       </tr>`;
     }).join('');
     empty.style.display='none'; tbl.style.display='table';
-  } catch(e){ empty.textContent='Error loading stock for '+prop+'.'; console.error(e); }
+  } catch(e){ empty.textContent='Error: '+e.message; console.error(e); }
 }
 
-// ── Add Item ──
+// ════════════════════════════════
+//  ADD ITEM
+// ════════════════════════════════
+function openAddItem(){
+  document.getElementById('item-name').value='';
+  document.getElementById('item-req-qty').value='';
+  document.getElementById('item-crit-qty').value='';
+  openModal('modal-item');
+}
+
 async function saveItem(){
   const name = document.getElementById('item-name').value.trim();
-  const req  = parseInt(document.getElementById('item-req-qty').value)||0;
-  const crit = parseInt(document.getElementById('item-crit-qty').value)||0;
+  const req  = parseInt(document.getElementById('item-req-qty').value)||null;
+  const crit = parseInt(document.getElementById('item-crit-qty').value)||null;
   if(!name){ alert('Item name is required'); return; }
   setBtn('item-btn',true);
   try{
-    // 1. Save the item
-    const [saved] = await api('/rest/v1/stock_items','POST',{name,required_qty:req,critical_qty:crit});
-    const itemId = saved.id;
-
-    // 2. Collect per-property qty rows
-    const propRows = document.querySelectorAll('#item-prop-rows input[data-prop]');
-    const byProp = {};
-    propRows.forEach(inp=>{
-      const p = inp.dataset.prop;
-      const t = inp.dataset.type;
-      if(!byProp[p]) byProp[p]={property_name:p, item_id:itemId};
-      byProp[p][t==='req'?'required_qty':'critical_qty'] = parseInt(inp.value)||null;
-    });
-
-    // 3. Insert only rows where at least one qty is filled
-    const toInsert = Object.values(byProp).filter(r=>r.required_qty!=null||r.critical_qty!=null);
-    if(toInsert.length){
-      await api('/rest/v1/stock_item_properties','POST', toInsert);
-    }
-
+    await api('/rest/v1/stock-item-list','POST',{name,required_qty:req,critical_qty:crit});
     toast('Item added ✓');
     closeModal('modal-item');
-    document.getElementById('item-name').value='';
-    document.getElementById('item-req-qty').value='';
-    document.getElementById('item-crit-qty').value='';
-    renderPropRows(); // reset rows
     await loadItems();
   } catch(e){ alert('Error: '+e.message); }
   finally{ setBtn('item-btn',false,'Save Item'); }
 }
 
-// ── Warehouse stock helpers ──
+// ════════════════════════════════
+//  EDIT ITEMS
+// ════════════════════════════════
+async function openEditItems(){
+  openModal('modal-edit-items');
+  const container = document.getElementById('edit-items-list');
+  container.innerHTML = '<div class="empty">Loading…</div>';
+  try{
+    const items = await api('/rest/v1/stock-item-list?select=*&order=name') || [];
+    if(!items.length){ container.innerHTML='<div class="empty">No items yet.</div>'; return; }
+    container.innerHTML = `<table class="tbl">
+      <thead><tr><th>Name</th><th>Required</th><th>Critical</th><th></th></tr></thead>
+      <tbody>${items.map(i=>`<tr>
+        <td style="font-weight:500">${i.name}</td>
+        <td>${i.required_qty??'—'}</td>
+        <td>${i.critical_qty??'—'}</td>
+        <td>
+          <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="openEditSingle('${i.id}','${i.name.replace(/'/g,"\\'")}',${i.required_qty??'null'},${i.critical_qty??'null'})">Edit</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e){ container.innerHTML='<div class="empty">Error: '+e.message+'</div>'; }
+}
+
+function openEditSingle(id,name,req,crit){
+  document.getElementById('edit-item-id').value = id;
+  document.getElementById('edit-item-name').value = name;
+  document.getElementById('edit-item-req').value = req==='null'?'':req;
+  document.getElementById('edit-item-crit').value = crit==='null'?'':crit;
+  openModal('modal-edit-single');
+}
+
+async function saveEditItem(){
+  const id   = document.getElementById('edit-item-id').value;
+  const name = document.getElementById('edit-item-name').value.trim();
+  const req  = parseInt(document.getElementById('edit-item-req').value)||null;
+  const crit = parseInt(document.getElementById('edit-item-crit').value)||null;
+  if(!name){ alert('Name required'); return; }
+  setBtn('edit-single-btn',true);
+  try{
+    await api('/rest/v1/stock-item-list?id=eq.'+id,'PATCH',{name,required_qty:req,critical_qty:crit});
+    toast('Item updated ✓');
+    closeModal('modal-edit-single');
+    await loadItems();
+    openEditItems(); // refresh list
+  } catch(e){ alert('Error: '+e.message); }
+  finally{ setBtn('edit-single-btn',false,'Save'); }
+}
+
+// ════════════════════════════════
+//  WAREHOUSE STOCK FORM HELPERS
+// ════════════════════════════════
 function calcTotal(){
   const qty   = parseFloat(document.getElementById('wh-qty').value)||0;
   const price = parseFloat(document.getElementById('wh-price-per').value)||0;
   document.getElementById('wh-total').value = qty && price ? (qty*price).toFixed(2) : '';
 }
 
-function toggleRefund(){
-  const dmg = parseInt(document.getElementById('wh-damaged').value)||0;
-  document.getElementById('wh-refund-section').style.display = dmg > 0 ? 'block' : 'none';
+function toggleReturnedSection(){
+  const show = document.getElementById('wh-returned').checked;
+  document.getElementById('wh-refund-section').style.display = show ? 'block' : 'none';
+  if(!show){
+    document.getElementById('wh-refund-expected').checked = false;
+    document.getElementById('wh-refund-received').checked = false;
+    document.getElementById('wh-refund-amt').value = '';
+    document.getElementById('wh-refund-amt-wrap').style.display='none';
+  }
 }
 
-// ── Save Warehouse Stock ──
+function toggleRefundAmount(){
+  document.getElementById('wh-refund-amt-wrap').style.display =
+    document.getElementById('wh-refund-received').checked ? 'block' : 'none';
+}
+
+// ════════════════════════════════
+//  SAVE WAREHOUSE STOCK
+//  → inserts into stock-log with type='warehouse', property=null
+// ════════════════════════════════
 async function saveWarehouseStock(){
-  const itemId   = document.getElementById('wh-item').value;
-  const date     = document.getElementById('wh-date').value;
+  const itemId = document.getElementById('wh-item').value;
+  const date   = document.getElementById('wh-date').value;
   if(!itemId){ alert('Please select an item'); return; }
   if(!date){   alert('Please enter a date');   return; }
-  const addQty    = parseInt(document.getElementById('wh-qty').value)||0;
-  const damagedQty = parseInt(document.getElementById('wh-damaged').value)||0;
-  const netQty    = addQty - damagedQty;
+  const qty = parseInt(document.getElementById('wh-qty').value)||0;
+  if(qty<1){ alert('Please enter a quantity'); return; }
+
+  const item = ALL_ITEMS.find(i=>i.id===itemId)||{};
   const body = {
-    item_id:          itemId,
-    date:             date,
-    price_per_unit:   parseFloat(document.getElementById('wh-price-per').value)||null,
-    quantity:         addQty||null,
-    total_price:      parseFloat(document.getElementById('wh-total').value)||null,
-    delivered:        document.getElementById('wh-delivered').checked,
-    checked:          document.getElementById('wh-checked').checked,
-    damaged_qty:      damagedQty,
-    returned:         document.getElementById('wh-returned').checked,
-    refund_amount:    parseFloat(document.getElementById('wh-refund-amt').value)||null,
-    refund_received:  document.getElementById('wh-refund-received').checked,
+    item_id:         itemId,
+    item_name:       item.name||'',
+    property:        null,   // null = warehouse
+    type:            'warehouse',
+    date:            date,
+    quantity:        qty,
+    price_per_unit:  parseFloat(document.getElementById('wh-price-per').value)||null,
+    total_price:     parseFloat(document.getElementById('wh-total').value)||null,
+    checked:         document.getElementById('wh-checked').checked,
+    returned:        document.getElementById('wh-returned').checked,
+    refund_expected: document.getElementById('wh-refund-expected').checked,
+    refund_received: document.getElementById('wh-refund-received').checked,
+    refund_amount:   parseFloat(document.getElementById('wh-refund-amt').value)||null,
   };
   setBtn('wh-btn',true);
   try{
-    // 1. Insert warehouse_stock row
-    await api('/rest/v1/warehouse_stock','POST',body);
-
+    await api('/rest/v1/stock-log','POST',body);
     toast('Warehouse stock saved ✓');
     closeModal('modal-warehouse');
-    ['wh-item','wh-date','wh-price-per','wh-qty','wh-total','wh-damaged','wh-refund-amt'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.value='';
-    });
-    ['wh-delivered','wh-checked','wh-returned','wh-refund-received'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.checked=false;
-    });
-    document.getElementById('wh-refund-section').style.display='none';
+    resetWarehouseForm();
     if(ACTIVE_PROP==='warehouse') loadWarehouseView();
   } catch(e){ alert('Error: '+e.message); }
   finally{ setBtn('wh-btn',false,'Save'); }
 }
 
-// ── Add Stock ──
-let ADD_STOCK_ITEMS = []; // warehouse items with computed qty
-let ADD_SELECTED    = null; // {id, name, qty}
-let STAFF_ASSIGNED_PROP = ''; // fetched from staff table for ops login
+function resetWarehouseForm(){
+  ['wh-item','wh-date','wh-price-per','wh-qty','wh-total','wh-refund-amt'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  ['wh-checked','wh-returned','wh-refund-expected','wh-refund-received'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.checked=false;
+  });
+  document.getElementById('wh-refund-section').style.display='none';
+  document.getElementById('wh-refund-amt-wrap').style.display='none';
+}
+
+// ════════════════════════════════
+//  ADD STOCK (property ← warehouse)
+//  Inserts into stock-log with type='add', property=<prop>
+// ════════════════════════════════
+let ADD_STOCK_ITEMS  = [];
+let ADD_SELECTED     = null;
+let STAFF_ASSIGNED_PROP = '';
 
 async function openAddStock(){
-  const modalId = IS_MOBILE ? 'modal-m-add' : 'modal-d-add';
   const prefix  = IS_MOBILE ? 'm' : 'd';
-
-  // Reset state
+  const modalId = IS_MOBILE ? 'modal-m-add' : 'modal-d-add';
   ADD_SELECTED = null;
   document.getElementById(prefix+'-add-step1').style.display = 'block';
   document.getElementById(prefix+'-add-step2').style.display = 'none';
@@ -800,390 +915,374 @@ async function openAddStock(){
   document.getElementById(prefix+'-add-back-btn').style.display = 'none';
   document.getElementById(prefix+'-add-search').value = '';
   const listEl = document.getElementById(prefix+'-add-items-list');
-  listEl.innerHTML = '<div class="empty">Loading warehouse items…</div>';
-
+  listEl.innerHTML = '<div class="empty">Loading…</div>';
   openModal(modalId);
 
-  // Resolve property: for staff/ops, fetch assigned_property from staff table
-  let resolvedProp = window.STAFF_PROPERTY || ACTIVE_PROP;
+  // Resolve property
+  let resolvedProp = window.STAFF_PROPERTY || ACTIVE_PROP || '';
   if(IS_MOBILE && window.STAFF_PROPERTY){
     try{
       const staffRows = await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(window.STAFF_PROPERTY)+'&limit=1').catch(()=>[]);
-      if(staffRows && staffRows[0]?.assigned_property){
-        resolvedProp = staffRows[0].assigned_property;
-      }
+      if(staffRows?.[0]?.assigned_property) resolvedProp = staffRows[0].assigned_property;
     } catch(e){}
   }
-  STAFF_ASSIGNED_PROP = resolvedProp || 'Warehouse';
+  if(!IS_MOBILE && (!resolvedProp || resolvedProp==='warehouse')){
+    listEl.innerHTML='<div class="empty" style="padding:24px">Please select a property tab first.</div>';
+    return;
+  }
+  STAFF_ASSIGNED_PROP = resolvedProp;
   document.getElementById(prefix+'-add-prop-label').textContent = STAFF_ASSIGNED_PROP;
 
-  // Fetch items + warehouse_stock log, compute cumulative qty
   try{
-    const [items, logs] = await Promise.all([
-      api('/rest/v1/stock_items?select=id,name,required_qty,critical_qty&order=name'),
-      api('/rest/v1/warehouse_stock?select=item_id,quantity,damaged_qty'),
-    ]);
-
-    // Sum warehouse_stock per item
-    const qtyMap = {};
-    (logs||[]).forEach(r => {
-      const net = (r.quantity ?? 0) - (r.damaged_qty ?? 0);
-      qtyMap[r.item_id] = (qtyMap[r.item_id] ?? 0) + net;
-    });
-
-    ADD_STOCK_ITEMS = (items||[]).map(i=>({
-      id:   i.id,
-      name: i.name,
-      qty:  qtyMap[i.id] ?? 0,
-      req:  i.required_qty,
-      crit: i.critical_qty,
-    }));
+    ADD_STOCK_ITEMS = ALL_ITEMS.map(i=>({id:i.id,name:i.name,req:i.required_qty,crit:i.critical_qty}));
     renderAddStockList(prefix, ADD_STOCK_ITEMS);
   } catch(e){
-    listEl.innerHTML = '<div class="empty">Error loading items: '+e.message+'</div>';
+    listEl.innerHTML = '<div class="empty">Error: '+e.message+'</div>';
   }
 }
 
 function renderAddStockList(prefix, items){
   const listEl = document.getElementById(prefix+'-add-items-list');
-  if(!items.length){
-    listEl.innerHTML='<div class="empty">No warehouse items found.</div>';
-    return;
-  }
-  listEl.innerHTML = items.map(() => {
-    const isCrit = false; // placeholder, replaced below
-    return '';
-  }).join(''); // dummy — we build via DOM below
-
-  // Build rows via DOM so we can attach closures safely
+  if(!items.length){ listEl.innerHTML='<div class="empty">No items found.</div>'; return; }
   listEl.innerHTML = '';
-  items.forEach(item => {
-    const isCrit = item.crit != null && item.qty <= item.crit;
+  items.forEach(item=>{
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
-    row.onmouseenter = () => row.style.background = 'var(--bg)';
-    row.onmouseleave = () => row.style.background = '';
-    row.innerHTML = `
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isCrit?'var(--r)':'var(--g)'};flex-shrink:0;margin-right:2px"></span>
+    row.onmouseenter=()=>row.style.background='var(--bg)';
+    row.onmouseleave=()=>row.style.background='';
+    row.innerHTML=`
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">In stock: ${item.qty}${item.req!=null?' · Required: '+item.req:''}</div>
+        <div style="font-size:13px;font-weight:500">${item.name}</div>
+        ${item.req!=null?`<div style="font-size:11px;color:var(--muted);margin-top:2px">Required: ${item.req}</div>`:''}
       </div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
-    row.addEventListener('click', () => selectAddItem(prefix, item));
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin:round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    row.addEventListener('click',()=>selectAddItem(prefix,item));
     listEl.appendChild(row);
   });
 }
 
 function filterAddItems(prefix){
   const q = document.getElementById(prefix+'-add-search').value.toLowerCase();
-  const filtered = q ? ADD_STOCK_ITEMS.filter(i=>i.name.toLowerCase().includes(q)) : ADD_STOCK_ITEMS;
-  renderAddStockList(prefix, filtered);
+  renderAddStockList(prefix, q ? ADD_STOCK_ITEMS.filter(i=>i.name.toLowerCase().includes(q)) : ADD_STOCK_ITEMS);
 }
 
 function selectAddItem(prefix, item){
-  ADD_SELECTED = {id: item.id, name: item.name, qty: item.qty};
-  document.getElementById(prefix+'-add-step1').style.display = 'none';
-  document.getElementById(prefix+'-add-step2').style.display = 'block';
-  document.getElementById(prefix+'-add-item-name').textContent = item.name;
-  document.getElementById(prefix+'-add-item-current').textContent = item.qty;
-  document.getElementById(prefix+'-add-qty').value = '';
-  document.getElementById(prefix+'-add-notes').value = '';
-  document.getElementById(prefix+'-add-btn').style.display = '';
-  document.getElementById(prefix+'-add-back-btn').style.display = '';
-  setTimeout(()=>document.getElementById(prefix+'-add-qty').focus(), 100);
+  ADD_SELECTED = {id:item.id, name:item.name};
+  document.getElementById(prefix+'-add-step1').style.display='none';
+  document.getElementById(prefix+'-add-step2').style.display='block';
+  document.getElementById(prefix+'-add-item-name').textContent=item.name;
+  document.getElementById(prefix+'-add-qty').value='';
+  document.getElementById(prefix+'-add-notes').value='';
+  document.getElementById(prefix+'-add-btn').style.display='';
+  document.getElementById(prefix+'-add-back-btn').style.display='';
+  setTimeout(()=>document.getElementById(prefix+'-add-qty').focus(),100);
 }
 
 function addStockBack(prefix){
-  ADD_SELECTED = null;
-  document.getElementById(prefix+'-add-step2').style.display = 'none';
-  document.getElementById(prefix+'-add-step1').style.display = 'block';
-  document.getElementById(prefix+'-add-btn').style.display   = 'none';
-  document.getElementById(prefix+'-add-back-btn').style.display = 'none';
+  ADD_SELECTED=null;
+  document.getElementById(prefix+'-add-step2').style.display='none';
+  document.getElementById(prefix+'-add-step1').style.display='block';
+  document.getElementById(prefix+'-add-btn').style.display='none';
+  document.getElementById(prefix+'-add-back-btn').style.display='none';
 }
 
 async function saveAddStock(prefix){
   if(!ADD_SELECTED){ alert('Please select an item'); return; }
   const qty = parseInt(document.getElementById(prefix+'-add-qty').value)||0;
-  if(qty < 1){ alert('Please enter a quantity of at least 1'); return; }
-  if(qty > ADD_SELECTED.qty){ alert('Cannot add more than warehouse stock ('+ADD_SELECTED.qty+')'); return; }
+  if(qty<1){ alert('Please enter a quantity of at least 1'); return; }
   const notes = document.getElementById(prefix+'-add-notes').value.trim();
-  const btn   = document.getElementById(prefix+'-add-btn');
-  btn.disabled = true; btn.textContent = 'Saving…';
+  const btn = document.getElementById(prefix+'-add-btn');
+  btn.disabled=true; btn.textContent='Saving…';
   try{
-    const encProp = encodeURIComponent(STAFF_ASSIGNED_PROP);
-    const encItem = encodeURIComponent(ADD_SELECTED.id);
-
-    // 1. Get current stock_item_properties row for this property+item
-    const propRows = await api('/rest/v1/stock_item_properties?item_id=eq.'+encItem+'&property_name=eq.'+encProp+'&select=id,current_qty');
-    
-    if(propRows && propRows.length > 0){
-      // Row exists — PATCH current_qty
-      const row = propRows[0];
-      const newPropQty = (row.current_qty ?? 0) + qty;
-      await api('/rest/v1/stock_item_properties?id=eq.'+row.id, 'PATCH', {current_qty: newPropQty});
-    } else {
-      // No row yet — INSERT with current_qty
-      await api('/rest/v1/stock_item_properties', 'POST', {
-        item_id:       ADD_SELECTED.id,
-        property_name: STAFF_ASSIGNED_PROP,
-        current_qty:   qty,
-      });
-    }
-
-    // 2. Log the transfer into warehouse_stock with property_name
-    await api('/rest/v1/warehouse_stock', 'POST', {
-      item_id:       ADD_SELECTED.id,
-      date:          new Date().toISOString().split('T')[0],
-      quantity:      qty,
-      property_name: STAFF_ASSIGNED_PROP,
-      notes:         notes || null,
+    await api('/rest/v1/stock-log','POST',{
+      item_id:   ADD_SELECTED.id,
+      item_name: ADD_SELECTED.name,
+      property:  STAFF_ASSIGNED_PROP,
+      type:      'add',
+      date:      new Date().toISOString().split('T')[0],
+      quantity:  qty,
+      notes:     notes||null,
     });
-
     toast('Stock added ✓');
-    closeModal(IS_MOBILE ? 'modal-m-add' : 'modal-d-add');
+    closeModal(IS_MOBILE?'modal-m-add':'modal-d-add');
     if(!IS_MOBILE){
-      if(ACTIVE_PROP === 'warehouse') loadWarehouseView();
-      else if(ACTIVE_PROP === STAFF_ASSIGNED_PROP) loadStockView(ACTIVE_PROP);
+      if(ACTIVE_PROP==='warehouse') loadWarehouseView();
+      else if(ACTIVE_PROP===STAFF_ASSIGNED_PROP) loadPropertyView(ACTIVE_PROP);
+    } else {
+      loadMobileStock();
     }
   } catch(e){ alert('Error: '+e.message); }
-  finally{ btn.disabled = false; btn.textContent = 'Add Stock'; }
+  finally{ btn.disabled=false; btn.textContent='Add Stock'; }
 }
 
-// ── Use Stock ──
-let USE_STOCK_ITEMS  = []; // property inventory computed from stock_log - stock_usage
-let USE_SELECTED     = null; // {id, name, qty}
-let USE_PROP         = '';   // resolved property name
+// ════════════════════════════════
+//  USE STOCK
+//  Inserts into stock-log with type='use', property=<prop>
+//  In-stock is computed live
+// ════════════════════════════════
+let USE_STOCK_ITEMS = [];
+let USE_SELECTED    = null;
+let USE_PROP        = '';
 
 async function openUseStock(){
   const prefix  = IS_MOBILE ? 'm' : 'd';
   const modalId = IS_MOBILE ? 'modal-m-use' : 'modal-d-use';
-
-  // Reset state
-  USE_SELECTED = null;
-  document.getElementById(prefix+'-use-step1').style.display = 'block';
-  document.getElementById(prefix+'-use-step2').style.display = 'none';
-  document.getElementById(prefix+'-use-btn').style.display   = 'none';
-  document.getElementById(prefix+'-use-back-btn').style.display = 'none';
-  document.getElementById(prefix+'-use-search').value = '';
-  const listEl = document.getElementById(prefix+'-use-items-list');
-  listEl.innerHTML = '<div class="empty">Loading inventory…</div>';
-
+  USE_SELECTED=null;
+  document.getElementById(prefix+'-use-step1').style.display='block';
+  document.getElementById(prefix+'-use-step2').style.display='none';
+  document.getElementById(prefix+'-use-btn').style.display='none';
+  document.getElementById(prefix+'-use-back-btn').style.display='none';
+  document.getElementById(prefix+'-use-search').value='';
+  const listEl=document.getElementById(prefix+'-use-items-list');
+  listEl.innerHTML='<div class="empty">Loading…</div>';
   openModal(modalId);
 
-  // Resolve property
-  let resolvedProp = IS_MOBILE ? (window.STAFF_PROPERTY || '') : ACTIVE_PROP;
+  let resolvedProp = IS_MOBILE ? (window.STAFF_PROPERTY||'') : ACTIVE_PROP||'';
   if(IS_MOBILE && window.STAFF_PROPERTY){
     try{
-      const staffRows = await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(window.STAFF_PROPERTY)+'&limit=1').catch(()=>[]);
-      if(staffRows && staffRows[0]?.assigned_property) resolvedProp = staffRows[0].assigned_property;
+      const sr=await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(window.STAFF_PROPERTY)+'&limit=1').catch(()=>[]);
+      if(sr?.[0]?.assigned_property) resolvedProp=sr[0].assigned_property;
     } catch(e){}
   }
-  // On desktop, if no specific property selected, prompt to pick one
-  if(!IS_MOBILE && (resolvedProp === 'all' || resolvedProp === 'warehouse' || !resolvedProp)){
-    listEl.innerHTML = '<div class="empty" style="padding:24px">Please select a specific property filter first, then click Use Stock.</div>';
-    document.getElementById(prefix+'-use-prop-label').textContent = 'No property selected';
+  if(!IS_MOBILE && (!resolvedProp || resolvedProp==='warehouse')){
+    listEl.innerHTML='<div class="empty" style="padding:24px">Please select a specific property filter first.</div>';
+    document.getElementById(prefix+'-use-prop-label').textContent='No property selected';
     return;
   }
-  USE_PROP = resolvedProp;
-  document.getElementById(prefix+'-use-prop-label').textContent = USE_PROP;
-  if(document.getElementById(prefix+'-use-item-prop')) document.getElementById(prefix+'-use-item-prop').textContent = USE_PROP;
+  USE_PROP=resolvedProp;
+  document.getElementById(prefix+'-use-prop-label').textContent=USE_PROP;
+  if(document.getElementById(prefix+'-use-item-prop'))
+    document.getElementById(prefix+'-use-item-prop').textContent=USE_PROP;
 
   try{
-    // Read current_qty directly from stock_item_properties for this property
-    const encProp = encodeURIComponent(USE_PROP);
-    const rows = await api('/rest/v1/stock_item_properties?select=id,item_id,current_qty,required_qty,critical_qty,stock_items(name)&property_name=eq.'+encProp+'&current_qty=gt.0') || [];
+    // Compute in-stock per item from stock-log for this property
+    const logs = await api('/rest/v1/stock-log?select=item_id,type,quantity&property=eq.'+encodeURIComponent(USE_PROP)) || [];
+    const addMap={}, useMap={};
+    logs.forEach(r=>{
+      if(r.type==='add') addMap[r.item_id]=(addMap[r.item_id]||0)+(r.quantity||0);
+      if(r.type==='use') useMap[r.item_id]=(useMap[r.item_id]||0)+(r.quantity||0);
+    });
 
-    USE_STOCK_ITEMS = rows
-      .map(r => ({
-        rowId: r.id,
-        id:    r.item_id,
-        name:  r.stock_items?.name || r.item_id,
-        qty:   r.current_qty ?? 0,
-        crit:  r.critical_qty,
-      }))
-      .filter(i => i.qty > 0)
-      .sort((a,b) => a.name.localeCompare(b.name));
+    USE_STOCK_ITEMS = ALL_ITEMS
+      .map(i=>({ id:i.id, name:i.name, qty:(addMap[i.id]||0)-(useMap[i.id]||0), crit:i.critical_qty }))
+      .filter(i=>i.qty>0)
+      .sort((a,b)=>a.name.localeCompare(b.name));
 
     renderUseStockList(prefix, USE_STOCK_ITEMS);
-  } catch(e){
-    listEl.innerHTML = '<div class="empty">Error loading inventory: '+e.message+'</div>';
-  }
+  } catch(e){ listEl.innerHTML='<div class="empty">Error: '+e.message+'</div>'; }
 }
 
 function renderUseStockList(prefix, items){
-  const listEl = document.getElementById(prefix+'-use-items-list');
-  if(!items.length){
-    listEl.innerHTML = '<div class="empty" style="padding:24px">No stock available for '+USE_PROP+'.</div>';
-    return;
-  }
-  listEl.innerHTML = '';
-  items.forEach(item => {
-    const isLow = item.crit != null ? item.qty <= item.crit : item.qty <= 3;
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
-    row.onmouseenter = () => row.style.background = 'var(--bg)';
-    row.onmouseleave = () => row.style.background = '';
-    row.innerHTML = `
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isLow?'var(--r)':'var(--g)'};flex-shrink:0;margin-right:2px"></span>
+  const listEl=document.getElementById(prefix+'-use-items-list');
+  if(!items.length){ listEl.innerHTML='<div class="empty" style="padding:24px">No stock available for '+USE_PROP+'.</div>'; return; }
+  listEl.innerHTML='';
+  items.forEach(item=>{
+    const isLow = item.crit!=null ? item.qty<=item.crit : item.qty<=3;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
+    row.onmouseenter=()=>row.style.background='var(--bg)';
+    row.onmouseleave=()=>row.style.background='';
+    row.innerHTML=`
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isLow?'var(--r)':'var(--g)'};flex-shrink:0"></span>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
+        <div style="font-size:13px;font-weight:500">${item.name}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Available: <span style="${isLow?'color:var(--r);font-weight:700':'color:var(--g);font-weight:600'}">${item.qty}</span></div>
       </div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
-    row.addEventListener('click', () => selectUseItem(prefix, item));
+    row.addEventListener('click',()=>selectUseItem(prefix,item));
     listEl.appendChild(row);
   });
 }
 
 function filterUseItems(prefix){
-  const q = document.getElementById(prefix+'-use-search').value.toLowerCase();
-  const filtered = q ? USE_STOCK_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : USE_STOCK_ITEMS;
-  renderUseStockList(prefix, filtered);
+  const q=document.getElementById(prefix+'-use-search').value.toLowerCase();
+  renderUseStockList(prefix, q?USE_STOCK_ITEMS.filter(i=>i.name.toLowerCase().includes(q)):USE_STOCK_ITEMS);
 }
 
-function selectUseItem(prefix, item){
-  USE_SELECTED = {rowId: item.rowId, id: item.id, name: item.name, qty: item.qty};
-  document.getElementById(prefix+'-use-step1').style.display = 'none';
-  document.getElementById(prefix+'-use-step2').style.display = 'block';
-  document.getElementById(prefix+'-use-item-name').textContent = item.name;
-  document.getElementById(prefix+'-use-item-current').textContent = item.qty;
-  document.getElementById(prefix+'-use-item-prop').textContent = USE_PROP;
-  document.getElementById(prefix+'-use-qty').value = '';
-  document.getElementById(prefix+'-use-notes').value = '';
-  document.getElementById(prefix+'-use-btn').style.display = '';
-  document.getElementById(prefix+'-use-back-btn').style.display = '';
-  setTimeout(()=>document.getElementById(prefix+'-use-qty').focus(), 100);
+function selectUseItem(prefix,item){
+  USE_SELECTED={id:item.id,name:item.name,qty:item.qty};
+  document.getElementById(prefix+'-use-step1').style.display='none';
+  document.getElementById(prefix+'-use-step2').style.display='block';
+  document.getElementById(prefix+'-use-item-name').textContent=item.name;
+  document.getElementById(prefix+'-use-item-current').textContent=item.qty;
+  document.getElementById(prefix+'-use-item-prop').textContent=USE_PROP;
+  document.getElementById(prefix+'-use-qty').value='';
+  document.getElementById(prefix+'-use-notes').value='';
+  document.getElementById(prefix+'-use-btn').style.display='';
+  document.getElementById(prefix+'-use-back-btn').style.display='';
+  setTimeout(()=>document.getElementById(prefix+'-use-qty').focus(),100);
 }
 
 function useStockBack(prefix){
-  USE_SELECTED = null;
-  document.getElementById(prefix+'-use-step2').style.display = 'none';
-  document.getElementById(prefix+'-use-step1').style.display = 'block';
-  document.getElementById(prefix+'-use-btn').style.display   = 'none';
-  document.getElementById(prefix+'-use-back-btn').style.display = 'none';
+  USE_SELECTED=null;
+  document.getElementById(prefix+'-use-step2').style.display='none';
+  document.getElementById(prefix+'-use-step1').style.display='block';
+  document.getElementById(prefix+'-use-btn').style.display='none';
+  document.getElementById(prefix+'-use-back-btn').style.display='none';
 }
 
 async function saveUseStock(prefix){
   if(!USE_SELECTED){ alert('Please select an item'); return; }
-  const qty = parseInt(document.getElementById(prefix+'-use-qty').value)||0;
-  if(qty < 1){ alert('Please enter a quantity of at least 1'); return; }
-  if(qty > USE_SELECTED.qty){ alert('Cannot use more than available stock ('+USE_SELECTED.qty+')'); return; }
-  const btn = document.getElementById(prefix+'-use-btn');
-  btn.disabled = true; btn.textContent = 'Saving…';
+  const qty=parseInt(document.getElementById(prefix+'-use-qty').value)||0;
+  if(qty<1){ alert('Please enter a quantity of at least 1'); return; }
+  if(qty>USE_SELECTED.qty){ alert('Cannot use more than available ('+USE_SELECTED.qty+')'); return; }
+  const notes=document.getElementById(prefix+'-use-notes').value.trim();
+  const btn=document.getElementById(prefix+'-use-btn');
+  btn.disabled=true; btn.textContent='Saving…';
   try{
-    const newQty = USE_SELECTED.qty - qty;
-    await api('/rest/v1/stock_item_properties?id=eq.'+USE_SELECTED.rowId, 'PATCH', {current_qty: newQty});
-    toast('Stock usage recorded ✓');
-    closeModal(IS_MOBILE ? 'modal-m-use' : 'modal-d-use');
-    if(!IS_MOBILE && ACTIVE_PROP !== 'all' && ACTIVE_PROP !== 'warehouse') loadStockView(ACTIVE_PROP);
+    await api('/rest/v1/stock-log','POST',{
+      item_id:   USE_SELECTED.id,
+      item_name: USE_SELECTED.name,
+      property:  USE_PROP,
+      type:      'use',
+      date:      new Date().toISOString().split('T')[0],
+      quantity:  qty,
+      notes:     notes||null,
+    });
+    toast('Usage recorded ✓');
+    closeModal(IS_MOBILE?'modal-m-use':'modal-d-use');
+    if(!IS_MOBILE && ACTIVE_PROP!=='warehouse') loadPropertyView(ACTIVE_PROP);
+    else if(IS_MOBILE) loadMobileStock();
   } catch(e){ alert('Error: '+e.message); }
-  finally{ btn.disabled = false; btn.textContent = 'Use Stock'; }
+  finally{ btn.disabled=false; btn.textContent='Use Stock'; }
+}
+
+// ════════════════════════════════
+//  STOCK LOG
+// ════════════════════════════════
+let LOG_CACHE = [];
+
+function setLogFilter(source, el){
+  LOG_FILTER = source;
+  document.querySelectorAll('#log-filter-bar .ptab').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderLog(LOG_CACHE);
+}
+
+async function loadStockLog(){
+  const container = document.getElementById('log-content');
+  container.innerHTML = '<div class="empty">Loading…</div>';
+  try{
+    const rows = await api('/rest/v1/stock-log?select=*&order=date.desc,created_at.desc&limit=500') || [];
+    LOG_CACHE = rows;
+    renderLog(rows);
+  } catch(e){ container.innerHTML='<div class="empty">Error: '+e.message+'</div>'; }
+}
+
+function renderLog(rows){
+  const container = document.getElementById('log-content');
+  const filtered = LOG_FILTER==='all' ? rows : rows.filter(r=>r.type===LOG_FILTER);
+  if(!filtered.length){ container.innerHTML='<div class="empty">No entries.</div>'; return; }
+
+  const typeLabel = t => t==='warehouse'?'<span class="bdg" style="background:#e3f2fd;color:#1565c0">Warehouse In</span>'
+    : t==='add'?'<span class="bdg bdg-g">Property In</span>'
+    : '<span class="bdg bdg-a">Used</span>';
+
+  container.innerHTML=`<div style="overflow-x:auto"><table class="tbl">
+    <thead><tr>
+      <th>Date</th><th>Type</th><th>Item</th><th>Property</th><th>Qty</th>
+      <th>Price/Unit</th><th>Total</th><th>Flags</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${filtered.map(r=>{
+      const flags=[
+        r.checked?'Checked':null,
+        r.returned?'Returned':null,
+        r.refund_expected?'Refund Exp.':null,
+        r.refund_received?`Refund Rcvd${r.refund_amount?(' ₹'+Number(r.refund_amount).toLocaleString('en-IN')):''}`:null,
+      ].filter(Boolean).join(' · ')||'—';
+      return `<tr>
+        <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
+        <td>${typeLabel(r.type)}</td>
+        <td style="font-weight:500">${r.item_name||'—'}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.property||'Warehouse'}</td>
+        <td style="font-weight:600">${r.quantity??'—'}</td>
+        <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
+        <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
+        <td style="font-size:11px;color:var(--muted)">${flags}</td>
+        <td style="font-size:12px;color:var(--muted)">${r.notes||'—'}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ════════════════════════════════
+//  DOWNLOAD LOG AS EXCEL (CSV)
+// ════════════════════════════════
+function downloadLogExcel(){
+  const rows = LOG_FILTER==='all' ? LOG_CACHE : LOG_CACHE.filter(r=>r.type===LOG_FILTER);
+  if(!rows.length){ alert('No data to download'); return; }
+  const headers=['Date','Type','Item','Property','Quantity','Price/Unit','Total Price','Checked','Returned','Refund Expected','Refund Received','Refund Amount','Notes'];
+  const csvRows=[headers.join(','),...rows.map(r=>[
+    fmtDate(r.date||r.created_at),
+    r.type==='warehouse'?'Warehouse In':r.type==='add'?'Property In':'Used',
+    '"'+(r.item_name||'').replace(/"/g,'""')+'"',
+    '"'+(r.property||'Warehouse').replace(/"/g,'""')+'"',
+    r.quantity??'',
+    r.price_per_unit??'',
+    r.total_price??'',
+    r.checked?'Yes':'',
+    r.returned?'Yes':'',
+    r.refund_expected?'Yes':'',
+    r.refund_received?'Yes':'',
+    r.refund_amount??'',
+    '"'+(r.notes||'').replace(/"/g,'""')+'"',
+  ].join(','))];
+  const blob=new Blob([csvRows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='stock-log.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════
+//  MOBILE: load property stock
+// ════════════════════════════════
+async function loadMobileStock(){
+  const prop = window.STAFF_PROPERTY;
+  const listEl = document.getElementById('m-stock-list');
+  if(!prop){ listEl.innerHTML='<div class="empty">No property assigned.</div>'; return; }
+  try{
+    const logs = await api('/rest/v1/stock-log?select=item_id,type,quantity&property=eq.'+encodeURIComponent(prop)) || [];
+    const addMap={}, useMap={};
+    logs.forEach(r=>{
+      if(r.type==='add') addMap[r.item_id]=(addMap[r.item_id]||0)+(r.quantity||0);
+      if(r.type==='use') useMap[r.item_id]=(useMap[r.item_id]||0)+(r.quantity||0);
+    });
+
+    const activeItems = ALL_ITEMS
+      .map(i=>({...i, qty:(addMap[i.id]||0)-(useMap[i.id]||0)}))
+      .filter(i=>i.qty>0||(addMap[i.id]||0)>0);
+
+    if(!activeItems.length){ listEl.innerHTML='<div class="empty">No stock for this property yet.</div>'; return; }
+    listEl.innerHTML = activeItems.map(i=>{
+      const isCrit = i.critical_qty!=null && i.qty<=i.critical_qty;
+      return `<div class="stock-card${isCrit?' low':''}">
+        <div class="card-left">
+          <div class="card-name">${i.name}</div>
+          <div class="card-meta">Required: ${i.required_qty??'—'} · Critical: ${i.critical_qty??'—'}</div>
+        </div>
+        <div class="card-right">
+          <div style="font-size:18px;font-weight:700;color:${isCrit?'var(--r)':'var(--g)'}">${i.qty}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${isCrit?'LOW':'in stock'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ listEl.innerHTML='<div class="empty">Error: '+e.message+'</div>'; }
 }
 
 // ── Desktop button wiring ──
-document.getElementById('d-btn-item')?.addEventListener('click',()=>{
-  document.getElementById('item-name').value='';
-  document.getElementById('item-req-qty').value='';
-  document.getElementById('item-crit-qty').value='';
-  renderPropRows();
-  openModal('modal-item');
-});
 document.getElementById('d-btn-warehouse')?.addEventListener('click',()=>{
   document.getElementById('wh-date').value=new Date().toISOString().split('T')[0];
   openModal('modal-warehouse');
 });
 document.getElementById('d-btn-add')?.addEventListener('click',()=>openAddStock());
 document.getElementById('d-btn-use')?.addEventListener('click',()=>openUseStock());
-document.getElementById('d-btn-log')?.addEventListener('click',()=>{ loadStockLog(ACTIVE_PROP); openModal('modal-log'); });
-
-// ── Stock Log ──
-let LOG_FILTER = 'all';
-
-function setLogFilter(source, el){
-  LOG_FILTER = source;
-  document.querySelectorAll('.log-filter-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  loadStockLog(source);
-}
-
-async function loadStockLog(prop){
-  const container = document.getElementById('log-content');
-  container.innerHTML = '<div class="empty">Loading…</div>';
-  const isWarehouseOrAll = !prop || prop === 'all' || prop === 'warehouse';
-  try{
-    // Build query — warehouse view shows entries with no property_name, property view shows that property's transfers
-    let query = '/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.asc&limit=200';
-    if(isWarehouseOrAll){
-      query += '&property_name=is.null';
-    } else {
-      query += '&property_name=eq.'+encodeURIComponent(prop);
-    }
-    const whRows = await api(query) || [];
-
-    const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
-
-    if(!whRows.length){
-      container.innerHTML='<div class="empty">No stock entries yet'+(isWarehouseOrAll?'':' for '+prop)+'.</div>';
-      return;
-    }
-
-    // Compute per-item cumulative totals (oldest → newest)
-    const runningTotals = {};
-    whRows.forEach(r => {
-      const key = r.item_id;
-      if(runningTotals[key] == null) runningTotals[key] = 0;
-      const net = (r.quantity ?? 0) - (r.damaged_qty ?? 0);
-      runningTotals[key] += net;
-      r._cumulative = runningTotals[key];
-    });
-
-    // Display newest-first
-    const displayRows = [...whRows].reverse();
-
-    if(isWarehouseOrAll){
-      // Warehouse log — full detail columns
-      container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
-        <thead><tr>
-          <th>Date</th><th>Item</th><th>Qty</th><th>Cumulative</th><th>Price/Unit</th><th>Total</th><th>Status</th>
-        </tr></thead>
-        <tbody>${displayRows.map(r=>{
-          const flags = [
-            r.delivered?'Delivered':null,
-            r.checked?'Checked':null,
-            r.damaged_qty?r.damaged_qty+' damaged':null,
-            r.returned?'Returned':null,
-          ].filter(Boolean).join(' · ') || '—';
-          return `<tr>
-            <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
-            <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
-            <td>${r.quantity??'—'}</td>
-            <td style="font-weight:600;color:var(--teal)">${r._cumulative}</td>
-            <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
-            <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
-            <td style="font-size:12px;color:var(--muted)">${flags}</td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table></div>`;
-    } else {
-      // Property log — stock transfer entries
-      container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
-        <thead><tr>
-          <th>Date</th><th>Item</th><th>Qty Added</th><th>Cumulative</th><th>Notes</th>
-        </tr></thead>
-        <tbody>${displayRows.map(r=>{
-          return `<tr>
-            <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
-            <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
-            <td style="color:var(--g);font-weight:600">+${r.quantity??'—'}</td>
-            <td style="font-weight:600;color:var(--teal)">${r._cumulative}</td>
-            <td style="font-size:12px;color:var(--muted)">${r.notes||'—'}</td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table></div>`;
-    }
-  } catch(e){ container.innerHTML='<div class="empty">Error loading log: '+e.message+'</div>'; }
-}
+document.getElementById('d-btn-log')?.addEventListener('click',()=>{
+  LOG_FILTER='all';
+  document.querySelectorAll('#log-filter-bar .ptab').forEach((b,i)=>{ b.classList.toggle('on',i===0); });
+  loadStockLog();
+  openModal('modal-log');
+});
 
 // Close modals on backdrop click
 document.querySelectorAll('.modal').forEach(m=>{
@@ -1194,37 +1293,9 @@ document.querySelectorAll('.modal').forEach(m=>{
 (async function init(){
   if(!IS_MOBILE){
     await Promise.all([loadProps(), loadItems()]);
-    loadStockView('all');
   } else {
-    // Mobile staff: resolve property and show their stock
-    let prop = window.STAFF_PROPERTY || '';
-    if(prop){
-      try{
-        const staffRows = await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(prop)+'&limit=1').catch(()=>[]);
-        if(staffRows && staffRows[0]?.assigned_property) prop = staffRows[0].assigned_property;
-      } catch(e){}
-      document.getElementById('m-prop-label').textContent = prop;
-    }
-    const listEl = document.getElementById('m-stock-list');
-    if(!prop){ listEl.innerHTML='<div class="empty">No property assigned.</div>'; return; }
-    try{
-      const rows = await api('/rest/v1/stock_item_properties?select=current_qty,required_qty,critical_qty,stock_items(name)&property_name=eq.'+encodeURIComponent(prop)+'&order=stock_items(name)') || [];
-      if(!rows.length){ listEl.innerHTML='<div class="empty">No stock for this property yet.</div>'; return; }
-      listEl.innerHTML = rows.map(r=>{
-        const qty    = r.current_qty ?? 0;
-        const isCrit = r.critical_qty != null && qty <= r.critical_qty;
-        return `<div class="stock-card${isCrit?' low':''}">
-          <div class="card-left">
-            <div class="card-name">${r.stock_items?.name??'—'}</div>
-            <div class="card-meta">Required: ${r.required_qty??'—'} · Critical: ${r.critical_qty??'—'}</div>
-          </div>
-          <div class="card-right">
-            <div style="font-size:18px;font-weight:700;color:${isCrit?'var(--r)':'var(--g)'}">${qty}</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">${isCrit?'LOW':'in stock'}</div>
-          </div>
-        </div>`;
-      }).join('');
-    } catch(e){ listEl.innerHTML='<div class="empty">Error loading stock.</div>'; }
+    await loadItems();
+    loadMobileStock();
   }
 })();
 </script>

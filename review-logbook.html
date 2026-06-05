@@ -162,20 +162,6 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
   <!-- Main -->
   <main class="main">
-    <!-- Top bar -->
-    <div class="top-bar">
-      <div class="top-bar-left">
-        <div class="tb-mark">BC</div>
-        <div>
-          <div class="tb-name">Banyan Circle</div>
-          <div class="tb-sub">Review Logbook</div>
-        </div>
-      </div>
-      <div class="top-bar-right">
-        <span style="font-size:12px;color:var(--muted)" id="last-synced">Not yet loaded</span>
-      </div>
-    </div>
-
     <div class="pg-sub" id="pg-sub-text">Loading entries from Supabase…</div>
 
     <!-- KPIs -->
@@ -375,8 +361,8 @@ function sentimentBadge(s){
 }
 
 // ── Fetch ─────────────────────────────────────────────────
-async function sbFetch(table, query=''){
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}select=*&order=created_at.desc&limit=1000`,{
+async function sbFetch(table, query='', selectCols='*'){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}select=${selectCols}&order=created_at.desc&limit=1000`,{
     headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
   });
   if(!res.ok) throw new Error(`${table}: ${res.status}`);
@@ -420,13 +406,20 @@ async function loadAll(){
     document.getElementById('kpi-avg').textContent      = avg;
     document.getElementById('pg-sub-text').textContent  = `${allRows.length} entries across staff reviews and talent ratings · ${feedbackRows.length} feedback messages`;
 
-    // Build property filter
-    const props = [...new Set(allRows.map(r=>r.property_name).filter(Boolean))].sort();
-    const pSel  = document.getElementById('filter-property');
-    pSel.innerHTML = '<option value="">All Properties</option>';
-    props.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; pSel.appendChild(o); });
-
-    document.getElementById('last-synced').textContent = `Synced ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+    // Build property filter from landlords table
+    try {
+      const landlords = await sbFetch('landlords', '', 'property_name');
+      const props = [...new Set((landlords||[]).map(r=>r.property_name).filter(Boolean))].sort();
+      const pSel  = document.getElementById('filter-property');
+      pSel.innerHTML = '<option value="">All Properties</option>';
+      props.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; pSel.appendChild(o); });
+    } catch(e){
+      // fallback: build from loaded review data
+      const props = [...new Set(allRows.map(r=>r.property_name).filter(Boolean))].sort();
+      const pSel  = document.getElementById('filter-property');
+      pSel.innerHTML = '<option value="">All Properties</option>';
+      props.forEach(p=>{ const o=document.createElement('option'); o.value=p; o.textContent=p; pSel.appendChild(o); });
+    }
     applyFilters();
     toast('Logbook refreshed');
   } catch(e){
