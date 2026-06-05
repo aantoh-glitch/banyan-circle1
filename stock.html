@@ -9,6 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --br:#993C1D;--br-l:#FAECE7;
+  --br:#993C1D;--br-l:#FAECE7;
   --g:#3B6D11;--g-l:#EAF3DE;
   --a:#854F0B;--a-l:#FAEEDA;
   --r:#A32D2D;--r-l:#FCEBEB;
@@ -40,6 +41,8 @@ body.desktop{font-family:'DM Sans',sans-serif}
 .card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 .ptab{padding:8px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
 .ptab.on{background:var(--teal-l);border-color:var(--teal);color:var(--teal);font-weight:500}
+.prop-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:12px;align-items:center}
+.prop-filter-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-right:4px;white-space:nowrap}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
 .tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
@@ -127,11 +130,20 @@ body.mobile .btn-sec:active{background:var(--bg)}
   <div class="pg-title">Stocks</div>
   <div class="pg-sub">Manage inventory across all properties</div>
 
+  <!-- Property Filter Bar -->
+  <div class="prop-filter-bar" id="d-prop-filter-bar">
+    <span class="prop-filter-label">Filter:</span>
+    <button class="ptab on" data-prop="all" onclick="setPropFilter('all',this)">All</button>
+    <!-- property tabs + Warehouse rendered here by JS -->
+  </div>
+
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-    <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap" id="d-prop-tabs">
-      <!-- property tabs rendered here -->
-    </div>
+    <div style="flex:1"></div>
     <div style="display:flex;gap:8px">
+      <button class="btn-sec" id="d-btn-warehouse" style="display:flex;align-items:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M2 10h20M12 7V3M8 7V4M16 7V4"/></svg>
+        Add Warehouse Stock
+      </button>
       <button class="btn-sec" id="d-btn-use" style="display:flex;align-items:center;gap:6px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         Use Stock
@@ -182,15 +194,37 @@ body.mobile .btn-sec:active{background:var(--bg)}
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Stock
     </button>
+    <button class="m-btn-secondary" id="m-btn-warehouse" onclick="openModal('modal-m-warehouse')">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="1"/><path d="M2 10h20M12 7V3M8 7V4M16 7V4"/></svg>
+      Add Warehouse Stock
+    </button>
     <button class="m-btn-secondary" id="m-btn-use" onclick="openMobileUseModal()">
       <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Use Stock
     </button>
   </div>
 
+  <!-- Mobile Property Filter Pills -->
+  <div class="m-sec-label">Filter by Property</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 16px;overflow-x:auto" id="m-prop-pills">
+    <button class="ptab on" data-prop="all" onclick="setPropFilter('all',this)">All</button>
+  </div>
+
   <div class="m-sec-label">Current Stock</div>
   <div class="m-cards" id="m-stock-list">
     <div class="empty">Stock management coming soon</div>
+  </div>
+</div>
+
+<!-- DESKTOP: Add Warehouse Stock Modal (empty — placeholder) -->
+<div class="modal" id="modal-d-warehouse">
+  <div class="modal-card">
+    <span class="modal-handle"></span>
+    <div class="modal-ttl">Add Warehouse Stock</div>
+    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-d-warehouse')">Close</button>
+    </div>
   </div>
 </div>
 
@@ -214,6 +248,18 @@ body.mobile .btn-sec:active{background:var(--bg)}
     <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal('modal-d-use')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE: Add Warehouse Stock Modal (empty — placeholder) -->
+<div class="modal" id="modal-m-warehouse">
+  <div class="modal-card">
+    <span class="modal-handle"></span>
+    <div class="modal-ttl">Add Warehouse Stock</div>
+    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-m-warehouse')">Close</button>
     </div>
   </div>
 </div>
@@ -245,7 +291,18 @@ body.mobile .btn-sec:active{background:var(--bg)}
 <div class="toast" id="toast"></div>
 
 <script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const HDR = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json'};
+
+async function api(path){
+  const r = await fetch(SB+path,{headers:HDR});
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
 const IS_MOBILE = document.body.classList.contains('mobile');
+let ACTIVE_PROP = 'all';
 
 // Show correct view
 if(IS_MOBILE){
@@ -267,21 +324,70 @@ function toast(msg){
   setTimeout(()=>{ t.style.display='none'; }, 2500);
 }
 
+// Property filter
+function setPropFilter(prop, el){
+  ACTIVE_PROP = prop;
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  // future: filter displayed stock by ACTIVE_PROP
+}
+
+// Load properties from landlords table and render filter pills
+async function loadProps(){
+  try{
+    const data = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+    const unique = [...new Set(data.map(p=>p.property_name).filter(Boolean))];
+
+    // Desktop filter bar
+    const dBar = document.getElementById('d-prop-filter-bar');
+    unique.forEach(name=>{
+      const b = document.createElement('button');
+      b.className='ptab'; b.dataset.prop=name; b.textContent=name;
+      b.onclick=()=>setPropFilter(name,b);
+      dBar.appendChild(b);
+    });
+    // Add Warehouse pill at the end
+    const wD = document.createElement('button');
+    wD.className='ptab'; wD.dataset.prop='warehouse'; wD.textContent='Warehouse';
+    wD.onclick=()=>setPropFilter('warehouse',wD);
+    dBar.appendChild(wD);
+
+    // Mobile filter pills
+    const mPills = document.getElementById('m-prop-pills');
+    unique.forEach(name=>{
+      const b = document.createElement('button');
+      b.className='ptab'; b.dataset.prop=name; b.textContent=name;
+      b.onclick=()=>setPropFilter(name,b);
+      mPills.appendChild(b);
+    });
+    // Add Warehouse pill at the end
+    const wM = document.createElement('button');
+    wM.className='ptab'; wM.dataset.prop='warehouse'; wM.textContent='Warehouse';
+    wM.onclick=()=>setPropFilter('warehouse',wM);
+    mPills.appendChild(wM);
+
+  } catch(e){ console.error('Failed to load properties',e); }
+}
+
 // Desktop buttons
 var btnAdd = document.getElementById('d-btn-add');
 var btnUse = document.getElementById('d-btn-use');
+var btnWarehouse = document.getElementById('d-btn-warehouse');
 if(btnAdd) btnAdd.addEventListener('click', ()=>openModal('modal-d-add'));
 if(btnUse) btnUse.addEventListener('click', ()=>openModal('modal-d-use'));
+if(btnWarehouse) btnWarehouse.addEventListener('click', ()=>openModal('modal-d-warehouse'));
 
 // Mobile buttons
 function openMobileAddModal(){ openModal('modal-m-add'); }
 function openMobileUseModal(){ openModal('modal-m-use'); }
 
 // Close modals on backdrop click
-['modal-d-add','modal-d-use','modal-m-add','modal-m-use'].forEach(id=>{
+['modal-d-add','modal-d-use','modal-d-warehouse','modal-m-add','modal-m-use','modal-m-warehouse'].forEach(id=>{
   var el = document.getElementById(id);
   if(el) el.addEventListener('click', function(e){ if(e.target===this) closeModal(id); });
 });
+
+loadProps();
 </script>
 </body>
 </html>
