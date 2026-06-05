@@ -331,13 +331,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   <div class="modal-card" style="max-width:780px;width:100%">
     <span class="modal-handle"></span>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div class="modal-ttl" style="margin-bottom:0">Stock Log</div>
-      <div style="display:flex;gap:6px">
-        <button class="log-filter-btn on" data-source="all" onclick="setLogFilter('all',this)">All</button>
-        <button class="log-filter-btn" data-source="warehouse" onclick="setLogFilter('warehouse',this)">Warehouse</button>
-        <button class="log-filter-btn" data-source="add" onclick="setLogFilter('add',this)">Add Stock</button>
-        <button class="log-filter-btn" data-source="use" onclick="setLogFilter('use',this)">Use Stock</button>
-      </div>
+      <div class="modal-ttl" style="margin-bottom:0">Warehouse Stock Log</div>
     </div>
     <div id="log-content" style="min-height:120px">
       <div class="empty">Loading…</div>
@@ -630,25 +624,19 @@ async function loadWarehouseView(){
   title.textContent = 'Warehouse Stock';
   empty.textContent = 'Loading…'; empty.style.display='block'; tbl.style.display='none';
   try{
-    const rows = await api('/rest/v1/warehouse_stock?select=*,stock_items(name,required_qty,critical_qty)&order=created_at.desc') || [];
-    if(!rows.length){ empty.textContent='No warehouse stock entries yet.'; return; }
-    const byItem = {};
-    rows.forEach(r=>{
-      const name = r.stock_items?.name || r.item_id;
-      if(!byItem[name]) byItem[name]={name,qty:0,req:r.stock_items?.required_qty,crit:r.stock_items?.critical_qty};
-      byItem[name].qty += (r.quantity||0) - (r.damaged_qty||0);
-    });
-    const items = Object.values(byItem);
+    const items = await api('/rest/v1/stock_items?select=id,name,current_qty,required_qty,critical_qty&order=name') || [];
+    if(!items.length){ empty.textContent='No items found.'; return; }
     document.getElementById('d-stock-thead').innerHTML=`<tr>
       <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
     </tr>`;
     document.getElementById('d-stock-tbody').innerHTML = items.map(i=>{
-      const isCrit = i.crit!=null && i.qty <= i.crit;
+      const qty    = i.current_qty ?? 0;
+      const isCrit = i.critical_qty != null && qty <= i.critical_qty;
       return `<tr class="${isCrit?'critical-row':''}">
         <td style="font-weight:500">${i.name}</td>
-        <td>${i.qty}</td>
-        <td>${i.req??'—'}</td>
-        <td>${i.crit??'—'}</td>
+        <td>${qty}</td>
+        <td>${i.required_qty??'—'}</td>
+        <td>${i.critical_qty??'—'}</td>
         <td>${isCrit
           ? '<span class="bdg bdg-r"><span class="critical-dot"></span>Below Critical</span>'
           : '<span class="bdg bdg-g"><span class="ok-dot"></span>OK</span>'}</td>
@@ -664,10 +652,32 @@ async function loadStockView(prop){
   const empty = document.getElementById('d-empty-state');
   const title = document.getElementById('d-stock-title');
   title.textContent = prop==='all' ? 'All Properties — Inventory' : prop+' — Inventory';
-  empty.textContent='Loading…';empty.style.display='block';tbl.style.display='none';
-  empty.textContent = prop==='all'
-    ? 'Select a property to view its stock, or select Warehouse.'
-    : 'Stock log for '+prop+' coming soon.';
+  empty.textContent='Loading…'; empty.style.display='block'; tbl.style.display='none';
+  if(prop==='all'){
+    empty.textContent='Select a property to view its stock, or select Warehouse.';
+    return;
+  }
+  try{
+    const rows = await api('/rest/v1/stock_item_properties?select=item_id,property_name,current_qty,required_qty,critical_qty,stock_items(name)&property_name=eq.'+encodeURIComponent(prop)+'&order=stock_items(name)') || [];
+    if(!rows.length){ empty.textContent='No stock entries for '+prop+'.'; return; }
+    document.getElementById('d-stock-thead').innerHTML=`<tr>
+      <th>Item</th><th>In Stock</th><th>Required</th><th>Critical Level</th><th>Status</th>
+    </tr>`;
+    document.getElementById('d-stock-tbody').innerHTML = rows.map(r=>{
+      const qty    = r.current_qty ?? 0;
+      const isCrit = r.critical_qty != null && qty <= r.critical_qty;
+      return `<tr class="${isCrit?'critical-row':''}">
+        <td style="font-weight:500">${r.stock_items?.name ?? r.item_id}</td>
+        <td>${qty}</td>
+        <td>${r.required_qty??'—'}</td>
+        <td>${r.critical_qty??'—'}</td>
+        <td>${isCrit
+          ? '<span class="bdg bdg-r"><span class="critical-dot"></span>Below Critical</span>'
+          : '<span class="bdg bdg-g"><span class="ok-dot"></span>OK</span>'}</td>
+      </tr>`;
+    }).join('');
+    empty.style.display='none'; tbl.style.display='table';
+  } catch(e){ empty.textContent='Error loading stock for '+prop+'.'; console.error(e); }
 }
 
 // ── Add Item ──
@@ -723,29 +733,42 @@ function toggleRefund(){
 
 // ── Save Warehouse Stock ──
 async function saveWarehouseStock(){
-  const itemId = document.getElementById('wh-item').value;
-  const date   = document.getElementById('wh-date').value;
+  const itemId   = document.getElementById('wh-item').value;
+  const date     = document.getElementById('wh-date').value;
   if(!itemId){ alert('Please select an item'); return; }
   if(!date){   alert('Please enter a date');   return; }
+  const addQty    = parseInt(document.getElementById('wh-qty').value)||0;
+  const damagedQty = parseInt(document.getElementById('wh-damaged').value)||0;
+  const netQty    = addQty - damagedQty;
   const body = {
     item_id:          itemId,
     date:             date,
     price_per_unit:   parseFloat(document.getElementById('wh-price-per').value)||null,
-    quantity:         parseFloat(document.getElementById('wh-qty').value)||null,
+    quantity:         addQty||null,
     total_price:      parseFloat(document.getElementById('wh-total').value)||null,
     delivered:        document.getElementById('wh-delivered').checked,
     checked:          document.getElementById('wh-checked').checked,
-    damaged_qty:      parseInt(document.getElementById('wh-damaged').value)||0,
+    damaged_qty:      damagedQty,
     returned:         document.getElementById('wh-returned').checked,
     refund_amount:    parseFloat(document.getElementById('wh-refund-amt').value)||null,
     refund_received:  document.getElementById('wh-refund-received').checked,
   };
   setBtn('wh-btn',true);
   try{
+    // 1. Insert warehouse_stock row
     await api('/rest/v1/warehouse_stock','POST',body);
+
+    // 2. Increment stock_items.current_qty by net qty (quantity - damaged)
+    if(netQty !== 0){
+      const item = ALL_ITEMS.find(i=>i.id===itemId);
+      const currentWh = item?.current_qty ?? 0;
+      await api('/rest/v1/stock_items?id=eq.'+itemId,'PATCH',{current_qty: currentWh + netQty});
+      // Update local cache
+      if(item) item.current_qty = currentWh + netQty;
+    }
+
     toast('Warehouse stock saved ✓');
     closeModal('modal-warehouse');
-    // reset
     ['wh-item','wh-date','wh-price-per','wh-qty','wh-total','wh-damaged','wh-refund-amt'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.value='';
     });
@@ -792,17 +815,16 @@ async function openAddStock(){
   STAFF_ASSIGNED_PROP = resolvedProp || 'Warehouse';
   document.getElementById(prefix+'-add-prop-label').textContent = STAFF_ASSIGNED_PROP;
 
-  // Fetch warehouse_stock and compute quantities per item
+  // Fetch items from stock_items using current_qty directly
   try{
-    const rows = await api('/rest/v1/warehouse_stock?select=*,stock_items(id,name,required_qty,critical_qty)&order=created_at.desc') || [];
-    const byItem = {};
-    rows.forEach(r => {
-      const id   = r.item_id;
-      const name = r.stock_items?.name || id;
-      if(!byItem[id]) byItem[id] = {id, name, qty:0, req:r.stock_items?.required_qty, crit:r.stock_items?.critical_qty};
-      byItem[id].qty += (r.quantity||0) - (r.damaged_qty||0);
-    });
-    ADD_STOCK_ITEMS = Object.values(byItem).sort((a,b)=>a.name.localeCompare(b.name));
+    const items = await api('/rest/v1/stock_items?select=id,name,current_qty,required_qty,critical_qty&order=name') || [];
+    ADD_STOCK_ITEMS = items.map(i=>({
+      id:   i.id,
+      name: i.name,
+      qty:  i.current_qty ?? 0,
+      req:  i.required_qty,
+      crit: i.critical_qty,
+    }));
     renderAddStockList(prefix, ADD_STOCK_ITEMS);
   } catch(e){
     listEl.innerHTML = '<div class="empty">Error loading items: '+e.message+'</div>';
@@ -865,20 +887,42 @@ async function saveAddStock(prefix){
   if(!ADD_SELECTED){ alert('Please select an item'); return; }
   const qty = parseInt(document.getElementById(prefix+'-add-qty').value)||0;
   if(qty < 1){ alert('Please enter a quantity of at least 1'); return; }
+  if(qty > ADD_SELECTED.qty){ alert('Cannot add more than warehouse stock ('+ADD_SELECTED.qty+')'); return; }
   const notes = document.getElementById(prefix+'-add-notes').value.trim();
   const btn   = document.getElementById(prefix+'-add-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try{
-    await api('/rest/v1/stock_log','POST',{
-      item_id:       ADD_SELECTED.id,
-      item_name:     ADD_SELECTED.name,
-      quantity:      qty,
-      property_name: STAFF_ASSIGNED_PROP,
-      notes:         notes || null,
-    });
+    const encProp = encodeURIComponent(STAFF_ASSIGNED_PROP);
+    const encItem = encodeURIComponent(ADD_SELECTED.id);
+
+    // 1. Get current stock_item_properties row for this property+item
+    const propRows = await api('/rest/v1/stock_item_properties?item_id=eq.'+encItem+'&property_name=eq.'+encProp+'&select=id,current_qty');
+    
+    if(propRows && propRows.length > 0){
+      // Row exists — PATCH current_qty
+      const row = propRows[0];
+      const newPropQty = (row.current_qty ?? 0) + qty;
+      await api('/rest/v1/stock_item_properties?id=eq.'+row.id, 'PATCH', {current_qty: newPropQty});
+    } else {
+      // No row yet — INSERT with current_qty
+      await api('/rest/v1/stock_item_properties', 'POST', {
+        item_id:       ADD_SELECTED.id,
+        property_name: STAFF_ASSIGNED_PROP,
+        current_qty:   qty,
+      });
+    }
+
+    // 2. Decrement stock_items.current_qty (warehouse)
+    const warehouseItem = ADD_STOCK_ITEMS.find(i => i.id === ADD_SELECTED.id);
+    const newWhQty = (warehouseItem?.qty ?? 0) - qty;
+    await api('/rest/v1/stock_items?id=eq.'+encItem, 'PATCH', {current_qty: newWhQty});
+
     toast('Stock added ✓');
     closeModal(IS_MOBILE ? 'modal-m-add' : 'modal-d-add');
-    if(!IS_MOBILE && ACTIVE_PROP === 'warehouse') loadWarehouseView();
+    if(!IS_MOBILE){
+      if(ACTIVE_PROP === 'warehouse') loadWarehouseView();
+      else if(ACTIVE_PROP === STAFF_ASSIGNED_PROP) loadStockView(ACTIVE_PROP);
+    }
   } catch(e){ alert('Error: '+e.message); }
   finally{ btn.disabled = false; btn.textContent = 'Add Stock'; }
 }
@@ -923,26 +967,18 @@ async function openUseStock(){
   if(document.getElementById(prefix+'-use-item-prop')) document.getElementById(prefix+'-use-item-prop').textContent = USE_PROP;
 
   try{
-    // Net inventory for this property = sum of stock_log adds - sum of stock_usage uses, scoped to property_name
+    // Read current_qty directly from stock_item_properties for this property
     const encProp = encodeURIComponent(USE_PROP);
-    const [addRows, useRows] = await Promise.all([
-      api('/rest/v1/stock_log?select=item_id,item_name,quantity&property_name=eq.'+encProp).catch(()=>[]),
-      api('/rest/v1/stock_usage?select=item_id,item_name,quantity&property_name=eq.'+encProp).catch(()=>[]),
-    ]);
+    const rows = await api('/rest/v1/stock_item_properties?select=id,item_id,current_qty,required_qty,critical_qty,stock_items(name)&property_name=eq.'+encProp+'&current_qty=gt.0') || [];
 
-    const byItem = {};
-    (addRows||[]).forEach(r => {
-      const key = r.item_id || r.item_name;
-      if(!byItem[key]) byItem[key] = {id:r.item_id, name:r.item_name||r.item_id, qty:0};
-      byItem[key].qty += (r.quantity||0);
-    });
-    (useRows||[]).forEach(r => {
-      const key = r.item_id || r.item_name;
-      if(!byItem[key]) byItem[key] = {id:r.item_id, name:r.item_name||r.item_id, qty:0};
-      byItem[key].qty -= (r.quantity||0);
-    });
-
-    USE_STOCK_ITEMS = Object.values(byItem)
+    USE_STOCK_ITEMS = rows
+      .map(r => ({
+        rowId: r.id,
+        id:    r.item_id,
+        name:  r.stock_items?.name || r.item_id,
+        qty:   r.current_qty ?? 0,
+        crit:  r.critical_qty,
+      }))
       .filter(i => i.qty > 0)
       .sort((a,b) => a.name.localeCompare(b.name));
 
@@ -959,12 +995,12 @@ function renderUseStockList(prefix, items){
     return;
   }
   listEl.innerHTML = items.map(item => {
-    const isLow = item.qty <= 3;
+    const isLow = item.crit != null ? item.qty <= item.crit : item.qty <= 3;
     const dot = isLow
       ? '<span class="critical-dot" style="flex-shrink:0"></span>'
       : '<span class="ok-dot" style="flex-shrink:0"></span>';
     const qtyColor = isLow ? 'color:var(--r);font-weight:700' : 'color:var(--g);font-weight:600';
-    return `<div onclick="selectUseItem('${prefix}','${item.id}',${JSON.stringify(item.name).replace(/'/g,"\\'")},'${item.qty}')"
+    return `<div onclick="selectUseItem('${prefix}','${item.rowId}','${item.id}',${JSON.stringify(item.name).replace(/'/g,"\\'")},'${item.qty}')"
       style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s"
       onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
       ${dot}
@@ -982,8 +1018,8 @@ function filterUseItems(prefix){
   renderUseStockList(prefix, USE_STOCK_ITEMS.filter(i => i.name.toLowerCase().includes(q)));
 }
 
-function selectUseItem(prefix, id, name, qty){
-  USE_SELECTED = {id, name, qty: parseInt(qty)||0};
+function selectUseItem(prefix, rowId, id, name, qty){
+  USE_SELECTED = {rowId, id, name, qty: parseInt(qty)||0};
   document.getElementById(prefix+'-use-step1').style.display = 'none';
   document.getElementById(prefix+'-use-step2').style.display = 'block';
   document.getElementById(prefix+'-use-item-name').textContent = name;
@@ -1009,17 +1045,11 @@ async function saveUseStock(prefix){
   const qty = parseInt(document.getElementById(prefix+'-use-qty').value)||0;
   if(qty < 1){ alert('Please enter a quantity of at least 1'); return; }
   if(qty > USE_SELECTED.qty){ alert('Cannot use more than available stock ('+USE_SELECTED.qty+')'); return; }
-  const notes = document.getElementById(prefix+'-use-notes').value.trim();
-  const btn   = document.getElementById(prefix+'-use-btn');
+  const btn = document.getElementById(prefix+'-use-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try{
-    await api('/rest/v1/stock_usage','POST',{
-      item_id:       USE_SELECTED.id,
-      item_name:     USE_SELECTED.name,
-      quantity:      qty,
-      property_name: USE_PROP,
-      notes:         notes || null,
-    });
+    const newQty = USE_SELECTED.qty - qty;
+    await api('/rest/v1/stock_item_properties?id=eq.'+USE_SELECTED.rowId, 'PATCH', {current_qty: newQty});
     toast('Stock usage recorded ✓');
     closeModal(IS_MOBILE ? 'modal-m-use' : 'modal-d-use');
     if(!IS_MOBILE && ACTIVE_PROP !== 'all' && ACTIVE_PROP !== 'warehouse') loadStockView(ACTIVE_PROP);
@@ -1057,55 +1087,32 @@ async function loadStockLog(source){
   const container = document.getElementById('log-content');
   container.innerHTML = '<div class="empty">Loading…</div>';
   try{
-    // Fetch all three sources in parallel
-    const [whRows, addRows, useRows] = await Promise.all([
-      api('/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.desc&limit=100'),
-      api('/rest/v1/stock_log?select=*&order=created_at.desc&limit=100').catch(()=>[]),
-      api('/rest/v1/stock_usage?select=*&order=created_at.desc&limit=100').catch(()=>[]),
-    ]);
+    const whRows = await api('/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.desc&limit=200') || [];
 
-    let rows = [];
-    (whRows||[]).forEach(r=>rows.push({
-      _source:'warehouse', _date:r.date||r.created_at,
-      _item:r.stock_items?.name||'—', _qty:r.quantity,
-      _note: [r.delivered?'Delivered':null, r.checked?'Checked':null, r.damaged_qty?r.damaged_qty+' damaged':null].filter(Boolean).join(' · ')||'—',
-      _extra: r.total_price ? '₹'+Number(r.total_price).toLocaleString('en-IN') : null
-    }));
-    (addRows||[]).forEach(r=>rows.push({
-      _source:'add', _date:r.created_at,
-      _item:r.item_name||r.item_id||'—', _qty:r.quantity,
-      _note:r.notes||'—', _extra:r.property_name||null
-    }));
-    (useRows||[]).forEach(r=>rows.push({
-      _source:'use', _date:r.created_at,
-      _item:r.item_name||r.item_id||'—', _qty:r.quantity,
-      _note:r.notes||'—', _extra:r.property_name||null
-    }));
-
-    rows.sort((a,b)=>(b._date||'')>(a._date||'')?1:-1);
-    if(source!=='all') rows = rows.filter(r=>r._source===source);
-
-    if(!rows.length){ container.innerHTML='<div class="empty">No log entries yet.</div>'; return; }
-
-    const sourceLabel = {
-      warehouse: '<span class="bdg log-source-badge-warehouse">Warehouse</span>',
-      add:       '<span class="bdg log-source-badge-add">Add Stock</span>',
-      use:       '<span class="bdg log-source-badge-use">Use Stock</span>',
-    };
     const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+
+    if(!whRows.length){ container.innerHTML='<div class="empty">No warehouse stock entries yet.</div>'; return; }
 
     container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
       <thead><tr>
-        <th>Date</th><th>Source</th><th>Item</th><th>Qty</th><th>Notes</th><th>Extra</th>
+        <th>Date</th><th>Item</th><th>Qty</th><th>Price/Unit</th><th>Total</th><th>Status</th>
       </tr></thead>
-      <tbody>${rows.map(r=>`<tr>
-        <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r._date)}</td>
-        <td>${sourceLabel[r._source]||r._source}</td>
-        <td style="font-weight:500">${r._item}</td>
-        <td>${r._qty??'—'}</td>
-        <td style="font-size:12px;color:var(--muted)">${r._note}</td>
-        <td style="font-size:12px;color:var(--muted)">${r._extra||'—'}</td>
-      </tr>`).join('')}</tbody>
+      <tbody>${whRows.map(r=>{
+        const flags = [
+          r.delivered?'Delivered':null,
+          r.checked?'Checked':null,
+          r.damaged_qty?r.damaged_qty+' damaged':null,
+          r.returned?'Returned':null,
+        ].filter(Boolean).join(' · ') || '—';
+        return `<tr>
+          <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
+          <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
+          <td>${r.quantity??'—'}</td>
+          <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
+          <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${flags}</td>
+        </tr>`;
+      }).join('')}</tbody>
     </table></div>`;
   } catch(e){ container.innerHTML='<div class="empty">Error loading log: '+e.message+'</div>'; }
 }
@@ -1121,8 +1128,35 @@ document.querySelectorAll('.modal').forEach(m=>{
     await Promise.all([loadProps(), loadItems()]);
     loadStockView('all');
   } else {
-    // Mobile staff: show their property's stock (placeholder)
-    document.getElementById('m-stock-list').innerHTML='<div class="empty">Stock log coming soon.</div>';
+    // Mobile staff: resolve property and show their stock
+    let prop = window.STAFF_PROPERTY || '';
+    if(prop){
+      try{
+        const staffRows = await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(prop)+'&limit=1').catch(()=>[]);
+        if(staffRows && staffRows[0]?.assigned_property) prop = staffRows[0].assigned_property;
+      } catch(e){}
+      document.getElementById('m-prop-label').textContent = prop;
+    }
+    const listEl = document.getElementById('m-stock-list');
+    if(!prop){ listEl.innerHTML='<div class="empty">No property assigned.</div>'; return; }
+    try{
+      const rows = await api('/rest/v1/stock_item_properties?select=current_qty,required_qty,critical_qty,stock_items(name)&property_name=eq.'+encodeURIComponent(prop)+'&order=stock_items(name)') || [];
+      if(!rows.length){ listEl.innerHTML='<div class="empty">No stock for this property yet.</div>'; return; }
+      listEl.innerHTML = rows.map(r=>{
+        const qty    = r.current_qty ?? 0;
+        const isCrit = r.critical_qty != null && qty <= r.critical_qty;
+        return `<div class="stock-card${isCrit?' low':''}">
+          <div class="card-left">
+            <div class="card-name">${r.stock_items?.name??'—'}</div>
+            <div class="card-meta">Required: ${r.required_qty??'—'} · Critical: ${r.critical_qty??'—'}</div>
+          </div>
+          <div class="card-right">
+            <div style="font-size:18px;font-weight:700;color:${isCrit?'var(--r)':'var(--g)'}">${qty}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${isCrit?'LOW':'in stock'}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e){ listEl.innerHTML='<div class="empty">Error loading stock.</div>'; }
   }
 })();
 </script>
