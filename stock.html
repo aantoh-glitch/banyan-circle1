@@ -198,11 +198,11 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   </div>
 
   <div class="m-btn-wrap">
-    <button class="m-btn-log" onclick="openModal('modal-m-add')">
+    <button class="m-btn-log" onclick="openAddStock()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Stock
     </button>
-    <button class="m-btn-secondary" onclick="openModal('modal-m-use')">
+    <button class="m-btn-secondary" onclick="openUseStock()">
       <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Use Stock
     </button>
@@ -348,43 +348,169 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   </div>
 </div>
 
-<!-- Desktop: Add Stock (placeholder) -->
+<!-- Desktop: Add Stock -->
 <div class="modal" id="modal-d-add">
-  <div class="modal-card">
+  <div class="modal-card" style="max-width:600px;width:100%">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Stock</div>
-    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-d-add')">Close</button></div>
+
+    <!-- Step 1: Item picker list -->
+    <div id="d-add-step1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item to add stock to:</div>
+      <input class="fc" id="d-add-search" type="text" placeholder="Search items…" oninput="filterAddItems('d')" style="margin-bottom:12px"/>
+      <div id="d-add-items-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:320px;overflow-y:auto">
+        <div class="empty">Loading warehouse items…</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Quantity entry -->
+    <div id="d-add-step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 14px;background:var(--teal-l);border-radius:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600" id="d-add-item-name"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Currently in warehouse: <strong id="d-add-item-current"></strong></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Adding stock to: <strong id="d-add-prop-label" style="color:var(--teal)"></strong></div>
+      <div class="fg">
+        <label class="fl">Quantity to Add <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="d-add-qty" type="number" min="1" placeholder="Enter quantity"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Notes</label>
+        <input class="fc" id="d-add-notes" type="text" placeholder="Optional notes"/>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" id="d-add-back-btn" onclick="addStockBack('d')" style="display:none">← Back</button>
+      <button class="btn-sec" onclick="closeModal('modal-d-add')">Cancel</button>
+      <button class="btn-p" id="d-add-btn" onclick="saveAddStock('d')" style="display:none">Add Stock</button>
+    </div>
   </div>
 </div>
 
-<!-- Desktop: Use Stock (placeholder) -->
+<!-- Desktop: Use Stock -->
 <div class="modal" id="modal-d-use">
-  <div class="modal-card">
+  <div class="modal-card" style="max-width:600px;width:100%">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Use Stock</div>
-    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-d-use')">Close</button></div>
+
+    <!-- Step 1: Property inventory list -->
+    <div id="d-use-step1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Showing inventory for: <strong id="d-use-prop-label" style="color:var(--teal)"></strong></div>
+      <input class="fc" id="d-use-search" type="text" placeholder="Search items…" oninput="filterUseItems('d')" style="margin:10px 0 12px"/>
+      <div id="d-use-items-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:340px;overflow-y:auto">
+        <div class="empty">Loading inventory…</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Quantity entry -->
+    <div id="d-use-step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 14px;background:var(--a-l);border-radius:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600" id="d-use-item-name"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Available at <strong id="d-use-item-prop"></strong>: <strong id="d-use-item-current"></strong></div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Quantity Used <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="d-use-qty" type="number" min="1" placeholder="Enter quantity"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Notes</label>
+        <input class="fc" id="d-use-notes" type="text" placeholder="Optional notes"/>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" id="d-use-back-btn" onclick="useStockBack('d')" style="display:none">← Back</button>
+      <button class="btn-sec" onclick="closeModal('modal-d-use')">Cancel</button>
+      <button class="btn-p" id="d-use-btn" onclick="saveUseStock('d')" style="display:none;background:var(--a);border-color:var(--a)">Use Stock</button>
+    </div>
   </div>
 </div>
 
-<!-- Mobile: Add Stock (placeholder) -->
+<!-- Mobile: Add Stock -->
 <div class="modal" id="modal-m-add">
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Add Stock</div>
-    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-m-add')">Close</button></div>
+
+    <!-- Step 1: Item picker list -->
+    <div id="m-add-step1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item to add stock to:</div>
+      <input class="fc" id="m-add-search" type="text" placeholder="Search items…" oninput="filterAddItems('m')" style="margin-bottom:12px"/>
+      <div id="m-add-items-list" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
+        <div class="empty">Loading warehouse items…</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Quantity entry -->
+    <div id="m-add-step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:14px;background:var(--teal-l);border-radius:10px">
+        <div>
+          <div style="font-size:16px;font-weight:600" id="m-add-item-name"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">Currently in warehouse: <strong id="m-add-item-current"></strong></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Adding stock to: <strong id="m-add-prop-label" style="color:var(--teal)"></strong></div>
+      <div class="fg">
+        <label class="fl">Quantity to Add <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="m-add-qty" type="number" min="1" placeholder="Enter quantity"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Notes</label>
+        <input class="fc" id="m-add-notes" type="text" placeholder="Optional notes"/>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" id="m-add-back-btn" onclick="addStockBack('m')" style="display:none">← Back</button>
+      <button class="btn-sec" onclick="closeModal('modal-m-add')">Cancel</button>
+      <button class="btn-p" id="m-add-btn" onclick="saveAddStock('m')" style="display:none">Add Stock</button>
+    </div>
   </div>
 </div>
 
-<!-- Mobile: Use Stock (placeholder) -->
+<!-- Mobile: Use Stock -->
 <div class="modal" id="modal-m-use">
   <div class="modal-card">
     <span class="modal-handle"></span>
     <div class="modal-ttl">Use Stock</div>
-    <p style="font-size:13px;color:var(--muted)">Coming soon.</p>
-    <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-m-use')">Close</button></div>
+
+    <!-- Step 1: Property inventory list -->
+    <div id="m-use-step1">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Inventory for: <strong id="m-use-prop-label" style="color:var(--teal)"></strong></div>
+      <input class="fc" id="m-use-search" type="text" placeholder="Search items…" oninput="filterUseItems('m')" style="margin:10px 0 12px"/>
+      <div id="m-use-items-list" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
+        <div class="empty">Loading inventory…</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Quantity entry -->
+    <div id="m-use-step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:14px;background:var(--a-l);border-radius:10px">
+        <div>
+          <div style="font-size:16px;font-weight:600" id="m-use-item-name"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">Available at <strong id="m-use-item-prop"></strong>: <strong id="m-use-item-current"></strong></div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Quantity Used <span style="color:var(--r)">*</span></label>
+        <input class="fc" id="m-use-qty" type="number" min="1" placeholder="Enter quantity"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Notes</label>
+        <input class="fc" id="m-use-notes" type="text" placeholder="Optional notes"/>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" id="m-use-back-btn" onclick="useStockBack('m')" style="display:none">← Back</button>
+      <button class="btn-sec" onclick="closeModal('modal-m-use')">Cancel</button>
+      <button class="btn-p" id="m-use-btn" onclick="saveUseStock('m')" style="display:none;background:var(--a)">Use Stock</button>
+    </div>
   </div>
 </div>
 
@@ -632,6 +758,275 @@ async function saveWarehouseStock(){
   finally{ setBtn('wh-btn',false,'Save'); }
 }
 
+// ── Add Stock ──
+let ADD_STOCK_ITEMS = []; // warehouse items with computed qty
+let ADD_SELECTED    = null; // {id, name, qty}
+let STAFF_ASSIGNED_PROP = ''; // fetched from staff table for ops login
+
+async function openAddStock(){
+  const modalId = IS_MOBILE ? 'modal-m-add' : 'modal-d-add';
+  const prefix  = IS_MOBILE ? 'm' : 'd';
+
+  // Reset state
+  ADD_SELECTED = null;
+  document.getElementById(prefix+'-add-step1').style.display = 'block';
+  document.getElementById(prefix+'-add-step2').style.display = 'none';
+  document.getElementById(prefix+'-add-btn').style.display   = 'none';
+  document.getElementById(prefix+'-add-back-btn').style.display = 'none';
+  document.getElementById(prefix+'-add-search').value = '';
+  const listEl = document.getElementById(prefix+'-add-items-list');
+  listEl.innerHTML = '<div class="empty">Loading warehouse items…</div>';
+
+  openModal(modalId);
+
+  // Resolve property: for staff/ops, fetch assigned_property from staff table
+  let resolvedProp = window.STAFF_PROPERTY || ACTIVE_PROP;
+  if(IS_MOBILE && window.STAFF_PROPERTY){
+    try{
+      const staffRows = await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(window.STAFF_PROPERTY)+'&limit=1').catch(()=>[]);
+      if(staffRows && staffRows[0]?.assigned_property){
+        resolvedProp = staffRows[0].assigned_property;
+      }
+    } catch(e){}
+  }
+  STAFF_ASSIGNED_PROP = resolvedProp || 'Warehouse';
+  document.getElementById(prefix+'-add-prop-label').textContent = STAFF_ASSIGNED_PROP;
+
+  // Fetch warehouse_stock and compute quantities per item
+  try{
+    const rows = await api('/rest/v1/warehouse_stock?select=*,stock_items(id,name,required_qty,critical_qty)&order=created_at.desc') || [];
+    const byItem = {};
+    rows.forEach(r => {
+      const id   = r.item_id;
+      const name = r.stock_items?.name || id;
+      if(!byItem[id]) byItem[id] = {id, name, qty:0, req:r.stock_items?.required_qty, crit:r.stock_items?.critical_qty};
+      byItem[id].qty += (r.quantity||0) - (r.damaged_qty||0);
+    });
+    ADD_STOCK_ITEMS = Object.values(byItem).sort((a,b)=>a.name.localeCompare(b.name));
+    renderAddStockList(prefix, ADD_STOCK_ITEMS);
+  } catch(e){
+    listEl.innerHTML = '<div class="empty">Error loading items: '+e.message+'</div>';
+  }
+}
+
+function renderAddStockList(prefix, items){
+  const listEl = document.getElementById(prefix+'-add-items-list');
+  if(!items.length){
+    listEl.innerHTML='<div class="empty">No warehouse items found.</div>';
+    return;
+  }
+  listEl.innerHTML = items.map(item => {
+    const isCrit = item.crit != null && item.qty <= item.crit;
+    const dot = isCrit
+      ? '<span class="critical-dot" style="flex-shrink:0"></span>'
+      : '<span class="ok-dot" style="flex-shrink:0"></span>';
+    return `<div onclick="selectAddItem('${prefix}','${item.id}',${JSON.stringify(item.name).replace(/'/g,"\\'")},'${item.qty}')"
+      style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s"
+      onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      ${dot}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">In stock: ${item.qty}${item.req!=null?' · Required: '+item.req:''}</div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function filterAddItems(prefix){
+  const q = document.getElementById(prefix+'-add-search').value.toLowerCase();
+  const filtered = ADD_STOCK_ITEMS.filter(i=>i.name.toLowerCase().includes(q));
+  renderAddStockList(prefix, filtered);
+}
+
+function selectAddItem(prefix, id, name, qty){
+  ADD_SELECTED = {id, name, qty: parseInt(qty)||0};
+  document.getElementById(prefix+'-add-step1').style.display = 'none';
+  document.getElementById(prefix+'-add-step2').style.display = 'block';
+  document.getElementById(prefix+'-add-item-name').textContent = name;
+  document.getElementById(prefix+'-add-item-current').textContent = qty;
+  document.getElementById(prefix+'-add-qty').value = '';
+  document.getElementById(prefix+'-add-notes').value = '';
+  document.getElementById(prefix+'-add-btn').style.display = '';
+  document.getElementById(prefix+'-add-back-btn').style.display = '';
+  // Focus qty
+  setTimeout(()=>document.getElementById(prefix+'-add-qty').focus(), 100);
+}
+
+function addStockBack(prefix){
+  ADD_SELECTED = null;
+  document.getElementById(prefix+'-add-step2').style.display = 'none';
+  document.getElementById(prefix+'-add-step1').style.display = 'block';
+  document.getElementById(prefix+'-add-btn').style.display   = 'none';
+  document.getElementById(prefix+'-add-back-btn').style.display = 'none';
+}
+
+async function saveAddStock(prefix){
+  if(!ADD_SELECTED){ alert('Please select an item'); return; }
+  const qty = parseInt(document.getElementById(prefix+'-add-qty').value)||0;
+  if(qty < 1){ alert('Please enter a quantity of at least 1'); return; }
+  const notes = document.getElementById(prefix+'-add-notes').value.trim();
+  const btn   = document.getElementById(prefix+'-add-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    await api('/rest/v1/stock_log','POST',{
+      item_id:       ADD_SELECTED.id,
+      item_name:     ADD_SELECTED.name,
+      quantity:      qty,
+      property_name: STAFF_ASSIGNED_PROP,
+      notes:         notes || null,
+    });
+    toast('Stock added ✓');
+    closeModal(IS_MOBILE ? 'modal-m-add' : 'modal-d-add');
+    if(!IS_MOBILE && ACTIVE_PROP === 'warehouse') loadWarehouseView();
+  } catch(e){ alert('Error: '+e.message); }
+  finally{ btn.disabled = false; btn.textContent = 'Add Stock'; }
+}
+
+// ── Use Stock ──
+let USE_STOCK_ITEMS  = []; // property inventory computed from stock_log - stock_usage
+let USE_SELECTED     = null; // {id, name, qty}
+let USE_PROP         = '';   // resolved property name
+
+async function openUseStock(){
+  const prefix  = IS_MOBILE ? 'm' : 'd';
+  const modalId = IS_MOBILE ? 'modal-m-use' : 'modal-d-use';
+
+  // Reset state
+  USE_SELECTED = null;
+  document.getElementById(prefix+'-use-step1').style.display = 'block';
+  document.getElementById(prefix+'-use-step2').style.display = 'none';
+  document.getElementById(prefix+'-use-btn').style.display   = 'none';
+  document.getElementById(prefix+'-use-back-btn').style.display = 'none';
+  document.getElementById(prefix+'-use-search').value = '';
+  const listEl = document.getElementById(prefix+'-use-items-list');
+  listEl.innerHTML = '<div class="empty">Loading inventory…</div>';
+
+  openModal(modalId);
+
+  // Resolve property
+  let resolvedProp = IS_MOBILE ? (window.STAFF_PROPERTY || '') : ACTIVE_PROP;
+  if(IS_MOBILE && window.STAFF_PROPERTY){
+    try{
+      const staffRows = await api('/rest/v1/staff?select=assigned_property&name=eq.'+encodeURIComponent(window.STAFF_PROPERTY)+'&limit=1').catch(()=>[]);
+      if(staffRows && staffRows[0]?.assigned_property) resolvedProp = staffRows[0].assigned_property;
+    } catch(e){}
+  }
+  // On desktop, if no specific property selected, prompt to pick one
+  if(!IS_MOBILE && (resolvedProp === 'all' || resolvedProp === 'warehouse' || !resolvedProp)){
+    listEl.innerHTML = '<div class="empty" style="padding:24px">Please select a specific property filter first, then click Use Stock.</div>';
+    document.getElementById(prefix+'-use-prop-label').textContent = 'No property selected';
+    return;
+  }
+  USE_PROP = resolvedProp;
+  document.getElementById(prefix+'-use-prop-label').textContent = USE_PROP;
+  if(document.getElementById(prefix+'-use-item-prop')) document.getElementById(prefix+'-use-item-prop').textContent = USE_PROP;
+
+  try{
+    // Net inventory for this property = sum of stock_log adds - sum of stock_usage uses, scoped to property_name
+    const encProp = encodeURIComponent(USE_PROP);
+    const [addRows, useRows] = await Promise.all([
+      api('/rest/v1/stock_log?select=item_id,item_name,quantity&property_name=eq.'+encProp).catch(()=>[]),
+      api('/rest/v1/stock_usage?select=item_id,item_name,quantity&property_name=eq.'+encProp).catch(()=>[]),
+    ]);
+
+    const byItem = {};
+    (addRows||[]).forEach(r => {
+      const key = r.item_id || r.item_name;
+      if(!byItem[key]) byItem[key] = {id:r.item_id, name:r.item_name||r.item_id, qty:0};
+      byItem[key].qty += (r.quantity||0);
+    });
+    (useRows||[]).forEach(r => {
+      const key = r.item_id || r.item_name;
+      if(!byItem[key]) byItem[key] = {id:r.item_id, name:r.item_name||r.item_id, qty:0};
+      byItem[key].qty -= (r.quantity||0);
+    });
+
+    USE_STOCK_ITEMS = Object.values(byItem)
+      .filter(i => i.qty > 0)
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    renderUseStockList(prefix, USE_STOCK_ITEMS);
+  } catch(e){
+    listEl.innerHTML = '<div class="empty">Error loading inventory: '+e.message+'</div>';
+  }
+}
+
+function renderUseStockList(prefix, items){
+  const listEl = document.getElementById(prefix+'-use-items-list');
+  if(!items.length){
+    listEl.innerHTML = '<div class="empty" style="padding:24px">No stock available for '+USE_PROP+'.</div>';
+    return;
+  }
+  listEl.innerHTML = items.map(item => {
+    const isLow = item.qty <= 3;
+    const dot = isLow
+      ? '<span class="critical-dot" style="flex-shrink:0"></span>'
+      : '<span class="ok-dot" style="flex-shrink:0"></span>';
+    const qtyColor = isLow ? 'color:var(--r);font-weight:700' : 'color:var(--g);font-weight:600';
+    return `<div onclick="selectUseItem('${prefix}','${item.id}',${JSON.stringify(item.name).replace(/'/g,"\\'")},'${item.qty}')"
+      style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s"
+      onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      ${dot}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Available: <span style="${qtyColor}">${item.qty}</span></div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function filterUseItems(prefix){
+  const q = document.getElementById(prefix+'-use-search').value.toLowerCase();
+  renderUseStockList(prefix, USE_STOCK_ITEMS.filter(i => i.name.toLowerCase().includes(q)));
+}
+
+function selectUseItem(prefix, id, name, qty){
+  USE_SELECTED = {id, name, qty: parseInt(qty)||0};
+  document.getElementById(prefix+'-use-step1').style.display = 'none';
+  document.getElementById(prefix+'-use-step2').style.display = 'block';
+  document.getElementById(prefix+'-use-item-name').textContent = name;
+  document.getElementById(prefix+'-use-item-current').textContent = qty;
+  document.getElementById(prefix+'-use-item-prop').textContent = USE_PROP;
+  document.getElementById(prefix+'-use-qty').value = '';
+  document.getElementById(prefix+'-use-notes').value = '';
+  document.getElementById(prefix+'-use-btn').style.display = '';
+  document.getElementById(prefix+'-use-back-btn').style.display = '';
+  setTimeout(()=>document.getElementById(prefix+'-use-qty').focus(), 100);
+}
+
+function useStockBack(prefix){
+  USE_SELECTED = null;
+  document.getElementById(prefix+'-use-step2').style.display = 'none';
+  document.getElementById(prefix+'-use-step1').style.display = 'block';
+  document.getElementById(prefix+'-use-btn').style.display   = 'none';
+  document.getElementById(prefix+'-use-back-btn').style.display = 'none';
+}
+
+async function saveUseStock(prefix){
+  if(!USE_SELECTED){ alert('Please select an item'); return; }
+  const qty = parseInt(document.getElementById(prefix+'-use-qty').value)||0;
+  if(qty < 1){ alert('Please enter a quantity of at least 1'); return; }
+  if(qty > USE_SELECTED.qty){ alert('Cannot use more than available stock ('+USE_SELECTED.qty+')'); return; }
+  const notes = document.getElementById(prefix+'-use-notes').value.trim();
+  const btn   = document.getElementById(prefix+'-use-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    await api('/rest/v1/stock_usage','POST',{
+      item_id:       USE_SELECTED.id,
+      item_name:     USE_SELECTED.name,
+      quantity:      qty,
+      property_name: USE_PROP,
+      notes:         notes || null,
+    });
+    toast('Stock usage recorded ✓');
+    closeModal(IS_MOBILE ? 'modal-m-use' : 'modal-d-use');
+    if(!IS_MOBILE && ACTIVE_PROP !== 'all' && ACTIVE_PROP !== 'warehouse') loadStockView(ACTIVE_PROP);
+  } catch(e){ alert('Error: '+e.message); }
+  finally{ btn.disabled = false; btn.textContent = 'Use Stock'; }
+}
+
 // ── Desktop button wiring ──
 document.getElementById('d-btn-item')?.addEventListener('click',()=>{
   document.getElementById('item-name').value='';
@@ -644,8 +1039,8 @@ document.getElementById('d-btn-warehouse')?.addEventListener('click',()=>{
   document.getElementById('wh-date').value=new Date().toISOString().split('T')[0];
   openModal('modal-warehouse');
 });
-document.getElementById('d-btn-add')?.addEventListener('click',()=>openModal('modal-d-add'));
-document.getElementById('d-btn-use')?.addEventListener('click',()=>openModal('modal-d-use'));
+document.getElementById('d-btn-add')?.addEventListener('click',()=>openAddStock());
+document.getElementById('d-btn-use')?.addEventListener('click',()=>openUseStock());
 document.getElementById('d-btn-log')?.addEventListener('click',()=>{ loadStockLog('all'); openModal('modal-log'); });
 
 // ── Stock Log ──
