@@ -295,12 +295,12 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Rate Our Staff</div><div style="font-size:12px;color:var(--muted)">Review the team who made your stay special</div></div>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
-  <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;opacity:0.5;cursor:not-allowed">
+  <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="openPropertyReview()">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--g-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
     </div>
-    <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Review the Property</div><div style="font-size:12px;color:var(--muted)">Coming soon</div></div>
-    <span class="bdg" style="background:var(--bg);color:var(--muted);border:1px solid var(--border);font-size:10px">Soon</span>
+    <div style="flex:1"><div style="font-size:15px;font-weight:500;margin-bottom:2px">Review the Property</div><div style="font-size:12px;color:var(--muted)">Share your experience on Google</div></div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
   </div>
 </div>
 
@@ -899,6 +899,24 @@ function downloadGuestBillPdf(){
 
   var blob = new Blob([html], {type:'text/html'});
   window.open(URL.createObjectURL(blob), '_blank');
+}
+
+// ── Review Property (Google link) ──
+async function openPropertyReview() {
+  var prop = (me && (me.prop || me.property_name)) || '';
+  if (!prop) { alert('Property not found.'); return; }
+  try {
+    var rows = await api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(prop) + '&select=property-link');
+    var link = rows && rows[0] && rows[0]['property-link'];
+    if (link) {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    } else {
+      alert('Review link not set up yet. Please ask the property manager.');
+    }
+  } catch(e) {
+    console.error('openPropertyReview error:', e);
+    alert('Could not load review link. Please try again.');
+  }
 }
 
 // ── Review sheets ──
