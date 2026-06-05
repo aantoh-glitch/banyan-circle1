@@ -19,63 +19,54 @@
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
-
 .page{max-width:430px;margin:0 auto;padding:20px 16px 80px;min-height:100dvh}
 .pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
 .pg-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:3px}
 .pg-sub{font-size:12px;color:var(--faint);letter-spacing:.2px}
 
-/* Vendor cards */
-.vendor-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px 16px 14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.vendor-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .vendor-name{font-family:'EB Garamond',serif;font-size:19px;font-weight:600;color:var(--text);margin-bottom:2px}
-.vendor-services{font-size:12px;color:var(--br);font-weight:500;margin-bottom:8px;letter-spacing:.1px}
-.vendor-meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-bottom:5px}
-.vendor-meta svg{flex-shrink:0;stroke:var(--faint);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vendor-services{font-size:12px;color:var(--br);font-weight:500;margin-bottom:8px}
+.vendor-meta{font-size:12px;color:var(--muted);display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;line-height:1.4}
+.vendor-meta svg{flex-shrink:0;margin-top:1px;stroke:var(--faint);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .vendor-phone-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 .vendor-phone-num{font-size:14px;font-weight:500;color:var(--text);flex:1}
-.call-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--g-l);color:#224509;border:1px solid #B8DBA0;border-radius:20px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;text-decoration:none;flex-shrink:0;transition:background .15s}
+.call-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--g-l);color:#224509;border:1px solid #B8DBA0;border-radius:20px;font-size:12px;font-weight:600;font-family:inherit;text-decoration:none;flex-shrink:0}
 .call-btn svg{stroke:#224509;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.call-btn:active{background:#d3edbe}
 .vendor-links{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.link-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:16px;font-size:11px;font-weight:500;text-decoration:none;border:1px solid;transition:opacity .15s}
-.link-chip:active{opacity:.7}
+.link-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:16px;font-size:11px;font-weight:500;text-decoration:none;border:1px solid}
 .chip-map{background:var(--b-l);color:var(--b);border-color:#C5D9F0}
 .chip-gst{background:#F3EAF9;color:#5A2A7A;border-color:#D4B8E8}
-
-/* Admin controls */
 .vendor-admin-row{display:flex;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
 .btn-edit{flex:1;padding:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-del{padding:8px 14px;background:var(--r-l);color:var(--r);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
 
-/* Add button */
 .btn-add{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0}
-.btn-add svg{stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .btn-add:active{background:var(--br-d)}
 
-/* Empty */
 .empty{text-align:center;padding:40px 16px;color:var(--faint);font-size:13px;line-height:1.7}
 .empty-icon{font-size:32px;margin-bottom:8px}
 
-/* Modal — bottom sheet on mobile */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
-.modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:20px 20px 0 0;padding:0 20px max(32px,env(safe-area-inset-bottom));max-width:430px;width:100%;max-height:92dvh;overflow-y:auto}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:0 20px max(32px,env(safe-area-inset-bottom));max-width:430px;width:100%;max-height:92dvh;overflow-y:auto}
 .modal-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:12px auto 18px}
-.modal-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:600;margin-bottom:16px}
+.modal-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:600;margin-bottom:4px}
+.modal-prop{font-size:12px;color:var(--muted);margin-bottom:18px}
 .fg{margin-bottom:13px}
 .fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
-.fl span{color:var(--r);margin-left:2px}
+.req{color:var(--r)}
+.opt{color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0;font-size:10px}
 .fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
 .fc:focus{border-color:var(--br);background:var(--white)}
 .fc-hint{font-size:11px;color:var(--faint);margin-top:4px}
 .fc-err{font-size:11px;color:var(--r);margin-top:4px;display:none}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);margin-bottom:4px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);padding-bottom:4px}
 .btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:active{background:var(--br-d)}
 .btn-sec{padding:10px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
-.prop-pill{display:inline-block;background:var(--br-l);color:var(--br-d);border:1px solid var(--br-mid);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;margin-bottom:16px}
 
-/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:300;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25)}
 </style>
 </head>
@@ -86,8 +77,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div class="pg-title">Vendors</div>
       <div class="pg-sub" id="prop-label">Property vendors</div>
     </div>
-    <button class="btn-add" id="add-vendor-btn" onclick="openAddModal()" style="display:none">
-      <svg width="13" height="13" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <button class="btn-add" id="add-vendor-btn" onclick="openAddModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Vendor
     </button>
   </div>
@@ -96,63 +87,43 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 </div>
 
-<!-- Add / Edit Modal -->
-<div class="modal" id="modal-vendor">
-  <div class="modal-card">
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-sheet" id="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-vendor-title">Add Vendor</div>
+    <div class="modal-title" id="modal-title">Add Vendor</div>
+    <div class="modal-prop" id="modal-prop-line"></div>
     <input type="hidden" id="v-id"/>
-
-    <!-- Property (read-only display) -->
     <div class="fg">
-      <label class="fl">Property</label>
-      <div class="prop-pill" id="v-prop-display">—</div>
+      <label class="fl">Vendor Name <span class="req">*</span></label>
+      <input class="fc" id="v-name" placeholder="e.g. Sai Electricals" autocomplete="off"/>
     </div>
-
-    <!-- Vendor Name (required) -->
     <div class="fg">
-      <label class="fl">Vendor Name <span>*</span></label>
-      <input class="fc" id="v-name" placeholder="e.g. Sai Electricals"/>
-    </div>
-
-    <!-- Services (required) -->
-    <div class="fg">
-      <label class="fl">Services Provided <span>*</span></label>
-      <input class="fc" id="v-services" placeholder="e.g. Plumbing, Electrical, Cleaning…"/>
+      <label class="fl">Services Provided <span class="req">*</span></label>
+      <input class="fc" id="v-services" placeholder="e.g. Plumbing, Electrical, Cleaning" autocomplete="off"/>
       <div class="fc-hint">Separate multiple services with commas</div>
     </div>
-
-    <!-- Phone (required, min 10 digits) -->
     <div class="fg">
-      <label class="fl">Phone Number <span>*</span></label>
-      <input class="fc" id="v-phone" type="tel" placeholder="e.g. 9876543210" inputmode="numeric" maxlength="15"/>
+      <label class="fl">Phone Number <span class="req">*</span></label>
+      <input class="fc" id="v-phone" type="tel" inputmode="numeric" placeholder="e.g. 9876543210" maxlength="15"/>
       <div class="fc-err" id="v-phone-err">Minimum 10 digits required</div>
     </div>
-
-    <!-- Email (optional) -->
     <div class="fg">
-      <label class="fl">Email <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <label class="fl">Email <span class="opt">(optional)</span></label>
       <input class="fc" id="v-email" type="email" placeholder="vendor@example.com"/>
     </div>
-
-    <!-- Address (optional) -->
     <div class="fg">
-      <label class="fl">Address <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input class="fc" id="v-address" placeholder="e.g. 12 MG Road, Koramangala, Bengaluru"/>
+      <label class="fl">Address <span class="opt">(optional)</span></label>
+      <input class="fc" id="v-address" placeholder="e.g. 12 MG Road, Koramangala" autocomplete="off"/>
     </div>
-
-    <!-- GST Number (optional) -->
     <div class="fg">
-      <label class="fl">GST Number <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input class="fc" id="v-gst" placeholder="e.g. 29AABCU9603R1ZX" style="text-transform:uppercase" maxlength="15"/>
+      <label class="fl">GST Number <span class="opt">(optional)</span></label>
+      <input class="fc" id="v-gst" placeholder="e.g. 29AABCU9603R1ZX" maxlength="15" style="text-transform:uppercase"/>
     </div>
-
-    <!-- Google Maps Link (optional) -->
     <div class="fg">
-      <label class="fl">Google Maps Link <span style="color:var(--faint);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <label class="fl">Google Maps Link <span class="opt">(optional)</span></label>
       <input class="fc" id="v-maps" type="url" placeholder="https://maps.google.com/…"/>
     </div>
-
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal()">Cancel</button>
       <button class="btn-p" id="v-save-btn" onclick="saveVendor()">Save Vendor</button>
@@ -163,202 +134,242 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 <div class="toast" id="toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const params   = new URLSearchParams(location.search);
-const IS_ADMIN = params.get('viewer') === 'admin';
+var params   = new URLSearchParams(location.search);
+var IS_ADMIN = params.get('viewer') === 'admin';
 
-let PROP = params.get('property') || '';
+var PROP = params.get('property') || '';
 if (!PROP) {
-  const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-  if (me) PROP = me.prop || me.property_name || '';
+  try {
+    var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+    if (_me) PROP = _me.prop || _me.property_name || '';
+  } catch(e) {}
 }
-let PROPERTY_HEAD = PROP;
+var PROPERTY_HEAD = PROP;
 
-async function api(path, method, body) {
-  const isDel = (method||'GET') === 'DELETE';
-  const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json'};
+// Vendor cache for edit (avoids inline onclick encoding issues)
+var _vendorCache = {};
+
+// Hide Add button if not admin
+if (!IS_ADMIN) {
+  document.getElementById('add-vendor-btn').style.display = 'none';
+}
+
+function api(path, method, body) {
+  var isDel = (method || 'GET') === 'DELETE';
+  var h = {apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Accept: 'application/json'};
   if (!isDel) h['Prefer'] = 'return=representation';
-  const r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
-  if (!r.ok) { console.error('API error', r.status, await r.text()); return null; }
-  if (r.status===204) return true;
-  return r.json().catch(()=>null);
+  return fetch(SB + path, {
+    method: method || 'GET',
+    headers: h,
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r) {
+    if (!r.ok) { return r.text().then(function(e){ console.error('API error', r.status, e); return null; }); }
+    if (r.status === 204) return true;
+    return r.json().catch(function(){ return null; });
+  }).catch(function(e) { console.error('fetch error', e); return null; });
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function phoneDigits(s){ return (s||'').replace(/\D/g,''); }
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-function toast(msg, err) {
-  const t = document.getElementById('toast');
+function phoneDigits(s) { return (s || '').replace(/\D/g, ''); }
+
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.background = isErr ? '#9B2626' : '#1E1C18';
   t.style.display = 'block';
-  clearTimeout(t._tid);
-  t._tid = setTimeout(()=>t.style.display='none', 2400);
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){ t.style.display = 'none'; }, 2400);
 }
 
 function notifyHeight() {
-  if (window.parent !== window)
-    window.parent.postMessage({type:'bc_resize', height: document.body.scrollHeight}, '*');
+  if (window.parent !== window) {
+    window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*');
+  }
 }
 
-async function init() {
-  if (PROP) {
-    const rows = await api('/rest/v1/landlords?property_name=eq.'+encodeURIComponent(PROP.trim())+'&select=property_name,property_head');
-    if (rows && rows[0] && rows[0].property_head) PROPERTY_HEAD = rows[0].property_head;
-  }
-  document.getElementById('prop-label').textContent = (PROPERTY_HEAD||PROP||'Vendors');
-  if (IS_ADMIN) document.getElementById('add-vendor-btn').style.display = '';
-  loadVendors();
+function init() {
+  // Resolve property_head
+  api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(PROP.trim()) + '&select=property_name,property_head')
+    .then(function(rows) {
+      if (rows && rows[0] && rows[0].property_head) {
+        PROPERTY_HEAD = rows[0].property_head;
+      }
+      document.getElementById('prop-label').textContent = PROPERTY_HEAD || PROP || 'Vendors';
+      loadVendors();
+    });
   notifyHeight();
   window.addEventListener('resize', notifyHeight);
 }
 
-async function loadVendors() {
-  const el = document.getElementById('vendors-list');
+function loadVendors() {
+  var el = document.getElementById('vendors-list');
   el.innerHTML = '<div class="empty"><div class="empty-icon">🔄</div>Loading…</div>';
-  const filter = PROPERTY_HEAD
-    ? '/rest/v1/vendors?property_head=eq.'+encodeURIComponent(PROPERTY_HEAD)+'&order=name.asc'
-    : '/rest/v1/vendors?property_name=eq.'+encodeURIComponent(PROP)+'&order=name.asc';
-  const data = await api(filter) || [];
-  if (!data.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div>No vendors added yet'+(IS_ADMIN?'.<br>Tap <strong>Add Vendor</strong> to get started.':'.')+'</div>';
-    notifyHeight(); return;
-  }
-  el.innerHTML = data.map(v => renderVendor(v)).join('');
-  notifyHeight();
+  var filter = PROPERTY_HEAD
+    ? '/rest/v1/vendors?property_head=eq.' + encodeURIComponent(PROPERTY_HEAD) + '&order=name.asc'
+    : '/rest/v1/vendors?property_name=eq.' + encodeURIComponent(PROP) + '&order=name.asc';
+  api(filter).then(function(data) {
+    data = data || [];
+    _vendorCache = {};
+    if (!data.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div>No vendors added yet' +
+        (IS_ADMIN ? '.<br>Tap <strong>Add Vendor</strong> to get started.' : '.') + '</div>';
+      notifyHeight();
+      return;
+    }
+    var html = '';
+    data.forEach(function(v) { _vendorCache[v.id] = v; html += renderVendor(v); });
+    el.innerHTML = html;
+    notifyHeight();
+  });
 }
 
 function renderVendor(v) {
-  const digits   = phoneDigits(v.phone);
-  const callHref = digits ? 'tel:'+digits : '#';
-  // encode all fields for inline onclick usage
-  const enc = x => encodeURIComponent(x||'');
-
-  return `<div class="vendor-card" id="vc-${esc(v.id)}">
-    <div class="vendor-name">${esc(v.name)}</div>
-    ${v.services ? `<div class="vendor-services">${esc(v.services)}</div>` : ''}
-    ${v.address  ? `<div class="vendor-meta"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(v.address)}</div>` : ''}
-    ${v.email    ? `<div class="vendor-meta"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:${esc(v.email)}" style="color:var(--b);text-decoration:none">${esc(v.email)}</a></div>` : ''}
-    <div class="vendor-phone-row">
-      <span class="vendor-phone-num">${esc(v.phone||'—')}</span>
-      ${digits ? `<a class="call-btn" href="${callHref}"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.32 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.08.35.17.7.28 1.04a2 2 0 0 1-.45 2.11L7.91 8.72a16 16 0 0 0 5.37 5.37l.91-.91a2 2 0 0 1 2.11-.45c.34.11.69.2 1.04.28A2 2 0 0 1 22 16.92z"/></svg>Call</a>` : ''}
-    </div>
-    ${(v.maps_link || v.gst_number) ? `<div class="vendor-links">
-      ${v.maps_link  ? `<a class="link-chip chip-map" href="${esc(v.maps_link)}" target="_blank" rel="noopener"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg> Maps</a>` : ''}
-      ${v.gst_number ? `<span class="link-chip chip-gst" title="GST Number">GST: ${esc(v.gst_number)}</span>` : ''}
-    </div>` : ''}
-    ${IS_ADMIN ? `<div class="vendor-admin-row">
-      <button class="btn-edit" onclick="openEditModal('${esc(v.id)}','${enc(v.name)}','${enc(v.services||'')}','${enc(v.phone||'')}','${enc(v.email||'')}','${enc(v.address||'')}','${enc(v.gst_number||'')}','${enc(v.maps_link||'')}')">Edit</button>
-      <button class="btn-del" onclick="deleteVendor('${esc(v.id)}')">Delete</button>
-    </div>` : ''}
-  </div>`;
+  var digits = phoneDigits(v.phone);
+  var out = '<div class="vendor-card">';
+  out += '<div class="vendor-name">' + esc(v.name) + '</div>';
+  if (v.services) out += '<div class="vendor-services">' + esc(v.services) + '</div>';
+  if (v.address)  out += '<div class="vendor-meta"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + esc(v.address) + '</div>';
+  if (v.email)    out += '<div class="vendor-meta"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:' + esc(v.email) + '" style="color:var(--b);text-decoration:none">' + esc(v.email) + '</a></div>';
+  out += '<div class="vendor-phone-row">';
+  out += '<span class="vendor-phone-num">' + esc(v.phone || '—') + '</span>';
+  if (digits) out += '<a class="call-btn" href="tel:' + digits + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.32 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.08.35.17.7.28 1.04a2 2 0 0 1-.45 2.11L7.91 8.72a16 16 0 0 0 5.37 5.37l.91-.91a2 2 0 0 1 2.11-.45c.34.11.69.2 1.04.28A2 2 0 0 1 22 16.92z"/></svg>Call</a>';
+  out += '</div>';
+  if (v.maps_link || v.gst_number) {
+    out += '<div class="vendor-links">';
+    if (v.maps_link)  out += '<a class="link-chip chip-map" href="' + esc(v.maps_link) + '" target="_blank" rel="noopener">📍 Maps</a>';
+    if (v.gst_number) out += '<span class="link-chip chip-gst">GST: ' + esc(v.gst_number) + '</span>';
+    out += '</div>';
+  }
+  if (IS_ADMIN) {
+    out += '<div class="vendor-admin-row">';
+    out += '<button class="btn-edit" onclick="openEditModal(\'' + esc(v.id) + '\')">Edit</button>';
+    out += '<button class="btn-del" onclick="deleteVendor(\'' + esc(v.id) + '\')">Delete</button>';
+    out += '</div>';
+  }
+  out += '</div>';
+  return out;
 }
 
-function clearModal() {
-  ['v-id','v-name','v-services','v-phone','v-email','v-address','v-gst','v-maps'].forEach(id=>{
-    document.getElementById(id).value = '';
-  });
+function clearForm() {
+  document.getElementById('v-id').value       = '';
+  document.getElementById('v-name').value     = '';
+  document.getElementById('v-services').value = '';
+  document.getElementById('v-phone').value    = '';
+  document.getElementById('v-email').value    = '';
+  document.getElementById('v-address').value  = '';
+  document.getElementById('v-gst').value      = '';
+  document.getElementById('v-maps').value     = '';
   document.getElementById('v-phone-err').style.display = 'none';
-  document.getElementById('v-prop-display').textContent = PROPERTY_HEAD || PROP || '—';
+  document.getElementById('v-save-btn').disabled = false;
+  document.getElementById('v-save-btn').textContent = 'Save Vendor';
 }
 
 function openAddModal() {
-  clearModal();
-  document.getElementById('modal-vendor-title').textContent = 'Add Vendor';
-  document.getElementById('modal-vendor').classList.add('on');
-  setTimeout(()=>document.getElementById('v-name').focus(), 80);
+  clearForm();
+  document.getElementById('modal-title').textContent   = 'Add Vendor';
+  document.getElementById('modal-prop-line').textContent = PROPERTY_HEAD || PROP || '';
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('v-name').focus(); }, 80);
 }
 
-function openEditModal(id, name, services, phone, email, address, gst, maps) {
-  clearModal();
-  document.getElementById('v-id').value       = id;
-  document.getElementById('v-name').value     = decodeURIComponent(name);
-  document.getElementById('v-services').value = decodeURIComponent(services);
-  document.getElementById('v-phone').value    = decodeURIComponent(phone);
-  document.getElementById('v-email').value    = decodeURIComponent(email);
-  document.getElementById('v-address').value  = decodeURIComponent(address);
-  document.getElementById('v-gst').value      = decodeURIComponent(gst);
-  document.getElementById('v-maps').value     = decodeURIComponent(maps);
-  document.getElementById('modal-vendor-title').textContent = 'Edit Vendor';
-  document.getElementById('modal-vendor').classList.add('on');
+function openEditModal(id) {
+  var v = _vendorCache[id];
+  if (!v) { toast('Vendor not found', true); return; }
+  clearForm();
+  document.getElementById('v-id').value       = v.id;
+  document.getElementById('v-name').value     = v.name     || '';
+  document.getElementById('v-services').value = v.services || '';
+  document.getElementById('v-phone').value    = v.phone    || '';
+  document.getElementById('v-email').value    = v.email    || '';
+  document.getElementById('v-address').value  = v.address  || '';
+  document.getElementById('v-gst').value      = v.gst_number || '';
+  document.getElementById('v-maps').value     = v.maps_link  || '';
+  document.getElementById('modal-title').textContent    = 'Edit Vendor';
+  document.getElementById('modal-prop-line').textContent = PROPERTY_HEAD || PROP || '';
+  document.getElementById('modal-overlay').classList.add('open');
 }
 
 function closeModal() {
-  document.getElementById('modal-vendor').classList.remove('on');
+  document.getElementById('modal-overlay').classList.remove('open');
 }
 
-async function saveVendor() {
-  const btn      = document.getElementById('v-save-btn');
-  const id       = document.getElementById('v-id').value;
-  const name     = document.getElementById('v-name').value.trim();
-  const services = document.getElementById('v-services').value.trim();
-  const phone    = document.getElementById('v-phone').value.trim();
-  const email    = document.getElementById('v-email').value.trim();
-  const address  = document.getElementById('v-address').value.trim();
-  const gst      = document.getElementById('v-gst').value.trim().toUpperCase();
-  const maps     = document.getElementById('v-maps').value.trim();
-  const phoneErr = document.getElementById('v-phone-err');
+function saveVendor() {
+  var btn      = document.getElementById('v-save-btn');
+  var id       = document.getElementById('v-id').value;
+  var name     = document.getElementById('v-name').value.trim();
+  var services = document.getElementById('v-services').value.trim();
+  var phone    = document.getElementById('v-phone').value.trim();
+  var email    = document.getElementById('v-email').value.trim();
+  var address  = document.getElementById('v-address').value.trim();
+  var gst      = document.getElementById('v-gst').value.trim().toUpperCase();
+  var maps     = document.getElementById('v-maps').value.trim();
+  var phoneErr = document.getElementById('v-phone-err');
 
   if (!name)     { toast('Vendor name is required', true); return; }
   if (!services) { toast('Services provided is required', true); return; }
   if (!phone)    { toast('Phone number is required', true); return; }
-  if (phoneDigits(phone).length < 10) { phoneErr.style.display='block'; return; }
+  if (phoneDigits(phone).length < 10) { phoneErr.style.display = 'block'; return; }
   phoneErr.style.display = 'none';
 
   btn.disabled = true; btn.textContent = 'Saving…';
 
-  const body = {
+  var body = {
     property_name: PROP,
     property_head: PROPERTY_HEAD,
-    name,
-    services,
-    phone,
-    email:      email  || null,
-    address:    address|| null,
-    gst_number: gst    || null,
-    maps_link:  maps   || null
+    name:       name,
+    services:   services,
+    phone:      phone,
+    email:      email   || null,
+    address:    address || null,
+    gst_number: gst     || null,
+    maps_link:  maps    || null
   };
 
-  const res = id
-    ? await api('/rest/v1/vendors?id=eq.'+id, 'PATCH', body)
-    : await api('/rest/v1/vendors', 'POST', body);
+  var path   = id ? '/rest/v1/vendors?id=eq.' + id : '/rest/v1/vendors';
+  var method = id ? 'PATCH' : 'POST';
 
-  btn.disabled = false; btn.textContent = 'Save Vendor';
-
-  if (res) {
-    toast(id ? 'Vendor updated ✓' : 'Vendor added ✓');
-    closeModal();
-    loadVendors();
-  } else {
-    toast('Save failed — check console', true);
-  }
+  api(path, method, body).then(function(res) {
+    btn.disabled = false; btn.textContent = 'Save Vendor';
+    if (res) {
+      toast(id ? 'Vendor updated ✓' : 'Vendor added ✓');
+      closeModal();
+      loadVendors();
+    } else {
+      toast('Save failed — check console', true);
+    }
+  });
 }
 
-async function deleteVendor(id) {
+function deleteVendor(id) {
   if (!confirm('Delete this vendor? This cannot be undone.')) return;
-  const res = await api('/rest/v1/vendors?id=eq.'+id, 'DELETE');
-  if (res !== null) { toast('Vendor deleted'); loadVendors(); }
-  else toast('Delete failed', true);
+  api('/rest/v1/vendors?id=eq.' + id, 'DELETE').then(function(res) {
+    if (res !== null) { toast('Vendor deleted'); loadVendors(); }
+    else toast('Delete failed', true);
+  });
 }
 
-// Backdrop close
-document.getElementById('modal-vendor').addEventListener('click', function(e){
+// Backdrop close (only if clicking the overlay itself, not the sheet)
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
 // Live phone validation
-document.getElementById('v-phone').addEventListener('input', function(){
-  const err = document.getElementById('v-phone-err');
+document.getElementById('v-phone').addEventListener('input', function() {
+  var err = document.getElementById('v-phone-err');
   err.style.display = (this.value && phoneDigits(this.value).length < 10) ? 'block' : 'none';
 });
 
 // GST auto-uppercase
-document.getElementById('v-gst').addEventListener('input', function(){
-  const pos = this.selectionStart;
+document.getElementById('v-gst').addEventListener('input', function() {
+  var pos = this.selectionStart;
   this.value = this.value.toUpperCase();
-  this.setSelectionRange(pos, pos);
+  try { this.setSelectionRange(pos, pos); } catch(e){}
 });
 
 init();
