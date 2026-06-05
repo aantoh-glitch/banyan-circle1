@@ -29,7 +29,7 @@ html,body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var
 .fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
 .fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
 .fc:focus{border-color:var(--br);background:var(--white)}
-textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
+textarea.fc{resize:none;min-height:0;height:auto;overflow:hidden;line-height:1.65}
 .btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.2px}
 .btn-p:active{background:var(--br-d)}
 .btn-sec{padding:9px 14px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
@@ -122,7 +122,7 @@ textarea.fc{resize:vertical;min-height:100px;line-height:1.65}
 </div>
 <div class="sec-sub">Private notes for this property</div>
 <div class="card" style="padding:0;overflow:hidden">
-  <textarea class="fc" id="notes-area" style="border:none;border-radius:var(--radius);min-height:140px;background:var(--white);padding:16px" placeholder="Jot down anything — maintenance reminders, guest preferences, seasonal notes…" oninput="scheduleNoteSave()"></textarea>
+  <textarea class="fc" id="notes-area" style="border:none;border-radius:var(--radius);background:var(--white);padding:16px" placeholder="Jot down anything — maintenance reminders, guest preferences, seasonal notes…" oninput="autoResize(this);scheduleNoteSave()" rows="1"></textarea>
 </div>
 
 </div>
@@ -246,8 +246,12 @@ async function deleteRule(id){
 async function loadNotes(){
   var data=await api('/rest/v1/property_notes?property_name=eq.'+encodeURIComponent(PROP))||[];
   var existing=data&&data[0];
-  document.getElementById('notes-area').value=existing?(existing.notes||''):'';
+  var ta=document.getElementById('notes-area');
+  ta.value=existing?(existing.notes||''):'';
+  autoResize(ta);
 }
+
+function autoResize(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 
 var notesTimer=null;
 function scheduleNoteSave(){
