@@ -931,6 +931,15 @@ async function saveAddStock(prefix){
       });
     }
 
+    // 2. Log the transfer into warehouse_stock with property_name
+    await api('/rest/v1/warehouse_stock', 'POST', {
+      item_id:       ADD_SELECTED.id,
+      date:          new Date().toISOString().split('T')[0],
+      quantity:      qty,
+      property_name: STAFF_ASSIGNED_PROP,
+      notes:         notes || null,
+    });
+
     toast('Stock added ✓');
     closeModal(IS_MOBILE ? 'modal-m-add' : 'modal-d-add');
     if(!IS_MOBILE){
@@ -1086,7 +1095,7 @@ document.getElementById('d-btn-warehouse')?.addEventListener('click',()=>{
 });
 document.getElementById('d-btn-add')?.addEventListener('click',()=>openAddStock());
 document.getElementById('d-btn-use')?.addEventListener('click',()=>openUseStock());
-document.getElementById('d-btn-log')?.addEventListener('click',()=>{ loadStockLog('all'); openModal('modal-log'); });
+document.getElementById('d-btn-log')?.addEventListener('click',()=>{ loadStockLog(ACTIVE_PROP); openModal('modal-log'); });
 
 // ── Stock Log ──
 let LOG_FILTER = 'all';
@@ -1098,16 +1107,26 @@ function setLogFilter(source, el){
   loadStockLog(source);
 }
 
-async function loadStockLog(source){
+async function loadStockLog(prop){
   const container = document.getElementById('log-content');
   container.innerHTML = '<div class="empty">Loading…</div>';
+  const isWarehouseOrAll = !prop || prop === 'all' || prop === 'warehouse';
   try{
-    // Fetch oldest-first so we can compute a correct running total per item
-    const whRows = await api('/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.asc&limit=200') || [];
+    // Build query — warehouse view shows entries with no property_name, property view shows that property's transfers
+    let query = '/rest/v1/warehouse_stock?select=*,stock_items(name)&order=created_at.asc&limit=200';
+    if(isWarehouseOrAll){
+      query += '&property_name=is.null';
+    } else {
+      query += '&property_name=eq.'+encodeURIComponent(prop);
+    }
+    const whRows = await api(query) || [];
 
     const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
 
-    if(!whRows.length){ container.innerHTML='<div class="empty">No warehouse stock entries yet.</div>'; return; }
+    if(!whRows.length){
+      container.innerHTML='<div class="empty">No stock entries yet'+(isWarehouseOrAll?'':' for '+prop)+'.</div>';
+      return;
+    }
 
     // Compute per-item cumulative totals (oldest → newest)
     const runningTotals = {};
@@ -1122,28 +1141,47 @@ async function loadStockLog(source){
     // Display newest-first
     const displayRows = [...whRows].reverse();
 
-    container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
-      <thead><tr>
-        <th>Date</th><th>Item</th><th>Qty</th><th>Cumulative Stock</th><th>Price/Unit</th><th>Total</th><th>Status</th>
-      </tr></thead>
-      <tbody>${displayRows.map(r=>{
-        const flags = [
-          r.delivered?'Delivered':null,
-          r.checked?'Checked':null,
-          r.damaged_qty?r.damaged_qty+' damaged':null,
-          r.returned?'Returned':null,
-        ].filter(Boolean).join(' · ') || '—';
-        return `<tr>
-          <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
-          <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
-          <td>${r.quantity??'—'}</td>
-          <td style="font-weight:600;color:var(--teal)">${r._cumulative}</td>
-          <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
-          <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
-          <td style="font-size:12px;color:var(--muted)">${flags}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>`;
+    if(isWarehouseOrAll){
+      // Warehouse log — full detail columns
+      container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
+        <thead><tr>
+          <th>Date</th><th>Item</th><th>Qty</th><th>Cumulative</th><th>Price/Unit</th><th>Total</th><th>Status</th>
+        </tr></thead>
+        <tbody>${displayRows.map(r=>{
+          const flags = [
+            r.delivered?'Delivered':null,
+            r.checked?'Checked':null,
+            r.damaged_qty?r.damaged_qty+' damaged':null,
+            r.returned?'Returned':null,
+          ].filter(Boolean).join(' · ') || '—';
+          return `<tr>
+            <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
+            <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
+            <td>${r.quantity??'—'}</td>
+            <td style="font-weight:600;color:var(--teal)">${r._cumulative}</td>
+            <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
+            <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
+            <td style="font-size:12px;color:var(--muted)">${flags}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+    } else {
+      // Property log — stock transfer entries
+      container.innerHTML = `<div style="overflow-x:auto"><table class="tbl">
+        <thead><tr>
+          <th>Date</th><th>Item</th><th>Qty Added</th><th>Cumulative</th><th>Notes</th>
+        </tr></thead>
+        <tbody>${displayRows.map(r=>{
+          return `<tr>
+            <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
+            <td style="font-weight:500">${r.stock_items?.name||'—'}</td>
+            <td style="color:var(--g);font-weight:600">+${r.quantity??'—'}</td>
+            <td style="font-weight:600;color:var(--teal)">${r._cumulative}</td>
+            <td style="font-size:12px;color:var(--muted)">${r.notes||'—'}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+    }
   } catch(e){ container.innerHTML='<div class="empty">Error loading log: '+e.message+'</div>'; }
 }
 
