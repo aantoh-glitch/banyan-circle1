@@ -147,7 +147,7 @@ if (!PROP) {
     if (_me) PROP = _me.prop || _me.property_name || '';
   } catch(e) {}
 }
-var PROPERTY_HEAD = PROP;
+
 
 // Vendor cache for edit (avoids inline onclick encoding issues)
 var _vendorCache = {};
@@ -194,15 +194,8 @@ function notifyHeight() {
 }
 
 function init() {
-  // Resolve property_head
-  api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(PROP.trim()) + '&select=property_name,property_head')
-    .then(function(rows) {
-      if (rows && rows[0] && rows[0].property_head) {
-        PROPERTY_HEAD = rows[0].property_head;
-      }
-      document.getElementById('prop-label').textContent = PROPERTY_HEAD || PROP || 'Vendors';
-      loadVendors();
-    });
+  document.getElementById('prop-label').textContent = PROP || 'Vendors';
+  loadVendors();
   notifyHeight();
   window.addEventListener('resize', notifyHeight);
 }
@@ -210,9 +203,7 @@ function init() {
 function loadVendors() {
   var el = document.getElementById('vendors-list');
   el.innerHTML = '<div class="empty"><div class="empty-icon">🔄</div>Loading…</div>';
-  var filter = PROPERTY_HEAD
-    ? '/rest/v1/vendors?property_head=eq.' + encodeURIComponent(PROPERTY_HEAD) + '&order=name.asc'
-    : '/rest/v1/vendors?property_name=eq.' + encodeURIComponent(PROP) + '&order=name.asc';
+  var filter = '/rest/v1/vendors?property_name=eq.' + encodeURIComponent(PROP) + '&order=name.asc';
   api(filter).then(function(data) {
     data = data || [];
     _vendorCache = {};
@@ -273,7 +264,7 @@ function clearForm() {
 function openAddModal() {
   clearForm();
   document.getElementById('modal-title').textContent   = 'Add Vendor';
-  document.getElementById('modal-prop-line').textContent = PROPERTY_HEAD || PROP || '';
+  document.getElementById('modal-prop-line').textContent = PROP || '';
   document.getElementById('modal-overlay').classList.add('open');
   setTimeout(function(){ document.getElementById('v-name').focus(); }, 80);
 }
@@ -291,7 +282,7 @@ function openEditModal(id) {
   document.getElementById('v-gst').value      = v.gst_number || '';
   document.getElementById('v-maps').value     = v.maps_link  || '';
   document.getElementById('modal-title').textContent    = 'Edit Vendor';
-  document.getElementById('modal-prop-line').textContent = PROPERTY_HEAD || PROP || '';
+  document.getElementById('modal-prop-line').textContent = PROP || '';
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -321,7 +312,6 @@ function saveVendor() {
 
   var body = {
     property_name: PROP,
-    property_head: PROPERTY_HEAD,
     name:       name,
     services:   services,
     phone:      phone,
