@@ -443,17 +443,17 @@ function downloadExcel(){
   toast('Downloaded ✓');
 }
 
-// Upload file to finance-docs bucket, return public URL or null
-async function uploadDoc(file, prefix){
+// Upload file to the specified bucket, return public URL or null
+async function uploadDoc(file, prefix, bucket='finance-docs'){
   if(!file) return null;
   const path = prefix.replace(/\s+/g,'_')+'/'+Date.now()+'_'+file.name;
-  const res = await fetch(SB+'/storage/v1/object/finance-docs/'+path,{
+  const res = await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{
     method:'POST',
-    headers:{apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':file.type||'application/octet-stream', 'x-upsert':'true'},
+    headers:{apikey:KEY, 'Content-Type':file.type||'application/octet-stream', 'x-upsert':'true'},
     body:file
   });
   if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error('Upload failed: '+(e.message||e.error||res.status));}
-  return SB+'/storage/v1/object/public/finance-docs/'+path;
+  return SB+'/storage/v1/object/public/'+bucket+'/'+path;
 }
 
 function setBtn(id,loading){const b=document.getElementById(id);if(b){b.disabled=loading;b.textContent=loading?'Saving…':'Save';}}
@@ -486,7 +486,7 @@ async function saveUtility(){
   setBtn('util-btn',true);
   try{
     const file=document.getElementById('util-file').files[0];
-    if(file){setFileStatus('util-file-status','Uploading…');const url=await uploadDoc(file,'utility/'+body.property_name);body.proof_url=url;setFileStatus('util-file-status','Uploaded ✓',true);}
+    if(file){setFileStatus('util-file-status','Uploading…');const url=await uploadDoc(file,'utility/'+body.property_name,'utility-uploads');body.proof_url=url;setFileStatus('util-file-status','Uploaded ✓',true);}
     await api('/rest/v1/utility_payments','POST',body);closeModal('modal-utility');toast('Utility bill saved ✓');loadLog();
   }catch(e){alert('Error: '+e.message);}finally{setBtn('util-btn',false);}
 }
