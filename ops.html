@@ -359,6 +359,16 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </button>
 
+    <button class="dash-btn" id="vendors-btn" onclick="openVendorsModal()">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Vendors</div>
+        <div class="db-sub">Property vendor list</div>
+      </div>
+    </button>
+
   </div><!-- /dash-grid -->
 
   <!-- Leave bottom-sheet modal -->
@@ -390,6 +400,22 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 
   <div class="footer">a property by heritance</div>
+
+  <!-- Vendors bottom-sheet modal -->
+  <div class="modal" id="modal-vendors">
+    <div class="modal-sheet" style="padding-bottom:28px">
+      <div class="modal-handle"></div>
+      <div class="modal-ttl">Vendors</div>
+      <div class="modal-sub" id="vendors-modal-sub">Loading…</div>
+      <div id="vendors-modal-content" style="margin-top:12px">
+        <iframe id="iframe-vendors-ops" src="" style="width:100%;border:none;border-radius:12px;min-height:400px;display:block" scrolling="no"></iframe>
+      </div>
+      <button onclick="document.getElementById('modal-vendors').classList.remove('on')"
+        style="margin-top:16px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
+        Close
+      </button>
+    </div>
+  </div>
 
 </div>
 
@@ -547,6 +573,36 @@ async function loadTaskBadge() {
   } catch (e) { /* silently fail */ }
 }
 loadTaskBadge();
+
+/* ── Vendors Modal ── */
+function openVendorsModal() {
+  const modal = document.getElementById('modal-vendors');
+  const sub   = document.getElementById('vendors-modal-sub');
+  modal.classList.add('on');
+
+  // Resolve property for this staff member
+  const props = me.property_name
+    ? (Array.isArray(me.property_name) ? me.property_name : [me.property_name])
+    : [];
+  const prop = props.length ? props[0] : '';
+
+  sub.textContent = prop || 'Your property';
+  const fr = document.getElementById('iframe-vendors-ops');
+  fr.src = '/vendors.html?property=' + encodeURIComponent(prop) + '&viewer=ops';
+}
+
+document.getElementById('modal-vendors').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('on');
+});
+
+// Auto-resize vendors iframe inside modal
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  if (e.data.type === 'bc_resize' && e.data.height) {
+    const fr = document.getElementById('iframe-vendors-ops');
+    try { if (fr && fr.contentWindow === e.source) fr.style.height = (e.data.height + 24) + 'px'; } catch(err){}
+  }
+});
 
 /* ── Reviews Modal ── */
 function starStr(n) {

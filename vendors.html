@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Vendors</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --br:#8B3520;--br-d:#6A2818;--br-l:#FAF0EB;--br-mid:#F2D9D0;
+  --g:#2E5C0F;--g-l:#EBF3E2;
+  --b:#1A4F8A;--b-l:#E8F1FA;
+  --r:#9B2626;--r-l:#FBEBEB;
+  --text:#1E1C18;--muted:#6B6860;--faint:#9E9C97;
+  --border:#E8E4DC;--border-strong:#C8C2B8;
+  --bg:#F7F5F1;--surface:#FEFCF9;--white:#fff;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 2px 12px rgba(0,0,0,.07);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+
+.page{max-width:430px;margin:0 auto;padding:20px 16px 80px;min-height:100dvh}
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
+.pg-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:3px}
+.pg-sub{font-size:12px;color:var(--faint);letter-spacing:.2px}
+
+/* Vendor cards */
+.vendor-card{
+  background:var(--white);border-radius:var(--radius);border:1px solid var(--border);
+  padding:16px 16px 14px;margin-bottom:12px;box-shadow:var(--shadow);
+}
+.vendor-name{font-family:'EB Garamond',serif;font-size:19px;font-weight:600;color:var(--text);margin-bottom:4px}
+.vendor-location{font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:4px}
+.vendor-location svg{flex-shrink:0;stroke:var(--faint);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vendor-phone-row{display:flex;align-items:center;gap:10px}
+.vendor-phone-num{font-size:14px;font-weight:500;color:var(--text);flex:1}
+.call-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;background:var(--g-l);color:#224509;
+  border:1px solid #B8DBA0;border-radius:20px;
+  font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;
+  text-decoration:none;flex-shrink:0;
+  transition:background .15s;
+}
+.call-btn svg{stroke:#224509;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.call-btn:active{background:#d3edbe}
+
+/* Admin controls */
+.vendor-admin-row{display:flex;gap:7px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.btn-edit{flex:1;padding:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-del{padding:8px 14px;background:var(--r-l);color:var(--r);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* Add button */
+.btn-add{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;background:var(--br);color:#fff;
+  border:none;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;
+  flex-shrink:0;
+}
+.btn-add svg{stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.btn-add:active{background:var(--br-d)}
+
+/* Empty */
+.empty{text-align:center;padding:40px 16px;color:var(--faint);font-size:13px;line-height:1.7}
+.empty-icon{font-size:32px;margin-bottom:8px}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:16px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'EB Garamond',serif;font-size:21px;font-weight:600;margin-bottom:16px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.fc{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;appearance:none}
+.fc:focus{border-color:var(--br);background:var(--white)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.btn-p{padding:11px 20px;background:var(--br);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:active{background:var(--br-d)}
+.btn-sec{padding:10px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:300;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="pg-head">
+    <div>
+      <div class="pg-title">Vendors</div>
+      <div class="pg-sub" id="prop-label">Property vendors</div>
+    </div>
+    <button class="btn-add" id="add-vendor-btn" onclick="openAddModal()" style="display:none">
+      <svg width="13" height="13" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Vendor
+    </button>
+  </div>
+
+  <div id="vendors-list">
+    <div class="empty"><div class="empty-icon">🔄</div>Loading vendors…</div>
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<div class="modal" id="modal-vendor">
+  <div class="modal-card">
+    <div class="modal-title" id="modal-vendor-title">Add Vendor</div>
+    <input type="hidden" id="v-id"/>
+    <div class="fg">
+      <label class="fl">Vendor Name</label>
+      <input class="fc" id="v-name" placeholder="e.g. Sai Electricals"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Location / Area</label>
+      <input class="fc" id="v-location" placeholder="e.g. Koramangala, Bengaluru"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Phone Number (min 10 digits)</label>
+      <input class="fc" id="v-phone" type="tel" placeholder="e.g. 9876543210" inputmode="numeric" maxlength="15"/>
+      <div id="v-phone-err" style="font-size:11px;color:var(--r);margin-top:4px;display:none">Minimum 10 digits required</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-p" id="v-save-btn" onclick="saveVendor()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+const params = new URLSearchParams(location.search);
+const IS_ADMIN = params.get('viewer') === 'admin';
+
+// Property comes from URL param; if opened standalone it falls back to localStorage
+let PROP = params.get('property') || '';
+if (!PROP) {
+  const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+  if (me) PROP = me.prop || me.property_name || '';
+}
+
+// If not loaded via iframe, fetch property_head from landlords table using property_name
+let PROPERTY_HEAD = PROP; // default; will be resolved below
+
+async function api(path, method, body) {
+  const isDel = (method||'GET') === 'DELETE';
+  const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json'};
+  if (!isDel) h['Prefer'] = 'return=representation';
+  const r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
+  if (!r.ok) { const err = await r.text(); console.error('API error', r.status, err); return null; }
+  if (r.status===204) return true;
+  return r.json().catch(()=>null);
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#9B2626' : '#1E1C18';
+  t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 2400);
+}
+
+function phoneDigits(s){ return (s||'').replace(/\D/g,''); }
+
+async function init() {
+  // Resolve property_head from landlords table using property_name
+  if (PROP) {
+    const rows = await api('/rest/v1/landlords?property_name=eq.'+encodeURIComponent(PROP.trim())+'&select=property_name,property_head');
+    if (rows && rows[0] && rows[0].property_head) {
+      PROPERTY_HEAD = rows[0].property_head;
+    }
+  }
+
+  document.getElementById('prop-label').textContent = PROPERTY_HEAD ? PROPERTY_HEAD + ' — vendors' : 'Vendors';
+
+  // Show Add button only for admin
+  if (IS_ADMIN) document.getElementById('add-vendor-btn').style.display = '';
+
+  loadVendors();
+
+  // Notify parent of height for iframe resize
+  function notifyHeight() {
+    if (window.parent !== window) {
+      window.parent.postMessage({type:'bc_resize', height: document.body.scrollHeight}, '*');
+    }
+  }
+  notifyHeight();
+  window.addEventListener('resize', notifyHeight);
+}
+
+async function loadVendors() {
+  const el = document.getElementById('vendors-list');
+  el.innerHTML = '<div class="empty"><div class="empty-icon">🔄</div>Loading…</div>';
+  // Filter by property_head so both ops and landlord see only their property's vendors
+  const data = await api('/rest/v1/vendors?property_head=eq.'+encodeURIComponent(PROPERTY_HEAD)+'&order=created_at.asc') || [];
+  if (!data.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div>No vendors added yet' + (IS_ADMIN ? '.<br>Tap <strong>Add Vendor</strong> to get started.' : '.') + '</div>';
+    return;
+  }
+  el.innerHTML = data.map(v => renderVendor(v)).join('');
+  // Notify parent of new height
+  if (window.parent !== window) window.parent.postMessage({type:'bc_resize', height:document.body.scrollHeight},'*');
+}
+
+function renderVendor(v) {
+  const digits = phoneDigits(v.phone);
+  const callHref = digits ? 'tel:'+digits : '#';
+  return `<div class="vendor-card" id="vc-${v.id}">
+    <div class="vendor-name">${esc(v.name)}</div>
+    ${v.location ? `<div class="vendor-location">
+      <svg width="13" height="13" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      ${esc(v.location)}
+    </div>` : ''}
+    <div class="vendor-phone-row">
+      <span class="vendor-phone-num">${esc(v.phone || '—')}</span>
+      ${digits ? `<a class="call-btn" href="${callHref}">
+        <svg width="13" height="13" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.32 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.72a16 16 0 0 0 5.37 5.37l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call
+      </a>` : ''}
+    </div>
+    ${IS_ADMIN ? `<div class="vendor-admin-row">
+      <button class="btn-edit" onclick="openEditModal('${v.id}','${esc(v.name).replace(/'/g,"\\'")}','${esc(v.location||'').replace(/'/g,"\\'")}','${esc(v.phone||'').replace(/'/g,"\\'")}')">Edit</button>
+      <button class="btn-del" onclick="deleteVendor('${v.id}')">Delete</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function openAddModal() {
+  document.getElementById('v-id').value = '';
+  document.getElementById('modal-vendor-title').textContent = 'Add Vendor';
+  document.getElementById('v-name').value = '';
+  document.getElementById('v-location').value = '';
+  document.getElementById('v-phone').value = '';
+  document.getElementById('v-phone-err').style.display = 'none';
+  document.getElementById('modal-vendor').classList.add('on');
+  setTimeout(()=>document.getElementById('v-name').focus(), 80);
+}
+
+function openEditModal(id, name, location, phone) {
+  document.getElementById('v-id').value = id;
+  document.getElementById('modal-vendor-title').textContent = 'Edit Vendor';
+  document.getElementById('v-name').value = decodeURIComponent(name.replace(/\\'/g,"'"));
+  document.getElementById('v-location').value = decodeURIComponent(location.replace(/\\'/g,"'"));
+  document.getElementById('v-phone').value = decodeURIComponent(phone.replace(/\\'/g,"'"));
+  document.getElementById('v-phone-err').style.display = 'none';
+  document.getElementById('modal-vendor').classList.add('on');
+}
+
+function closeModal() {
+  document.getElementById('modal-vendor').classList.remove('on');
+}
+
+async function saveVendor() {
+  const btn = document.getElementById('v-save-btn');
+  const id = document.getElementById('v-id').value;
+  const name = document.getElementById('v-name').value.trim();
+  const location = document.getElementById('v-location').value.trim();
+  const phone = document.getElementById('v-phone').value.trim();
+  const errEl = document.getElementById('v-phone-err');
+
+  if (!name) { toast('Enter a vendor name', true); return; }
+  if (phone && phoneDigits(phone).length < 10) {
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const body = { name, location: location||null, phone: phone||null, property_head: PROPERTY_HEAD, property_name: PROP };
+
+  let res;
+  if (id) {
+    res = await api('/rest/v1/vendors?id=eq.'+id, 'PATCH', body);
+  } else {
+    res = await api('/rest/v1/vendors', 'POST', body);
+  }
+
+  btn.disabled = false; btn.textContent = 'Save';
+  if (res) {
+    toast(id ? 'Vendor updated ✓' : 'Vendor added ✓');
+    closeModal();
+    loadVendors();
+  } else {
+    toast('Save failed — check console', true);
+  }
+}
+
+async function deleteVendor(id) {
+  if (!confirm('Delete this vendor?')) return;
+  const res = await api('/rest/v1/vendors?id=eq.'+id, 'DELETE');
+  if (res !== null) { toast('Vendor deleted'); loadVendors(); }
+  else toast('Delete failed', true);
+}
+
+// Close modal on backdrop click
+document.getElementById('modal-vendor').addEventListener('click', function(e){
+  if (e.target === this) closeModal();
+});
+
+// Phone validation live
+document.getElementById('v-phone').addEventListener('input', function(){
+  const err = document.getElementById('v-phone-err');
+  if (this.value && phoneDigits(this.value).length < 10) err.style.display = 'block';
+  else err.style.display = 'none';
+});
+
+init();
+</script>
+</body>
+</html>
