@@ -817,13 +817,24 @@ async function openAddStock(){
   STAFF_ASSIGNED_PROP = resolvedProp || 'Warehouse';
   document.getElementById(prefix+'-add-prop-label').textContent = STAFF_ASSIGNED_PROP;
 
-  // Fetch items from stock_items using current_qty directly
+  // Fetch items + warehouse_stock log, compute cumulative qty
   try{
-    const items = await api('/rest/v1/stock_items?select=id,name,current_qty,required_qty,critical_qty&order=name') || [];
-    ADD_STOCK_ITEMS = items.map(i=>({
+    const [items, logs] = await Promise.all([
+      api('/rest/v1/stock_items?select=id,name,required_qty,critical_qty&order=name'),
+      api('/rest/v1/warehouse_stock?select=item_id,quantity,damaged_qty'),
+    ]);
+
+    // Sum warehouse_stock per item
+    const qtyMap = {};
+    (logs||[]).forEach(r => {
+      const net = (r.quantity ?? 0) - (r.damaged_qty ?? 0);
+      qtyMap[r.item_id] = (qtyMap[r.item_id] ?? 0) + net;
+    });
+
+    ADD_STOCK_ITEMS = (items||[]).map(i=>({
       id:   i.id,
       name: i.name,
-      qty:  i.current_qty ?? 0,
+      qty:  qtyMap[i.id] ?? 0,
       req:  i.required_qty,
       crit: i.critical_qty,
     }));
@@ -919,12 +930,6 @@ async function saveAddStock(prefix){
         current_qty:   qty,
       });
     }
-
-    // 2. Decrement stock_items.current_qty (warehouse) — fetch fresh to avoid stale cache
-    const freshItem = await api('/rest/v1/stock_items?select=current_qty&id=eq.'+encItem);
-    const currentWhQty = (freshItem && freshItem[0]?.current_qty) ?? ADD_STOCK_ITEMS.find(i=>String(i.id)===String(ADD_SELECTED.id))?.qty ?? 0;
-    const newWhQty = currentWhQty - qty;
-    await api('/rest/v1/stock_items?id=eq.'+encItem, 'PATCH', {current_qty: newWhQty});
 
     toast('Stock added ✓');
     closeModal(IS_MOBILE ? 'modal-m-add' : 'modal-d-add');
