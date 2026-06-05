@@ -758,13 +758,14 @@ async function saveWarehouseStock(){
     // 1. Insert warehouse_stock row
     await api('/rest/v1/warehouse_stock','POST',body);
 
-    // 2. Increment stock_items.current_qty by net qty (quantity - damaged)
+    // 2. Increment stock_items.current_qty — fetch fresh to avoid stale cache
     if(netQty !== 0){
-      const item = ALL_ITEMS.find(i=>String(i.id)===String(itemId));
-      const currentWh = item?.current_qty ?? 0;
+      const freshItem = await api('/rest/v1/stock_items?select=current_qty&id=eq.'+itemId);
+      const currentWh = (freshItem && freshItem[0]?.current_qty) ?? ALL_ITEMS.find(i=>String(i.id)===String(itemId))?.current_qty ?? 0;
       await api('/rest/v1/stock_items?id=eq.'+itemId,'PATCH',{current_qty: currentWh + netQty});
       // Update local cache
-      if(item) item.current_qty = currentWh + netQty;
+      const cached = ALL_ITEMS.find(i=>String(i.id)===String(itemId));
+      if(cached) cached.current_qty = currentWh + netQty;
     }
 
     toast('Warehouse stock saved ✓');
