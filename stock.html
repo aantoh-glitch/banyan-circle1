@@ -837,41 +837,47 @@ function renderAddStockList(prefix, items){
     listEl.innerHTML='<div class="empty">No warehouse items found.</div>';
     return;
   }
-  listEl.innerHTML = items.map(item => {
+  listEl.innerHTML = items.map(() => {
+    const isCrit = false; // placeholder, replaced below
+    return '';
+  }).join(''); // dummy — we build via DOM below
+
+  // Build rows via DOM so we can attach closures safely
+  listEl.innerHTML = '';
+  items.forEach(item => {
     const isCrit = item.crit != null && item.qty <= item.crit;
-    const dot = isCrit
-      ? '<span class="critical-dot" style="flex-shrink:0"></span>'
-      : '<span class="ok-dot" style="flex-shrink:0"></span>';
-    return `<div onclick="selectAddItem('${prefix}','${item.id}',${JSON.stringify(item.name).replace(/'/g,"\\'")},'${item.qty}')"
-      style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s"
-      onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-      ${dot}
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
+    row.onmouseenter = () => row.style.background = 'var(--bg)';
+    row.onmouseleave = () => row.style.background = '';
+    row.innerHTML = `
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isCrit?'var(--r)':'var(--g)'};flex-shrink:0;margin-right:2px"></span>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">In stock: ${item.qty}${item.req!=null?' · Required: '+item.req:''}</div>
       </div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>`;
-  }).join('');
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    row.addEventListener('click', () => selectAddItem(prefix, item));
+    listEl.appendChild(row);
+  });
 }
 
 function filterAddItems(prefix){
   const q = document.getElementById(prefix+'-add-search').value.toLowerCase();
-  const filtered = ADD_STOCK_ITEMS.filter(i=>i.name.toLowerCase().includes(q));
+  const filtered = q ? ADD_STOCK_ITEMS.filter(i=>i.name.toLowerCase().includes(q)) : ADD_STOCK_ITEMS;
   renderAddStockList(prefix, filtered);
 }
 
-function selectAddItem(prefix, id, name, qty){
-  ADD_SELECTED = {id, name, qty: parseInt(qty)||0};
+function selectAddItem(prefix, item){
+  ADD_SELECTED = {id: item.id, name: item.name, qty: item.qty};
   document.getElementById(prefix+'-add-step1').style.display = 'none';
   document.getElementById(prefix+'-add-step2').style.display = 'block';
-  document.getElementById(prefix+'-add-item-name').textContent = name;
-  document.getElementById(prefix+'-add-item-current').textContent = qty;
+  document.getElementById(prefix+'-add-item-name').textContent = item.name;
+  document.getElementById(prefix+'-add-item-current').textContent = item.qty;
   document.getElementById(prefix+'-add-qty').value = '';
   document.getElementById(prefix+'-add-notes').value = '';
   document.getElementById(prefix+'-add-btn').style.display = '';
   document.getElementById(prefix+'-add-back-btn').style.display = '';
-  // Focus qty
   setTimeout(()=>document.getElementById(prefix+'-add-qty').focus(), 100);
 }
 
@@ -994,36 +1000,37 @@ function renderUseStockList(prefix, items){
     listEl.innerHTML = '<div class="empty" style="padding:24px">No stock available for '+USE_PROP+'.</div>';
     return;
   }
-  listEl.innerHTML = items.map(item => {
+  listEl.innerHTML = '';
+  items.forEach(item => {
     const isLow = item.crit != null ? item.qty <= item.crit : item.qty <= 3;
-    const dot = isLow
-      ? '<span class="critical-dot" style="flex-shrink:0"></span>'
-      : '<span class="ok-dot" style="flex-shrink:0"></span>';
-    const qtyColor = isLow ? 'color:var(--r);font-weight:700' : 'color:var(--g);font-weight:600';
-    return `<div onclick="selectUseItem('${prefix}','${item.rowId}','${item.id}',${JSON.stringify(item.name).replace(/'/g,"\\'")},'${item.qty}')"
-      style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s"
-      onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-      ${dot}
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
+    row.onmouseenter = () => row.style.background = 'var(--bg)';
+    row.onmouseleave = () => row.style.background = '';
+    row.innerHTML = `
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isLow?'var(--r)':'var(--g)'};flex-shrink:0;margin-right:2px"></span>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Available: <span style="${qtyColor}">${item.qty}</span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Available: <span style="${isLow?'color:var(--r);font-weight:700':'color:var(--g);font-weight:600'}">${item.qty}</span></div>
       </div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>`;
-  }).join('');
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    row.addEventListener('click', () => selectUseItem(prefix, item));
+    listEl.appendChild(row);
+  });
 }
 
 function filterUseItems(prefix){
   const q = document.getElementById(prefix+'-use-search').value.toLowerCase();
-  renderUseStockList(prefix, USE_STOCK_ITEMS.filter(i => i.name.toLowerCase().includes(q)));
+  const filtered = q ? USE_STOCK_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : USE_STOCK_ITEMS;
+  renderUseStockList(prefix, filtered);
 }
 
-function selectUseItem(prefix, rowId, id, name, qty){
-  USE_SELECTED = {rowId, id, name, qty: parseInt(qty)||0};
+function selectUseItem(prefix, item){
+  USE_SELECTED = {rowId: item.rowId, id: item.id, name: item.name, qty: item.qty};
   document.getElementById(prefix+'-use-step1').style.display = 'none';
   document.getElementById(prefix+'-use-step2').style.display = 'block';
-  document.getElementById(prefix+'-use-item-name').textContent = name;
-  document.getElementById(prefix+'-use-item-current').textContent = qty;
+  document.getElementById(prefix+'-use-item-name').textContent = item.name;
+  document.getElementById(prefix+'-use-item-current').textContent = item.qty;
   document.getElementById(prefix+'-use-item-prop').textContent = USE_PROP;
   document.getElementById(prefix+'-use-qty').value = '';
   document.getElementById(prefix+'-use-notes').value = '';
