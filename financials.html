@@ -183,7 +183,7 @@ textarea.fc{resize:vertical;min-height:72px}
 <!-- EXPENSE MODAL -->
 <div class="modal" id="modal-expense"><div class="modal-card">
   <div class="modal-ttl">Add Expense</div>
-  <div class="fg"><label class="fl">Property</label><select class="fc" id="exp-prop"></select></div>
+  <div class="fg"><label class="fl">Property</label><select class="fc" id="exp-prop"><option>Property By Heritance</option></select></div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Date</label><input class="fc" id="exp-date" type="date"/></div>
     <div class="fg"><label class="fl">Category</label>
@@ -322,7 +322,7 @@ function clearDates(){
 
 async function loadProps(){
   const data=await api('/rest/v1/landlords?select=property_name&order=property_name')||[];
-  const unique=[...new Set(data.map(p=>p.property_name).filter(Boolean))];
+  const unique=[...new Set(['Property By Heritance',...data.map(p=>p.property_name).filter(Boolean)])];
   PROPS=unique;
   const pills=document.getElementById('prop-pills');
   unique.forEach(name=>{
