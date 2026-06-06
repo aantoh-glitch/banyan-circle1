@@ -292,7 +292,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="recip-pill" data-type="landlord" onclick="selectRecipType('landlord',this)">Landlord</button>
         <button class="recip-pill" data-type="guest"    onclick="selectRecipType('guest',this)">Guest</button>
         <button class="recip-pill" data-type="ops"      onclick="selectRecipType('ops',this)">Ops</button>
-        <button class="recip-pill" data-type="staff"    onclick="selectRecipType('staff',this)">Staff</button>
+        <button class="recip-pill" data-type="staff"    onclick="selectRecipType('staff',this)">Team</button>
       </div>
       <div id="name-list-wrap" style="display:none;margin-top:12px">
         <div id="name-list" class="name-list"></div>
@@ -396,7 +396,7 @@ function roleDisplayName(role){
   if(role === 'talent') return 'Talent';
   if(role === 'landlord') return 'Landlord';
   if(role === 'guest') return 'Guest';
-  if(role === 'staff') return 'Staff';
+  if(role === 'staff') return 'Team';
   if(role === 'ops') return 'Ops';
   return role;
 }
@@ -434,7 +434,7 @@ function renderFilterBar(){
       {key:'talent',   label:'Talent'},
       {key:'landlord', label:'Landlord'},
       {key:'ops',      label:'Ops'},
-      {key:'staff',    label:'Staff'},
+      {key:'staff',    label:'Team'},
     ];
     bar.innerHTML = tabs.map(function(t){
       return '<button class="ftab'+(t.key==='all'?' on':'')+'" onclick="setAdminRoleFilter(\''+t.key+'\',this)">'+t.label+'</button>';
@@ -633,7 +633,7 @@ function refreshBookingUI(root){
   if(isLeave){
     leaveStrip.classList.add('on');
     // Build sender label
-    document.getElementById('leave-hdr-name').textContent = (root.sender_name||'Staff') + ' — Leave Request';
+    document.getElementById('leave-hdr-name').textContent = (root.sender_name||'Team') + ' — Leave Request';
     // Format dates from stored fields or parse from body
     var dateStr = '';
     if(root.start_date){
@@ -926,7 +926,7 @@ async function selectRecipType(type, btn){
   selectedRecipType=type; selectedRecipName=null;
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
   btn.className='recip-pill on-'+type;
-  // Admin → Staff: always General, no dropdown needed
+  // Admin → Team: always General, no dropdown needed
   if(type==='staff'){
     document.getElementById('fg-topic').style.display='none';
     document.getElementById('compose-topic').value='General';
@@ -1117,9 +1117,9 @@ function editBooking(){
   document.getElementById('fg-recip-toggle').style.display = isLeave ? 'none' : 'block';
   document.getElementById('fg-recip-fixed').style.display  = isLeave ? 'block' : 'none';
   if(isLeave){
-    // Show ops/staff sender info in "To" field
+    // Show ops/team sender info in "To" field
     document.getElementById('fg-recip-fixed').querySelector('div').textContent =
-      (root.sender_name||'Staff') + ' (' + (root.sender_role||'ops') + ')';
+      (root.sender_name||'Team') + ' (' + (root.sender_role||'ops') + ')';
     document.getElementById('compose-title').textContent = 'Edit Leave Decision';
     document.getElementById('booking-date-fields').style.display = 'none';
     document.getElementById('leave-fields').style.display = 'block';
@@ -1173,7 +1173,7 @@ async function loadVenues(){
 async function sendMessage(){
   var body  = document.getElementById('compose-body').value.trim();
   var topic = document.getElementById('compose-topic').value;
-  // For admin→staff, topic is hardcoded to General — skip dropdown validation
+  // For admin→team, topic is hardcoded to General — skip dropdown validation
   var isStaffMsg = isAdmin() && selectedRecipType === 'staff';
   if(!isStaffMsg && !topic){ showToast('Please select a topic'); return; }
   if(!topic) topic = 'General';
