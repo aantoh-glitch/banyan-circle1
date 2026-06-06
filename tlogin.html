@@ -201,7 +201,7 @@ function dots(state) {
 }
 
 function checkPin() {
-  if (!sel) { showErr('No talent selected'); return; }
+  if (!sel) { setTimeout(checkPin, 300); return; }
   if (pin !== String(sel.pin)) {
     dots('err');
     document.getElementById('pin-err').textContent = 'Incorrect PIN';
