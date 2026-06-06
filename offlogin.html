@@ -203,17 +203,89 @@ body{
       </button>
     </div>
     <div class="pin-err" id="pin-err"></div>
-    <button class="change-btn" onclick="location.href='/login.html'">
+    <button class="change-btn" onclick="openChangePinModal()">
       <svg viewBox="0 0 24 24"><path d="M17 11l-5-5-5 5M17 18l-5-5-5 5"/></svg>
-      Change Login
+      Change Login PIN
     </button>
   </div>
 </div>
+
+<!-- Change PIN Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeChangePinModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeChangePinModal()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-label" id="modal-label">Current PIN</div>
+    <div class="pin-dots" id="modal-dots">
+      <div class="dot" id="md0"></div>
+      <div class="dot" id="md1"></div>
+      <div class="dot" id="md2"></div>
+      <div class="dot" id="md3"></div>
+    </div>
+    <div class="keypad">
+      <button class="key" onclick="mp('1')">1</button>
+      <button class="key" onclick="mp('2')">2</button>
+      <button class="key" onclick="mp('3')">3</button>
+      <button class="key" onclick="mp('4')">4</button>
+      <button class="key" onclick="mp('5')">5</button>
+      <button class="key" onclick="mp('6')">6</button>
+      <button class="key" onclick="mp('7')">7</button>
+      <button class="key" onclick="mp('8')">8</button>
+      <button class="key" onclick="mp('9')">9</button>
+      <div class="key ghost"></div>
+      <button class="key" onclick="mp('0')">0</button>
+      <button class="key del" onclick="mpdel()">
+        <svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+      </button>
+    </div>
+    <div class="pin-err" id="modal-err"></div>
+  </div>
+</div>
+
+<style>
+.modal-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.45);
+  backdrop-filter:blur(3px);
+  align-items:center;justify-content:center;
+  z-index:100;
+  padding:24px;
+}
+.modal-overlay.open{display:flex}
+.modal-card{
+  background:var(--card);
+  border-radius:20px;
+  border:1px solid var(--border);
+  box-shadow:0 8px 40px rgba(0,0,0,0.14);
+  padding:32px 28px 28px;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:320px;
+  position:relative;
+  animation:popIn .2s cubic-bezier(.4,0,.2,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.modal-close{
+  position:absolute;top:14px;right:14px;
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);padding:4px;
+  display:flex;align-items:center;justify-content:center;
+}
+.modal-close svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;stroke-linecap:round;fill:none}
+.modal-close:hover{color:var(--text)}
+.modal-label{
+  font-family:'EB Garamond',serif;
+  font-size:15px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:28px;font-weight:400;
+}
+</style>
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
+/* ── Main login ── */
 let pin = '';
 
 function dots(state) {
@@ -225,8 +297,7 @@ function dots(state) {
 
 window.pk = d => {
   if (pin.length >= 4) return;
-  pin += d;
-  dots();
+  pin += d; dots();
   if (pin.length === 4) setTimeout(checkPin, 150);
 };
 
@@ -241,19 +312,125 @@ async function checkPin() {
     ).then(r => r.json());
 
     if (!Array.isArray(res) || !res.length) {
-      dots('err');
-      err.textContent = 'Wrong PIN';
+      dots('err'); err.textContent = 'Wrong PIN';
       setTimeout(() => { pin = ''; dots(); err.textContent = ''; }, 1200);
       return;
     }
-
     const user = res[0];
     localStorage.setItem('bc_me', JSON.stringify({ id: user.id, name: user.name, role: 'office' }));
     location.href = '/admin.html';
   } catch (e) {
-    dots('err');
-    err.textContent = 'Connection error';
+    dots('err'); err.textContent = 'Connection error';
     setTimeout(() => { pin = ''; dots(); err.textContent = ''; }, 1500);
+  }
+}
+
+/* ── Change PIN modal ── */
+// steps: 'current' | 'new' | 'confirm'
+let cpStep = 'current';
+let cpCurrent = '', cpNew = '', cpBuf = '';
+let cpUserId = null;
+
+function modalDots(state) {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('md' + i);
+    el.className = 'dot' + (state === 'err' ? ' err' : state === 'ok' ? ' on' : i < cpBuf.length ? ' on' : '');
+  }
+}
+
+const LABELS = { current: 'Current PIN', new: 'New PIN', confirm: 'Confirm New PIN' };
+
+function setStep(step) {
+  cpStep = step; cpBuf = '';
+  document.getElementById('modal-label').textContent = LABELS[step];
+  document.getElementById('modal-err').textContent = '';
+  modalDots();
+}
+
+function openChangePinModal() {
+  cpUserId = null; cpCurrent = ''; cpNew = '';
+  setStep('current');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeChangePinModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+window.mp = d => {
+  if (cpBuf.length >= 4) return;
+  cpBuf += d; modalDots();
+  if (cpBuf.length === 4) setTimeout(handleModalStep, 150);
+};
+
+window.mpdel = () => { cpBuf = cpBuf.slice(0, -1); modalDots(); };
+
+async function handleModalStep() {
+  const err = document.getElementById('modal-err');
+
+  if (cpStep === 'current') {
+    // Verify current PIN against Supabase
+    try {
+      const res = await fetch(
+        SB + '/rest/v1/office_users?pin=eq.' + encodeURIComponent(cpBuf) + '&select=id,name',
+        { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
+      ).then(r => r.json());
+
+      if (!Array.isArray(res) || !res.length) {
+        modalDots('err'); err.textContent = 'Incorrect PIN';
+        setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1200);
+        return;
+      }
+      cpUserId  = res[0].id;
+      cpCurrent = cpBuf;
+      setStep('new');
+    } catch (e) {
+      modalDots('err'); err.textContent = 'Connection error';
+      setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1500);
+    }
+
+  } else if (cpStep === 'new') {
+    if (cpBuf === cpCurrent) {
+      modalDots('err'); err.textContent = 'New PIN must differ from current';
+      setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1400);
+      return;
+    }
+    cpNew = cpBuf;
+    setStep('confirm');
+
+  } else if (cpStep === 'confirm') {
+    if (cpBuf !== cpNew) {
+      modalDots('err'); err.textContent = 'PINs do not match';
+      setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1200);
+      return;
+    }
+    // PATCH to Supabase
+    try {
+      const res = await fetch(
+        SB + '/rest/v1/office_users?id=eq.' + cpUserId,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: KEY,
+            Authorization: 'Bearer ' + KEY,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal'
+          },
+          body: JSON.stringify({ pin: cpNew })
+        }
+      );
+      if (!res.ok) throw new Error('Update failed');
+      modalDots('ok');
+      err.style.color = '#2a7a4b';
+      err.textContent = 'PIN updated successfully';
+      setTimeout(() => {
+        err.style.color = '';
+        closeChangePinModal();
+      }, 1400);
+    } catch (e) {
+      modalDots('err'); err.textContent = 'Failed to update PIN';
+      setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1500);
+    }
   }
 }
 </script>
