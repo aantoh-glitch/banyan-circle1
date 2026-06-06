@@ -683,19 +683,21 @@ async function openDocsPanel(){
   const el = document.getElementById('talent-docs-list');
   el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Loading…</div>';
   try {
-    const res = await fetch(SB+'/storage/v1/object/list/talent-doc/'+encodeURIComponent(talentId), {
+    const res = await fetch(SB+'/storage/v1/object/list/talent-doc', {
       method: 'POST',
       headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } })
+      body: JSON.stringify({ prefix: talentId+'/', limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } })
     });
     const files = await res.json();
     if(!res.ok) throw new Error(files.message || 'Could not load documents');
-    if(!files || !files.length){
+    // Filter out placeholder/folder entries (no id = folder)
+    const realFiles = (files||[]).filter(f => f.id);
+    if(!realFiles.length){
       el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">No documents uploaded yet</div>';
       return;
     }
-    el.innerHTML = files.map(f => {
-      const url = SB+'/storage/v1/object/public/talent-doc/'+encodeURIComponent(talentId)+'/'+encodeURIComponent(f.name);
+    el.innerHTML = realFiles.map(f => {
+      const url = SB+'/storage/v1/object/public/talent-doc/'+talentId+'/'+f.name;
       const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name);
       const isPdf = /\.pdf$/i.test(f.name);
       const icon = isPdf ? '📄' : isImg ? '🖼️' : '📎';
