@@ -174,12 +174,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
   <div class="dash-section-title">Team & Operations</div>
   <div class="dash-grid-3">
-    <!-- ↓ Staff Present moved here from Guests · Today -->
+    <!-- ↓ Team Present moved here from Guests · Today -->
     <div class="dash-tile tile-staff" onclick="goPage('staff', document.querySelector('.sb-btn[onclick*=staff]'))">
       <div class="dash-tile-icon icon-staff">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
-      <div class="dash-tile-label">Staff Present</div>
+      <div class="dash-tile-label">Team Present</div>
       <div class="dash-tile-value loading" id="dash-staff">…</div>
       <div class="dash-tile-sub">clocked in today</div>
       <span class="dash-tile-nav">›</span>
@@ -1941,7 +1941,7 @@ async function loadDashboard(){
     if(sub){ sub.textContent = occupied.length+' of '+total+' properties occupied'; }
   } catch(e){ const el=document.getElementById('dash-occupancy'); if(el) el.textContent='—'; }
 
-  // Staff present
+  // Team present
   try {
     const st = await api('/rest/v1/attendance_log?select=id&date=eq.'+today) || [];
     const el = document.getElementById('dash-staff');
