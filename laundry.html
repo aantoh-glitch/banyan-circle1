@@ -387,12 +387,26 @@ async function resolveStaffScope(){
     return;
   }
   // Fallback: look up assigned properties from staff table by name
-  if(!_me.name || _me.name === 'staff') return;
-  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(_me.name)).catch(()=>[]);
+  const staffLookupName = window.STAFF_NAME;
+  if(!staffLookupName) {
+    // No staff name supplied - show nothing, display error in header
+    document.getElementById('hdr-prop').textContent = 'No property assigned';
+    document.getElementById('m-laundry-list').innerHTML = '<div class="empty">No property assigned. Please use a valid staff link.</div>';
+    return;
+  }
+  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(staffLookupName)).catch(()=>[]);
   const record = (rows||[])[0];
-  if(!record || !record.assigned_properties) return;
+  if(!record || !record.assigned_properties) {
+    document.getElementById('hdr-prop').textContent = 'No property assigned';
+    document.getElementById('m-laundry-list').innerHTML = '<div class="empty">Staff member not found or no property assigned.</div>';
+    return;
+  }
   const assigned = (record.assigned_properties||[]).filter(Boolean);
-  if(!assigned.length) return;
+  if(!assigned.length) {
+    document.getElementById('hdr-prop').textContent = 'No property assigned';
+    document.getElementById('m-laundry-list').innerHTML = '<div class="empty">No properties assigned to this staff member.</div>';
+    return;
+  }
   STAFF_ASSIGNED_PROPS = assigned;
   if(assigned.length === 1){
     FILTER.prop = assigned[0];
@@ -698,6 +712,7 @@ function downloadExcel(){
   if(IS_MOBILE){
     await resolveStaffScope();
     if(STAFF_ASSIGNED_PROPS.length>1) return; // wait for picker
+    if(FILTER.prop==='all') return; // no property resolved - error already shown
   } else {
     renderPropTabs();
   }
