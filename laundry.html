@@ -295,31 +295,19 @@ let STAFF_ASSIGNED_PROPS = [];
 let IS_MOBILE = false;
 let _pinAction = null, _pinStr = '';
 
-/* ── Role-based view init (URL params, same pattern as stock.html) ── */
-(function(){
-  var params = new URLSearchParams(window.location.search);
-  var role = params.get('role') || (window.self !== window.top ? 'admin' : 'staff');
-  var prop = params.get('property') || '';
-  var staffName = params.get('staff') || '';
-  window.ROLE = role;
-  window.STAFF_PROPERTY = prop;
-  window.STAFF_NAME = staffName;
-  var isDesktop = (role === 'admin') || (window.self !== window.top);
-  document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
-  if (!isDesktop) {
-    document.getElementById('view-mobile').style.display = 'block';
-  } else {
-    document.getElementById('view-desktop').style.display = 'block';
-  }
-})();
+/* ── Role-based view init ── */
+const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!_me) location.href = '/index.html';
 
-/* Build a _me-compatible object from URL params so existing code keeps working */
-const _me = {
-  role: window.ROLE,
-  name: window.STAFF_NAME || window.ROLE
-};
+IS_MOBILE = (_me.role === 'staff');
 
-IS_MOBILE = (window.ROLE === 'staff');
+if (IS_MOBILE) {
+  document.body.classList.add('mobile');
+  document.getElementById('view-mobile').style.display = 'block';
+} else {
+  document.body.classList.add('desktop');
+  document.getElementById('view-desktop').style.display = 'block';
+}
 
 /* ── API ── */
 async function api(path, method='GET', body=null){
@@ -379,34 +367,11 @@ async function loadStaff(){
 /* ── Staff scope ── */
 async function resolveStaffScope(){
   if(!IS_MOBILE) return;
-  // If property already supplied via URL param, use it directly
-  if(window.STAFF_PROPERTY){
-    STAFF_ASSIGNED_PROPS = [window.STAFF_PROPERTY];
-    FILTER.prop = window.STAFF_PROPERTY;
-    document.getElementById('hdr-prop').textContent = window.STAFF_PROPERTY;
-    return;
-  }
-  // Fallback: look up assigned properties from staff table by name
-  const staffLookupName = window.STAFF_NAME;
-  if(!staffLookupName) {
-    // No staff name supplied - show nothing, display error in header
-    document.getElementById('hdr-prop').textContent = 'No property assigned';
-    document.getElementById('m-laundry-list').innerHTML = '<div class="empty">No property assigned. Please use a valid staff link.</div>';
-    return;
-  }
-  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(staffLookupName)).catch(()=>[]);
+  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(_me.name)).catch(()=>[]);
   const record = (rows||[])[0];
-  if(!record || !record.assigned_properties) {
-    document.getElementById('hdr-prop').textContent = 'No property assigned';
-    document.getElementById('m-laundry-list').innerHTML = '<div class="empty">Staff member not found or no property assigned.</div>';
-    return;
-  }
+  if(!record || !record.assigned_properties) return;
   const assigned = (record.assigned_properties||[]).filter(Boolean);
-  if(!assigned.length) {
-    document.getElementById('hdr-prop').textContent = 'No property assigned';
-    document.getElementById('m-laundry-list').innerHTML = '<div class="empty">No properties assigned to this staff member.</div>';
-    return;
-  }
+  if(!assigned.length) return;
   STAFF_ASSIGNED_PROPS = assigned;
   if(assigned.length === 1){
     FILTER.prop = assigned[0];
@@ -556,12 +521,13 @@ async function openCreateModal(){
   try{ await loadStaff(); }catch(e){}
 
   const propSel = document.getElementById('c-prop');
-  if(IS_MOBILE){
-    const assignedProp = FILTER.prop !== 'all' ? FILTER.prop : (STAFF_ASSIGNED_PROPS[0] || window.STAFF_PROPERTY || '');
-    propSel.innerHTML = assignedProp
-      ? `<option value="${assignedProp}">${assignedProp}</option>`
-      : '<option value="">No property assigned</option>';
+  if(STAFF_ASSIGNED_PROPS.length===1){
+    propSel.innerHTML = `<option value="${STAFF_ASSIGNED_PROPS[0]}">${STAFF_ASSIGNED_PROPS[0]}</option>`;
     propSel.disabled = true;
+  } else if(STAFF_ASSIGNED_PROPS.length>1){
+    propSel.innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
+    propSel.disabled = false;
+    if(FILTER.prop!=='all') propSel.value = FILTER.prop;
   } else {
     propSel.innerHTML = PROPS.length
       ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
@@ -571,11 +537,8 @@ async function openCreateModal(){
   }
 
   const staffSel = document.getElementById('c-staff');
-  if(IS_MOBILE){
-    const staffNameForModal = window.STAFF_NAME || '';
-    staffSel.innerHTML = staffNameForModal
-      ? `<option value="${staffNameForModal}">${staffNameForModal}</option>`
-      : '<option value="">— Unknown —</option>';
+  if(IS_MOBILE && _me && _me.name){
+    staffSel.innerHTML = `<option value="${_me.name}">${_me.name}</option>`;
     staffSel.disabled = true;
   } else {
     staffSel.innerHTML = `<option value="">— Select team member —</option>`
@@ -712,7 +675,6 @@ function downloadExcel(){
   if(IS_MOBILE){
     await resolveStaffScope();
     if(STAFF_ASSIGNED_PROPS.length>1) return; // wait for picker
-    if(FILTER.prop==='all') return; // no property resolved - error already shown
   } else {
     renderPropTabs();
   }
