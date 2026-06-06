@@ -225,6 +225,7 @@ var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 
 var params   = new URLSearchParams(location.search);
 var IS_ADMIN = params.get('viewer') === 'admin';
+var STAFF_ID = params.get('staff_id') || '';
 
 var PROP = params.get('property') || '';
 var _vendorCache = {};
@@ -302,36 +303,46 @@ function pdots(state) {
   }
 }
 function pinCheck() {
-  api('/rest/v1/staff?pin=eq.' + encodeURIComponent(_pinStr) + '&select=name,assigned_properties&limit=1')
-    .then(function(rows) {
-      rows = rows || [];
-      if (!rows.length) {
-        pdots('err');
-        document.getElementById('pin-err').textContent = 'Wrong PIN';
-        setTimeout(function() { _pinStr = ''; pdots(); document.getElementById('pin-err').textContent = ''; }, 1200);
-        return;
+  // If staff_id URL param present, verify PIN + fetch by id; else fetch by PIN only
+  var pinQuery;
+  if (STAFF_ID) {
+    pinQuery = '/rest/v1/staff?id=eq.' + encodeURIComponent(STAFF_ID) + '&pin=eq.' + encodeURIComponent(_pinStr) + '&select=name,assigned_properties&limit=1';
+  } else {
+    pinQuery = '/rest/v1/staff?pin=eq.' + encodeURIComponent(_pinStr) + '&select=name,assigned_properties&limit=1';
+  }
+  api(pinQuery).then(function(rows) {
+    rows = rows || [];
+    if (!rows.length) {
+      pdots('err');
+      document.getElementById('pin-err').textContent = 'Wrong PIN';
+      setTimeout(function() { _pinStr = ''; pdots(); document.getElementById('pin-err').textContent = ''; }, 1200);
+      return;
+    }
+    var row = rows[0];
+    var assigned = [];
+    if (row.assigned_properties) {
+      if (Array.isArray(row.assigned_properties)) {
+        assigned = row.assigned_properties.filter(Boolean);
+      } else if (typeof row.assigned_properties === 'string') {
+        assigned = row.assigned_properties.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
       }
-      var row = rows[0];
-      var assigned = [];
-      if (row.assigned_properties) {
-        if (Array.isArray(row.assigned_properties)) {
-          assigned = row.assigned_properties.filter(Boolean);
-        } else if (typeof row.assigned_properties === 'string') {
-          assigned = row.assigned_properties.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-        }
-      }
-      _assignedProps = assigned;
-      // Switch to main page
-      document.getElementById('pin-screen').style.display = 'none';
-      document.getElementById('main-page').style.display = 'block';
-      if (!assigned.length) {
-        showNoProperties();
-      } else if (assigned.length === 1) {
-        selectProperty(assigned[0]);
-      } else {
-        showPropertySelector();
-      }
-    });
+    }
+    // Also honour ?property URL param if present and staff has no assignments
+    if (!assigned.length && PROP) {
+      assigned = [PROP];
+    }
+    _assignedProps = assigned;
+    // Switch to main page
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('main-page').style.display = 'block';
+    if (!assigned.length) {
+      showNoProperties();
+    } else if (assigned.length === 1) {
+      selectProperty(assigned[0]);
+    } else {
+      showPropertySelector();
+    }
+  });
 }
 
 function init() {
