@@ -137,6 +137,13 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
 </style>
 </head>
 <body>
+<script>
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var role = p.get('role') || 'admin';
+  document.body.classList.add(role === 'staff' ? 'mobile' : 'desktop');
+})();
+</script>
 
 <!-- ═══════════════════════════════
      DESKTOP SHELL (admin/owner)
@@ -295,22 +302,17 @@ let STAFF_ASSIGNED_PROPS = [];
 let IS_MOBILE = false;
 let _pinAction = null, _pinStr = '';
 
-/* ── Role-based view init (URL params, no localStorage) ── */
-const _params   = new URLSearchParams(location.search);
-const _role     = _params.get('role') || 'admin';   // 'admin' | 'staff'
-const _staffId  = _params.get('staff_id') || '';
+/* ── Role-based view init (URL params) ── */
+const _params    = new URLSearchParams(location.search);
+const _role      = _params.get('role') || 'admin';  // 'admin' | 'staff'
+const _staffId   = _params.get('staff_id') || '';
 const _propParam = _params.get('property') || '';
 const _staffName = _params.get('staff_name') || '';
 
 IS_MOBILE = (_role === 'staff');
 
-if (IS_MOBILE) {
-  document.body.classList.add('mobile');
-  document.getElementById('view-mobile').style.display = 'block';
-} else {
-  document.body.classList.add('desktop');
-  document.getElementById('view-desktop').style.display = 'block';
-}
+// Show the correct view (body class already set by early inline script)
+document.getElementById(IS_MOBILE ? 'view-mobile' : 'view-desktop').style.display = 'block';
 
 /* ── API ── */
 async function api(path, method='GET', body=null){
