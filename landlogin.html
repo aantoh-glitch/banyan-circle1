@@ -24,6 +24,24 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .key:active{background:var(--g-l);border-color:var(--g);transform:scale(.95)}
 .key.ghost{border:none;background:none;cursor:default}
 .pin-err{font-size:13px;color:#A32D2D;margin-top:16px;min-height:18px}
+
+.change-pin-link{margin-top:24px;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:.7}
+.change-pin-link:hover{opacity:1;color:var(--br)}
+.cp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.cp-overlay.open{display:flex}
+.cp-modal{background:var(--white);border-radius:20px;padding:28px 24px;width:calc(100% - 48px);max-width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.cp-title{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:6px;color:var(--text)}
+.cp-sub{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.cp-dots{display:flex;justify-content:center;gap:14px;margin-bottom:20px}
+.cp-dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--border);transition:all .15s}
+.cp-dot.on{background:var(--br);border-color:var(--br)}
+.cp-dot.err{background:#A32D2D;border-color:#A32D2D;animation:shake .3s ease}
+.cp-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cp-key{height:52px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);font-size:19px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
+.cp-key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
+.cp-key.ghost{border:none;background:none;pointer-events:none}
+.cp-err{font-size:12px;color:#A32D2D;min-height:16px;margin-top:10px}
+.cp-cancel{margin-top:14px;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 </style>
 </head>
 <body>
@@ -44,6 +62,37 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <button class="key" onclick="pdel()" style="font-size:18px;color:var(--muted)">⌫</button>
     </div>
     <div class="pin-err" id="pin-err"></div>
+  <div class="change-pin-link" onclick="openChangePin()">Change PIN</div>
+  </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div class="cp-overlay" id="cp-overlay">
+  <div class="cp-modal">
+    <div class="cp-title" id="cp-title">Verify Current PIN</div>
+    <div class="cp-sub" id="cp-sub">Enter your existing PIN to continue</div>
+    <div class="cp-dots">
+      <div class="cp-dot" id="cp0"></div>
+      <div class="cp-dot" id="cp1"></div>
+      <div class="cp-dot" id="cp2"></div>
+      <div class="cp-dot" id="cp3"></div>
+    </div>
+    <div class="cp-keypad">
+      <button class="cp-key" onclick="cpk('1')">1</button>
+      <button class="cp-key" onclick="cpk('2')">2</button>
+      <button class="cp-key" onclick="cpk('3')">3</button>
+      <button class="cp-key" onclick="cpk('4')">4</button>
+      <button class="cp-key" onclick="cpk('5')">5</button>
+      <button class="cp-key" onclick="cpk('6')">6</button>
+      <button class="cp-key" onclick="cpk('7')">7</button>
+      <button class="cp-key" onclick="cpk('8')">8</button>
+      <button class="cp-key" onclick="cpk('9')">9</button>
+      <div class="cp-key ghost"></div>
+      <button class="cp-key" onclick="cpk('0')">0</button>
+      <button class="cp-key" onclick="cpdel()" style="font-size:16px;color:var(--muted)">⌫</button>
+    </div>
+    <div class="cp-err" id="cp-err"></div>
+    <div class="cp-cancel" onclick="closeChangePin()">Cancel</div>
   </div>
 </div>
 
@@ -110,6 +159,91 @@ async function checkPin() {
     prop: match.property_name
   }));
   location.href = '/landlord.html';
+}
+
+// ── Change PIN ────────────────────────────────────────────────
+let cpStep = 'verify';
+let cpPin = '';
+let cpNewPin = '';
+let cpMatchedLandlord = null;
+
+function openChangePin() {
+  cpStep = 'verify'; cpPin = ''; cpNewPin = ''; cpMatchedLandlord = null;
+  setCpUI('Verify Current PIN', 'Enter your existing 4-digit PIN');
+  document.getElementById('cp-overlay').classList.add('open');
+}
+function closeChangePin() {
+  document.getElementById('cp-overlay').classList.remove('open');
+  cpPin = ''; cpNewPin = '';
+  setCpDots('');
+  document.getElementById('cp-err').textContent = '';
+}
+function setCpUI(title, sub) {
+  document.getElementById('cp-title').textContent = title;
+  document.getElementById('cp-sub').textContent = sub;
+  document.getElementById('cp-err').textContent = '';
+  cpPin = ''; setCpDots('');
+}
+function setCpDots(state) {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('cp' + i);
+    d.className = 'cp-dot' + (state === 'err' ? ' err' : i < cpPin.length ? ' on' : '');
+  }
+}
+window.cpk = d => {
+  if (cpPin.length >= 4) return;
+  cpPin += d; setCpDots();
+  if (cpPin.length === 4) setTimeout(handleCpPin, 150);
+};
+window.cpdel = () => { cpPin = cpPin.slice(0, -1); setCpDots(); };
+
+function handleCpPin() {
+  if (cpStep === 'verify') {
+    const match = landlords.find(r => String(r.pin) === cpPin);
+    if (!match) {
+      setCpDots('err');
+      document.getElementById('cp-err').textContent = 'Incorrect PIN. Try again.';
+      setTimeout(() => { cpPin = ''; setCpDots(); document.getElementById('cp-err').textContent = ''; }, 1400);
+      return;
+    }
+    cpMatchedLandlord = match;
+    cpStep = 'new';
+    setCpUI('Set New PIN', 'Enter your new 4-digit PIN');
+  } else if (cpStep === 'new') {
+    cpNewPin = cpPin;
+    cpStep = 'confirm';
+    setCpUI('Confirm New PIN', 'Re-enter your new PIN to confirm');
+  } else if (cpStep === 'confirm') {
+    if (cpPin !== cpNewPin) {
+      setCpDots('err');
+      document.getElementById('cp-err').textContent = "PINs don't match. Try again.";
+      setTimeout(() => { cpStep = 'new'; cpPin = ''; cpNewPin = ''; setCpDots(); setCpUI('Set New PIN', 'Enter your new 4-digit PIN'); }, 1500);
+      return;
+    }
+    savePinLandlord(cpMatchedLandlord, cpNewPin);
+  }
+}
+
+async function savePinLandlord(landlord, newPin) {
+  document.getElementById('cp-sub').textContent = 'Saving...';
+  try {
+    const res = await fetch(SB + '/rest/v1/landlords?id=eq.' + encodeURIComponent(landlord.id), {
+      method: 'PATCH',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ pin: newPin })
+    });
+    if (!res.ok) throw new Error();
+    landlord.pin = newPin;
+    const idx = landlords.findIndex(r => r.id === landlord.id);
+    if (idx > -1) landlords[idx].pin = newPin;
+    document.getElementById('cp-sub').textContent = '✓ PIN updated successfully!';
+    document.getElementById('cp-title').textContent = 'All done';
+    setTimeout(closeChangePin, 1600);
+  } catch(e) {
+    document.getElementById('cp-err').textContent = 'Failed to save. Please try again.';
+    cpStep = 'new'; cpPin = ''; cpNewPin = ''; setCpDots();
+    setTimeout(() => setCpUI('Set New PIN', 'Enter your new 4-digit PIN'), 1500);
+  }
 }
 </script>
 </body>
