@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Rate Our Staff</title>
+<title>Banyan Circle — Rate Our Team</title>
 <meta name="theme-color" content="#993C1D"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -75,20 +75,20 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
       <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
     </button>
     <div class="hdr-info">
-      <div class="hdr-name">Rate Our Staff</div>
+      <div class="hdr-name">Rate Our Team</div>
       <div class="hdr-prop" id="hdr-prop">Banyan Circle</div>
     </div>
   </div>
 
   <div class="mode-banner" id="ops-banner">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    You're viewing this as staff — guests submit reviews from the Guest app.
+    You're viewing this as a team member — guests submit reviews from the Guest app.
   </div>
 
   <div class="pg" id="review-wrap">
-    <div class="pg-title">Rate Our Staff</div>
+    <div class="pg-title">Rate Our Team</div>
     <div class="pg-sub">Your honest feedback helps us recognise and improve our team.</div>
-    <div id="staff-list"><div style="font-size:13px;color:var(--muted);padding:10px 0">Loading staff…</div></div>
+    <div id="staff-list"><div style="font-size:13px;color:var(--muted);padding:10px 0">Loading team…</div></div>
   </div>
 
 
@@ -152,14 +152,14 @@ async function loadStaff(){
     staffData = rows;
     renderAll();
   } catch(e){
-    document.getElementById('staff-list').innerHTML = '<div style="font-size:13px;color:var(--muted)">Could not load staff: ' + (e.message||'Please try again') + '</div>';
+    document.getElementById('staff-list').innerHTML = '<div style="font-size:13px;color:var(--muted)">Could not load team: ' + (e.message||'Please try again') + '</div>';
   }
 }
 
 function renderAll(){
   var el = document.getElementById('staff-list');
   if(!staffData.length){
-    el.innerHTML='<div style="font-size:13px;color:var(--muted)">No staff found.</div>';
+    el.innerHTML='<div style="font-size:13px;color:var(--muted)">No team members found.</div>';
     return;
   }
   el.innerHTML = staffData.map(function(s){ return renderCard(s); }).join('');

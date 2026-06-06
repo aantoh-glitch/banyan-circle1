@@ -172,7 +172,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
         <div class="kpi-sub">Both tables combined</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Staff Reviews</div>
+        <div class="kpi-label">Team Reviews</div>
         <div class="kpi-value" id="kpi-staff">—</div>
         <div class="kpi-sub">From staff_reviews</div>
       </div>
@@ -196,7 +196,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <!-- Tabs -->
     <div class="log-tabs">
       <button class="ltab on" id="tab-all"     onclick="setTab('all')">All Entries</button>
-      <button class="ltab"    id="tab-staff"   onclick="setTab('staff')">Staff Reviews</button>
+      <button class="ltab"    id="tab-staff"   onclick="setTab('staff')">Team Reviews</button>
       <button class="ltab"    id="tab-talent"  onclick="setTab('talent')">Talent Ratings</button>
       <button class="ltab"    id="tab-feedback" onclick="setTab('feedback')">
         <span style="display:inline-flex;align-items:center;gap:6px">
@@ -337,7 +337,7 @@ function starsHtml(r){
   return s+'</span>';
 }
 function typeBadge(t){
-  return t==='staff' ? `<span class="bdg bdg-b">Staff</span>` : `<span class="bdg bdg-a">Talent</span>`;
+  return t==='staff' ? `<span class="bdg bdg-b">Team</span>` : `<span class="bdg bdg-a">Talent</span>`;
 }
 
 // ── Sentiment analysis (simple keyword-based) ────────────
@@ -404,7 +404,7 @@ async function loadAll(){
     document.getElementById('kpi-talent').textContent   = talentRows.length;
     document.getElementById('kpi-feedback').textContent = feedbackRows.length;
     document.getElementById('kpi-avg').textContent      = avg;
-    document.getElementById('pg-sub-text').textContent  = `${allRows.length} entries across staff reviews and talent ratings · ${feedbackRows.length} feedback messages`;
+    document.getElementById('pg-sub-text').textContent  = `${allRows.length} entries across team reviews and talent ratings · ${feedbackRows.length} feedback messages`;
 
     // Build property filter from landlords table
     try {
@@ -669,7 +669,7 @@ function downloadExcel(){
   const wb = XLSX.utils.book_new();
 
   const toReviewRow = r => ({
-    'Type':       r._type==='staff' ? 'Staff Review' : 'Talent Rating',
+    'Type':       r._type==='staff' ? 'Team Review' : 'Talent Rating',
     'Name':       r._display_name||'',
     'Guest Name': r.guest_name||'',
     'Property':   r.property_name||'',
@@ -700,7 +700,7 @@ function downloadExcel(){
   if(staffData.length){
     const ws2 = XLSX.utils.json_to_sheet(staffData);
     ws2['!cols'] = [10,20,20,20,8,50,12,14,36].map(w=>({wch:w}));
-    XLSX.utils.book_append_sheet(wb, ws2, 'Staff Reviews');
+    XLSX.utils.book_append_sheet(wb, ws2, 'Team Reviews');
   }
 
   // Sheet 3: Talent only

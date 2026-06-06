@@ -220,7 +220,7 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
     <div class="fg"><label class="fl">Promised Return Date</label><input class="fc" type="date" id="c-return-date"/></div>
     <div class="fg"><label class="fl">Promised Return Time</label><input class="fc" type="time" id="c-return-time"/></div>
   </div>
-  <div class="fg"><label class="fl">Staff Handled</label><select class="fc" id="c-staff"></select></div>
+  <div class="fg"><label class="fl">Team Member Handled</label><select class="fc" id="c-staff"></select></div>
   <div class="fg"><label class="fl">Items Sent</label><div class="item-grid" id="c-items-grid"></div></div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="c-notes" placeholder="Any additional notes…"></textarea></div>
   <div class="modal-actions">
@@ -448,7 +448,7 @@ async function loadList(){
     el.innerHTML = `<table class="tbl" id="laundry-tbl">
       <thead><tr>
         <th>Property</th><th>Vendor</th><th>Sent At</th>
-        <th>Promised Return</th><th>Staff</th><th>Status</th><th></th>
+        <th>Promised Return</th><th>Team Member</th><th>Status</th><th></th>
       </tr></thead>
       <tbody>${data.map(r=>`
         <tr style="cursor:pointer" onclick="toggleDetail(this,'${r.id}')">
@@ -541,7 +541,7 @@ async function openCreateModal(){
     staffSel.innerHTML = `<option value="${_me.name}">${_me.name}</option>`;
     staffSel.disabled = true;
   } else {
-    staffSel.innerHTML = `<option value="">— Select staff —</option>`
+    staffSel.innerHTML = `<option value="">— Select team member —</option>`
       + STAFF.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
     staffSel.disabled = false;
   }
@@ -661,7 +661,7 @@ function downloadExcel(){
     rows.push([0,1,2,3,4,5].map(i=>cells[i]?.innerText?.trim()||''));
   });
   if(!rows.length){ toast('No data to export'); return; }
-  const header=['Property','Vendor','Sent At','Promised Return','Staff','Status'];
+  const header=['Property','Vendor','Sent At','Promised Return','Team Member','Status'];
   const csv='\uFEFF'+[header,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
