@@ -757,8 +757,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <input type="hidden" id="ep-id"/>
   <div style="font-size:13px;color:var(--muted);margin-bottom:16px" id="ep-prop"></div>
   <div class="fg">
-    <label class="fl">New PIN (4 digits)</label>
-    <input class="fc" id="ep-pin" maxlength="4" placeholder="e.g. 1234" inputmode="numeric" type="password"
+    <label class="fl">PIN (4 digits)</label>
+    <input class="fc" id="ep-pin" maxlength="4" placeholder="e.g. 1234" inputmode="numeric" type="text"
       onkeydown="if(event.key==='Enter')savePropertyPin()" style="letter-spacing:6px;font-size:20px;text-align:center"/>
     <div style="font-size:11px;color:var(--muted);margin-top:5px">This is the PIN the landlord uses to log in from the app.</div>
   </div>
@@ -853,7 +853,7 @@ async function editPropertyPin(propName, e) {
   const l = data[0];
   document.getElementById('ep-id').value = l.id;
   document.getElementById('ep-prop').textContent = propName + (l.name ? ' — ' + l.name : '');
-  document.getElementById('ep-pin').value = '';
+  document.getElementById('ep-pin').value = l.pin || '';
   document.getElementById('ep-err').textContent = '';
   openModal('modal-editpin');
   setTimeout(()=>document.getElementById('ep-pin').focus(),100);
