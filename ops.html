@@ -120,6 +120,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .dash-btn:nth-child(8){border-top:3px solid #993C1D}
 .dash-btn:nth-child(9){border-top:3px solid #854F0B}
 .dash-btn:nth-child(10){border-top:3px solid #3B6D11}
+.dash-btn:nth-child(11){border-top:3px solid #185FA5}
 
 .db-icon{
   width:38px;height:38px;
@@ -149,6 +150,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .dash-btn:nth-child(9) .db-icon svg{stroke:#854F0B;fill:none}
 .dash-btn:nth-child(10) .db-icon{background:#EAF3DE;color:#3B6D11}
 .dash-btn:nth-child(10) .db-icon svg{stroke:#3B6D11;fill:none}
+.dash-btn:nth-child(11) .db-icon{background:#E6F1FB;color:#185FA5}
+.dash-btn:nth-child(11) .db-icon svg{stroke:#185FA5;fill:none}
 
 .db-label{
   font-family:'EB Garamond',serif;
@@ -168,7 +171,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 /* Leave bottom-sheet modal */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
-.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;overscroll-behavior:contain}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
 .modal-ttl{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;margin-bottom:4px;color:var(--text)}
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
@@ -421,13 +424,23 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 
 <script>
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.href = '/index.html';
+if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
+
+// Prevent back-navigation bypassing auth
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', function() {
+  if (!localStorage.getItem('bc_me')) {
+    location.replace('/stafflogin.html');
+  } else {
+    history.pushState(null, '', location.href);
+  }
+});
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
 document.getElementById('user-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-function signOut(){ localStorage.removeItem('bc_me'); location.href='/index.html'; }
+function signOut(){ localStorage.removeItem('bc_me'); location.href='/stafflogin.html'; }
 // Wire earnings link with staff name param
 const earnLink = document.getElementById('earnings-link');
 if (earnLink && me && me.name) {
@@ -605,7 +618,8 @@ window.addEventListener('message', function(e) {
       if (fr && fr.contentWindow === e.source) {
         clearTimeout(_ifrVendorTimer);
         _ifrVendorTimer = setTimeout(function() {
-          var newH = (e.data.height + 24) + 'px';
+          var maxH = (window.innerHeight * 0.6) + 'px';
+          var newH = Math.min(e.data.height + 24, window.innerHeight * 0.6) + 'px';
           if (fr.style.height !== newH) fr.style.height = newH;
         }, 80);
       }
