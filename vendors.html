@@ -148,22 +148,33 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 </div>
 
+<!-- Property Picker (staff with 2+ properties) -->
+<div id="modal-prop-pick" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-family:'EB Garamond',serif;font-size:22px;font-weight:600;margin-bottom:6px">Select Property</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">You are assigned to multiple properties.</p>
+    <div style="margin-bottom:16px">
+      <label class="fl">Property</label>
+      <select class="fc" id="pp-select"></select>
+    </div>
+    <button class="btn-p" style="width:100%" onclick="confirmPropPick()">Continue</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-var params   = new URLSearchParams(location.search);
-var IS_ADMIN = params.get('viewer') === 'admin';
+var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!_me) { location.href = '/index.html'; }
 
-var PROP = params.get('property') || '';
-if (!PROP) {
-  try {
-    var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-    if (_me) PROP = _me.prop || _me.property_name || '';
-  } catch(e) {}
-}
+var IS_ADMIN = (_me && _me.role === 'admin');
+var STAFF_NAME = (_me && _me.name) || '';
+var PROP = '';
+var STAFF_ASSIGNED_PROPS = [];
 
 var _vendorCache = {};
 
@@ -216,11 +227,57 @@ function notifyHeight() {
   }
 }
 
-function init() {
+function resolveStaffScope() {
+  return api('/rest/v1/staff?select=name,assigned_properties&name=eq.' + encodeURIComponent(STAFF_NAME))
+    .then(function(rows) {
+      var record = (rows || [])[0];
+      if (!record || !(record.assigned_properties || []).length) {
+        // No assignments found — just load whatever PROP is (may be empty)
+        finishInit();
+        return;
+      }
+      STAFF_ASSIGNED_PROPS = record.assigned_properties.filter(Boolean);
+      if (STAFF_ASSIGNED_PROPS.length === 1) {
+        PROP = STAFF_ASSIGNED_PROPS[0];
+        finishInit();
+      } else {
+        var sel = document.getElementById('pp-select');
+        sel.innerHTML = STAFF_ASSIGNED_PROPS.map(function(p) {
+          return '<option value="' + esc(p) + '">' + esc(p) + '</option>';
+        }).join('');
+        document.getElementById('modal-prop-pick').style.display = 'flex';
+      }
+    });
+}
+
+function confirmPropPick() {
+  var val = document.getElementById('pp-select').value;
+  if (!val) return;
+  PROP = val;
+  document.getElementById('modal-prop-pick').style.display = 'none';
+  finishInit();
+}
+
+function finishInit() {
   document.getElementById('prop-label').textContent = PROP || 'Vendors';
+  if (STAFF_NAME && !IS_ADMIN) {
+    var sub = document.getElementById('prop-label');
+    sub.textContent = (PROP || 'Vendors') + ' · ' + STAFF_NAME;
+  }
   loadVendors();
   notifyHeight();
   window.addEventListener('resize', notifyHeight);
+}
+
+function init() {
+  if (IS_ADMIN) {
+    // Admin: use property from URL param if given, else show all
+    var params = new URLSearchParams(location.search);
+    PROP = params.get('property') || '';
+    finishInit();
+  } else {
+    resolveStaffScope();
+  }
 }
 
 function loadVendors() {
