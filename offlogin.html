@@ -404,32 +404,42 @@ async function handleModalStep() {
       setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1200);
       return;
     }
-    // PATCH to Supabase
+    // PATCH to Supabase — match by current PIN, surface real errors
     try {
       const res = await fetch(
-        SB + '/rest/v1/office_users?id=eq.' + cpUserId,
+        SB + '/rest/v1/office_users?pin=eq.' + encodeURIComponent(cpCurrent),
         {
           method: 'PATCH',
           headers: {
             apikey: KEY,
             Authorization: 'Bearer ' + KEY,
             'Content-Type': 'application/json',
-            Prefer: 'return=minimal'
+            Prefer: 'return=representation'
           },
           body: JSON.stringify({ pin: cpNew })
         }
       );
-      if (!res.ok) throw new Error('Update failed');
+      const body = await res.json().catch(() => null);
+      console.log('PATCH status:', res.status, 'body:', JSON.stringify(body));
+      if (!res.ok) {
+        const msg = (body && (body.message || body.error)) || ('Update failed (' + res.status + ')');
+        throw new Error(msg);
+      }
+      if (!Array.isArray(body) || !body.length) {
+        throw new Error('No rows updated — check RLS policy in Supabase');
+      }
       modalDots('ok');
       err.style.color = '#2a7a4b';
-      err.textContent = 'PIN updated successfully';
+      err.textContent = 'PIN updated ✓';
       setTimeout(() => {
         err.style.color = '';
         closeChangePinModal();
       }, 1400);
     } catch (e) {
-      modalDots('err'); err.textContent = 'Failed to update PIN';
-      setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 1500);
+      console.error('PIN update error:', e.message);
+      modalDots('err');
+      err.textContent = e.message || 'Failed to update PIN';
+      setTimeout(() => { cpBuf = ''; modalDots(); err.textContent = ''; }, 2500);
     }
   }
 }
