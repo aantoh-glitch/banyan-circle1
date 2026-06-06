@@ -85,10 +85,64 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .btn-sec{padding:10px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:inherit}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1E1C18;color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:300;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+
+/* Property selector (ops multi-property) */
+.prop-select-wrap{margin-bottom:20px}
+.prop-select-label{font-size:11px;color:var(--faint);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-bottom:8px}
+.prop-select-grid{display:flex;flex-direction:column;gap:8px}
+.prop-btn{display:flex;align-items:center;gap:10px;width:100%;padding:13px 15px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-weight:500;color:var(--text);cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s,background .15s;box-shadow:var(--shadow)}
+.prop-btn:active,.prop-btn.active{border-color:var(--br);background:var(--br-l)}
+.prop-btn svg{stroke:var(--br);flex-shrink:0}
+.prop-select-hint{font-size:12px;color:var(--faint);margin-top:10px;text-align:center}
+.prop-back-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;width:fit-content}
+.prop-back-row svg{stroke:var(--muted)}
+.prop-back-row span{font-size:13px;color:var(--muted)}
+.no-props{text-align:center;padding:40px 16px;color:var(--faint);font-size:13px;line-height:1.8}
+.no-props-icon{font-size:32px;margin-bottom:8px}
+
+/* PIN login screen */
+.pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 16px}
+.pin-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;margin-bottom:6px;text-align:center}
+.pin-sub{font-size:13px;color:var(--faint);margin-bottom:28px;text-align:center}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:24px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);background:transparent;transition:all .15s}
+.pin-dot.on{background:var(--br);border-color:var(--br)}
+.pin-dot.err{background:var(--r);border-color:var(--r)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:280px;margin-bottom:10px}
+.pin-key{height:56px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);font-size:22px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.pin-key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
+.pin-err{font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-top:4px}
 </style>
 </head>
 <body>
-<div class="page">
+<!-- PIN login screen -->
+<div id="pin-screen" class="page pin-screen" style="display:none">
+  <div class="pin-title">Vendors</div>
+  <div class="pin-sub">Enter your PIN to continue</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pk('1')">1</button>
+    <button class="pin-key" onclick="pk('2')">2</button>
+    <button class="pin-key" onclick="pk('3')">3</button>
+    <button class="pin-key" onclick="pk('4')">4</button>
+    <button class="pin-key" onclick="pk('5')">5</button>
+    <button class="pin-key" onclick="pk('6')">6</button>
+    <button class="pin-key" onclick="pk('7')">7</button>
+    <button class="pin-key" onclick="pk('8')">8</button>
+    <button class="pin-key" onclick="pk('9')">9</button>
+    <div></div>
+    <button class="pin-key" onclick="pk('0')">0</button>
+    <button class="pin-key" onclick="pkDel()" style="font-size:16px;color:var(--muted)">⌫</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+</div>
+
+<div class="page" id="main-page" style="display:none">
   <div class="pg-head">
     <div>
       <div class="pg-title">Vendors</div>
@@ -98,6 +152,19 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Vendor
     </button>
+  </div>
+
+  <!-- Property selector (ops multi-property) -->
+  <div id="prop-selector-wrap" class="prop-select-wrap" style="display:none">
+    <div class="prop-select-label">Select a property</div>
+    <div class="prop-select-grid" id="prop-selector-grid"></div>
+    <div class="prop-select-hint">You have access to multiple properties</div>
+  </div>
+
+  <!-- Back to property selector -->
+  <div id="prop-back-row" class="prop-back-row" style="display:none" onclick="showPropertySelector()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <span>All properties</span>
   </div>
 
   <!-- Inline slide panel -->
@@ -148,6 +215,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 </div>
 
+</div><!-- /main-page -->
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -158,16 +227,18 @@ var params   = new URLSearchParams(location.search);
 var IS_ADMIN = params.get('viewer') === 'admin';
 
 var PROP = params.get('property') || '';
-if (!PROP) {
-  try {
-    var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-    if (_me) PROP = _me.prop || _me.property_name || '';
-  } catch(e) {}
-}
-
 var _vendorCache = {};
+var _assignedProps = [];
+var _pinStr = '';
 
-if (!IS_ADMIN) {
+// Show correct screen on load
+if (IS_ADMIN) {
+  // Admin via URL param — go straight to main
+  document.getElementById('main-page').style.display = 'block';
+  document.getElementById('add-vendor-btn').style.display = '';
+} else {
+  // Ops staff — show PIN screen
+  document.getElementById('pin-screen').style.display = 'flex';
   document.getElementById('add-vendor-btn').style.display = 'none';
 }
 
@@ -216,11 +287,102 @@ function notifyHeight() {
   }
 }
 
+/* ── PIN login ── */
+function pk(d) {
+  if (_pinStr.length >= 4) return;
+  _pinStr += d;
+  pdots();
+  if (_pinStr.length === 4) setTimeout(pinCheck, 150);
+}
+function pkDel() { _pinStr = _pinStr.slice(0, -1); pdots(); }
+function pdots(state) {
+  for (var i = 0; i < 4; i++) {
+    var e = document.getElementById('pd' + i);
+    e.className = 'pin-dot' + (state === 'err' ? ' err' : i < _pinStr.length ? ' on' : '');
+  }
+}
+function pinCheck() {
+  api('/rest/v1/staff?pin=eq.' + encodeURIComponent(_pinStr) + '&select=name,assigned_properties&limit=1')
+    .then(function(rows) {
+      rows = rows || [];
+      if (!rows.length) {
+        pdots('err');
+        document.getElementById('pin-err').textContent = 'Wrong PIN';
+        setTimeout(function() { _pinStr = ''; pdots(); document.getElementById('pin-err').textContent = ''; }, 1200);
+        return;
+      }
+      var row = rows[0];
+      var assigned = [];
+      if (row.assigned_properties) {
+        if (Array.isArray(row.assigned_properties)) {
+          assigned = row.assigned_properties.filter(Boolean);
+        } else if (typeof row.assigned_properties === 'string') {
+          assigned = row.assigned_properties.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        }
+      }
+      _assignedProps = assigned;
+      // Switch to main page
+      document.getElementById('pin-screen').style.display = 'none';
+      document.getElementById('main-page').style.display = 'block';
+      if (!assigned.length) {
+        showNoProperties();
+      } else if (assigned.length === 1) {
+        selectProperty(assigned[0]);
+      } else {
+        showPropertySelector();
+      }
+    });
+}
+
 function init() {
-  document.getElementById('prop-label').textContent = PROP || 'Vendors';
-  loadVendors();
-  notifyHeight();
   window.addEventListener('resize', notifyHeight);
+  notifyHeight();
+  if (IS_ADMIN) {
+    document.getElementById('prop-label').textContent = PROP || 'Vendors';
+    loadVendors();
+  }
+  // Ops: PIN screen handles init
+}
+
+function showNoProperties() {
+  document.getElementById('prop-label').textContent = 'Vendors';
+  document.getElementById('vendors-list').innerHTML =
+    '<div class="no-props"><div class="no-props-icon">\u{1F3E0}</div>No properties assigned to your account.<br>Contact your administrator.</div>';
+  notifyHeight();
+}
+
+function showPropertySelector() {
+  PROP = '';
+  document.getElementById('prop-label').textContent = 'Select Property';
+  document.getElementById('prop-back-row').style.display = 'none';
+  document.getElementById('vendors-list').innerHTML = '';
+  document.getElementById('slide-panel').classList.remove('open');
+  document.getElementById('add-vendor-btn').classList.remove('is-open');
+
+  var grid = document.getElementById('prop-selector-grid');
+  grid.innerHTML = '';
+  _assignedProps.forEach(function(p) {
+    var btn = document.createElement('button');
+    btn.className = 'prop-btn';
+    btn.innerHTML =
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' +
+      esc(p);
+    btn.onclick = function() { selectProperty(p); };
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('prop-selector-wrap').style.display = 'block';
+  notifyHeight();
+}
+
+function selectProperty(p) {
+  PROP = p;
+  document.getElementById('prop-label').textContent = p;
+  document.getElementById('prop-selector-wrap').style.display = 'none';
+  if (_assignedProps.length > 1) {
+    document.getElementById('prop-back-row').style.display = 'flex';
+  }
+  loadVendors();
 }
 
 function loadVendors() {
