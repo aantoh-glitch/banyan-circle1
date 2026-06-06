@@ -140,7 +140,7 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
 <script>
 (function(){
   var p = new URLSearchParams(window.location.search);
-  var role = p.get('role') || 'admin';
+  var role = p.get('role') || 'staff';
   document.body.classList.add(role === 'staff' ? 'mobile' : 'desktop');
 })();
 </script>
@@ -304,7 +304,7 @@ let _pinAction = null, _pinStr = '';
 
 /* ── Role-based view init (URL params) ── */
 const _params    = new URLSearchParams(location.search);
-const _role      = _params.get('role') || 'admin';  // 'admin' | 'staff'
+const _role      = _params.get('role') || 'staff';  // 'admin' | 'staff'
 const _staffId   = _params.get('staff_id') || '';
 const _propParam = _params.get('property') || '';
 const _staffName = _params.get('staff_name') || '';
