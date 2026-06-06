@@ -52,6 +52,7 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .m-hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;flex:1}
 .m-hdr-prop{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.m-hdr-prop-select{font-size:11px;color:var(--br);letter-spacing:.3px;text-transform:uppercase;font-weight:600;border:none;background:transparent;font-family:inherit;cursor:pointer;padding:0;outline:none;max-width:200px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23993C1D' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0px center;padding-right:14px}
 .m-log-wrap{padding:20px 24px 8px}
 .m-btn-log{width:100%;padding:16px;background:var(--br);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
 .m-btn-log svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -196,9 +197,9 @@ body.mobile .btn-sec:active{background:var(--bg)}
     <button class="m-hdr-back" onclick="history.back()">
       <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
     </button>
-    <div>
+    <div style="flex:1;min-width:0">
       <div class="m-hdr-title">Lost &amp; Found</div>
-      <div class="m-hdr-prop" id="m-hdr-prop"></div>
+      <div id="m-hdr-prop-wrap"></div>
     </div>
   </div>
   <div class="m-log-wrap">
@@ -309,6 +310,7 @@ let allItems = [], PROPS = [], IS_MOBILE = false;
 let photoFile = null, existingPhotoUrl = null;
 let mobileStatusFilter = 'all';
 let OPS_ASSIGNED_PROPS = []; // populated from Supabase for ops role
+let ACTIVE_PROP_ID = null;  // active property for staff with multiple assignments
 
 /* ── Role detection ── */
 const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
@@ -320,7 +322,7 @@ const IS_OPS = (_me.role === 'ops');
 if (IS_MOBILE) {
   document.body.classList.add('mobile');
   document.getElementById('view-mobile').style.display = 'block';
-  if (_me.name) document.getElementById('m-hdr-prop').textContent = _me.name;
+  // Property name/dropdown is rendered by renderMobilePropertyHeader() after boot
 } else {
   document.body.classList.add('desktop');
   document.getElementById('view-desktop').style.display = 'block';
@@ -358,6 +360,43 @@ async function resolveAssignedProps() {
   if (assigned.length) OPS_ASSIGNED_PROPS = assigned;
 }
 
+/* ── Render property name/dropdown in mobile header ── */
+function renderMobilePropertyHeader() {
+  const wrap = document.getElementById('m-hdr-prop-wrap');
+  if (!wrap) return;
+  if (!IS_MOBILE) return;
+
+  if (PROPS.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  if (PROPS.length === 1) {
+    // Single property — just show the name as static text
+    ACTIVE_PROP_ID = PROPS[0].id;
+    wrap.innerHTML = `<div class="m-hdr-prop">${esc(PROPS[0].name)}</div>`;
+    return;
+  }
+
+  // Multiple properties — show a styled dropdown
+  if (!ACTIVE_PROP_ID) ACTIVE_PROP_ID = PROPS[0].id;
+  const opts = PROPS.map(p =>
+    `<option value="${esc(p.id)}" ${p.id === ACTIVE_PROP_ID ? 'selected' : ''}>${esc(p.name)}</option>`
+  ).join('');
+  wrap.innerHTML = `<select class="m-hdr-prop-select" id="m-prop-switcher" onchange="onPropertySwitch(this.value)">${opts}</select>`;
+}
+
+/* ── Handle property switch from header dropdown ── */
+function onPropertySwitch(propId) {
+  ACTIVE_PROP_ID = propId;
+  // Re-filter items to chosen property
+  const fetched = _allItemsCache || [];
+  allItems = fetched.filter(i => i.property_id === ACTIVE_PROP_ID);
+  renderMobile();
+}
+
+let _allItemsCache = []; // holds unfiltered staff-scoped items
+
 /* ── Boot ── */
 async function boot() {
   const [items, landlords] = await Promise.all([
@@ -375,19 +414,27 @@ async function boot() {
 
   // scope items + props to assigned properties if any returned
   if (OPS_ASSIGNED_PROPS.length > 0) {
-    allItems = (items||[]).filter(i => OPS_ASSIGNED_PROPS.includes(i.property_id));
+    _allItemsCache = (items||[]).filter(i => OPS_ASSIGNED_PROPS.includes(i.property_id));
     PROPS = allProps.filter(p => OPS_ASSIGNED_PROPS.includes(p.id));
   } else {
-    allItems = items||[];
+    _allItemsCache = items||[];
     PROPS = allProps;
   }
 
   if (!IS_MOBILE) {
+    // Desktop: show all assigned items
+    allItems = _allItemsCache;
     const pf = document.getElementById('filter-prop');
     PROPS.forEach(p => pf.innerHTML += `<option value="${p.id}">${esc(p.name)}</option>`);
     updateKPIs();
     renderDesktop();
   } else {
+    // Mobile: set active property and filter to it
+    if (!ACTIVE_PROP_ID && PROPS.length > 0) ACTIVE_PROP_ID = PROPS[0].id;
+    allItems = ACTIVE_PROP_ID
+      ? _allItemsCache.filter(i => i.property_id === ACTIVE_PROP_ID)
+      : _allItemsCache;
+    renderMobilePropertyHeader();
     renderMobile();
   }
 }
@@ -488,20 +535,35 @@ async function patchStatus(id, status) {
 
 async function loadItems() {
   const fetched = await api(`/rest/v1/${TABLE}?select=*&order=created_at.desc`).catch(()=>[]);
-  allItems = OPS_ASSIGNED_PROPS.length > 0
+  const scoped = OPS_ASSIGNED_PROPS.length > 0
     ? (fetched||[]).filter(i => OPS_ASSIGNED_PROPS.includes(i.property_id))
     : (fetched||[]);
-  if (!IS_MOBILE) { updateKPIs(); renderDesktop(); } else { renderMobile(); }
+  _allItemsCache = scoped;
+  if (!IS_MOBILE) {
+    allItems = scoped;
+    updateKPIs(); renderDesktop();
+  } else {
+    allItems = ACTIVE_PROP_ID
+      ? scoped.filter(i => i.property_id === ACTIVE_PROP_ID)
+      : scoped;
+    renderMobile();
+  }
 }
 
 /* ── Modal ── */
 function fillPropertySelect() {
   // PROPS is already scoped to assigned_properties from staff table
   document.getElementById('f-property').innerHTML = '<option value="">— select —</option>'+PROPS.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  document.getElementById('f-property').disabled = false;
   // Auto-select and lock if only one property assigned
   if (OPS_ASSIGNED_PROPS.length === 1) {
     document.getElementById('f-property').value = OPS_ASSIGNED_PROPS[0];
     document.getElementById('f-property').disabled = true;
+  } else if (IS_MOBILE && ACTIVE_PROP_ID) {
+    // Pre-select the currently active property for mobile staff
+    document.getElementById('f-property').value = ACTIVE_PROP_ID;
+    // Lock if they have only the active one to choose from (shouldn't happen, but safe)
+    if (PROPS.length === 1) document.getElementById('f-property').disabled = true;
   }
 }
 
