@@ -19,7 +19,7 @@
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
-.page{max-width:430px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+.page{max-width:430px;margin:0 auto;padding:20px 16px 80px;min-height:100%}
 .pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
 .pg-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:3px}
 .pg-sub{font-size:12px;color:var(--faint);letter-spacing:.2px}
@@ -171,9 +171,12 @@ var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!_me) { location.href = '/index.html'; }
 
-var IS_ADMIN = (_me && _me.role === 'admin');
+var _urlParams = new URLSearchParams(location.search);
+var _viewerAdmin = _urlParams.get('viewer') === 'admin';
+
+var IS_ADMIN = (_me && _me.role === 'admin') || _viewerAdmin;
 var STAFF_NAME = (_me && _me.name) || '';
-var PROP = '';
+var PROP = _viewerAdmin ? (_urlParams.get('property') || '') : '';
 var STAFF_ASSIGNED_PROPS = [];
 
 var _vendorCache = {};
@@ -271,9 +274,11 @@ function finishInit() {
 
 function init() {
   if (IS_ADMIN) {
-    // Admin: use property from URL param if given, else show all
-    var params = new URLSearchParams(location.search);
-    PROP = params.get('property') || '';
+    // Admin (or embedded with ?viewer=admin): PROP already set from URL params at top
+    if (!_viewerAdmin) {
+      // Native admin: re-read property param (same URLSearchParams, just assign)
+      PROP = _urlParams.get('property') || '';
+    }
     finishInit();
   } else {
     resolveStaffScope();
