@@ -20,13 +20,13 @@ html,body{height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;co
 body {background:#000;}
 
 /* ── SCREENS ── */
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;position:relative;z-index:1}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;position:relative;z-index:1}
 .screen.on{display:flex}
 
 /* ── LOGO ── */
 .bc-logo{
-  width:160px;
-  margin:0 auto 28px;
+  width:140px;
+  margin:0 auto 16px;
   display:block;
   filter:drop-shadow(0 4px 24px rgba(153,60,29,0.35));
 }
@@ -38,7 +38,7 @@ body {background:#000;}
   color:#fff;margin-bottom:6px;text-align:center;
 }
 .bc-sub{
-  font-size:11px;color:var(--muted);margin-bottom:34px;
+  font-size:11px;color:var(--muted);margin-bottom:20px;
   letter-spacing:.14em;text-transform:uppercase;text-align:center;
 }
 
@@ -122,6 +122,13 @@ if (me && me.role === 'talent') {
   location.replace('/talent.html?id=' + encodeURIComponent(me.id || '') + '&name=' + encodeURIComponent(me.name || ''));
 }
 
+// Lock history: pressing back on tlogin stays on tlogin, not index/login
+history.replaceState(null, '', location.href);
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', function() {
+  history.pushState(null, '', location.href);
+});
+
 let sel = null, pin = '';
 
 async function init() {
@@ -165,7 +172,7 @@ function checkPin() {
     return;
   }
   localStorage.setItem('bc_me', JSON.stringify({id:sel.id,name:sel.name,role:'talent',category:sel.category}));
-  location.href = '/talent.html?id='+encodeURIComponent(sel.id)+'&name='+encodeURIComponent(sel.name);
+  location.replace('/talent.html?id='+encodeURIComponent(sel.id)+'&name='+encodeURIComponent(sel.name));
 }
 function showErr(msg){ document.getElementById('pin-err').textContent=msg; }
 </script>

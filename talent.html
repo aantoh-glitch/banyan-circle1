@@ -374,15 +374,22 @@ const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||
 const params=new URLSearchParams(location.search);
 const talentId=params.get('id')||'';
 const talentNameParam=params.get('name')||'Talent';
-if(!talentId){location.href='/login.html';throw new Error('No talent ID');}
+if(!talentId){location.replace('/tlogin.html');throw new Error('No talent ID');}
 const _me = JSON.parse(localStorage.getItem('bc_me')||'null');
-if(!_me){location.replace('/login.html');throw new Error('Not authenticated');}
+if(!_me){location.replace('/tlogin.html');throw new Error('Not authenticated');}
+
+// Replace current history entry so back button cannot return to this page
+history.replaceState(null,'',location.href);
+history.pushState(null,'',location.href);
+window.addEventListener('popstate',function(){
+  history.pushState(null,'',location.href);
+});
 
 document.getElementById('top-name').textContent=talentNameParam;
 document.getElementById('top-avatar').textContent=ini(talentNameParam);
 document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
 
-function signOut(){localStorage.removeItem('bc_me');location.replace('/login.html');}
+function signOut(){localStorage.removeItem('bc_me');location.replace('/tlogin.html');}
 
 // PANEL NAVIGATION
 let currentPanel=null;
