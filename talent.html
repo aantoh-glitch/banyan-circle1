@@ -1,16 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Banyan Circle — Talent Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
-  --text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
-  --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
+  /* Brand accent — warm terracotta kept, adjusted for dark contrast */
+  --br:#E2694A;--br-l:#3A1F16;
+  /* Green */
+  --g:#6ABF45;--g-l:#1A2E10;
+  /* Amber */
+  --a:#E09A3A;--a-l:#2E2010;
+  /* Semantic */
+  --r:#E57373;--r-l:#2D1515;
+  /* DaisyUI dark surface tokens */
+  --bg:oklch(var(--b1));
+  --white:oklch(var(--b2));
+  --text:oklch(var(--bc));
+  --muted:oklch(var(--bc) / 0.55);
+  --border:oklch(var(--bc) / 0.12);
   --nav-h:60px;--top-h:52px;
 }
 html{height:100%}
@@ -110,8 +123,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .cal-day-hdr{text-align:center;font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:4px 0}
 .cal-day{border:1px solid var(--border);border-radius:7px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;background:var(--white);transition:opacity .1s}
 .cal-day:active{opacity:.7}
-.cal-day.booked{background:#fff0f6;border-color:#d63384;border-width:2px}.cal-day.booked .cal-day-status{color:#d63384}.cal-day.busy{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
-.cal-day.available{background:var(--g-l);border-color:#86C860;color:#27500A}
+.cal-day.booked{background:#3a1228;border-color:#d63384;border-width:2px}.cal-day.booked .cal-day-status{color:#f472b6}.cal-day.busy{background:var(--r-l);border-color:#E57373;color:#f9a8a8}
+.cal-day.available{background:var(--g-l);border-color:#6ABF45;color:#a3e07a}
 .cal-day.today-ring{box-shadow:0 0 0 2px var(--br)}
 .cal-day-num{font-size:14px;font-weight:600;font-family:'Playfair Display',serif}
 .cal-day-status{font-size:8px;font-weight:500}
@@ -125,8 +138,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .time-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .status-toggle{display:flex;gap:8px;margin-bottom:16px}
 .stgl-btn{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
-.stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
-.stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
+.stgl-btn.busy-on{background:var(--r-l);border-color:#E57373;color:#f9a8a8}
+.stgl-btn.avail-on{background:var(--g-l);border-color:#6ABF45;color:#a3e07a}
 .modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 
 /* MESSAGES */
@@ -270,8 +283,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <button onclick="changeMonth(1)">&#8250;</button>
     </div>
     <div class="sched-legend">
-      <span><span class="leg-dot" style="background:#FCEBEB;border:1px solid #E57373"></span>Busy</span>
-      <span><span class="leg-dot" style="background:var(--g-l);border:1px solid #86C860"></span>Available</span>
+      <span><span class="leg-dot" style="background:var(--r-l);border:1px solid #E57373"></span>Busy</span>
+      <span><span class="leg-dot" style="background:var(--g-l);border:1px solid #6ABF45"></span>Available</span>
       <span><span class="leg-dot" style="background:var(--white);border:1px solid var(--border)"></span>Unmarked</span>
     </div>
     <div class="cal-grid" style="margin-bottom:3px">
@@ -316,7 +329,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <div class="sheet-handle"></div>
     <div class="modal-title" id="modal-title">Set day status</div>
     <div class="modal-sub" id="modal-date"></div>
-    <div id="booking-info-banner" style="display:none;background:var(--br-l,#fff7ed);border:1px solid var(--br);border-radius:8px;padding:12px 14px;margin-bottom:12px"></div>
+    <div id="booking-info-banner" style="display:none;background:var(--br-l);border:1px solid var(--br);border-radius:8px;padding:12px 14px;margin-bottom:12px"></div>
     <div id="stgl-wrap"><div class="status-toggle">
       <button class="stgl-btn" id="btn-busy" onclick="setModalStatus('busy')">&#128308; Busy</button>
       <button class="stgl-btn" id="btn-avail" onclick="setModalStatus('available')">&#128994; Available</button>
