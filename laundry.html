@@ -542,13 +542,12 @@ async function openCreateModal(){
   try{ await loadStaff(); }catch(e){}
 
   const propSel = document.getElementById('c-prop');
-  if(STAFF_ASSIGNED_PROPS.length===1){
-    propSel.innerHTML = `<option value="${STAFF_ASSIGNED_PROPS[0]}">${STAFF_ASSIGNED_PROPS[0]}</option>`;
+  if(IS_MOBILE){
+    const assignedProp = FILTER.prop !== 'all' ? FILTER.prop : (STAFF_ASSIGNED_PROPS[0] || window.STAFF_PROPERTY || '');
+    propSel.innerHTML = assignedProp
+      ? `<option value="${assignedProp}">${assignedProp}</option>`
+      : '<option value="">No property assigned</option>';
     propSel.disabled = true;
-  } else if(STAFF_ASSIGNED_PROPS.length>1){
-    propSel.innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
-    propSel.disabled = false;
-    if(FILTER.prop!=='all') propSel.value = FILTER.prop;
   } else {
     propSel.innerHTML = PROPS.length
       ? PROPS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('')
@@ -558,9 +557,11 @@ async function openCreateModal(){
   }
 
   const staffSel = document.getElementById('c-staff');
-  const staffNameForModal = window.STAFF_NAME || (_me && _me.name !== 'staff' ? _me.name : '');
-  if(IS_MOBILE && staffNameForModal){
-    staffSel.innerHTML = `<option value="${staffNameForModal}">${staffNameForModal}</option>`;
+  if(IS_MOBILE){
+    const staffNameForModal = window.STAFF_NAME || '';
+    staffSel.innerHTML = staffNameForModal
+      ? `<option value="${staffNameForModal}">${staffNameForModal}</option>`
+      : '<option value="">— Unknown —</option>';
     staffSel.disabled = true;
   } else {
     staffSel.innerHTML = `<option value="">— Select team member —</option>`
