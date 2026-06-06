@@ -3,89 +3,108 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Staff Login — Banyan Circle</title>
+<title>Staff Login — Heritance</title>
 <meta name="theme-color" content="#993C1D"/>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--br:#993C1D;--br-l:#FAECE7;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff}
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
 
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
-.screen.on{display:flex}
-
-.back{position:absolute;top:20px;left:20px;width:40px;height:40px;border-radius:50%;background:var(--white);border:1px solid var(--border);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
-
-.scr-inner{width:100%;max-width:340px}
-.scr-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:24px;text-align:center}
-.people{display:flex;flex-direction:column;gap:10px}
-.person{width:100%;padding:16px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:14px;font-family:inherit;transition:all .18s;text-align:left}
-.person:hover{border-color:var(--br);box-shadow:0 3px 14px rgba(153,60,29,.1)}
-.pav{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;flex-shrink:0}
-.pav-staff{background:var(--br-l);color:#712B13}
-.pname{font-size:16px;font-weight:500;color:var(--text)}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
 
 .pin-wrap{width:100%;max-width:280px;text-align:center}
-.pin-av{width:70px;height:70px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:500;background:var(--br-l);color:#712B13}
-.pin-name{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:28px}
-.pin-dots{display:flex;justify-content:center;gap:18px;margin-bottom:30px}
-.dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);transition:all .15s}
-.dot.on{background:var(--br);border-color:var(--br);transform:scale(1.1)}
-.dot.err{background:#A32D2D;border-color:#A32D2D}
-.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.key{height:66px;border-radius:14px;border:1.5px solid var(--border);background:var(--white);font-size:24px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center}
-.key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
-.key.ghost{border:none;background:none;cursor:default}
-.pin-err{font-size:13px;color:#A32D2D;margin-top:16px;min-height:18px}
 
-.brand{font-family:'Playfair Display',serif;font-size:13px;color:var(--muted);letter-spacing:.05em;margin-bottom:32px}
+.logo-wrap{margin:0 auto 24px;display:flex;align-items:center;justify-content:center}
+
+.pin-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;color:var(--text)}
+.pin-sub{font-size:13px;color:var(--muted);margin-bottom:30px;line-height:1.5}
+
+.pin-dots{display:flex;justify-content:center;gap:18px;margin-bottom:30px}
+.dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all .15s}
+.dot.on{background:var(--br);border-color:var(--br);transform:scale(1.1)}
+.dot.err{background:#A32D2D;border-color:#A32D2D;animation:shake .3s ease}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.key{height:64px;border-radius:14px;border:1.5px solid var(--border);background:var(--white);font-size:22px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
+.key:active,.key:focus{background:var(--br-l);border-color:var(--br);transform:scale(.95);outline:none}
+.key.ghost{border:none;background:none;cursor:default;pointer-events:none}
+
+.pin-err{font-size:13px;color:#A32D2D;margin-top:16px;min-height:18px;transition:opacity .2s}
+.pin-err:empty{opacity:0}
 </style>
 </head>
 <body>
 
-<!-- STAFF LIST -->
-<div class="screen on" id="s-list" style="position:relative">
-  <button class="back" onclick="location.href='/login.html'">←</button>
-  <div class="scr-inner">
-    <div class="brand" style="text-align:center">Banyan Circle</div>
-    <div class="scr-title">Staff Login</div>
-    <div class="people" id="staff-list">
-      <div style="font-size:14px;color:var(--muted);text-align:center;padding:20px">Loading…</div>
-    </div>
-  </div>
-</div>
+<div class="pin-wrap">
+  <!-- Heritance logo, hard-coded as SVG -->
+  <div class="logo-wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" width="200" height="154" aria-label="a property by Heritance">
+      <!-- Left serif pillar -->
+      <rect x="18" y="10" width="28" height="140" fill="#1a1a18"/>
+      <!-- Left pillar top serif -->
+      <rect x="6" y="10" width="52" height="14" fill="#1a1a18"/>
+      <!-- Left pillar bottom serif -->
+      <rect x="6" y="136" width="52" height="14" fill="#1a1a18"/>
+      <!-- Right serif pillar -->
+      <rect x="214" y="10" width="28" height="140" fill="#1a1a18"/>
+      <!-- Right pillar top serif -->
+      <rect x="202" y="10" width="52" height="14" fill="#1a1a18"/>
+      <!-- Right pillar bottom serif -->
+      <rect x="202" y="136" width="52" height="14" fill="#1a1a18"/>
+      <!-- Centre dot -->
+      <circle cx="130" cy="80" r="28" fill="#1a1a18"/>
 
-<!-- PIN -->
-<div class="screen" id="s-pin" style="position:relative">
-  <button class="back" onclick="show('s-list')">←</button>
-  <div class="pin-wrap">
-    <div class="pin-av" id="pin-av"></div>
-    <div class="pin-name" id="pin-name"></div>
-    <div class="pin-dots">
-      <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
-      <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
-    </div>
-    <div class="keypad">
-      <button class="key" onclick="pk('1')">1</button><button class="key" onclick="pk('2')">2</button><button class="key" onclick="pk('3')">3</button>
-      <button class="key" onclick="pk('4')">4</button><button class="key" onclick="pk('5')">5</button><button class="key" onclick="pk('6')">6</button>
-      <button class="key" onclick="pk('7')">7</button><button class="key" onclick="pk('8')">8</button><button class="key" onclick="pk('9')">9</button>
-      <div class="key ghost"></div><button class="key" onclick="pk('0')">0</button>
-      <button class="key" onclick="pdel()" style="font-size:18px;color:var(--muted)">⌫</button>
-    </div>
-    <div class="pin-err" id="pin-err"></div>
+      <!-- "a PROPERTY by HERITANCE" text line -->
+      <!-- "a" italic -->
+      <text x="10" y="188" font-family="Georgia,serif" font-style="italic" font-size="13" fill="#2C2C2A">a</text>
+      <!-- "PROPERTY" spaced caps -->
+      <text x="22" y="188" font-family="Georgia,serif" font-size="11" letter-spacing="2" fill="#2C2C2A">PROPERTY</text>
+      <!-- "by" italic rust -->
+      <text x="118" y="188" font-family="Georgia,serif" font-style="italic" font-size="13" fill="#7B2D1A">by</text>
+      <!-- "HERITANCE" spaced caps -->
+      <text x="137" y="188" font-family="Georgia,serif" font-size="11" letter-spacing="2" fill="#2C2C2A">HERITANCE</text>
+    </svg>
   </div>
+
+  <div class="pin-title">Welcome back, Team!</div>
+  <div class="pin-sub">Enter your PIN to continue</div>
+  <div class="pin-dots">
+    <div class="dot" id="d0"></div>
+    <div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+  </div>
+  <div class="keypad">
+    <button class="key" onclick="pk('1')">1</button>
+    <button class="key" onclick="pk('2')">2</button>
+    <button class="key" onclick="pk('3')">3</button>
+    <button class="key" onclick="pk('4')">4</button>
+    <button class="key" onclick="pk('5')">5</button>
+    <button class="key" onclick="pk('6')">6</button>
+    <button class="key" onclick="pk('7')">7</button>
+    <button class="key" onclick="pk('8')">8</button>
+    <button class="key" onclick="pk('9')">9</button>
+    <div class="key ghost"></div>
+    <button class="key" onclick="pk('0')">0</button>
+    <button class="key" onclick="pdel()" style="font-size:18px;color:var(--muted)">⌫</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
 </div>
 
 <script>
+// Block browser back navigation — stay on this page
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', () => history.pushState(null, '', location.href));
+
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-// Already logged in as staff?
+// Already logged in?
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (me && me.role === 'staff') { location.replace('/ops.html'); throw new Error('Signed in'); }
-
-function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
-const ini = n => (n || '').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase() || '?';
+if (me && me.role === 'staff') { location.replace('/ops.html'); }
 
 const DEFAULTS = [
   { id: 'sherry',  name: 'Sherry',  pin: '2222', role: 'staff' },
@@ -93,55 +112,58 @@ const DEFAULTS = [
   { id: 'vineeth', name: 'Vineeth', pin: '2222', role: 'staff' },
 ];
 
+let staffList = DEFAULTS;
+
 async function loadStaff() {
-  let people = DEFAULTS;
   try {
-    const staff = await fetch(SB + '/rest/v1/staff?select=id,name,designation,pin&order=name', {
+    const data = await fetch(SB + '/rest/v1/staff?select=id,name,designation,pin&order=name', {
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
     }).then(r => r.json());
-    if (staff && staff.length) {
-      const filtered = staff
+    if (data && data.length) {
+      const filtered = data
         .filter(s => s.designation !== 'Owner' && s.designation !== 'Manager')
         .map(s => ({ id: s.id, name: s.name, pin: s.pin || '2222', role: 'staff' }));
-      if (filtered.length) people = filtered;
+      if (filtered.length) staffList = filtered;
     }
   } catch(e) {}
-  document.getElementById('staff-list').innerHTML = people.map(p =>
-    `<button class="person" onclick='selectPerson(${JSON.stringify(p)})'>
-      <div class="pav pav-staff">${ini(p.name)}</div>
-      <div><div class="pname">${p.name}</div></div>
-    </button>`).join('');
 }
 loadStaff();
 
-let sel = null, pin = '';
-window.selectPerson = p => {
-  sel = p; pin = '';
-  dots();
-  document.getElementById('pin-err').textContent = '';
-  const av = document.getElementById('pin-av');
-  av.textContent = ini(p.name);
-  document.getElementById('pin-name').textContent = p.name;
-  show('s-pin');
-};
-
-window.pk  = d => { if (pin.length >= 4) return; pin += d; dots(); if (pin.length === 4) setTimeout(checkPin, 150); };
-window.pdel = () => { pin = pin.slice(0, -1); dots(); };
+let pin = '';
 
 function dots(state) {
   for (let i = 0; i < 4; i++) {
-    document.getElementById('d' + i).className = 'dot' + (state === 'err' ? ' err' : i < pin.length ? ' on' : '');
+    const d = document.getElementById('d' + i);
+    d.className = 'dot' + (state === 'err' ? ' err' : i < pin.length ? ' on' : '');
   }
 }
 
+window.pk = d => {
+  if (pin.length >= 4) return;
+  pin += d;
+  dots();
+  if (pin.length === 4) setTimeout(checkPin, 150);
+};
+
+window.pdel = () => {
+  pin = pin.slice(0, -1);
+  dots();
+  document.getElementById('pin-err').textContent = '';
+};
+
 function checkPin() {
-  if (pin !== sel.pin) {
+  const match = staffList.find(s => s.pin === pin);
+  if (!match) {
     dots('err');
-    document.getElementById('pin-err').textContent = 'Wrong PIN';
-    setTimeout(() => { pin = ''; dots(); document.getElementById('pin-err').textContent = ''; }, 1200);
+    document.getElementById('pin-err').textContent = 'Incorrect PIN. Try again.';
+    setTimeout(() => {
+      pin = '';
+      dots();
+      document.getElementById('pin-err').textContent = '';
+    }, 1400);
     return;
   }
-  localStorage.setItem('bc_me', JSON.stringify({ id: sel.id, name: sel.name, role: 'staff' }));
+  localStorage.setItem('bc_me', JSON.stringify({ id: match.id, name: match.name, role: 'staff' }));
   location.href = '/ops.html';
 }
 </script>
