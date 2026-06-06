@@ -126,12 +126,12 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 <body>
 <script>
 (function(){
-  var params = new URLSearchParams(window.location.search);
-  var role = params.get('role') || (window.self !== window.top ? 'admin' : 'staff');
-  var prop = params.get('property') || '';
-  window.ROLE = role;
-  window.STAFF_PROPERTY = prop;
-  var isDesktop = (role === 'admin') || (window.self !== window.top);
+  var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+  if(!_me) { location.href = '/index.html'; return; }
+  window.BC_ME = _me;
+  window.ROLE = _me.role || 'staff';
+  window.STAFF_NAME = _me.name || '';
+  var isDesktop = (_me.role === 'admin') || (window.self !== window.top);
   document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
 })();
 </script>
@@ -209,6 +209,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     <div>
       <div class="m-hdr-title">Stocks</div>
       <div class="m-hdr-prop" id="m-prop-label"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:1px" id="m-staff-label"></div>
     </div>
   </div>
 
@@ -542,6 +543,19 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   </div>
 </div>
 
+<!-- Property Picker (staff with 2+ properties) -->
+<div class="modal" id="modal-prop-pick">
+  <div class="modal-card" style="max-width:360px">
+    <span class="modal-handle"></span>
+    <div class="modal-ttl">Select Property</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">You are assigned to multiple properties.</p>
+    <div class="fg"><label class="fl">Property</label><select class="fc" id="pp-select"></select></div>
+    <div class="modal-actions">
+      <button class="btn-p" onclick="confirmPropPick()">Continue</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -573,13 +587,15 @@ let ACTIVE_PROP = null; // null until a tab is selected
 let ALL_ITEMS   = [];   // from stock-item-list
 let PROPS_LIST  = [];   // from landlords
 let LOG_FILTER  = 'all';
+let STAFF_ASSIGNED_PROPS = [];
+window.STAFF_PROPERTY = '';
 
 // ── Init views ──
 if(IS_MOBILE){
   document.getElementById('mobile-view').style.display='flex';
   document.getElementById('desktop-view').style.display='none';
-  if(window.STAFF_PROPERTY){
-    document.getElementById('m-prop-label').textContent = window.STAFF_PROPERTY;
+  if(window.STAFF_NAME){
+    document.getElementById('m-staff-label').textContent = window.STAFF_NAME;
   }
 } else {
   document.getElementById('desktop-view').style.display='block';
@@ -588,6 +604,31 @@ if(IS_MOBILE){
     document.getElementById('d-btn-items').style.display='none';
     document.getElementById('d-btn-warehouse').style.display='none';
   }
+}
+
+// ── Staff scope (mobile only) ──
+async function resolveStaffScope(){
+  if(!IS_MOBILE) return;
+  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(window.STAFF_NAME)).catch(()=>[]);
+  const record = (rows||[])[0];
+  if(!record || !(record.assigned_properties||[]).length) return;
+  STAFF_ASSIGNED_PROPS = record.assigned_properties.filter(Boolean);
+  if(STAFF_ASSIGNED_PROPS.length === 1){
+    window.STAFF_PROPERTY = STAFF_ASSIGNED_PROPS[0];
+    document.getElementById('m-prop-label').textContent = STAFF_ASSIGNED_PROPS[0];
+  } else {
+    document.getElementById('pp-select').innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
+    openModal('modal-prop-pick');
+  }
+}
+
+function confirmPropPick(){
+  const val = document.getElementById('pp-select').value;
+  if(!val) return;
+  window.STAFF_PROPERTY = val;
+  document.getElementById('m-prop-label').textContent = val;
+  closeModal('modal-prop-pick');
+  loadMobileStock();
 }
 
 // ── Helpers ──
@@ -1367,6 +1408,8 @@ document.querySelectorAll('.modal').forEach(m=>{
     await Promise.all([loadProps(), loadItems()]);
   } else {
     await loadItems();
+    await resolveStaffScope();
+    if(STAFF_ASSIGNED_PROPS.length > 1) return; // wait for picker
     loadMobileStock();
   }
 })();
