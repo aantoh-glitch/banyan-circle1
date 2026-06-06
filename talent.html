@@ -210,6 +210,11 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
         <span style="font-size:16px">✏️</span> Edit Profile
       </button>
     </div>
+    <div style="padding-bottom:16px">
+      <button class="btn-sec" onclick="openDocsPanel()" style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <span style="font-size:16px">📁</span> Documents
+      </button>
+    </div>
   </div>
 
   <!-- EDIT MODE -->
@@ -671,6 +676,48 @@ async function loadRatings(){
   }catch(e){el.innerHTML='<div style="font-size:13px;color:var(--muted)">Ratings unavailable</div>';}
 }
 
+
+// TALENT DOCUMENTS
+async function openDocsPanel(){
+  document.getElementById('docs-modal').style.display = 'flex';
+  const el = document.getElementById('talent-docs-list');
+  el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Loading…</div>';
+  try {
+    const res = await fetch(SB+'/storage/v1/object/list/talent-doc/'+encodeURIComponent(talentId), {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } })
+    });
+    const files = await res.json();
+    if(!res.ok) throw new Error(files.message || 'Could not load documents');
+    if(!files || !files.length){
+      el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">No documents uploaded yet</div>';
+      return;
+    }
+    el.innerHTML = files.map(f => {
+      const url = SB+'/storage/v1/object/public/talent-doc/'+encodeURIComponent(talentId)+'/'+encodeURIComponent(f.name);
+      const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name);
+      const isPdf = /\.pdf$/i.test(f.name);
+      const icon = isPdf ? '📄' : isImg ? '🖼️' : '📎';
+      const kb = f.metadata?.size ? Math.round(f.metadata.size/1024)+' KB' : '';
+      return `<a href="${url}" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text)">
+        <span style="font-size:22px;flex-shrink:0">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div>
+          ${kb ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">'+kb+'</div>' : ''}
+        </div>
+        <span style="color:var(--br);font-size:13px;flex-shrink:0">View ↗</span>
+      </a>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Could not load documents: '+e.message+'</div>';
+  }
+}
+
+function closeDocsModal(){
+  document.getElementById('docs-modal').style.display = 'none';
+}
+
 // Prevent bfcache from restoring stale authenticated state after logout
 window.addEventListener('pageshow',function(e){
   if(e.persisted){
@@ -686,6 +733,22 @@ loadProperties();
 // Show first tab (Profile) on load
 showPanel('profile');
 </script>
+
+
+<!-- TALENT DOCUMENTS PANEL (modal sheet) -->
+<div class="modal-backdrop" id="docs-modal" style="display:none" onclick="if(event.target===this)closeDocsModal()">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh">
+    <div class="sheet-handle"></div>
+    <div class="modal-title" style="margin-bottom:4px">My Documents</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Files uploaded by your coordinator</div>
+    <div id="talent-docs-list" style="min-height:60px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Loading…</div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn-sec" onclick="closeDocsModal()">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- MESSAGING FAB -->
 <a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:14px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">

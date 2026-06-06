@@ -567,6 +567,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px">
       <div class="card-ttl" style="margin:0">All talents</div>
       <div style="display:flex;gap:8px">
+        <button class="btn-sec" onclick="openTalentDocModal()" style="display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Add Talent Documents
+        </button>
         <button class="btn-p" onclick="openTalentModal()">+ Add talent</button>
       </div>
     </div>
@@ -617,7 +621,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
   </div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Phone <span style="color:var(--r)">*</span></label><input class="fc" id="ms-phone" type="tel" placeholder="+91 9876543210" minlength="10"/></div>
+    <div class="fg"><label class="fl">Phone <span style="color:var(--r)">*</span></label><input class="fc" id="ms-phone" type="tel" placeholder="" minlength="10"/></div>
     <div class="fg"><label class="fl">Email (optional)</label><input class="fc" id="ms-email"/></div>
   </div>
   <div class="fg">
@@ -779,6 +783,25 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-admin-booking')">Cancel</button><button class="btn-p" onclick="submitAdminBooking()">Send Request</button></div>
 </div></div>
 
+
+<!-- ADD TALENT DOCUMENTS MODAL -->
+<div class="modal" id="modal-talent-doc"><div class="modal-card">
+  <div class="modal-ttl">Add Talent Document</div>
+  <div class="fg">
+    <label class="fl">Talent <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="tdoc-talent-select">
+      <option value="">Select talent…</option>
+    </select>
+  </div>
+  <div class="fg">
+    <label class="fl">Document <span style="color:var(--r)">*</span></label>
+    <input class="fc" id="tdoc-file" type="file" style="padding:8px"/>
+  </div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-talent-doc')">Cancel</button>
+    <button class="btn-p" id="tdoc-save-btn" onclick="saveTalentDoc()">Upload</button>
+  </div>
+</div></div>
 <!-- ADD/EDIT TALENT MODAL -->
 <div class="modal" id="modal-talent"><div class="modal-card">
   <div class="modal-ttl" id="mtal-ttl">Add talent</div><input type="hidden" id="mtal-id"/>
@@ -2031,6 +2054,50 @@ try {
   } catch(e){
     const el = document.getElementById('dash-stocks');
     if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
+  }
+}
+
+
+// TALENT DOCUMENTS
+async function openTalentDocModal(){
+  const btn = document.getElementById('tdoc-save-btn');
+  btn.disabled = false; btn.textContent = 'Upload';
+  document.getElementById('tdoc-file').value = '';
+  // Populate talent dropdown from talents table
+  try {
+    const talents = await api('/rest/v1/talents?select=id,name&order=name') || [];
+    document.getElementById('tdoc-talent-select').innerHTML =
+      '<option value="">Select talent…</option>' +
+      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}</option>`).join('');
+  } catch(e) {
+    document.getElementById('tdoc-talent-select').innerHTML = '<option>Could not load talents</option>';
+  }
+  openModal('modal-talent-doc');
+}
+
+async function saveTalentDoc(){
+  const sel = document.getElementById('tdoc-talent-select');
+  const talentId = sel.value;
+  const talentName = sel.options[sel.selectedIndex]?.dataset?.name || '';
+  const file = document.getElementById('tdoc-file').files[0];
+  if(!talentId){ alert('Please select a talent'); return; }
+  if(!file){ alert('Please select a file'); return; }
+  const btn = document.getElementById('tdoc-save-btn');
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  try {
+    const path = talentId + '/' + Date.now() + '_' + file.name.replace(/\s+/g,'_');
+    const res = await fetch(SB+'/storage/v1/object/talent-doc/'+path, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': file.type||'application/octet-stream', 'x-upsert': 'true' },
+      body: file
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||e.error||('HTTP '+res.status)); }
+    closeModal('modal-talent-doc');
+    toast('Document uploaded for '+talentName+' ✓');
+  } catch(e) {
+    alert('Upload failed: '+e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Upload';
   }
 }
 
