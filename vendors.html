@@ -18,8 +18,8 @@
   --radius:14px;--radius-sm:9px;
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
-html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
-.page{max-width:430px;margin:0 auto;padding:20px 16px 80px}
+html,body{height:100%;overflow:hidden;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+.page{max-width:430px;margin:0 auto;padding:20px 16px 80px;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
 .pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
 .pg-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:3px}
 .pg-sub{font-size:12px;color:var(--faint);letter-spacing:.2px}
@@ -215,20 +215,7 @@ function toast(msg, isErr) {
   t._t = setTimeout(function(){ t.style.display = 'none'; }, 2400);
 }
 
-var _lastNotifiedHeight = 0;
-var _notifyTimer;
-function notifyHeight() {
-  if (window.parent !== window) {
-    clearTimeout(_notifyTimer);
-    _notifyTimer = setTimeout(function() {
-      var h = document.body.scrollHeight;
-      if (Math.abs(h - _lastNotifiedHeight) > 4) {
-        _lastNotifiedHeight = h;
-        window.parent.postMessage({type: 'bc_resize', height: h}, '*');
-      }
-    }, 80);
-  }
-}
+
 
 function resolveStaffScope() {
   return api('/rest/v1/staff?select=name,assigned_properties&name=eq.' + encodeURIComponent(STAFF_NAME))
@@ -268,8 +255,6 @@ function finishInit() {
     sub.textContent = (PROP || 'Vendors') + ' · ' + STAFF_NAME;
   }
   loadVendors();
-  notifyHeight();
-  window.addEventListener('resize', notifyHeight);
 }
 
 function init() {
@@ -295,13 +280,11 @@ function loadVendors() {
     if (!data.length) {
       el.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div>No vendors added yet' +
         (IS_ADMIN ? '.<br>Tap <strong>Add Vendor</strong> to get started.' : '.') + '</div>';
-      notifyHeight();
       return;
     }
     var html = '';
     data.forEach(function(v) { _vendorCache[v.id] = v; html += renderVendor(v); });
     el.innerHTML = html;
-    notifyHeight();
   });
 }
 
@@ -359,7 +342,6 @@ function openAddPanel() {
   panel.classList.add('open');
   btn.classList.add('is-open');
   setTimeout(function(){ document.getElementById('v-name').focus(); }, 80);
-  setTimeout(notifyHeight, 400);
 }
 
 function openEditPanel(id) {
@@ -379,13 +361,11 @@ function openEditPanel(id) {
   document.getElementById('slide-panel').classList.add('open');
   document.getElementById('add-vendor-btn').classList.add('is-open');
   document.getElementById('slide-panel').scrollIntoView({behavior:'smooth', block:'start'});
-  setTimeout(notifyHeight, 400);
 }
 
 function closePanel() {
   document.getElementById('slide-panel').classList.remove('open');
   document.getElementById('add-vendor-btn').classList.remove('is-open');
-  setTimeout(notifyHeight, 400);
 }
 
 function saveVendor() {
