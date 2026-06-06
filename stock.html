@@ -129,12 +129,9 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   var params = new URLSearchParams(window.location.search);
   var role = params.get('role') || (window.self !== window.top ? 'admin' : 'staff');
   var prop = params.get('property') || '';
-  var staffId = params.get('staff_id') || '';
   window.ROLE = role;
   window.STAFF_PROPERTY = prop;
-  window.STAFF_ID = staffId;
-  // ops = staff member using desktop ops view (use-only)
-  var isDesktop = (role === 'admin') || (role === 'ops') || (window.self !== window.top);
+  var isDesktop = (role === 'admin') || (window.self !== window.top);
   document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
 })();
 </script>
@@ -142,7 +139,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 <!-- ═══════════════ DESKTOP VIEW (admin) ═══════════════ -->
 <div class="d-main" id="desktop-view">
   <div class="pg-title">Stocks</div>
-  <div class="pg-sub" id="d-pg-sub">Manage inventory across all properties</div>
+  <div class="pg-sub">Manage inventory across all properties</div>
 
   <!-- Property Filter Bar -->
   <div class="prop-filter-bar" id="d-prop-filter-bar">
@@ -571,123 +568,7 @@ async function api(path, method, body){
 }
 
 const IS_MOBILE = document.body.classList.contains('mobile');
-const IS_ADMIN  = window.ROLE === 'admin' || (!IS_MOBILE && window.ROLE !== 'ops');
-const IS_OPS    = window.ROLE === 'ops';
-
-// ── Ops: assigned properties ──
-let OPS_PROPERTIES = []; // populated from staff record for ops role
-
-async function loadOpsProperties(){
-  // Try to resolve from staff record via staff_id or property URL param
-  const staffId = window.STAFF_ID;
-  const propParam = window.STAFF_PROPERTY;
-
-  try {
-    let rows = [];
-    if(staffId){
-      rows = await api('/rest/v1/staff?select=assigned_properties,property_name&id=eq.'+encodeURIComponent(staffId)+'&limit=1').catch(()=>[]);
-    } else if(propParam){
-      rows = await api('/rest/v1/staff?select=assigned_properties,property_name&property_name=eq.'+encodeURIComponent(propParam)+'&limit=1').catch(()=>[]);
-    }
-
-    const staff = rows?.[0];
-    if(staff){
-      // Support both array field (assigned_properties) and fallback to single property_name
-      if(Array.isArray(staff.assigned_properties) && staff.assigned_properties.length){
-        OPS_PROPERTIES = staff.assigned_properties.filter(Boolean);
-      } else if(staff.property_name){
-        OPS_PROPERTIES = [staff.property_name];
-      }
-    }
-
-    // Fallback to URL param if nothing from DB
-    if(!OPS_PROPERTIES.length && propParam) OPS_PROPERTIES = [propParam];
-  } catch(e){
-    if(propParam) OPS_PROPERTIES = [propParam];
-  }
-
-  // Auto-select if only one property
-  if(OPS_PROPERTIES.length === 1){
-    ACTIVE_PROP = OPS_PROPERTIES[0];
-    const titleEl = document.getElementById('d-stock-title');
-    const subEl = document.getElementById('d-pg-sub');
-    if(titleEl) titleEl.textContent = OPS_PROPERTIES[0];
-    if(subEl) subEl.textContent = OPS_PROPERTIES[0];
-    loadPropertyView(OPS_PROPERTIES[0]);
-  } else if(OPS_PROPERTIES.length > 1){
-    const subEl = document.getElementById('d-pg-sub');
-    if(subEl) subEl.textContent = OPS_PROPERTIES.join(' · ');
-    showOpsPropSelector();
-  } else {
-    const emptyEl = document.getElementById('d-empty-state');
-    if(emptyEl){ emptyEl.textContent = 'No property assigned to your account.'; emptyEl.style.display='block'; }
-  }
-}
-
-function showOpsPropSelector(){
-  const emptyEl = document.getElementById('d-empty-state');
-  const titleEl = document.getElementById('d-stock-title');
-  if(titleEl) titleEl.textContent = 'Select Property';
-
-  const sel = document.createElement('select');
-  sel.className = 'fc';
-  sel.style.cssText = 'max-width:280px;margin-top:12px';
-  sel.innerHTML = '<option value="">— Select property —</option>' +
-    OPS_PROPERTIES.map(p=>`<option value="${p}">${p}</option>`).join('');
-  sel.addEventListener('change', function(){
-    if(!this.value) return;
-    ACTIVE_PROP = this.value;
-    if(titleEl) titleEl.textContent = this.value;
-    // Remove selector
-    this.remove();
-    loadPropertyView(ACTIVE_PROP);
-  });
-
-  if(emptyEl){
-    emptyEl.innerHTML = '';
-    emptyEl.style.display = 'block';
-    const msg = document.createElement('div');
-    msg.textContent = 'You are assigned to multiple properties. Please select one:';
-    msg.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:8px';
-    emptyEl.appendChild(msg);
-    emptyEl.appendChild(sel);
-  }
-}
-
-// Ops property picker before opening Use Stock from desktop
-function opsPickPropertyThen(callback){
-  if(OPS_PROPERTIES.length === 0){
-    alert('No property assigned. Contact your manager.'); return;
-  }
-  if(OPS_PROPERTIES.length === 1){
-    ACTIVE_PROP = OPS_PROPERTIES[0];
-    callback();
-    return;
-  }
-  // Show a small modal-style picker
-  const overlay = document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:19998;display:flex;align-items:center;justify-content:center;padding:20px';
-  overlay.innerHTML=`<div style="background:var(--white);border-radius:14px;padding:24px;max-width:360px;width:100%">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:12px">Select Property</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Which property are you logging stock for?</div>
-    <select id="ops-prop-pick" class="fc" style="margin-bottom:18px">
-      <option value="">— Select —</option>
-      ${OPS_PROPERTIES.map(p=>`<option value="${p}">${p}</option>`).join('')}
-    </select>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn-sec" onclick="this.closest('[style]').remove()" style="padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
-      <button class="btn-p" id="ops-prop-confirm" style="padding:10px 18px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Continue</button>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#ops-prop-confirm').addEventListener('click',()=>{
-    const val = overlay.querySelector('#ops-prop-pick').value;
-    if(!val){ alert('Please select a property'); return; }
-    ACTIVE_PROP = val;
-    overlay.remove();
-    callback();
-  });
-}
+const IS_ADMIN  = window.ROLE === 'admin' || !IS_MOBILE;
 let ACTIVE_PROP = null; // null until a tab is selected
 let ALL_ITEMS   = [];   // from stock-item-list
 let PROPS_LIST  = [];   // from landlords
@@ -704,12 +585,8 @@ if(IS_MOBILE){
   document.getElementById('desktop-view').style.display='block';
   document.getElementById('mobile-view').style.display='none';
   if(!IS_ADMIN){
-    // ops role: only show Use Stock button
     document.getElementById('d-btn-items').style.display='none';
     document.getElementById('d-btn-warehouse').style.display='none';
-    document.getElementById('d-btn-add').style.display='none';
-    document.getElementById('d-btn-log').style.display='none';
-    document.getElementById('d-prop-filter-bar').style.display='none';
   }
 }
 
@@ -1471,13 +1348,7 @@ document.getElementById('d-btn-warehouse')?.addEventListener('click',()=>{
   openModal('modal-warehouse');
 });
 document.getElementById('d-btn-add')?.addEventListener('click',()=>openAddStock());
-document.getElementById('d-btn-use')?.addEventListener('click',()=>{
-  if(IS_OPS){
-    opsPickPropertyThen(()=>openUseStock());
-  } else {
-    openUseStock();
-  }
-});
+document.getElementById('d-btn-use')?.addEventListener('click',()=>openUseStock());
 document.getElementById('d-btn-log')?.addEventListener('click',()=>{
   LOG_FILTER='all';
   document.querySelectorAll('#log-filter-bar .ptab').forEach((b,i)=>{ b.classList.toggle('on',i===0); });
@@ -1493,13 +1364,7 @@ document.querySelectorAll('.modal').forEach(m=>{
 // ── Init ──
 (async function init(){
   if(!IS_MOBILE){
-    await loadItems();
-    if(IS_ADMIN){
-      await loadProps();
-    } else {
-      // ops role: load assigned properties then show stock
-      await loadOpsProperties();
-    }
+    await Promise.all([loadProps(), loadItems()]);
   } else {
     await loadItems();
     loadMobileStock();
