@@ -206,7 +206,7 @@ window.cpk = d => {
 };
 window.cpdel = () => { cpPin = cpPin.slice(0, -1); setCpDots(); };
 
-function handleCpPin() {
+async function handleCpPin() {
   if (cpStep === 'verify') {
     const match = landlords.find(r => String(r.pin) === cpPin);
     if (!match) {
