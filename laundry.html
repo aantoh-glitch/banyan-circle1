@@ -295,11 +295,14 @@ let STAFF_ASSIGNED_PROPS = [];
 let IS_MOBILE = false;
 let _pinAction = null, _pinStr = '';
 
-/* ── Role-based view init ── */
-const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (!_me) location.href = '/index.html';
+/* ── Role-based view init (URL params, no localStorage) ── */
+const _params   = new URLSearchParams(location.search);
+const _role     = _params.get('role') || 'admin';   // 'admin' | 'staff'
+const _staffId  = _params.get('staff_id') || '';
+const _propParam = _params.get('property') || '';
+const _staffName = _params.get('staff_name') || '';
 
-IS_MOBILE = (_me.role === 'staff');
+IS_MOBILE = (_role === 'staff');
 
 if (IS_MOBILE) {
   document.body.classList.add('mobile');
@@ -367,11 +370,24 @@ async function loadStaff(){
 /* ── Staff scope ── */
 async function resolveStaffScope(){
   if(!IS_MOBILE) return;
-  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(_me.name)).catch(()=>[]);
-  const record = (rows||[])[0];
-  if(!record || !record.assigned_properties) return;
-  const assigned = (record.assigned_properties||[]).filter(Boolean);
+  let assigned = [];
+
+  // 1. Try staff_id URL param (most reliable)
+  if(_staffId){
+    const rows = await api('/rest/v1/staff?select=name,assigned_properties&id=eq.'+encodeURIComponent(_staffId)+'&limit=1').catch(()=>[]);
+    const record = (rows||[])[0];
+    if(record && Array.isArray(record.assigned_properties)){
+      assigned = record.assigned_properties.filter(Boolean);
+    } else if(record && typeof record.assigned_properties === 'string'){
+      assigned = record.assigned_properties.split(',').map(s=>s.trim()).filter(Boolean);
+    }
+  }
+  // 2. Fallback: single ?property param in URL
+  if(!assigned.length && _propParam){
+    assigned = [_propParam];
+  }
   if(!assigned.length) return;
+
   STAFF_ASSIGNED_PROPS = assigned;
   if(assigned.length === 1){
     FILTER.prop = assigned[0];
@@ -537,8 +553,8 @@ async function openCreateModal(){
   }
 
   const staffSel = document.getElementById('c-staff');
-  if(IS_MOBILE && _me && _me.name){
-    staffSel.innerHTML = `<option value="${_me.name}">${_me.name}</option>`;
+  if(IS_MOBILE && _staffName){
+    staffSel.innerHTML = `<option value="${_staffName}">${_staffName}</option>`;
     staffSel.disabled = true;
   } else {
     staffSel.innerHTML = `<option value="">— Select team member —</option>`
