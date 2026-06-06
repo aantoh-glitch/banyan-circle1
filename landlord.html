@@ -423,8 +423,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <!-- ── VENDORS (admin only) ── -->
 <div class="pg" id="pg-vendors" style="padding:0;overflow:hidden">
   <iframe id="iframe-vendors" src=""
-    style="width:100%;height:calc(100dvh - 130px);border:none;display:block;overflow:hidden"
-    scrolling="no"></iframe>
+    style="width:100%;height:calc(100dvh - 130px);border:none;display:block"
+    id="iframe-vendors"></iframe>
 </div>
 
 </div><!-- /content -->
@@ -584,7 +584,14 @@ if (!IS_ADMIN_VIEW) {
   const vBtn = document.getElementById('nb-vendors');
   if (vBtn) vBtn.style.display = '';
 }
-const PROP = me.prop || me.property_name;
+const PROP = me.prop || me.property_name || new URLSearchParams(location.search).get('property') || '';
+
+// Adjust iframe heights for admin view (top-bar hidden, only subtract bottom-nav ~73px)
+if (IS_ADMIN_VIEW) {
+  document.querySelectorAll('.pg iframe').forEach(function(f) {
+    f.style.height = 'calc(100dvh - 73px)';
+  });
+}
 
 // Top bar
 document.getElementById('sb-prop').textContent = PROP || '—';
