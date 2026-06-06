@@ -438,7 +438,7 @@ function formatDate(s) {
 function getBookingForDate(dateS) {
   return bookings.find(b => {
     if (activeProperty !== 'all' && b.property !== activeProperty) return false;
-    return dateS >= b.start && dateS <= b.end;
+    return dateS >= b.start && dateS < b.end;
   });
 }
 
