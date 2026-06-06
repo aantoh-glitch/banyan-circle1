@@ -130,18 +130,19 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 }
 .db-icon svg{width:20px;height:20px;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;fill:none}
 
+/* Tile order: 1=Attendance 2=Tasks 3=Messages 4=Earnings 5=My Leave 6=Laundry 7=Stock 8=Reviews 9=Lost&Found 10=Loan Register 11=Vendors */
 .dash-btn:nth-child(1) .db-icon{background:#EAF3DE;color:#3B6D11}
 .dash-btn:nth-child(1) .db-icon svg{stroke:#3B6D11}
 .dash-btn:nth-child(2) .db-icon{background:#FAECE7;color:#993C1D}
 .dash-btn:nth-child(2) .db-icon svg{stroke:#993C1D}
 .dash-btn:nth-child(3) .db-icon{background:#E6F1FB;color:#185FA5}
 .dash-btn:nth-child(3) .db-icon svg{stroke:#185FA5}
-.dash-btn:nth-child(4) .db-icon{background:#FAEEDA;color:#854F0B}
-.dash-btn:nth-child(4) .db-icon svg{stroke:#854F0B}
-.dash-btn:nth-child(5) .db-icon{background:#e0f4f0;color:#0e7060}
-.dash-btn:nth-child(5) .db-icon svg{stroke:#0e7060;fill:none}
-.dash-btn:nth-child(6) .db-icon{background:#F0EBF8;color:#6B3FA0}
-.dash-btn:nth-child(6) .db-icon svg{stroke:#6B3FA0;fill:none}
+.dash-btn:nth-child(4) .db-icon{background:#e0f4f0;color:#0e7060}
+.dash-btn:nth-child(4) .db-icon svg{stroke:#0e7060;fill:none}
+.dash-btn:nth-child(5) .db-icon{background:#F0EBF8;color:#6B3FA0}
+.dash-btn:nth-child(5) .db-icon svg{stroke:#6B3FA0;fill:none}
+.dash-btn:nth-child(6) .db-icon{background:#FAEEDA;color:#854F0B}
+.dash-btn:nth-child(6) .db-icon svg{stroke:#854F0B;fill:none}
 .dash-btn:nth-child(7) .db-icon{background:#E0F2EE;color:#1A6B5A}
 .dash-btn:nth-child(7) .db-icon svg{stroke:#1A6B5A;fill:none}
 .dash-btn:nth-child(8) .db-icon{background:#FAECE7;color:#993C1D}
@@ -256,6 +257,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 
   <div class="dash-grid">
 
+    <!-- Row 1-3: visible to ALL roles (M&A, Associates, Operations) -->
+
     <a class="dash-btn" href="/attendance.html">
       <div class="db-icon">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -292,56 +295,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </a>
 
-    <a class="dash-btn" id="laundry-link" href="/laundry.html">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M8 7.5A5 5 0 0 1 16.5 10"/></svg>
-      </div>
-      <div>
-        <div class="db-label">Laundry</div>
-        <div class="db-sub">Track & manage</div>
-      </div>
-    </a>
-
-    <a class="dash-btn" href="/stock.html">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
-      </div>
-      <div>
-        <div class="db-label">Stocks</div>
-        <div class="db-sub">View & use stock</div>
-      </div>
-    </a>
-
-    <button class="dash-btn" onclick="openReviewsModal()">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-      </div>
-      <div>
-        <div class="db-label">Reviews</div>
-        <div class="db-sub">Guest staff ratings</div>
-      </div>
-    </button>
-
-    <a class="dash-btn" href="/lost-and-found.html">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
-      </div>
-      <div>
-        <div class="db-label">Lost &amp; Found</div>
-        <div class="db-sub">Log &amp; track items</div>
-      </div>
-    </a>
-
-    <a class="dash-btn" href="/loans.html">
-      <div class="db-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      </div>
-      <div>
-        <div class="db-label">Loan Register</div>
-        <div class="db-sub">Items loaned to guests</div>
-      </div>
-    </a>
-
     <a class="dash-btn" id="earnings-link" href="/earnings.html">
       <div class="db-icon">
         <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 0 0 7H6"/></svg>
@@ -362,7 +315,59 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </button>
 
-    <button class="dash-btn" id="vendors-btn" onclick="openVendorsModal()">
+    <!-- Operations-only tiles (hidden for M&A / Associates) -->
+
+    <a class="dash-btn ops-only" id="laundry-link" href="/laundry.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M8 7.5A5 5 0 0 1 16.5 10"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Laundry</div>
+        <div class="db-sub">Track & manage</div>
+      </div>
+    </a>
+
+    <a class="dash-btn ops-only" href="/stock.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Stock</div>
+        <div class="db-sub">View & use stock</div>
+      </div>
+    </a>
+
+    <button class="dash-btn ops-only" onclick="openReviewsModal()">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Reviews</div>
+        <div class="db-sub">Guest staff ratings</div>
+      </div>
+    </button>
+
+    <a class="dash-btn ops-only" href="/lost-and-found.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Lost &amp; Found</div>
+        <div class="db-sub">Log &amp; track items</div>
+      </div>
+    </a>
+
+    <a class="dash-btn ops-only" href="/loans.html">
+      <div class="db-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      </div>
+      <div>
+        <div class="db-label">Loan Register</div>
+        <div class="db-sub">Items loaned to guests</div>
+      </div>
+    </a>
+
+    <button class="dash-btn ops-only" id="vendors-btn" onclick="openVendorsModal()">
       <div class="db-icon">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
       </div>
@@ -439,6 +444,11 @@ window.addEventListener('popstate', function() {
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
 document.getElementById('user-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+// Hide ops-only tiles for ma_team and associates roles
+if (me.staffRole === 'ma_team' || me.staffRole === 'associates') {
+  document.querySelectorAll('.ops-only').forEach(el => el.style.display = 'none');
+}
 
 function signOut(){ localStorage.removeItem('bc_me'); location.href='/stafflogin.html'; }
 // Wire earnings link with staff name param

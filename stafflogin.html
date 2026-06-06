@@ -82,22 +82,22 @@ const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (me && me.role === 'staff') { location.replace('/ops.html'); }
 
 const DEFAULTS = [
-  { id: 'sherry',  name: 'Sherry',  pin: '2222', role: 'staff' },
-  { id: 'ajith',   name: 'Ajith',   pin: '2222', role: 'staff' },
-  { id: 'vineeth', name: 'Vineeth', pin: '2222', role: 'staff' },
+  { id: 'sherry',  name: 'Sherry',  pin: '2222', role: 'staff', staffRole: 'operations' },
+  { id: 'ajith',   name: 'Ajith',   pin: '2222', role: 'staff', staffRole: 'operations' },
+  { id: 'vineeth', name: 'Vineeth', pin: '2222', role: 'staff', staffRole: 'operations' },
 ];
 
 let staffList = DEFAULTS;
 
 async function loadStaff() {
   try {
-    const data = await fetch(SB + '/rest/v1/staff?select=id,name,designation,pin&order=name', {
+    const data = await fetch(SB + '/rest/v1/staff?select=id,name,designation,pin,role&order=name', {
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
     }).then(r => r.json());
     if (data && data.length) {
       const filtered = data
         .filter(s => s.designation !== 'Owner' && s.designation !== 'Manager')
-        .map(s => ({ id: s.id, name: s.name, pin: s.pin || '2222', role: 'staff' }));
+        .map(s => ({ id: s.id, name: s.name, pin: s.pin || '2222', role: 'staff', staffRole: s.role || 'operations' }));
       if (filtered.length) staffList = filtered;
     }
   } catch(e) {}
@@ -138,7 +138,7 @@ function checkPin() {
     }, 1400);
     return;
   }
-  localStorage.setItem('bc_me', JSON.stringify({ id: match.id, name: match.name, role: 'staff' }));
+  localStorage.setItem('bc_me', JSON.stringify({ id: match.id, name: match.name, role: 'staff', staffRole: match.staffRole || 'Operations' }));
   location.href = '/ops.html';
 }
 </script>
