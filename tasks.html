@@ -191,7 +191,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <button class="filter-chip" data-filter="ack" onclick="setFilter('ack',this)">Acknowledged</button>
         <div class="filter-sep"></div>
         <select class="fc" id="filter-staff" onchange="applyFilters()" style="width:auto;padding:6px 32px 6px 10px;font-size:12px;height:34px">
-          <option value="">All Staff</option>
+          <option value="">All Team</option>
         </select>
         <div class="filter-sep"></div>
         <select class="fc" id="filter-property" onchange="applyFilters()" style="width:auto;padding:6px 32px 6px 10px;font-size:12px;height:34px">
@@ -272,7 +272,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <div class="fg">
         <label class="fl">Assigned To <span style="color:var(--r)">*</span></label>
         <select class="fc" id="t-staff">
-          <option value="">Select staff member…</option>
+          <option value="">Select team member…</option>
         </select>
       </div>
       <div class="fg">
@@ -619,13 +619,13 @@ async function loadStaff(){
     // Populate filter dropdown
     const filterSel = document.getElementById('filter-staff');
     if(filterSel){
-      filterSel.innerHTML = '<option value="">All Staff</option>' +
+      filterSel.innerHTML = '<option value="">All Team</option>' +
         ALL_STAFF.map(s=>`<option value="${s.id}">${s.name}${s.designation?' · '+s.designation:''}</option>`).join('');
     }
     // Populate modal dropdown
     const modalSel = document.getElementById('t-staff');
     if(modalSel){
-      modalSel.innerHTML = '<option value="">Select staff member…</option>' +
+      modalSel.innerHTML = '<option value="">Select team member…</option>' +
         ALL_STAFF.map(s=>`<option value="${s.id}">${s.name}${s.designation?' · '+s.designation:''}</option>`).join('');
     }
   } catch(e){ console.error('Staff load failed', e); }
