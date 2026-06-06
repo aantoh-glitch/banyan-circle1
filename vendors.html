@@ -100,48 +100,9 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .no-props{text-align:center;padding:40px 16px;color:var(--faint);font-size:13px;line-height:1.8}
 .no-props-icon{font-size:32px;margin-bottom:8px}
 
-/* PIN login screen */
-.pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 16px}
-.pin-title{font-family:'EB Garamond',serif;font-size:26px;font-weight:600;margin-bottom:6px;text-align:center}
-.pin-sub{font-size:13px;color:var(--faint);margin-bottom:28px;text-align:center}
-.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:24px}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);background:transparent;transition:all .15s}
-.pin-dot.on{background:var(--br);border-color:var(--br)}
-.pin-dot.err{background:var(--r);border-color:var(--r)}
-.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:280px;margin-bottom:10px}
-.pin-key{height:56px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);font-size:22px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
-.pin-key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
-.pin-err{font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-top:4px}
 </style>
 </head>
 <body>
-<!-- PIN login screen -->
-<div id="pin-screen" class="page pin-screen" style="display:none">
-  <div class="pin-title">Vendors</div>
-  <div class="pin-sub">Enter your PIN to continue</div>
-  <div class="pin-dots">
-    <div class="pin-dot" id="pd0"></div>
-    <div class="pin-dot" id="pd1"></div>
-    <div class="pin-dot" id="pd2"></div>
-    <div class="pin-dot" id="pd3"></div>
-  </div>
-  <div class="pin-grid">
-    <button class="pin-key" onclick="pk('1')">1</button>
-    <button class="pin-key" onclick="pk('2')">2</button>
-    <button class="pin-key" onclick="pk('3')">3</button>
-    <button class="pin-key" onclick="pk('4')">4</button>
-    <button class="pin-key" onclick="pk('5')">5</button>
-    <button class="pin-key" onclick="pk('6')">6</button>
-    <button class="pin-key" onclick="pk('7')">7</button>
-    <button class="pin-key" onclick="pk('8')">8</button>
-    <button class="pin-key" onclick="pk('9')">9</button>
-    <div></div>
-    <button class="pin-key" onclick="pk('0')">0</button>
-    <button class="pin-key" onclick="pkDel()" style="font-size:16px;color:var(--muted)">⌫</button>
-  </div>
-  <div class="pin-err" id="pin-err"></div>
-</div>
-
 <div class="page" id="main-page" style="display:none">
   <div class="pg-head">
     <div>
@@ -224,22 +185,18 @@ var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
 var params   = new URLSearchParams(location.search);
-var IS_ADMIN = params.get('viewer') === 'admin';
+var _role    = params.get('role') || 'admin';  // 'admin' | 'ops'
+var IS_ADMIN = _role === 'admin';
+var IS_OPS   = _role === 'ops';
 var STAFF_ID = params.get('staff_id') || '';
 
 var PROP = params.get('property') || '';
 var _vendorCache = {};
 var _assignedProps = [];
-var _pinStr = '';
 
-// Show correct screen on load
-if (IS_ADMIN) {
-  // Admin via URL param — go straight to main
-  document.getElementById('main-page').style.display = 'block';
-  document.getElementById('add-vendor-btn').style.display = '';
-} else {
-  // Ops staff — show PIN screen
-  document.getElementById('pin-screen').style.display = 'flex';
+// Show main page immediately — no PIN
+document.getElementById('main-page').style.display = 'block';
+if (!IS_ADMIN) {
   document.getElementById('add-vendor-btn').style.display = 'none';
 }
 
@@ -288,53 +245,49 @@ function notifyHeight() {
   }
 }
 
-/* ── PIN login ── */
-function pk(d) {
-  if (_pinStr.length >= 4) return;
-  _pinStr += d;
-  pdots();
-  if (_pinStr.length === 4) setTimeout(pinCheck, 150);
-}
-function pkDel() { _pinStr = _pinStr.slice(0, -1); pdots(); }
-function pdots(state) {
-  for (var i = 0; i < 4; i++) {
-    var e = document.getElementById('pd' + i);
-    e.className = 'pin-dot' + (state === 'err' ? ' err' : i < _pinStr.length ? ' on' : '');
-  }
-}
-function pinCheck() {
-  // If staff_id URL param present, verify PIN + fetch by id; else fetch by PIN only
-  var pinQuery;
-  if (STAFF_ID) {
-    pinQuery = '/rest/v1/staff?id=eq.' + encodeURIComponent(STAFF_ID) + '&pin=eq.' + encodeURIComponent(_pinStr) + '&select=name,assigned_properties&limit=1';
+
+
+function init() {
+  window.addEventListener('resize', notifyHeight);
+  notifyHeight();
+  if (IS_ADMIN) {
+    document.getElementById('prop-label').textContent = PROP || 'Vendors';
+    loadVendors();
   } else {
-    pinQuery = '/rest/v1/staff?pin=eq.' + encodeURIComponent(_pinStr) + '&select=name,assigned_properties&limit=1';
+    // Ops: resolve assigned properties from staff record via URL params
+    loadOpsProperties();
   }
-  api(pinQuery).then(function(rows) {
+}
+
+function loadOpsProperties() {
+  var query;
+  if (STAFF_ID) {
+    query = '/rest/v1/staff?select=assigned_properties&id=eq.' + encodeURIComponent(STAFF_ID) + '&limit=1';
+  } else if (PROP) {
+    // Fallback: single property passed directly
+    _assignedProps = [PROP];
+    selectProperty(PROP);
+    return;
+  } else {
+    showNoProperties();
+    return;
+  }
+
+  api(query).then(function(rows) {
     rows = rows || [];
-    if (!rows.length) {
-      pdots('err');
-      document.getElementById('pin-err').textContent = 'Wrong PIN';
-      setTimeout(function() { _pinStr = ''; pdots(); document.getElementById('pin-err').textContent = ''; }, 1200);
-      return;
-    }
-    var row = rows[0];
     var assigned = [];
-    if (row.assigned_properties) {
+    var row = rows[0];
+    if (row && row.assigned_properties) {
       if (Array.isArray(row.assigned_properties)) {
         assigned = row.assigned_properties.filter(Boolean);
       } else if (typeof row.assigned_properties === 'string') {
         assigned = row.assigned_properties.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
       }
     }
-    // Also honour ?property URL param if present and staff has no assignments
-    if (!assigned.length && PROP) {
-      assigned = [PROP];
-    }
+    // Fallback to ?property param
+    if (!assigned.length && PROP) assigned = [PROP];
     _assignedProps = assigned;
-    // Switch to main page
-    document.getElementById('pin-screen').style.display = 'none';
-    document.getElementById('main-page').style.display = 'block';
+
     if (!assigned.length) {
       showNoProperties();
     } else if (assigned.length === 1) {
@@ -343,16 +296,6 @@ function pinCheck() {
       showPropertySelector();
     }
   });
-}
-
-function init() {
-  window.addEventListener('resize', notifyHeight);
-  notifyHeight();
-  if (IS_ADMIN) {
-    document.getElementById('prop-label').textContent = PROP || 'Vendors';
-    loadVendors();
-  }
-  // Ops: PIN screen handles init
 }
 
 function showNoProperties() {
