@@ -6,22 +6,20 @@
 <title>Heritance — Earnings</title>
 <meta name="theme-color" content="#1a1a18"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:oklch(var(--b1));
-  --white:oklch(var(--b2));
-  --text:oklch(var(--bc));
-  --muted:oklch(var(--bc) / 0.55);
-  --border:oklch(var(--bc) / 0.12);
-  --br:#E2694A;
-  --br-l:#3A1F16;
-  --green:#6ABF45;
-  --green-l:#1A2E10;
-  --red:#E57373;
-  --red-l:#2D1515;
+  --bg:#F9F8F6;
+  --text:#1a1a18;
+  --muted:#7a7870;
+  --border:rgba(0,0,0,0.08);
+  --white:#fff;
+  --br:#993C1D;
+  --br-l:#FAECE7;
+  --green:#2E7D32;
+  --green-l:#E8F5E9;
+  --red:#C62828;
+  --red-l:#FFEBEE;
   --nav-h:60px;
 }
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
@@ -62,10 +60,10 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   font-size:11px;font-weight:500;letter-spacing:.4px;text-transform:uppercase;
   padding:3px 10px;border-radius:999px;
 }
-.id-role-chip.admin{background:#2D1F4A;color:#B39DDB}
-.id-role-chip.landlord{background:#0D2137;color:#64B5F6}
-.id-role-chip.staff{background:var(--green-l);color:#A5D6A7}
-.id-role-chip.talent{background:#2E1A06;color:#FFAB76}
+.id-role-chip.admin{background:#EDE7F6;color:#4527A0}
+.id-role-chip.landlord{background:#E3F2FD;color:#0D47A1}
+.id-role-chip.staff{background:#E8F5E9;color:#1B5E20}
+.id-role-chip.talent{background:#FFF3E0;color:#E65100}
 .id-name{font-size:13px;font-weight:500;flex:1}
 .readonly-tag{
   font-size:10px;color:var(--muted);
@@ -195,12 +193,12 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 /* UNASSIGNED BADGE */
 .unassigned-banner{
   margin:0 20px 14px;
-  background:#2A2010;border:1px solid #9E7B1A;
+  background:#FFF8E1;border:1px solid #FFD54F;
   border-radius:10px;padding:10px 14px;
   display:flex;align-items:center;justify-content:space-between;
   gap:8px;
 }
-.unassigned-banner span{font-size:12px;color:#D4B07A}
+.unassigned-banner span{font-size:12px;color:#795548}
 .unassigned-banner strong{font-weight:600}
 
 /* LOG ENTRIES */
@@ -216,7 +214,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .entry-card.positive{border-left:3px solid var(--green)}
 .entry-card.negative{border-left:3px solid var(--red)}
-.entry-card.unassigned{border-left:3px solid #9E7B1A}
+.entry-card.unassigned{border-left:3px solid #FFD54F}
 .entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .entry-head-chip{
   display:inline-flex;align-items:center;
@@ -225,7 +223,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .positive .entry-head-chip{background:var(--green-l);color:var(--green)}
 .negative .entry-head-chip{background:var(--red-l);color:var(--red)}
-.unassigned .entry-head-chip{background:#2A2010;color:#D4B07A}
+.unassigned .entry-head-chip{background:#FFF8E1;color:#795548}
 .entry-amount{
   font-family:'Cormorant Garamond',serif;
   font-size:22px;font-weight:600;line-height:1;
@@ -242,9 +240,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   font-size:11px;color:var(--br);
   background:var(--br-l);padding:2px 7px;border-radius:999px;
 }
-.entry-entity.landlord-tag{color:#64B5F6;background:#0D2137}
-.entry-entity.staff-tag{color:#A5D6A7;background:var(--green-l)}
-.entry-entity.talent-tag{color:#FFAB76;background:#2E1A06}
+.entry-entity.landlord-tag{color:#0D47A1;background:#E3F2FD}
+.entry-entity.staff-tag{color:#1B5E20;background:#E8F5E9}
+.entry-entity.talent-tag{color:#E65100;background:#FFF3E0}
 .entry-notes{
   font-size:12px;color:var(--muted);
   margin-top:6px;line-height:1.4;
@@ -1491,10 +1489,6 @@ function showToast(msg) {
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
-if (new URLSearchParams(location.search).get('role') === 'talent') {
-  document.documentElement.setAttribute('data-theme', 'dark');
-}
-
 populateHeads();
 
 async function init() {
