@@ -489,6 +489,7 @@ function changeMonth(dir) {
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
   renderCalendar();
+  renderStats();
 }
 
 function handleDayClick(ds) {
@@ -530,9 +531,10 @@ function renderBookings() {
 
 function renderStats() {
   const now = new Date();
-  const year = now.getFullYear(), month = now.getMonth();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
   const todayS = now.toISOString().split('T')[0];
+  // Use the calendar's currently displayed month/year (not always today's month)
+  const year = currentYear, month = currentMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
   let bookedDays = new Set(), totalC = 0;
   bookings.forEach(b => {
     if (activeProperty !== 'all' && b.property !== activeProperty) return;
@@ -545,9 +547,12 @@ function renderStats() {
       d.setDate(d.getDate()+1);
     }
   });
+  // For past months show all days; for current month only today-onwards; for future months all days
+  const monthStartS = `${year}-${String(month+1).padStart(2,'0')}-01`;
   const remaining = Array.from({length:daysInMonth},(_,i)=>i+1).filter(d => {
     const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    return ds >= todayS && !getBookingForDate(ds);
+    const afterToday = monthStartS.slice(0,7) >= todayS.slice(0,7) ? ds >= todayS : true;
+    return afterToday && !getBookingForDate(ds);
   }).length;
   document.getElementById('statBooked').textContent = bookedDays.size;
   document.getElementById('statAvailable').textContent = remaining;
