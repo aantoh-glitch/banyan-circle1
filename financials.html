@@ -155,7 +155,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <div class="net-card-val" id="sum-costs" style="color:var(--r)">—</div>
     </div>
     <div class="net-card">
-      <div class="net-card-label">Earnings Payouts</div>
+      <div class="net-card-label">Payouts</div>
       <div class="net-card-val" id="sum-earnings" style="color:var(--r)">—</div>
     </div>
     <div class="net-card" id="net-card">
@@ -172,9 +172,24 @@ textarea.fc{resize:vertical;min-height:72px}
       <button onclick="setType('expense',this)">Expenses</button>
       <button onclick="setType('utility',this)">Utilities</button>
       <button onclick="setType('revenue',this)">Revenue</button>
-      <button onclick="setType('earnings',this)">Earnings</button>
+      <button onclick="setType('payout',this)">Payout</button>
+    </div>
+    <!-- Payout sub-filters (shown only when Payout is active) -->
+    <div id="payout-subfilter" style="display:none;margin-top:10px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:6px">
+          <button class="ppill on" id="psub-all"   onclick="setPayoutSub('all',this)">All</button>
+          <button class="ppill"    id="psub-team"   onclick="setPayoutSub('team',this)">Team</button>
+          <button class="ppill"    id="psub-talent" onclick="setPayoutSub('talent',this)">Talent</button>
+          <button class="ppill"    id="psub-landlord" onclick="setPayoutSub('landlord',this)">Landlord</button>
+        </div>
+        <select class="fc" id="payout-name-filter" onchange="loadLog()" style="max-width:200px;padding:6px 10px;font-size:12px">
+          <option value="all">All Names</option>
+        </select>
+      </div>
     </div>
   </div>
+
   <div class="card">
     <div id="fin-log"><div class="empty">Loading…</div></div>
   </div>
@@ -292,6 +307,7 @@ const EARN_NEG_HEADS = ['Deduction','Loss'];
 let PROPS=[], ACTIVE_PROP='all', ACTIVE_TYPE='all', earnType='positive';
 let DATE_FROM='', DATE_TO='';
 let ALL_ROWS=[]; // cached for Excel
+let PAYOUT_SUB='all', PAYOUT_NAME='all';
 
 const HDR={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
 
@@ -345,7 +361,39 @@ function setProp(prop,el){
 function setType(type,el){
   ACTIVE_TYPE=type;
   document.querySelectorAll('.log-filter button').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');loadLog();
+  el.classList.add('on');
+  const subfilter=document.getElementById('payout-subfilter');
+  if(type==='payout'){
+    subfilter.style.display='block';
+    if(PAYOUT_SUB!=='all') loadPayoutNames(PAYOUT_SUB);
+  } else {
+    subfilter.style.display='none';
+    PAYOUT_SUB='all'; PAYOUT_NAME='all';
+  }
+  loadLog();
+}
+
+async function setPayoutSub(sub, el){
+  PAYOUT_SUB=sub; PAYOUT_NAME='all';
+  document.querySelectorAll('#payout-subfilter .ppill').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const nameEl=document.getElementById('payout-name-filter');
+  nameEl.innerHTML='<option value="all">All Names</option>';
+  if(sub!=='all') await loadPayoutNames(sub);
+  loadLog();
+}
+
+async function loadPayoutNames(sub){
+  const nameEl=document.getElementById('payout-name-filter');
+  nameEl.innerHTML='<option value="all">Loading…</option>';
+  try{
+    let items=[];
+    if(sub==='team'){const d=await api('/rest/v1/staff?select=name&order=name')||[];items=d.map(x=>x.name);}
+    else if(sub==='talent'){const d=await api('/rest/v1/talents?select=name&order=name')||[];items=d.map(x=>x.name);}
+    else if(sub==='landlord'){const d=await api('/rest/v1/landlords?select=property_name&order=property_name')||[];items=[...new Set(d.map(x=>x.property_name).filter(Boolean))];}
+    nameEl.innerHTML='<option value="all">All Names</option>'+items.map(n=>`<option value="${n}">${n}</option>`).join('');
+    nameEl.onchange=()=>{PAYOUT_NAME=nameEl.value;loadLog();};
+  }catch(e){nameEl.innerHTML='<option value="all">All Names</option>';}
 }
 
 function dateFilter(dateStr){
@@ -400,14 +448,23 @@ async function loadLog(){
     netEl.style.color=net>=0?'var(--g)':'var(--r)';
 
     // Filter display by type
-    const display=ACTIVE_TYPE==='all'?rows:rows.filter(r=>r._type===ACTIVE_TYPE);
+    let display;
+    if(ACTIVE_TYPE==='payout'){
+      display=rows.filter(r=>r._type==='earnings');
+      if(PAYOUT_SUB==='team')    display=display.filter(r=>r.entity_type==='staff');
+      else if(PAYOUT_SUB==='talent')   display=display.filter(r=>r.entity_type==='talent');
+      else if(PAYOUT_SUB==='landlord') display=display.filter(r=>r.entity_type==='property');
+      if(PAYOUT_NAME && PAYOUT_NAME!=='all') display=display.filter(r=>r.entity_name===PAYOUT_NAME);
+    } else {
+      display=ACTIVE_TYPE==='all'?rows:rows.filter(r=>r._type===ACTIVE_TYPE);
+    }
     if(!display.length){el.innerHTML='<div class="empty">No transactions found</div>';return;}
 
     const badge={
       expense:'<span class="bdg bdg-r">Expense</span>',
       utility:'<span class="bdg bdg-a">Utility</span>',
       revenue:'<span class="bdg bdg-g">Revenue</span>',
-      earnings:'<span class="bdg bdg-b">Earnings</span>'
+      earnings:'<span class="bdg bdg-b">Payout</span>'
     };
     el.innerHTML=`<table class="tbl"><thead><tr>
       <th>Date</th><th>Property</th><th>Type</th><th>Description</th><th style="text-align:right">Amount</th><th></th>
