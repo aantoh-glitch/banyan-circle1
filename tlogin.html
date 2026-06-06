@@ -77,6 +77,10 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
 .cp-key.ghost{border:none;background:none;pointer-events:none}
 .cp-err{font-size:12px;color:#A32D2D;min-height:16px;margin-top:10px}
 .cp-cancel{margin-top:14px;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.cp-modal.new-pin{background:#FFF5F5;border:2px solid #C0392B}
+.cp-modal.new-pin .cp-title{color:#C0392B}
+.cp-modal.confirm-pin{background:#F0FBF0;border:2px solid #27AE60}
+.cp-modal.confirm-pin .cp-title{color:#1E8449}
 </style>
 </head>
 <body>
@@ -217,7 +221,7 @@ let cpNewPin = '';
 function openChangePin() {
   if (!sel) { alert('No talent selected.'); return; }
   cpStep = 'verify'; cpPin = ''; cpNewPin = '';
-  setCpUI('Verify Current PIN', 'Enter your existing 4-digit PIN');
+  setCpUI('Verify Current PIN', 'Enter your existing 4-digit PIN', 'verify');
   document.getElementById('cp-overlay').classList.add('open');
 }
 function closeChangePin() {
@@ -225,12 +229,17 @@ function closeChangePin() {
   cpPin = ''; cpNewPin = '';
   setCpDots('');
   document.getElementById('cp-err').textContent = '';
+  document.querySelector('.cp-modal').classList.remove('new-pin','confirm-pin');
 }
-function setCpUI(title, sub) {
+function setCpUI(title, sub, step) {
   document.getElementById('cp-title').textContent = title;
   document.getElementById('cp-sub').textContent = sub;
   document.getElementById('cp-err').textContent = '';
   cpPin = ''; setCpDots('');
+  const modal = document.querySelector('.cp-modal');
+  modal.classList.remove('new-pin','confirm-pin');
+  if (step === 'new') modal.classList.add('new-pin');
+  if (step === 'confirm') modal.classList.add('confirm-pin');
 }
 function setCpDots(state) {
   for (let i = 0; i < 4; i++) {
@@ -254,22 +263,39 @@ function handleCpPin() {
       return;
     }
     cpStep = 'new';
-    setCpUI('Set New PIN', 'Enter your new 4-digit PIN');
+    setCpUI('Set New PIN', 'Enter your new 4-digit PIN', 'new');
   } else if (cpStep === 'new') {
     cpNewPin = cpPin;
     cpStep = 'confirm';
-    setCpUI('Confirm New PIN', 'Re-enter your new PIN to confirm');
+    setCpUI('Confirm New PIN', 'Re-enter your new PIN to confirm', 'confirm');
   } else if (cpStep === 'confirm') {
     if (cpPin !== cpNewPin) {
       setCpDots('err');
       document.getElementById('cp-err').textContent = "PINs don't match. Try again.";
-      setTimeout(() => { cpStep = 'new'; cpPin = ''; cpNewPin = ''; setCpDots(); setCpUI('Set New PIN', 'Enter your new 4-digit PIN'); }, 1500);
+      setTimeout(() => { cpStep = 'new'; cpPin = ''; cpNewPin = ''; setCpDots(); setCpUI('Set New PIN', 'Enter your new 4-digit PIN', 'new'); }, 1500);
+      return;
+    }
+    // Check PIN uniqueness against loaded talent (sel is the current talent)
+    // We do a quick fetch to check if any other talent has this PIN
+    const dupCheck = await checkDupPinTalent(cpNewPin);
+    if (dupCheck) {
+      setCpDots('err');
+      document.getElementById('cp-err').textContent = 'PIN exists. Choose another PIN.';
+      setTimeout(() => { cpStep = 'new'; cpPin = ''; cpNewPin = ''; setCpDots(); setCpUI('Set New PIN', 'Enter your new 4-digit PIN', 'new'); }, 1600);
       return;
     }
     savePinTalent(cpNewPin);
   }
 }
 
+async function checkDupPinTalent(newPin) {
+  try {
+    const res = await fetch(SB + '/rest/v1/talents?select=id&pin=eq.' + encodeURIComponent(newPin) + '&id=neq.' + encodeURIComponent(sel.id), {
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
+    }).then(r => r.json());
+    return Array.isArray(res) && res.length > 0;
+  } catch(e) { return false; }
+}
 async function savePinTalent(newPin) {
   document.getElementById('cp-sub').textContent = 'Saving…';
   try {
@@ -286,7 +312,7 @@ async function savePinTalent(newPin) {
   } catch(e) {
     document.getElementById('cp-err').textContent = 'Failed to save. Please try again.';
     cpStep = 'new'; cpPin = ''; cpNewPin = ''; setCpDots();
-    setTimeout(() => setCpUI('Set New PIN', 'Enter your new 4-digit PIN'), 1500);
+    setTimeout(() => setCpUI('Set New PIN', 'Enter your new 4-digit PIN', 'new'), 1500);
   }
 }
 </script>
