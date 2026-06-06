@@ -137,13 +137,6 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
 </style>
 </head>
 <body>
-<script>
-(function(){
-  var p = new URLSearchParams(window.location.search);
-  var role = p.get('role') || 'staff';
-  document.body.classList.add(role === 'staff' ? 'mobile' : 'desktop');
-})();
-</script>
 
 <!-- ═══════════════════════════════
      DESKTOP SHELL (admin/owner)
@@ -302,17 +295,31 @@ let STAFF_ASSIGNED_PROPS = [];
 let IS_MOBILE = false;
 let _pinAction = null, _pinStr = '';
 
-/* ── Role-based view init (URL params) ── */
-const _params    = new URLSearchParams(location.search);
-const _role      = _params.get('role') || 'staff';  // 'admin' | 'staff'
-const _staffId   = _params.get('staff_id') || '';
-const _propParam = _params.get('property') || '';
-const _staffName = _params.get('staff_name') || '';
+/* ── Role-based view init (URL params, same pattern as stock.html) ── */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var role = params.get('role') || (window.self !== window.top ? 'admin' : 'staff');
+  var prop = params.get('property') || '';
+  var staffName = params.get('staff') || '';
+  window.ROLE = role;
+  window.STAFF_PROPERTY = prop;
+  window.STAFF_NAME = staffName;
+  var isDesktop = (role === 'admin') || (window.self !== window.top);
+  document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
+  if (!isDesktop) {
+    document.getElementById('view-mobile').style.display = 'block';
+  } else {
+    document.getElementById('view-desktop').style.display = 'block';
+  }
+})();
 
-IS_MOBILE = (_role === 'staff');
+/* Build a _me-compatible object from URL params so existing code keeps working */
+const _me = {
+  role: window.ROLE,
+  name: window.STAFF_NAME || window.ROLE
+};
 
-// Show the correct view (body class already set by early inline script)
-document.getElementById(IS_MOBILE ? 'view-mobile' : 'view-desktop').style.display = 'block';
+IS_MOBILE = (window.ROLE === 'staff');
 
 /* ── API ── */
 async function api(path, method='GET', body=null){
@@ -372,24 +379,20 @@ async function loadStaff(){
 /* ── Staff scope ── */
 async function resolveStaffScope(){
   if(!IS_MOBILE) return;
-  let assigned = [];
-
-  // 1. Try staff_id URL param (most reliable)
-  if(_staffId){
-    const rows = await api('/rest/v1/staff?select=name,assigned_properties&id=eq.'+encodeURIComponent(_staffId)+'&limit=1').catch(()=>[]);
-    const record = (rows||[])[0];
-    if(record && Array.isArray(record.assigned_properties)){
-      assigned = record.assigned_properties.filter(Boolean);
-    } else if(record && typeof record.assigned_properties === 'string'){
-      assigned = record.assigned_properties.split(',').map(s=>s.trim()).filter(Boolean);
-    }
+  // If property already supplied via URL param, use it directly
+  if(window.STAFF_PROPERTY){
+    STAFF_ASSIGNED_PROPS = [window.STAFF_PROPERTY];
+    FILTER.prop = window.STAFF_PROPERTY;
+    document.getElementById('hdr-prop').textContent = window.STAFF_PROPERTY;
+    return;
   }
-  // 2. Fallback: single ?property param in URL
-  if(!assigned.length && _propParam){
-    assigned = [_propParam];
-  }
+  // Fallback: look up assigned properties from staff table by name
+  if(!_me.name || _me.name === 'staff') return;
+  const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(_me.name)).catch(()=>[]);
+  const record = (rows||[])[0];
+  if(!record || !record.assigned_properties) return;
+  const assigned = (record.assigned_properties||[]).filter(Boolean);
   if(!assigned.length) return;
-
   STAFF_ASSIGNED_PROPS = assigned;
   if(assigned.length === 1){
     FILTER.prop = assigned[0];
@@ -555,8 +558,9 @@ async function openCreateModal(){
   }
 
   const staffSel = document.getElementById('c-staff');
-  if(IS_MOBILE && _staffName){
-    staffSel.innerHTML = `<option value="${_staffName}">${_staffName}</option>`;
+  const staffNameForModal = window.STAFF_NAME || (_me && _me.name !== 'staff' ? _me.name : '');
+  if(IS_MOBILE && staffNameForModal){
+    staffSel.innerHTML = `<option value="${staffNameForModal}">${staffNameForModal}</option>`;
     staffSel.disabled = true;
   } else {
     staffSel.innerHTML = `<option value="">— Select team member —</option>`
