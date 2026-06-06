@@ -99,7 +99,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .icon-laundry{background:#fef0ef;color:#e74c3c}
 .icon-repairs{background:#fef9ee;color:#f39c12}
 .icon-tasks{background:#FAECE7;color:#993C1D}
-.icon-stocks{background:#e0f4f0;color:#0e7060}
+.icon-stock{background:#e0f4f0;color:#0e7060}
 .dash-tile-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .dash-tile-value{font-family:'Playfair Display',serif;font-size:40px;line-height:1;color:var(--text)}
 .dash-tile-value.loading{font-size:20px;color:var(--muted)}
@@ -130,7 +130,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('lostfound',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>Lost &amp; Found</button>
     <button class="sb-btn" onclick="goPage('reviews', this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>  Reviews
 </button>
-    <button class="sb-btn" onclick="goPage('stocks',this)"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>Stocks</button>
+    <button class="sb-btn" onclick="goPage('stock',this)"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>Stock</button>
 </div>
   <div class="sb-footer"><div class="sb-user">OFFICE</div><button class="sb-signout" onclick="signOut()">Sign out</button></div>
 </div>
@@ -235,13 +235,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="dash-tile-sub">open repair tickets</div>
       <span class="dash-tile-nav">›</span>
     </div>
-    <div class="dash-tile tile-stocks" onclick="goPage('stocks', document.querySelector('.sb-btn[onclick*=stocks]'))">
-      <div class="dash-tile-icon icon-stocks">
+    <div class="dash-tile tile-stock" onclick="goPage('stock', document.querySelector('.sb-btn[onclick*=stock]'))">
+      <div class="dash-tile-icon icon-stock">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
       </div>
-      <div class="dash-tile-label">Stocks</div>
-      <div class="dash-tile-value loading" id="dash-stocks">…</div>
-      <div class="dash-tile-sub" id="dash-stocks-sub">below critical level</div>
+      <div class="dash-tile-label">Stock</div>
+      <div class="dash-tile-value loading" id="dash-stock">…</div>
+      <div class="dash-tile-sub" id="dash-stock-sub">below critical level</div>
       <span class="dash-tile-nav">›</span>
     </div>
   </div>
@@ -578,8 +578,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
-<!-- STOCKS PAGE -->
-<div class="pg" id="pg-stocks">
+<!-- STOCK PAGE -->
+<div class="pg" id="pg-stock">
   <iframe src="stock.html" style="width:100%;height:calc(100vh - 80px);border:none;border-radius:12px"></iframe>
 </div>
 
@@ -2045,15 +2045,15 @@ try {
       });
     });
 
-    const el  = document.getElementById('dash-stocks');
-    const sub = document.getElementById('dash-stocks-sub');
+    const el  = document.getElementById('dash-stock');
+    const sub = document.getElementById('dash-stock-sub');
     if(el){
       el.innerHTML = `<span style="color:${totalLow>0?'var(--r)':'inherit'}">${totalLow}</span><span style="font-size:20px;color:var(--muted)"> / ${totalTracked}</span>`;
       el.className = 'dash-tile-value';
     }
-    if(sub) sub.textContent = totalLow===0 ? 'all stocks healthy' : totalLow+' location'+(totalLow!==1?'s':'')+' below critical';
+    if(sub) sub.textContent = totalLow===0 ? 'all stock healthy' : totalLow+' location'+(totalLow!==1?'s':'')+' below critical';
   } catch(e){
-    const el = document.getElementById('dash-stocks');
+    const el = document.getElementById('dash-stock');
     if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
   }
 }
