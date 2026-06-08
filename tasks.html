@@ -793,20 +793,20 @@ function bundleRow(b){
 
   // Sub-rows (hidden by default)
   tasks.forEach(t => {
-    html += '<tr class="bundle-sub-row hidden" id="sub-'+bid+'">'
-      + '<td><div style="font-size:12px;line-height:1.4;color:var(--text)">' + escHtml(t.work) + '</div></td>'
-      + '<td></td>'
-      + '<td></td>'
-      + '<td></td>'
-      + '<td></td>'
-      + '<td></td>'
-      + '<td>' + ackWidget(t.id,'acknowledged',t.acknowledged,'admin') + '</td>'
-      + '<td>' + ackWidget(t.id,'completed',t.completed,'admin') + '</td>'
-      + '<td>' + fmtTs(t.created_at) + '</td>'
-      + '<td id="ts-ack-'+t.id+'">' + fmtTs(t.acknowledged_at) + '</td>'
-      + '<td id="ts-done-'+t.id+'">' + fmtTs(t.completed_at) + '</td>'
-      + '<td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="editTask('+JSON.stringify(t).replace(/"/g,\'&quot;\').replace(/\'/g,\'&#39;\')+')" style="margin-right:4px">Edit</button><button class="btn-del" onclick="deleteTask(\''+t.id+'\')">✕</button></td>'
-      + '</tr>';
+    const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
+    html += `<tr class="bundle-sub-row hidden" id="sub-${bid}">
+      <td><div style="font-size:12px;line-height:1.4;color:var(--text)">${escHtml(t.work)}</div></td>
+      <td></td><td></td><td></td><td></td><td></td>
+      <td>${ackWidget(t.id,'acknowledged',t.acknowledged,'admin')}</td>
+      <td>${ackWidget(t.id,'completed',t.completed,'admin')}</td>
+      <td>${fmtTs(t.created_at)}</td>
+      <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
+      <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn-edit" onclick='editTask(${tJson})'>Edit</button>
+        <button class="btn-del" onclick="deleteTask('${t.id}')">✕</button>
+      </td>
+    </tr>`;
   });
   return html;
 }
