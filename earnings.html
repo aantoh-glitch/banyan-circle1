@@ -899,14 +899,45 @@ async function loadEntries() {
   let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
 
   if (!isAdmin) {
-    // Property-portal mode: property name IS the entity name
-    if (viewProp && !viewName) {
-      viewName = viewProp;
-      document.getElementById('id-name').textContent = viewName;
+    // Resolve name from viewProp if viewName is empty
+    if (!viewName && viewProp) viewName = viewProp;
+
+    if (!viewName) {
+      document.getElementById('log-wrap').innerHTML =
+        '<div class="log-empty">No name provided. Pass ?name= in the URL.</div>';
+      return;
     }
-    // Non-admin: filter to own property name
+
+    // Resolve entity_name from the correct table based on role:
+    //   talent   → talents.name
+    //   staff    → staff.name
+    //   landlord → landlords.property_name
+    let resolvedName = viewName;
+    try {
+      if (viewRole === 'talent') {
+        const rows = await api('/rest/v1/talents?name=eq.' + encodeURIComponent(viewName) + '&select=name&limit=1');
+        if (rows && rows[0]) resolvedName = rows[0].name;
+      } else if (viewRole === 'staff') {
+        const rows = await api('/rest/v1/staff?name=eq.' + encodeURIComponent(viewName) + '&select=name&limit=1');
+        if (rows && rows[0]) resolvedName = rows[0].name;
+      } else {
+        // landlord
+        const rows = await api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(viewName) + '&select=property_name&limit=1');
+        if (rows && rows[0]) resolvedName = rows[0].property_name;
+      }
+    } catch(e) {
+      console.warn('Could not resolve entity name from table', e);
+    }
+
+    viewName = resolvedName;
+    document.getElementById('id-name').textContent = viewName;
+
+    // Map role to entity_type stored in earnings_log
+    const entityTypeMap = { talent: 'talent', staff: 'staff', landlord: 'landlord' };
+    const entityType = entityTypeMap[viewRole] || 'landlord';
+
     path += '&entity_name=eq.' + encodeURIComponent(viewName);
-    path += '&entity_type=eq.landlord';
+    path += '&entity_type=eq.' + entityType;
   }
 
   try {
