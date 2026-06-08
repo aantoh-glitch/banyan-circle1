@@ -175,14 +175,28 @@ async function init() {
     const q = tid
       ? `/rest/v1/talents?select=id,name,pin,category&id=eq.${encodeURIComponent(tid)}`
       : '/rest/v1/talents?select=id,name,pin,category&order=name&limit=1';
-    const res = await fetch(SB + q, {
+    const resp = await fetch(SB + q, {
       headers:{apikey:KEY, Authorization:'Bearer '+KEY, Accept:'application/json'}
-    }).then(r=>r.json());
+    });
+    const res = await resp.json();
+    if (!resp.ok) {
+      console.error('Talent fetch HTTP error:', resp.status, res);
+      document.getElementById('pin-err').textContent = 'Could not load account. Please refresh.';
+      return;
+    }
+    console.log('Talent fetch response:', JSON.stringify(res));
     if (Array.isArray(res) && res.length) {
       const r = res[0];
-      sel = {id:r.id, name:r.name, pin:r.pin, role:'talent', category:r.category};
+      sel = {id:r.id, name:r.name, pin:String(r.pin).trim(), role:'talent', category:r.category};
+      console.log('sel.pin set to:', sel.pin, '| original type:', typeof r.pin, '| raw value:', r.pin);
+    } else {
+      console.warn('No talent row returned. tid=', tid, 'response=', res);
+      document.getElementById('pin-err').textContent = 'Account not found.';
     }
-  } catch(e){}
+  } catch(e){
+    console.error('init() exception:', e);
+    document.getElementById('pin-err').textContent = 'Network error. Please refresh.';
+  }
 }
 init();
 
@@ -202,7 +216,10 @@ function dots(state) {
 
 function checkPin() {
   if (!sel) { setTimeout(checkPin, 300); return; }
-  if (pin !== String(sel.pin).trim()) {
+  const entered = pin.trim();
+  const stored = String(sel.pin).trim();
+  console.log('checkPin — entered:[' + entered + '] stored:[' + stored + '] match:' + (entered === stored));
+  if (entered !== stored) {
     dots('err');
     document.getElementById('pin-err').textContent = 'Incorrect PIN';
     setTimeout(()=>{ pin=''; dots(); document.getElementById('pin-err').textContent=''; }, 1200);
