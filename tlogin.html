@@ -117,88 +117,26 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
     </div>
   </div>
   <div class="pin-err" id="pin-err"></div>
-  <div class="change-pin-link" onclick="openChangePin()">Change PIN</div>
-</div>
-
-<!-- Change PIN Modal -->
-<div class="cp-overlay" id="cp-overlay">
-  <div class="cp-modal">
-    <div class="cp-title" id="cp-title">Verify Current PIN</div>
-    <div class="cp-sub" id="cp-sub">Enter your existing PIN to continue</div>
-    <div class="cp-dots" id="cp-dots">
-      <div class="cp-dot" id="cp0"></div>
-      <div class="cp-dot" id="cp1"></div>
-      <div class="cp-dot" id="cp2"></div>
-      <div class="cp-dot" id="cp3"></div>
-    </div>
-    <div class="cp-keypad">
-      <button class="cp-key" onclick="cpk('1')">1</button>
-      <button class="cp-key" onclick="cpk('2')">2</button>
-      <button class="cp-key" onclick="cpk('3')">3</button>
-      <button class="cp-key" onclick="cpk('4')">4</button>
-      <button class="cp-key" onclick="cpk('5')">5</button>
-      <button class="cp-key" onclick="cpk('6')">6</button>
-      <button class="cp-key" onclick="cpk('7')">7</button>
-      <button class="cp-key" onclick="cpk('8')">8</button>
-      <button class="cp-key" onclick="cpk('9')">9</button>
-      <div class="cp-key ghost"></div>
-      <button class="cp-key" onclick="cpk('0')">0</button>
-      <button class="cp-key" onclick="cpdel()" style="font-size:16px;color:var(--muted)">⌫</button>
-    </div>
-    <div class="cp-err" id="cp-err"></div>
-    <div class="cp-cancel" onclick="closeChangePin()">Cancel</div>
-  </div>
 </div>
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
+// If already logged in as talent, skip to portal
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (me && me.role === 'talent') {
-  location.replace('/talent.html?id=' + encodeURIComponent(me.id || '') + '&name=' + encodeURIComponent(me.name || ''));
+  location.replace('talent.html?id=' + encodeURIComponent(me.id || '') + '&name=' + encodeURIComponent(me.name || ''));
 }
 
-// Lock history: pressing back on tlogin stays on tlogin, not index/login
+// Lock history
 history.replaceState(null, '', location.href);
 history.pushState(null, '', location.href);
 window.addEventListener('popstate', function() {
   history.pushState(null, '', location.href);
 });
 
-let sel = null, pin = '';
-
-async function init() {
-  const params = new URLSearchParams(location.search);
-  const tid = params.get('id');
-  try {
-    const q = tid
-      ? `/rest/v1/talents?select=id,name,pin,category&id=eq.${encodeURIComponent(tid)}`
-      : '/rest/v1/talents?select=id,name,pin,category&order=name&limit=1';
-    const resp = await fetch(SB + q, {
-      headers:{apikey:KEY, Authorization:'Bearer '+KEY, Accept:'application/json'}
-    });
-    const res = await resp.json();
-    if (!resp.ok) {
-      console.error('Talent fetch HTTP error:', resp.status, res);
-      document.getElementById('pin-err').textContent = 'Could not load account. Please refresh.';
-      return;
-    }
-    console.log('Talent fetch response:', JSON.stringify(res));
-    if (Array.isArray(res) && res.length) {
-      const r = res[0];
-      sel = {id:r.id, name:r.name, pin:String(r.pin).trim(), role:'talent', category:r.category};
-      console.log('sel.pin set to:', sel.pin, '| original type:', typeof r.pin, '| raw value:', r.pin);
-    } else {
-      console.warn('No talent row returned. tid=', tid, 'response=', res);
-      document.getElementById('pin-err').textContent = 'Account not found.';
-    }
-  } catch(e){
-    console.error('init() exception:', e);
-    document.getElementById('pin-err').textContent = 'Network error. Please refresh.';
-  }
-}
-init();
+let pin = '';
 
 window.pk = d => {
   if (pin.length >= 4) return;
@@ -208,27 +146,34 @@ window.pk = d => {
 window.pdel = () => { pin = pin.slice(0,-1); dots(); };
 
 function dots(state) {
-  for (let i=0;i<4;i++){
-    const d = document.getElementById('d'+i);
-    d.className='dot'+(state==='err'?' err':i<pin.length?' on':'');
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('d' + i).className =
+      'dot' + (state === 'err' ? ' err' : i < pin.length ? ' on' : '');
   }
 }
 
-function checkPin() {
-  if (!sel) { setTimeout(checkPin, 300); return; }
-  const entered = pin.trim();
-  const stored = String(sel.pin).trim();
-  console.log('checkPin — entered:[' + entered + '] stored:[' + stored + '] match:' + (entered === stored));
-  if (entered !== stored) {
-    dots('err');
-    document.getElementById('pin-err').textContent = 'Incorrect PIN';
-    setTimeout(()=>{ pin=''; dots(); document.getElementById('pin-err').textContent=''; }, 1200);
-    return;
-  }
-  localStorage.setItem('bc_me', JSON.stringify({id:sel.id,name:sel.name,role:'talent',category:sel.category}));
-  location.replace('/talent.html?id='+encodeURIComponent(sel.id)+'&name='+encodeURIComponent(sel.name));
+function showErr(msg) {
+  dots('err');
+  document.getElementById('pin-err').textContent = msg;
+  setTimeout(() => { pin = ''; dots(); document.getElementById('pin-err').textContent = ''; }, 1500);
 }
-function showErr(msg){ document.getElementById('pin-err').textContent=msg; }
+
+async function checkPin() {
+  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,category', {
+    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
+  }).then(async r => {
+    const text = await r.text();
+    console.log('HTTP', r.status, text.slice(0, 200));
+    try { return JSON.parse(text); } catch(e) { return []; }
+  }).catch(e => { console.error('fetch error', e); return []; });
+
+  if (!Array.isArray(res)) { showErr('Server error — try again'); return; }
+  if (!res.length) { showErr('Wrong PIN — try again'); return; }
+
+  const t = res[0];
+  localStorage.setItem('bc_me', JSON.stringify({ id: t.id, name: t.name, role: 'talent', category: t.category }));
+  location.replace('talent.html?id=' + encodeURIComponent(t.id) + '&name=' + encodeURIComponent(t.name));
+}
 
 // ── Change PIN ────────────────────────────────────────────────
 let cpStep = 'verify';
