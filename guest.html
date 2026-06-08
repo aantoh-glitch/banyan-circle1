@@ -238,9 +238,13 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="fg">
       <label class="fl">Mode of payment<span>*</span></label>
       <div class="radio-group" id="ci-payment">
-        <label class="radio-opt"><input type="radio" name="payment" value="Cash"/> Cash</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="Cards"/> Cards</label>
-        <label class="radio-opt"><input type="radio" name="payment" value="UPI"/> UPI</label>
+        <label class="radio-opt"><input type="radio" name="payment" value="Cash" onchange="onPaymentChange(this)"/> Cash</label>
+        <label class="radio-opt"><input type="radio" name="payment" value="Cards" onchange="onPaymentChange(this)"/> Cards</label>
+        <label class="radio-opt"><input type="radio" name="payment" value="UPI" onchange="onPaymentChange(this)"/> UPI</label>
+      </div>
+      <div id="cash-limit-banner" style="display:none;align-items:flex-start;gap:10px;margin-top:10px;padding:13px 16px;background:var(--a-l);border:1.5px solid rgba(133,79,11,.25);border-radius:10px;font-size:13px;color:var(--a)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Cash remittance limit is <strong>&#8377;10,000</strong> per day.</span>
       </div>
     </div>
     <div class="fg"><label class="fl">Any dietary preferences or allergies?</label><textarea class="fc" id="ci-dietary" placeholder="Vegetarian, nut allergy, etc."></textarea></div>
@@ -486,6 +490,11 @@ checkLateCheckout();
 
 function signOut() { localStorage.removeItem('bc_me'); location.href = '/glogin.html'; }
 function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(function(){t.style.display='none';},2500); }
+
+function onPaymentChange(el) {
+  var banner = document.getElementById('cash-limit-banner');
+  banner.style.display = (el.value === 'Cash') ? 'flex' : 'none';
+}
 
 function checkLateCheckout() {
   var timeVal = document.getElementById('ci-dep-time').value;
