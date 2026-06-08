@@ -136,8 +136,8 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="welcome-banner-logo">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="none" stroke="white" stroke-width="1.5"/></svg>
     </div>
-    <div class="welcome-banner-title">Welcome to Properties by Heritance</div>
-    <div class="welcome-banner-sub">We hope you have a pleasant experience.</div>
+    <div class="welcome-banner-title" id="welcome-banner-title">Welcome to Properties by Heritance</div>
+    <div class="welcome-banner-sub" id="welcome-banner-sub">We hope you have a pleasant experience.</div>
     <div class="welcome-banner-hint">Tap anywhere to continue</div>
   </div>
 </div>
@@ -155,7 +155,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
   <div class="done-banner" id="ci-done" style="flex-direction:column;align-items:flex-start;gap:10px">
     <div style="display:flex;align-items:center;gap:10px;width:100%">
       <svg viewBox="0 0 24 24" style="flex-shrink:0"><polyline points="20,6 9,17 4,12"/></svg>
-      <span>Registration submitted. Welcome to Banyan Circle!</span>
+      <span>Registration submitted. Welcome to Properties by Heritance</span>
     </div>
     <button onclick="editCheckin()" style="font-size:13px;font-weight:500;color:var(--br);background:none;border:1.5px solid var(--br);border-radius:8px;padding:7px 14px;cursor:pointer;font-family:inherit;width:100%">Edit / update registration</button>
   </div>
@@ -178,7 +178,41 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="fg"><label class="fl">Permanent address<span>*</span></label><textarea class="fc" id="ci-address" placeholder="Full home address"></textarea></div>
     <div class="fg"><label class="fl">Email ID<span>*</span></label><input class="fc" id="ci-email" type="email" placeholder="your@email.com"/></div>
     <div class="fg"><label class="fl">Mobile No<span>*</span></label><input class="fc" id="ci-mobile" type="tel" placeholder="+91 XXXXXXXXXX"/></div>
-    <div class="fg"><label class="fl">Date of Birth<span>*</span></label><input class="fc" id="ci-dob" type="date"/></div>
+    <div class="fg">
+      <label class="fl">Date of Birth<span>*</span></label>
+      <input id="ci-dob" type="hidden"/>
+      <div class="fc dob-display" id="dob-display" onclick="openDobPicker()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:rgba(0,0,0,.28)">
+        <span id="dob-display-text">Select date of birth</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+    </div>
+    <!-- DOB Picker Modal -->
+    <div id="dob-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeDobPicker()">
+      <div style="background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:20px 20px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.2)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div id="dob-picker-title" style="font-family:'EB Garamond',Georgia,serif;font-size:18px;font-weight:500">Select Year</div>
+          <button onclick="closeDobPicker()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--muted);line-height:1;padding:0 4px">&times;</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:18px">
+          <div id="dob-step-y" style="flex:1;height:3px;border-radius:999px;background:var(--br)"></div>
+          <div id="dob-step-m" style="flex:1;height:3px;border-radius:999px;background:var(--border)"></div>
+          <div id="dob-step-d" style="flex:1;height:3px;border-radius:999px;background:var(--border)"></div>
+        </div>
+        <div id="dob-year-panel">
+          <div id="dob-year-scroll" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;scroll-behavior:smooth"></div>
+        </div>
+        <div id="dob-month-panel" style="display:none">
+          <div id="dob-month-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+        </div>
+        <div id="dob-day-panel" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <button onclick="dobBack()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--muted)">&#8592; Back</button>
+            <span id="dob-day-heading" style="font-size:14px;color:var(--muted)"></span>
+          </div>
+          <div id="dob-day-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+        </div>
+      </div>
+    </div>
     <div class="fg"><label class="fl">Arrived from<span>*</span></label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
     <div class="fg"><label class="fl">Proceeding to<span>*</span></label><input class="fc" id="ci-to" type="text" placeholder="Next destination"/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -640,6 +674,14 @@ function editCheckin(){
   document.getElementById('ci-email').value    = fd.email || '';
   document.getElementById('ci-mobile').value   = fd.mobile || '';
   document.getElementById('ci-dob').value      = fd.dob || '';
+  if(fd.dob){
+    var dobParts = fd.dob.split('-');
+    if(dobParts.length===3){
+      var mo=['January','February','March','April','May','June','July','August','September','October','November','December'];
+      var disp=document.getElementById('dob-display-text');
+      if(disp){ disp.textContent=mo[parseInt(dobParts[1])-1].substring(0,3)+' '+parseInt(dobParts[2])+', '+dobParts[0]; disp.style.color='var(--text)'; }
+    }
+  }
   document.getElementById('ci-org').value      = fd.organisation || '';
   document.getElementById('ci-from').value     = CI_RECORD.travelled_from || '';
   document.getElementById('ci-to').value       = CI_RECORD.travelling_to || '';
@@ -806,6 +848,157 @@ async function submitCheckin(){
     btn.disabled = false;
     btn.textContent = 'Submit registration';
     toast('Save failed: ' + (err.message || 'Please try again'));
+  }
+}
+
+// ── Welcome banner: fetch welcome-note / welcome-subnote from landlords ──
+(async function(){
+  try {
+    var prop = me && (me.prop || me.property_name);
+    if(!prop) return;
+    var rows = await api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(prop) + '&select=welcome-note,welcome-subnote&limit=1');
+    if(rows && rows.length){
+      var note    = rows[0]['welcome-note'];
+      var subnote = rows[0]['welcome-subnote'];
+      if(note)    document.getElementById('welcome-banner-title').textContent = note;
+      if(subnote) document.getElementById('welcome-banner-sub').textContent   = subnote;
+    }
+  } catch(e){}
+})();
+
+// ── DOB Picker ──
+var _dobY = null, _dobM = null;
+var _dobMaxYear = new Date().getFullYear() - 18;
+
+function openDobPicker(){
+  var bd = document.getElementById('dob-backdrop');
+  bd.style.display = 'flex';
+  _dobY = null; _dobM = null;
+  _showDobStep('year');
+  _buildYearList();
+}
+function closeDobPicker(){
+  document.getElementById('dob-backdrop').style.display = 'none';
+}
+function _showDobStep(step){
+  document.getElementById('dob-year-panel').style.display  = step==='year'  ? 'block' : 'none';
+  document.getElementById('dob-month-panel').style.display = step==='month' ? 'block' : 'none';
+  document.getElementById('dob-day-panel').style.display   = step==='day'   ? 'block' : 'none';
+  var titles = {year:'Select Year', month:'Select Month', day:'Select Day'};
+  document.getElementById('dob-picker-title').textContent = titles[step];
+  var steps = ['y','m','d'];
+  var idx = steps.indexOf(step[0]);
+  steps.forEach(function(s,i){
+    document.getElementById('dob-step-'+s).style.background = i <= idx ? 'var(--br)' : 'var(--border)';
+  });
+}
+function _buildYearList(){
+  var scroll = document.getElementById('dob-year-scroll');
+  scroll.innerHTML = '';
+  var startYear = 1930;
+  var endYear   = _dobMaxYear; // max is 18 years ago
+  // Default visible window 1990-1995
+  var defaultScrollYear = 1990;
+  var selectedYear = _dobY;
+  for(var y = endYear; y >= startYear; y--){
+    (function(yr){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = yr;
+      var isSelected = selectedYear && selectedYear === yr;
+      btn.style.cssText = 'width:100%;padding:11px 16px;border:1.5px solid '+(isSelected?'var(--br)':'var(--border)')+
+        ';border-radius:10px;font-size:15px;font-family:inherit;cursor:pointer;text-align:left;'+
+        'background:'+(isSelected?'var(--br-l)':'var(--white)')+';color:'+(isSelected?'var(--br)':'var(--text)')+
+        ';transition:all .12s;';
+      btn.setAttribute('data-year', yr);
+      btn.onclick = function(){ _dobY = yr; _showDobStep('month'); _buildMonthGrid(); };
+      scroll.appendChild(btn);
+    })(y);
+  }
+  // Scroll to approx 1990–1995 window
+  requestAnimationFrame(function(){
+    var target = scroll.querySelector('[data-year="1992"]');
+    if(target) target.scrollIntoView({block:'center'});
+  });
+}
+var _months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function _buildMonthGrid(){
+  var grid = document.getElementById('dob-month-grid');
+  grid.innerHTML = '';
+  var now = new Date();
+  for(var m = 0; m < 12; m++){
+    (function(mi){
+      // Disable if year == maxYear and month > current month
+      var disabled = (_dobY === _dobMaxYear && mi > now.getMonth());
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = _months[mi].substring(0,3);
+      btn.disabled = disabled;
+      btn.style.cssText = 'padding:11px 4px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;'+
+        'font-family:inherit;cursor:'+(disabled?'not-allowed':'pointer')+';background:var(--white);'+
+        'color:'+(disabled?'var(--muted)':'var(--text)')+';opacity:'+(disabled?.4:1)+';transition:all .12s';
+      btn.onclick = function(){
+        if(disabled) return;
+        _dobM = mi;
+        _buildDayGrid();
+        _showDobStep('day');
+        var mo = _months[mi];
+        document.getElementById('dob-day-heading').textContent = mo + ' ' + _dobY;
+      };
+      grid.appendChild(btn);
+    })(m);
+  }
+}
+function dobBack(){
+  if(_dobM !== null){ _dobM = null; _showDobStep('month'); _buildMonthGrid(); }
+  else { _dobY = null; _showDobStep('year'); }
+}
+function _daysInMonth(y, m){ return new Date(y, m+1, 0).getDate(); }
+function _buildDayGrid(){
+  var grid = document.getElementById('dob-day-grid');
+  grid.innerHTML = '';
+  var now = new Date();
+  var cutoff = new Date(now.getFullYear()-18, now.getMonth(), now.getDate());
+  var days = _daysInMonth(_dobY, _dobM);
+  // Day-of-week header
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(function(d){
+    var h = document.createElement('div');
+    h.textContent = d;
+    h.style.cssText = 'text-align:center;font-size:10px;font-weight:500;color:var(--muted);padding:4px 0';
+    grid.appendChild(h);
+  });
+  // Leading blanks
+  var firstDow = new Date(_dobY, _dobM, 1).getDay();
+  for(var b=0;b<firstDow;b++){
+    var blank = document.createElement('div');
+    grid.appendChild(blank);
+  }
+  for(var d=1; d<=days; d++){
+    (function(day){
+      var dt = new Date(_dobY, _dobM, day);
+      var disabled = dt > cutoff;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = day;
+      btn.disabled = disabled;
+      btn.style.cssText = 'padding:8px 0;border:1px solid var(--border);border-radius:8px;font-size:13px;'+
+        'font-family:inherit;cursor:'+(disabled?'not-allowed':'pointer')+';background:var(--white);'+
+        'color:'+(disabled?'var(--muted)':'var(--text)')+';opacity:'+(disabled?.35:1)+';transition:all .12s';
+      btn.onclick = function(){
+        if(disabled) return;
+        var yyyy = _dobY;
+        var mm   = String(_dobM+1).padStart(2,'0');
+        var dd   = String(day).padStart(2,'0');
+        var val  = yyyy+'-'+mm+'-'+dd;
+        document.getElementById('ci-dob').value = val;
+        var label = _months[_dobM].substring(0,3)+' '+day+', '+yyyy;
+        var disp = document.getElementById('dob-display-text');
+        disp.textContent = label;
+        disp.style.color = 'var(--text)';
+        closeDobPicker();
+      };
+      grid.appendChild(btn);
+    })(d);
   }
 }
 

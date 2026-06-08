@@ -203,10 +203,57 @@ function renderStars(){
   });
 }
 
+// --- Persistence helpers ---
+function ratingKey(talentId){ return 'bc_rating_'+(me.id||'guest')+'_'+talentId; }
+
+function saveRatingLocally(talent, rating, review){
+  localStorage.setItem(ratingKey(talent.id), JSON.stringify({
+    talentId: talent.id,
+    talentName: talent.name,
+    rating,
+    review: review||''
+  }));
+}
+
+function getSavedRating(talentId){
+  try{ return JSON.parse(localStorage.getItem(ratingKey(talentId))); } catch(e){ return null; }
+}
+
+// After talents render, restore any previously saved rating
+function restoreSavedRatings(){
+  document.querySelectorAll('.talent-card').forEach(card=>{
+    const id = card.id.replace('tc-','');
+    const saved = getSavedRating(id);
+    if(!saved) return;
+    // Add a subtle "rated" badge to the card
+    if(!card.querySelector('.rated-badge')){
+      const badge = document.createElement('span');
+      badge.className='rated-badge';
+      badge.innerHTML = '★'.repeat(saved.rating);
+      badge.style.cssText='font-size:11px;color:var(--star);margin-left:auto;white-space:nowrap;flex-shrink:0';
+      card.appendChild(badge);
+    }
+  });
+}
+
+// When a talent is selected, restore their saved rating if it exists
+function restoreForTalent(t){
+  const saved = getSavedRating(t.id);
+  if(!saved) return;
+  starValue = saved.rating;
+  renderStars();
+  document.getElementById('star-label').textContent = STAR_LABELS[saved.rating]||'';
+  document.getElementById('review-text').value = saved.review||'';
+  document.getElementById('submit-btn').disabled = false;
+  // Update button label to indicate it's an edit
+  document.getElementById('submit-btn').textContent = 'Update Rating';
+}
+
 async function submitRating(){
   if(!selectedTalent || !starValue){ toast('Please select a talent and rating'); return; }
   const btn = document.getElementById('submit-btn');
   btn.disabled=true; btn.textContent='Submitting…';
+  const review = document.getElementById('review-text').value.trim()||null;
   try{
     await api('/rest/v1/talent_ratings','POST',{
       talent_id: selectedTalent.id,
@@ -215,12 +262,48 @@ async function submitRating(){
       guest_id: me.id||null,
       property_name: me.prop||null,
       rating: starValue,
-      review: document.getElementById('review-text').value.trim()||null,
+      review,
       created_at: new Date().toISOString()
     });
+    // Persist locally so it survives a refresh
+    saveRatingLocally(selectedTalent, starValue, review);
     document.getElementById('success-msg').textContent = `Your ${starValue}-star rating for ${selectedTalent.name} has been saved. Thank you!`;
     document.getElementById('pg-rate').style.display='none';
     document.getElementById('pg-success').style.display='flex';
   } catch(e){
     toast('Error: '+e.message);
-    btn.disabled=false; btn.textContent='Su
+    btn.disabled=false; btn.textContent='Submit Rating';  }
+}
+
+function resetForm(){
+  selectedTalent = null;
+  starValue = 0;
+  renderStars();
+  document.getElementById('review-text').value='';
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').textContent='Submit Rating';
+  document.getElementById('rating-section').style.display='none';
+  document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('[id^="check-"]').forEach(c=>c.style.stroke='var(--border)');
+  document.getElementById('pg-rate').style.display='';
+  document.getElementById('pg-success').style.display='none';
+}
+
+// Patch loadTalents to call restoreSavedRatings after render
+const _origLoadTalents = loadTalents;
+loadTalents = async function(){
+  await _origLoadTalents();
+  restoreSavedRatings();
+};
+
+// Patch selectTalent to restore saved rating after selection
+const _origSelectTalent = selectTalent;
+selectTalent = function(t){
+  _origSelectTalent(t);
+  restoreForTalent(t);
+};
+
+loadTalents();
+</script>
+</body>
+</html>

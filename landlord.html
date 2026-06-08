@@ -339,6 +339,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <div class="fg"><label class="fl">Number of Rooms</label><input class="fc" id="edit-prop-beds" type="number" placeholder="Number of rooms"/></div>
       <div class="fg"><label class="fl">Description</label><textarea class="fc" id="edit-prop-desc" placeholder="Property description&hellip;"></textarea></div>
       <div class="fg"><label class="fl">Google Maps Link</label><input class="fc" id="edit-prop-link" type="url" placeholder="https://maps.google.com/…"/></div>
+      <div class="fg"><label class="fl">Welcome Note Heading</label><input class="fc" id="edit-welcome-note" type="text" placeholder="e.g. Welcome to Villa Serene"/></div>
+      <div class="fg"><label class="fl">Welcome Note Subheading</label><input class="fc" id="edit-welcome-subnote" type="text" placeholder="e.g. We hope you enjoy your stay…"/></div>
       <button class="btn-p" onclick="saveDescription()">Save Changes</button>
     </div>
   </div>
@@ -780,6 +782,8 @@ async function loadDescription() {
   document.getElementById('edit-prop-beds').value = p.number_of_rooms||'';
   document.getElementById('edit-prop-desc').value = p.property_description||'';
   document.getElementById('edit-prop-link').value = p['property-link']||'';
+  document.getElementById('edit-welcome-note').value    = p['welcome-note']||'';
+  document.getElementById('edit-welcome-subnote').value = p['welcome-subnote']||'';
 }
 
 // ── EARNINGS ──
@@ -1021,7 +1025,9 @@ async function saveDescription() {
     address:              (document.getElementById('edit-prop-addr').value||'').trim() || null,
     number_of_rooms:      parseInt(document.getElementById('edit-prop-beds').value)||null,
     property_description: (document.getElementById('edit-prop-desc').value||'').trim() || null,
-    'property-link':      (document.getElementById('edit-prop-link').value||'').trim() || null
+    'property-link':      (document.getElementById('edit-prop-link').value||'').trim() || null,
+    'welcome-note':       (document.getElementById('edit-welcome-note').value||'').trim() || null,
+    'welcome-subnote':    (document.getElementById('edit-welcome-subnote').value||'').trim() || null
   };
   // Remove null values so we don't overwrite with nulls unintentionally
   Object.keys(update).forEach(k => { if (update[k] === null) delete update[k]; });

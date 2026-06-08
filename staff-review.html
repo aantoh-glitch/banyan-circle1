@@ -134,8 +134,29 @@ var ini = function(n){ return (n||'').split(' ').map(function(x){return x[0];}).
 function starStr(n){ var s=''; for(var i=0;i<5;i++) s+=(i<n?'★':'☆'); return s; }
 
 var staffData = [];
-// submitted[staffId] = { rating, comment, reviewId (if saved to DB) }
-var submitted = {};
+
+// ── Persistent review store (survives refresh) ──────────────────────────────
+var STORE_KEY = 'bc_staff_reviews_' + (urlProp || 'global');
+
+function getSubmitted() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function setSubmitted(obj) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch(e) {}
+}
+function getSubmittedById(id) { return getSubmitted()[String(id)] || null; }
+function saveSubmittedById(id, val) {
+  var obj = getSubmitted(); obj[String(id)] = val; setSubmitted(obj);
+}
+function deleteSubmittedById(id) {
+  var obj = getSubmitted(); delete obj[String(id)]; setSubmitted(obj);
+}
+// Legacy in-memory alias so renderCard/submitCard/editCard/removeCard work unchanged
+var submitted = {
+  get: function(id){ return getSubmittedById(id); }
+};
+// Make submitted[id] property access work via Proxy (or just rewrite accessors below)
+// Simpler: replace direct property access with helper calls throughout.
 
 async function loadStaff(){
   try {
@@ -168,7 +189,7 @@ function renderAll(){
 function renderCard(s){
   var initials = ini(s.name);
   var firstName = s.name ? s.name.split(' ')[0] : 'them';
-  var sub = submitted[s.id];
+  var sub = getSubmittedById(s.id);
 
   var cardTop = '<div class="staff-card" id="card-' + s.id + '">' +
     '<div class="staff-card-hdr">' +
@@ -244,7 +265,7 @@ async function submitCard(id){
     };
     var result = await api('/rest/v1/staff_reviews', 'POST', entry);
     var reviewId = result && result[0] && result[0].id;
-    submitted[id] = { rating: rating, comment: comment, reviewId: reviewId };
+    saveSubmittedById(id, { rating: rating, comment: comment, reviewId: reviewId });
     reRenderCard(id);
     toast('Review saved!');
   } catch(e){
@@ -255,8 +276,8 @@ async function submitCard(id){
 
 function editCard(id){
   // Restore form pre-filled with previous values
-  var sub = submitted[id];
-  delete submitted[id];
+  var sub = getSubmittedById(id);
+  deleteSubmittedById(id);
   reRenderCard(id);
   // Pre-fill stars
   if(sub && sub.rating){
@@ -271,13 +292,13 @@ function editCard(id){
 }
 
 async function removeCard(id){
-  var sub = submitted[id];
+  var sub = getSubmittedById(id);
   if(sub && sub.reviewId){
     try {
       await api('/rest/v1/staff_reviews?id=eq.' + sub.reviewId, 'DELETE');
     } catch(e){ /* ignore if already gone */ }
   }
-  delete submitted[id];
+  deleteSubmittedById(id);
   reRenderCard(id);
   toast('Review removed');
 }
