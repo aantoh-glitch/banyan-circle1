@@ -615,9 +615,9 @@ async function saveDaySlot(){
       const s=document.getElementById('modal-start').value,en=document.getElementById('modal-end').value;
       if(!s||!en){toast('Set both times');return;}
       if(en<=s){toast('End must be after start');return;}
-      await apiUpsert({talent_id:talentId,schedule_name:talentNameParam,date:modalDateStr,status:'available',time_start:s,time_end:en});
+      await apiUpsert({talent_id:talentId,name:talentNameParam,date:modalDateStr,status:'available',time_start:s,time_end:en});
     } else {
-      await apiUpsert({talent_id:talentId,schedule_name:talentNameParam,date:modalDateStr,status:'free',time_start:null,time_end:null});
+      await apiUpsert({talent_id:talentId,name:talentNameParam,date:modalDateStr,status:'free',time_start:null,time_end:null});
     }
   }catch(e){toast('ERR: '+e.message);console.error('saveDaySlot error',e);return;}
   closeDayModal();await renderSchedule();toast('Saved ✓');
@@ -630,7 +630,7 @@ async function apiUpsert(payload){
     r=await fetch(SB+'/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+payload.date,{
       method:'PATCH',
       headers:Object.assign({},h,{Prefer:'return=minimal'}),
-      body:JSON.stringify({schedule_name:talentNameParam,status:payload.status,time_start:payload.time_start,time_end:payload.time_end})
+      body:JSON.stringify({name:talentNameParam,status:payload.status,time_start:payload.time_start,time_end:payload.time_end})
     });
   } else {
     r=await fetch(SB+'/rest/v1/talent_schedule',{
