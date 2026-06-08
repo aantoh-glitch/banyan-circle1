@@ -6,6 +6,24 @@
 <title>Banyan Circle — Messages</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <style>
+/*
+ * ─────────────────────────────────────────────────────────────────
+ * messaging.html — PANEL-EMBEDDED MODE
+ *
+ * This file works in TWO ways:
+ *
+ *  1. STANDALONE  — open directly in browser (same as before).
+ *     The .app wrapper fills the viewport as usual.
+ *
+ *  2. PANEL MODE  — loaded inside a parent page (e.g. talent.html)
+ *     via an <iframe> or DOM injection into .msg-panel-inner.
+ *     - The parent calls  window.initMessagingPanel(me)  to pass
+ *       the logged-in user object and boot the inbox.
+ *     - goBack() fires window.parent.closeMessagingPanel() when
+ *       running inside an iframe, so the panel can close itself.
+ *     - The .app height is 100% (fills whatever container holds it).
+ * ─────────────────────────────────────────────────────────────────
+ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --br:#993C1D;--br-l:#FAECE7;--br-d:#712B13;
@@ -17,7 +35,7 @@
   --border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;
 }
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-.app{max-width:680px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:var(--white);overflow:hidden}
+.app{max-width:680px;margin:0 auto;height:100%;display:flex;flex-direction:column;background:var(--white);overflow:hidden}
 /* ── TOP BAR ── */
 .top-bar{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
 .back-btn{background:none;border:none;cursor:pointer;padding:4px 8px 4px 0;color:var(--muted);display:flex;align-items:center;gap:6px;font-family:inherit;font-size:13px}
@@ -247,7 +265,6 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="btn-confirm-decline" id="confirm-decline-btn" onclick="confirmDecline()">Confirm Decline</button>
       </div>
     </div>
-
     <!-- Normal reply bar -->
     <div class="reply-bar" id="reply-bar">
       <textarea class="reply-input" id="reply-input" rows="1" placeholder="Type a reply…" oninput="autoGrow(this)"></textarea>
@@ -255,7 +272,6 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     </div>
   </div>
 </div>
-<!-- ─────────── COMPOSE MODAL ─────────── -->
 <!-- ─────────── TALENT EDIT RESPONSE MODAL ─────────── -->
 <div class="edit-response-overlay" id="edit-response-overlay">
   <div class="edit-response-sheet">
@@ -377,7 +393,7 @@ var TOPICS = {
 ──────────────────────────────── */
 var me = null, allMessages = [], currentFilter = 'all', currentThread = null;
 var selectedRecipType = null, selectedRecipName = null;
-var currentAdminRoleFilter = 'all'; // admin inbox role filter
+var currentAdminRoleFilter = 'all';
 function isAdmin(){ return me && (me.role === 'admin' || me.role === 'office'); }
 function myRole(){ return isAdmin() ? 'admin' : me.role; }
 function amIRecipient(m){
@@ -390,7 +406,6 @@ function iMine(m){
     ? (m.sender_role === 'admin' || m.sender_role === 'office')
     : m.sender_name === me.name;
 }
-/* Display name for a role */
 function roleDisplayName(role){
   if(role === 'admin' || role === 'office') return 'Property By Heritance';
   if(role === 'talent') return 'Talent';
@@ -414,10 +429,20 @@ async function api(method, path, body){
 }
 /* ────────────────────────────────
    INIT
+   Supports two boot modes:
+   1. Standalone: window.onload reads localStorage
+   2. Panel mode: parent calls initMessagingPanel(meObj)
 ──────────────────────────────── */
 window.onload = function(){
-  me = JSON.parse(localStorage.getItem('bc_me')||'null');
-  if(!me){ window.location.href='index.html'; return; }
+  var stored = JSON.parse(localStorage.getItem('bc_me')||'null');
+  if(stored){ initMessagingPanel(stored); return; }
+  // Standalone fallback — redirect to login
+  window.location.href='index.html';
+};
+
+/* Called by parent page when opening as a panel */
+window.initMessagingPanel = function(meObj){
+  me = meObj;
   renderFilterBar();
   loadInbox();
 };
@@ -427,7 +452,6 @@ window.onload = function(){
 function renderFilterBar(){
   var bar = document.getElementById('filter-bar');
   if(isAdmin()){
-    // Role-based filters for admin
     var tabs = [
       {key:'all',   label:'All'},
       {key:'guest',    label:'Guest'},
@@ -440,7 +464,6 @@ function renderFilterBar(){
       return '<button class="ftab'+(t.key==='all'?' on':'')+'" onclick="setAdminRoleFilter(\''+t.key+'\',this)">'+t.label+'</button>';
     }).join('');
   } else {
-    // Standard IN/OUT filter for non-admin
     bar.innerHTML =
       '<button class="ftab on" onclick="setFilter(\'all\',this)">All</button>'+
       '<button class="ftab ftab-in" onclick="setFilter(\'in\',this)">'+
@@ -468,8 +491,6 @@ async function loadInbox(){
     } else {
       var n = encodeURIComponent(me.name);
       var r = encodeURIComponent(me.role);
-      // Match messages where this user is sender OR where they are the named recipient
-      // All clauses now include recipient_name so guests (and other roles) only see their own messages.
       q = 'messages?or=(sender_name.eq.'+n+',and(recipient_name.eq.'+n+',recipient_role.eq.'+r+'),and(recipient_name.eq.'+n+',recipient_role.eq.'+r+',sender_role.eq.admin),and(recipient_name.eq.'+n+',recipient_role.eq.'+r+',sender_role.eq.office))&order=created_at.desc';
     }
     allMessages = await api('GET', q);
@@ -499,28 +520,19 @@ function getThreads(msgs){
   threads.sort((a,b)=>new Date(b.latest.created_at)-new Date(a.latest.created_at));
   return threads;
 }
-/* Get the "other party" role in a thread (the non-admin side) */
 function getOtherRole(thread){
   var root = thread.root;
   if(!root) return null;
-  // The other party is whoever isn't admin/office
   var senderIsAdmin = (root.sender_role==='admin'||root.sender_role==='office');
   return senderIsAdmin ? root.recipient_role : root.sender_role;
 }
 function renderInbox(){
   var msgs = allMessages;
-  if(isAdmin()){
-    // Filter by other party's role
-    if(currentAdminRoleFilter !== 'all'){
-      // Pre-filter threads then reconstruct msg list isn't clean —
-      // we'll filter after building threads
-    }
-  } else {
+  if(!isAdmin()){
     if(currentFilter==='in')  msgs=msgs.filter(m=>amIRecipient(m));
     else if(currentFilter==='out') msgs=msgs.filter(m=>iMine(m));
   }
   var threads = getThreads(msgs);
-  // Admin: apply role filter on threads
   if(isAdmin() && currentAdminRoleFilter !== 'all'){
     threads = threads.filter(function(t){ return getOtherRole(t) === currentAdminRoleFilter; });
   }
@@ -539,7 +551,6 @@ function renderInbox(){
     var myDisplay  = isAdmin() ? 'Property By Heritance' : me.name;
     var fromLabel  = mine ? myDisplay+' → '+otherName : otherName+' → '+(isAdmin()?'Property By Heritance':me.name);
     var preview    = (m.body||'').replace(/\n/g,' ');
-    // Booking status pill
     var bkPill = '';
     if(root && root.topic==='Booking Request'){
       var st = root.booking_status || 'pending';
@@ -563,6 +574,12 @@ function renderInbox(){
       '</div></div>';
   });
   el.innerHTML = html;
+
+  /* ── Notify parent of unread count ── */
+  var unreadCount = threads.filter(t => t.msgs.some(msg => amIRecipient(msg) && !msg.read_by_recipient)).length;
+  if(window.parent && window.parent !== window){
+    try{ window.parent.postMessage({type:'bc_unread_count',count:unreadCount},'*'); } catch(e){}
+  }
 }
 /* ────────────────────────────────
    THREAD
@@ -622,19 +639,16 @@ function refreshBookingUI(root){
   banner.classList.remove('on','bk-accepted','bk-rejected','bk-pending');
   actionBar.style.display = 'none';
   decForm.classList.remove('on');
-  replyBar.style.display  = 'flex'; // always show chat
+  replyBar.style.display  = 'flex';
   document.getElementById('bk-banner-edit').classList.remove('on');
   chip.style.display      = 'none';
   leaveStrip.classList.remove('on');
   var isLeave   = root && root.topic === 'Leave';
   var isBooking = root && root.topic === 'Booking Request';
   if(!root || (!isBooking && !isLeave)) return;
-  // Show leave header strip with dates
   if(isLeave){
     leaveStrip.classList.add('on');
-    // Build sender label
     document.getElementById('leave-hdr-name').textContent = (root.sender_name||'Team') + ' — Leave Request';
-    // Format dates from stored fields or parse from body
     var dateStr = '';
     if(root.start_date){
       var fmt = function(d){ return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); };
@@ -642,14 +656,12 @@ function refreshBookingUI(root){
         ? fmt(root.start_date) + ' – ' + fmt(root.end_date)
         : fmt(root.start_date);
     } else {
-      // Try to extract from body prefix
       var bodyMatch = root.body && root.body.match(/Leave request:\s*([^\n]+)/i);
       dateStr = bodyMatch ? bodyMatch[1] : '';
     }
     document.getElementById('leave-hdr-dates').textContent = dateStr;
   }
   var status = root.booking_status || 'pending';
-  // Helper to set leave header chip
   function setLeaveChip(label, color, bg){
     var c = document.getElementById('leave-hdr-chip');
     c.textContent = label; c.style.background = bg; c.style.color = color;
@@ -679,11 +691,9 @@ function refreshBookingUI(root){
     }
     else if(me.role==='talent' && root.recipient_name===me.name){ document.getElementById('bk-banner-edit').classList.add('on'); }
   } else {
-    // pending
     if(isLeave) setLeaveChip('⏳ Pending','#633806','#FAEEDA');
     if(isAdmin()){
       if(isLeave){
-        // Show Approve / Decline action bar for leave requests
         document.getElementById('bk-action-label').textContent = 'Respond to this leave request';
         actionBar.style.display = 'block';
         showStatusChip(chip,'⏳ Pending','#633806','#FAEEDA');
@@ -755,12 +765,10 @@ async function acceptBooking(){
     btn.textContent = 'Accepting…';
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:'accepted'});
     root.booking_status = 'accepted';
-    // Write confirmed booking into talent_schedule
     if(root.topic === 'Booking Request' && root.booking_datetime && root.recipient_role === 'talent'){
       var schedEntry = parseBookingDateTime(root.booking_datetime);
       if(schedEntry){
         var talentRecipId = root.recipient_id || null;
-        // Look up talent id by name if not stored directly on message
         if(!talentRecipId){
           var talentRows = await api('GET','talents?name=eq.'+encodeURIComponent(root.recipient_name)+'&select=id&limit=1');
           talentRecipId = (talentRows && talentRows[0]) ? talentRows[0].id : null;
@@ -776,7 +784,6 @@ async function acceptBooking(){
             booked_by: root.sender_name || 'Admin',
             message_id: root.id
           };
-          // Upsert — PATCH if exists, POST if not
           var existing = await api('GET','talent_schedule?talent_id=eq.'+encodeURIComponent(talentRecipId)+'&date=eq.'+schedEntry.date+'&select=date&limit=1');
           if(existing && existing.length){
             await api('PATCH','talent_schedule?talent_id=eq.'+encodeURIComponent(talentRecipId)+'&date=eq.'+schedEntry.date, schedPayload);
@@ -786,30 +793,22 @@ async function acceptBooking(){
         }
       }
     }
-    // Write leave record into staff_leave when topic = Leave
     if(root.topic === 'Leave'){
-      // Parse duration from body text; dates come from stored start_date / end_date fields
       var leaveMatch = root.body && root.body.match(/\((Half day|Full day)\)/i);
       var durRaw  = leaveMatch ? leaveMatch[1] : 'Full day';
-      var durKey  = durRaw.toLowerCase().replace(' ','_'); // 'half_day' | 'full_day'
+      var durKey  = durRaw.toLowerCase().replace(' ','_');
       var startDt = root.start_date || null;
       var endDt   = root.end_date   || startDt;
-
-      // Look up staff_id by name so leave_calendar.html can join correctly
       var staffId = null;
       try {
         var staffRows = await api('GET','staff?name=eq.'+encodeURIComponent(root.sender_name)+'&select=id&limit=1');
         staffId = (staffRows && staffRows[0]) ? staffRows[0].id : null;
       } catch(_){}
-
-      // Derive leave_type from the message body (sender may include it); default to 'Other'
-      // Matches patterns like "Leave type: Sick" or "Sick leave" in the body
       var leaveType = 'Other';
       if(root.body){
         var ltMatch = root.body.match(/leave type[:\s]+([A-Za-z\s]+)/i);
         if(ltMatch){
           var ltRaw = ltMatch[1].trim();
-          // Normalise to the values leave_calendar.html expects
           if(/annual/i.test(ltRaw))        leaveType = 'Annual';
           else if(/sick/i.test(ltRaw))     leaveType = 'Sick';
           else if(/comp/i.test(ltRaw))     leaveType = 'Comp Off';
@@ -819,7 +818,6 @@ async function acceptBooking(){
           else if(/comp.?off/i.test(root.body)) leaveType = 'Comp Off';
           else if(/unpaid/i.test(root.body))    leaveType = 'Unpaid';
       }
-
       var leavePayload = {
         staff_id:    staffId,
         staff_name:  root.sender_name,
@@ -834,7 +832,6 @@ async function acceptBooking(){
         notes:       root.body
       };
       try {
-        // Check for an existing record for this message to avoid duplicates
         var existingLeave = await api('GET','staff_leave?message_id=eq.'+root.id+'&select=id&limit=1');
         if(existingLeave && existingLeave.length){
           await api('PATCH','staff_leave?message_id=eq.'+root.id, leavePayload);
@@ -843,7 +840,6 @@ async function acceptBooking(){
         }
       } catch(leaveErr){
         console.warn('staff_leave insert failed:', leaveErr.message);
-        // Non-fatal — acceptance still proceeds
       }
     }
     renderThread(currentThread.msgs);
@@ -869,7 +865,6 @@ async function confirmDecline(){
     btn.disabled=true;
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:'rejected'});
     root.booking_status = 'rejected';
-    // Remove from talent_schedule (only for Booking Request, not Leave)
     if(root.topic !== 'Leave' && root.booking_datetime){
       var schedEntry = parseBookingDateTime(root.booking_datetime);
       if(schedEntry){
@@ -883,7 +878,6 @@ async function confirmDecline(){
         }
       }
     }
-    // For Leave: mark any existing staff_leave record as rejected
     if(root.topic === 'Leave'){
       try{
         await api('PATCH','staff_leave?message_id=eq.'+root.id,{status:'rejected'});
@@ -926,7 +920,6 @@ async function selectRecipType(type, btn){
   selectedRecipType=type; selectedRecipName=null;
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
   btn.className='recip-pill on-'+type;
-  // Admin → Team: always General, no dropdown needed
   if(type==='staff'){
     document.getElementById('fg-topic').style.display='none';
     document.getElementById('compose-topic').value='General';
@@ -1027,13 +1020,10 @@ async function submitEditResponse(){
   var isLeave = root && root.topic === 'Leave';
   try{
     btn.disabled = true;
-    // Update booking_status on root message
     await api('PATCH','messages?id=eq.'+root.id,{booking_status:_editResponseStatus});
     root.booking_status = _editResponseStatus;
-
     if(isLeave){
       if(_editResponseStatus === 'accepted'){
-        // Upsert into staff_leave
         var leaveMatch = root.body && root.body.match(/\((Half day|Full day)\)/i);
         var durRaw  = leaveMatch ? leaveMatch[1] : 'Full day';
         var durKey  = durRaw.toLowerCase().replace(' ','_');
@@ -1059,13 +1049,11 @@ async function submitEditResponse(){
           }
         } catch(leaveErr){ console.warn('staff_leave upsert failed:',leaveErr.message); }
       } else if(_editResponseStatus === 'rejected'){
-        // Remove from staff_leave if it was previously approved
         try{
           await api('DELETE','staff_leave?message_id=eq.'+root.id);
         } catch(leaveErr){ console.warn('staff_leave delete failed:',leaveErr.message); }
       }
     } else {
-      // Booking Request — sync talent_schedule on decline
       if(_editResponseStatus === 'rejected' && root.booking_datetime){
         var schedEntry = parseBookingDateTime(root.booking_datetime);
         if(schedEntry){
@@ -1080,7 +1068,6 @@ async function submitEditResponse(){
         }
       }
     }
-
     closeEditResponse();
     renderThread(currentThread.msgs);
     refreshBookingUI(root);
@@ -1105,7 +1092,6 @@ function onEditBannerClick(){
 function editBooking(){
   if(!currentThread) return;
   var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
-  // Talent: open update response modal
   if(!isAdmin() && me.role==='talent'){
     openEditResponse(root);
     return;
@@ -1117,7 +1103,6 @@ function editBooking(){
   document.getElementById('fg-recip-toggle').style.display = isLeave ? 'none' : 'block';
   document.getElementById('fg-recip-fixed').style.display  = isLeave ? 'block' : 'none';
   if(isLeave){
-    // Show ops/team sender info in "To" field
     document.getElementById('fg-recip-fixed').querySelector('div').textContent =
       (root.sender_name||'Team') + ' (' + (root.sender_role||'ops') + ')';
     document.getElementById('compose-title').textContent = 'Edit Leave Decision';
@@ -1125,10 +1110,8 @@ function editBooking(){
     document.getElementById('leave-fields').style.display = 'block';
     populateTopics(root.sender_role||'ops', 'admin');
     document.getElementById('compose-topic').value = 'Leave';
-    // Pre-fill dates
     if(root.start_date) document.getElementById('leave-start-date').value = root.start_date;
     if(root.end_date)   document.getElementById('leave-end-date').value   = root.end_date;
-    // Duration
     var half = root.body && /half day/i.test(root.body);
     setLeaveDur(half ? 'half' : 'full');
   } else {
@@ -1157,7 +1140,6 @@ async function loadVenues(){
   sel.innerHTML = '<option value="">Loading venues…</option>';
   try {
     var rows = await api('GET','landlords?select=property_name&order=property_name');
-    // Deduplicate
     var seen = {}, opts = ['<option value="">— Select venue —</option>'];
     rows.forEach(function(r){
       if(r.property_name && !seen[r.property_name]){
@@ -1173,7 +1155,6 @@ async function loadVenues(){
 async function sendMessage(){
   var body  = document.getElementById('compose-body').value.trim();
   var topic = document.getElementById('compose-topic').value;
-  // For admin→team, topic is hardcoded to General — skip dropdown validation
   var isStaffMsg = isAdmin() && selectedRecipType === 'staff';
   if(!isStaffMsg && !topic){ showToast('Please select a topic'); return; }
   if(!topic) topic = 'General';
@@ -1225,8 +1206,6 @@ async function sendMessage(){
     var saved=await api('POST','messages',payload);
     var msg=Array.isArray(saved)?saved[0]:saved;
     allMessages.unshift(msg);
-    // If editing a booking (Booking Request topic) and the booking is already accepted,
-    // sync the updated date/venue into talent_schedule
     if(topic==='Booking Request' && bookingDt && recipientRole==='talent'){
       var existingThread = currentThread && (currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0]);
       var isAccepted = existingThread && existingThread.booking_status==='accepted';
@@ -1265,7 +1244,12 @@ async function sendMessage(){
    HELPERS
 ──────────────────────────────── */
 function goBack(){
-  if(document.referrer&&document.referrer!==window.location.href){ history.back(); return; }
+  /* Panel mode: tell parent to close the panel */
+  if(window.parent && window.parent !== window){
+    try{ window.parent.postMessage({type:'bc_close_panel'},'*'); return; } catch(e){}
+  }
+  /* Standalone fallback */
+  if(document.referrer && document.referrer !== window.location.href){ history.back(); return; }
   var map={admin:'admin.html',office:'admin.html',talent:'talent.html',landlord:'landlord.html',guest:'guest.html'};
   window.location.href = me?(map[me.role]||'index.html'):'index.html';
 }
@@ -1278,14 +1262,10 @@ function fmtDate(iso){
   if(diff<604800000)return d.toLocaleDateString('en-IN',{weekday:'short'});
   return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
 }
-// Parses a human-readable booking_datetime string back to {date, time_start}
-// e.g. "Monday, 10 June 2026 at 02:00 pm" → {date:'2026-06-10', time_start:'14:00'}
 function parseBookingDateTime(str){
   try{
-    // Try direct Date parse first (works if ISO-ish)
     var dt = new Date(str);
     if(isNaN(dt.getTime())){
-      // Fall back: strip day name, parse "10 June 2026 at 02:00 pm"
       var clean = str.replace(/^[A-Za-z]+,\s*/,'').replace(' at ',' ');
       dt = new Date(clean);
     }

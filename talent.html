@@ -761,23 +761,80 @@ showPanel('profile');
 </div>
 
 <!-- MESSAGING FAB -->
-<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:74px;right:14px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
+<button id="msg-fab" onclick="openMessagingPanel()" title="Messages" style="position:fixed;bottom:74px;right:14px;z-index:99;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(153,60,29,.45);border:none;cursor:pointer;transition:transform .15s,box-shadow .15s">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
-</a>
+  <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif;border:2px solid #fff"></span>
+</button>
+
+<!-- Messaging panel overlay (closes on tap outside) -->
+<div id="msg-panel-overlay" onclick="closeMessagingPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100"></div>
+
+<!-- Messaging panel — slides up above the bottom nav, bottom nav stays visible -->
+<div id="msg-panel" style="position:fixed;bottom:60px;left:0;right:0;height:calc(100% - 60px);max-width:680px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:110">
+  <div style="width:40px;height:4px;background:#D0CEC9;border-radius:2px;margin:10px auto 0"></div>
+  <iframe id="msg-iframe" src="" title="Messages" style="width:100%;height:calc(100% - 24px);border:none;display:block"></iframe>
+</div>
+
 <script>
 (function(){
+  var panelOpen=false, iframeReady=false;
+
+  window.openMessagingPanel=function(){
+    var overlay=document.getElementById('msg-panel-overlay');
+    var panel=document.getElementById('msg-panel');
+    var iframe=document.getElementById('msg-iframe');
+    if(!iframeReady){
+      iframeReady=true;
+      iframe.src='messaging.html';
+      iframe.onload=function(){
+        var me=JSON.parse(localStorage.getItem('bc_me')||'null');
+        if(me) try{ iframe.contentWindow.initMessagingPanel(me); }catch(e){}
+      };
+    } else {
+      var me=JSON.parse(localStorage.getItem('bc_me')||'null');
+      if(me) try{ iframe.contentWindow.initMessagingPanel(me); }catch(e){}
+    }
+    overlay.style.display='block';
+    panel.style.transform='translateY(0)';
+    panelOpen=true;
+    document.body.style.overflow='hidden';
+  };
+
+  window.closeMessagingPanel=function(){
+    document.getElementById('msg-panel-overlay').style.display='none';
+    document.getElementById('msg-panel').style.transform='translateY(100%)';
+    panelOpen=false;
+    document.body.style.overflow='';
+  };
+
+  /* Listen for messages from the iframe */
+  window.addEventListener('message',function(e){
+    if(!e.data||typeof e.data!=='object') return;
+    if(e.data.type==='bc_close_panel') closeMessagingPanel();
+    if(e.data.type==='bc_unread_count'){
+      var badge=document.getElementById('msg-fab-badge');
+      var n=e.data.count||0;
+      if(n>0){ badge.textContent=n>99?'99+':String(n); badge.style.display='block'; }
+      else badge.style.display='none';
+    }
+  });
+
+  /* ESC closes panel */
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&panelOpen) closeMessagingPanel(); });
+
+  /* Initial unread badge on page load */
   var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
   var me=JSON.parse(localStorage.getItem("bc_me")||"null");
-  if(!me)return;
-  fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d&&d.length){
-        var b=document.getElementById("msg-fab-badge");
-        if(b){b.textContent=d.length>9?"9+":d.length;b.style.display="block";}
-      }
-    }).catch(function(){});
+  if(me){
+    fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d&&d.length){
+          var b=document.getElementById("msg-fab-badge");
+          if(b){b.textContent=d.length>9?"9+":String(d.length);b.style.display="block";}
+        }
+      }).catch(function(){});
+  }
 })();
 </script>
 </body>
