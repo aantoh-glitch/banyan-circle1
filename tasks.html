@@ -784,8 +784,8 @@ function bundleRow(b){
     + '<td>' + (b.tasks[0]&&b.tasks[0].property_name ? '<span style="font-size:11px;font-weight:500;background:var(--br-l);color:var(--br);padding:2px 8px;border-radius:6px">'+escHtml(b.tasks[0].property_name)+'</span>' : '<span style="color:var(--muted)">—</span>') + '</td>'
     + '<td>' + priorityBadge(b.priority) + '</td>'
     + '<td style="font-size:12px">' + due + '</td>'
-    + '<td style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
-    + '<td style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
+    + '<td id="bundle-ack-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
+    + '<td id="bundle-done-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
     + '<td></td><td></td><td></td>'
     + '<td style="text-align:right"><button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
     + '</tr>';
@@ -1227,8 +1227,8 @@ async function saveTask(){
   const existingTask = id ? ALL_TASKS.find(t=>t.id===id) : null;
   const acknowledged = existingTask ? existingTask.acknowledged : false;
   const body = {work, staff_id:staffId, staff_name:staff?staff.name:null, priority, due_date, notes, acknowledged, property_name, task_type};
-  // Store preset name in bundle_name so we can hide Edit button — no schema change needed
-  if(!id && presetName) body.bundle_name = presetName;
+  // Note: do NOT store presetName in bundle_name — that field is reserved for actual bundles
+  // and causes the Edit button to be hidden for simple-preset tasks.
   const btn = document.getElementById('btn-save-task');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
@@ -1473,6 +1473,27 @@ async function toggleAck(id, field, current, labelEl, view){
       if(tsCell) tsCell.innerHTML = fmtTs(newVal ? now : null);
     }
     if(view==='admin') updateKpis(ALL_TASKS);
+    // Refresh bundle header counters if this task belongs to a bundle
+    if(view==='admin'){
+      const task = ALL_TASKS.find(x=>x.id===id);
+      if(task && task.bundle_id){
+        const siblings = ALL_TASKS.filter(x=>x.bundle_id===task.bundle_id);
+        const ackd = siblings.filter(x=>x.acknowledged).length;
+        const done = siblings.filter(x=>x.completed).length;
+        const total = siblings.length;
+        const ackCell = document.getElementById('bundle-ack-'+task.bundle_id);
+        const doneCell = document.getElementById('bundle-done-'+task.bundle_id);
+        if(ackCell)  ackCell.textContent  = ackd  + '/' + total;
+        if(doneCell) doneCell.textContent = done + '/' + total;
+        // Also update the bundle-progress label inside the header row
+        const bid = 'bundle-' + task.bundle_id.replace(/-/g,'');
+        const icon = document.getElementById('icon-'+bid);
+        if(icon){
+          const progressEl = icon.closest('td').querySelector('.bundle-progress');
+          if(progressEl) progressEl.textContent = done+'/'+total+' completed · '+ackd+'/'+total+' acknowledged';
+        }
+      }
+    }
     // In staff view: completed toggle moves card out of To Do tab
     if(view==='staff' && field==='completed' && staffFilterMode==='pending' && newVal){
       const card = document.getElementById('sc-'+id);
