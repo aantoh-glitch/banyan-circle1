@@ -569,9 +569,9 @@ async function renderSchedule(){
   for(let d=1;d<=dim;d++){
     const ds=schedYear+'-'+String(schedMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const e=scheduleData[ds];const st=(e&&e.status)||'';
-    const cls=(st==='booked')?'cal-day booked':(st==='busy'||st==='free')?'cal-day busy':st==='available'?'cal-day available':'cal-day';
+    const cls=(st==='booked')?'cal-day booked':(st==='busy')?'cal-day busy':st==='available'?'cal-day available':'cal-day';
     const isT=ds===today;
-    let lbl=(st==='booked')?'<div class="cal-day-status">Booked</div>':(st==='busy'||st==='free')?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
+    let lbl=(st==='booked')?'<div class="cal-day-status">Booked</div>':(st==='busy')?'<div class="cal-day-status">Busy</div>':st==='available'?'<div class="cal-day-status">Free</div>':'';
     h+='<div class="'+cls+(isT?' today-ring':'')+'" onclick="openDayModal(\''+ds+'\')"><div class="cal-day-num" style="'+(isT?'color:var(--br)':'')+'">'+d+'</div>'+lbl+'</div>';
   }
   grid.innerHTML=h;
@@ -604,7 +604,7 @@ function openDayModal(ds){
     document.getElementById('modal-start').value=(e&&e.time_start&&e.time_start.slice(0,5))||'09:00';
     document.getElementById('modal-end').value=(e&&e.time_end&&e.time_end.slice(0,5))||'17:00';
     document.getElementById('modal-remove-btn').style.display=e?'':'none';
-    setModalStatus((e&&e.status==='free')?'busy':((e&&e.status)||'available'));
+    setModalStatus((e&&e.status)||'available');
   }
   document.getElementById('day-modal').style.display='flex';
 }
@@ -617,7 +617,7 @@ async function saveDaySlot(){
       if(en<=s){toast('End must be after start');return;}
       await apiUpsert({talent_id:talentId,name:talentNameParam,date:modalDateStr,status:'available',time_start:s,time_end:en});
     } else {
-      await apiUpsert({talent_id:talentId,name:talentNameParam,date:modalDateStr,status:'free',time_start:null,time_end:null});
+      await apiUpsert({talent_id:talentId,name:talentNameParam,date:modalDateStr,status:'busy',time_start:null,time_end:null});
     }
   }catch(e){toast('ERR: '+e.message);console.error('saveDaySlot error',e);return;}
   closeDayModal();await renderSchedule();toast('Saved ✓');
