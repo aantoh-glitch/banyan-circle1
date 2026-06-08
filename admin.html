@@ -452,7 +452,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
           <div class="gl-card-sub">departing guests</div>
         </div>
         <div class="gl-summary-card gl-st" id="gl-card-st" onclick="glToggleSection('staying')">
-          <div class="gl-card-label gl-st"><div class="gl-card-dot" style="background:#4a90d9"></div>Staying Tonight</div>
+          <div class="gl-card-label gl-st"><div class="gl-card-dot" style="background:#4a90d9"></div>Staying On</div>
           <div class="gl-card-count" id="gl-count-st">—</div>
           <div class="gl-card-sub">mid-stay guests</div>
         </div>
@@ -1338,7 +1338,7 @@ function glRender(){
   if(!glSection){ container.innerHTML=''; return; }
   const map = {checkin:{guests:checkIns,type:'checkin',label:'Check-ins',bdg:'gl-bdg-ci'},
                checkout:{guests:checkOuts,type:'checkout',label:'Check-outs',bdg:'gl-bdg-co'},
-               staying:{guests:staying,type:'staying',label:'Staying Tonight',bdg:'gl-bdg-st'}};
+               staying:{guests:staying,type:'staying',label:'Staying On',bdg:'gl-bdg-st'}};
   const {guests,type,label,bdg} = map[glSection];
   container.innerHTML = `
     <div class="gl-section">

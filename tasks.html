@@ -312,18 +312,6 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       </select>
     </div>
 
-    <div class="fg">
-      <label class="fl">Information Acknowledged</label>
-      <div style="display:flex;gap:16px;margin-top:4px">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
-          <input type="radio" name="t-ack" id="t-ack-no" value="false" checked style="accent-color:var(--br)"/> No
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
-          <input type="radio" name="t-ack" id="t-ack-yes" value="true" style="accent-color:var(--br)"/> Yes
-        </label>
-      </div>
-    </div>
-
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeModal()">Cancel</button>
       <button class="btn-p" onclick="saveTask()" id="btn-save-task">Save Task</button>
@@ -859,7 +847,7 @@ function adminRow(t){
     <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
     <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
-      <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
+      ${!t.bundle_name && !t.bundle_id ? `<button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>` : ''}
       <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
     </td>
   </tr>`;
@@ -869,13 +857,14 @@ function adminRow(t){
 function openAddModal(){
   document.getElementById('t-id').value = '';
   document.getElementById('t-work').value = '';
+  delete document.getElementById('t-work').dataset.preset;
+  delete document.getElementById('t-work').dataset.bundle;
   document.getElementById('t-staff').value = '';
   document.getElementById('t-priority').value = 'medium';
   document.getElementById('t-due').value = '';
   document.getElementById('t-notes').value = '';
   document.getElementById('t-property').value = '';
   document.getElementById('t-type').value = '';
-  document.getElementById('t-ack-no').checked = true;
   document.getElementById('task-modal-ttl').textContent = 'New Task';
   document.getElementById('btn-save-task').textContent = 'Save Task';
   renderPresets('');
@@ -891,7 +880,6 @@ function editTask(t){
   document.getElementById('t-notes').value = t.notes||'';
   document.getElementById('t-property').value = t.property_name||'';
   document.getElementById('t-type').value = t.task_type||'';
-  t.acknowledged ? document.getElementById('t-ack-yes').checked=true : document.getElementById('t-ack-no').checked=true;
   document.getElementById('task-modal-ttl').textContent = 'Edit Task';
   document.getElementById('btn-save-task').textContent = 'Update Task';
   renderPresets(t.work||'');
@@ -1170,6 +1158,7 @@ function pickPreset(btn, value){
     document.getElementById('t-work').value = value;
     document.getElementById('t-work').placeholder = 'Describe the task…';
     delete document.getElementById('t-work').dataset.bundle;
+    document.getElementById('t-work').dataset.preset = value;
     document.getElementById('preset-bundle-note').style.display = 'none';
   }
 }
@@ -1183,7 +1172,6 @@ async function saveTask(){
   const priority    = document.getElementById('t-priority').value;
   const due_date    = document.getElementById('t-due').value || null;
   const notes       = document.getElementById('t-notes').value.trim() || null;
-  const acknowledged = document.getElementById('t-ack-yes').checked;
   const task_type    = document.getElementById('t-type').value || null;
   if(!staffId) { alert('Please select a staff member.'); return; }
   // Bundle preset — create one task per checklist item
@@ -1214,7 +1202,13 @@ async function saveTask(){
   if(!work) { alert('Please enter a task description.'); return; }
   const staff = ALL_STAFF.find(s=>s.id===staffId);
   const property_name = document.getElementById('t-property').value || null;
+  const presetName = workEl.dataset.preset || null;
+  // For new tasks, default acknowledged=false; for edits, preserve existing value
+  const existingTask = id ? ALL_TASKS.find(t=>t.id===id) : null;
+  const acknowledged = existingTask ? existingTask.acknowledged : false;
   const body = {work, staff_id:staffId, staff_name:staff?staff.name:null, priority, due_date, notes, acknowledged, property_name, task_type};
+  // Store preset name in bundle_name so we can hide Edit button — no schema change needed
+  if(!id && presetName) body.bundle_name = presetName;
   const btn = document.getElementById('btn-save-task');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
