@@ -426,9 +426,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <div class="gl-topbar-title">Guest Log</div>
         <div class="gl-date-nav">
           <button class="gl-date-btn" onclick="glShiftDate(-1)">&#8249;</button>
-          <div class="gl-date-display">
+          <div class="gl-date-display" onclick="document.getElementById('gl-date-picker').showPicker&&document.getElementById('gl-date-picker').showPicker()">
             <span id="gl-date-label" style="pointer-events:none;position:relative;z-index:1">—</span>
-            <input type="date" class="gl-date-picker" id="gl-date-picker" onchange="glOnDatePick(this.value)">
+            <input type="date" class="gl-date-picker" id="gl-date-picker" onchange="glOnDatePick(this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2;border:none;background:transparent;">
           </div>
           <button class="gl-date-btn" onclick="glShiftDate(1)">&#8250;</button>
           <button class="gl-today-btn" onclick="glGoToday()">Today</button>
@@ -748,7 +748,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"><label class="fl">PIN (4 digits)</label><input class="fc" id="ms-pin" maxlength="4"/></div>
   </div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Designation</label>
+    <div class="fg"><label class="fl">Designation <span style="color:var(--r)">*</span></label>
       <input class="fc" id="ms-role" placeholder="e.g. Homekeeper, Manager…"/>
     </div>
     <div class="fg"><label class="fl">Role</label>
@@ -766,7 +766,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
   <div class="fg">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <label class="fl" style="margin:0">Assigned Properties</label>
+      <label class="fl" style="margin:0">Assigned Properties <span style="color:var(--r)">*</span></label>
       <button type="button" class="btn-sec" style="padding:4px 10px;font-size:11px" onclick="selectAllStaffProps()">All</button>
     </div>
     <div id="ms-props-pills" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:42px;background:var(--white);">
@@ -786,8 +786,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">Mobile</label><input class="fc" id="mg-mobile" type="tel" placeholder="+91 …"/></div>
   <div class="fg"><label class="fl">Platform</label><input class="fc" id="mg-platform" placeholder="e.g. Airbnb, Booking, Direct…"/></div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Check-in</label><input class="fc" id="mg-in" type="date"/></div>
-    <div class="fg"><label class="fl">Check-out</label><input class="fc" id="mg-out" type="date"/></div>
+    <div class="fg"><label class="fl">Check-in <span style="color:var(--r)">*</span></label><input class="fc" id="mg-in" type="date" onchange="const o=document.getElementById('mg-out');o.min=this.value;if(o.value&&o.value<=this.value){const d=new Date(this.value+'T00:00:00');d.setDate(d.getDate()+1);o.value=d.toISOString().split('T')[0];}"/></div>
+    <div class="fg"><label class="fl">Check-out <span style="color:var(--r)">*</span></label><input class="fc" id="mg-out" type="date"/></div>
   </div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-guest')">Cancel</button><button class="btn-p" onclick="saveGuest()">Save</button></div>
 </div></div>
@@ -1021,6 +1021,7 @@ const fmtDateTime=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
 function goPage(id,btn){
+  location.hash = id;
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
@@ -1256,8 +1257,8 @@ async function loadGuests(){
     <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editGuest(${JSON.stringify(g).replace(/'/g,"&#39;")})'>Edit</button> <button class="btn-del" onclick="deleteGuest('${g.id}','${(g.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`).join('')}
   </tbody></table>`;
 }
-async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-mobile','mg-platform','mg-in','mg-out'].forEach(i=>document.getElementById(i).value=''); if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
-function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-mobile').value=g.mobile||''; document.getElementById('mg-platform').value=g.platform||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
+async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-mobile','mg-platform','mg-in','mg-out'].forEach(i=>document.getElementById(i).value=''); document.getElementById('mg-out').min=''; if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
+function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-mobile').value=g.mobile||''; document.getElementById('mg-platform').value=g.platform||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; document.getElementById('mg-out').min=g.check_in||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
 async function saveGuest(){ const id=document.getElementById('mg-id').value; const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),mobile:document.getElementById('mg-mobile').value.trim()||null,platform:document.getElementById('mg-platform').value.trim()||null,property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,created_by:'OFFICE'}; if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;} if(!body.property_name){alert('Please select a property');return;} try{ if(id) await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body); else await api('/rest/v1/guest_profiles','POST',body); closeModal('modal-guest'); toast('Guest saved ✓'); loadGuests();}catch(e){alert('Error: '+e.message);} }
 async function deleteGuest(id,name){ if(!confirm('Remove '+name+'? Their submitted registrations will be kept.'))return; try{ await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+id,'PATCH',{guest_profile_id:null}); await api('/rest/v1/guest_profiles?id=eq.'+id,'DELETE'); toast(name+' removed'); loadGuests(); }catch(e){ alert('Could not remove: '+e.message); } }
 
@@ -1282,7 +1283,7 @@ let glSection = null;
 let glInited = false;
 
 async function glInit(){
-  if(glInited){ glUpdateLabel(); return; }
+  if(glInited){ glUpdateLabel(); glLoadBookings(); return; }
   glInited = true;
   glUpdateLabel();
   try{
@@ -2242,11 +2243,21 @@ async function saveTalentDoc(){
   }
 }
 
-// Boot
-loadDashboard();
-loadProperties();
-
+// Boot — restore page from hash if present
+(function(){
+  const hash = location.hash.replace('#','');
+  const validPages = ['dashboard','properties','staff','guests','docs','utilities','maint','msgs','assets','talents','billing','bookings','laundry','tasks','loans','lostfound','reviews','stock','leave'];
+  if(hash && validPages.includes(hash)){
+    const btn = document.querySelector(`.sb-btn[onclick*="'${hash}'"]`);
+    goPage(hash, btn);
+  } else {
+    loadDashboard();
+    loadProperties();
+  }
+})();
 </script>
+
+
 
 <!-- Maintenance Update Modal -->
 <div class="modal" id="modal-maint-update"><div class="modal-card" style="max-width:460px">
