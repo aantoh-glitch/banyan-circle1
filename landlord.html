@@ -657,6 +657,8 @@ function goPage(id, btn) {
   if (id==='exp')         document.getElementById('iframe-exp').src = 'experience.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='bookings')    document.getElementById('iframe-bookings').src = 'booking.html?property=' + encodeURIComponent(PROP) + '&viewer=landlord&readonly=true';
   if (id==='vendors')     document.getElementById('iframe-vendors').src = 'vendors.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
+  /* Persist active tab in URL hash so refresh stays on same page */
+  history.replaceState(null, '', '#' + id);
 }
 
 function openOthersTray() {
@@ -678,6 +680,25 @@ function goPageFromTray(id, btn) {
   // Keep Others highlighted in main nav
   document.getElementById('nb-others').classList.add('on');
 }
+
+/* On load: restore tab from URL hash */
+(function(){
+  var hash = location.hash.replace('#','');
+  var validPages = ['description','earnings','messages','payments','assets','documents','pne','exp','bookings','vendors'];
+  if (hash && validPages.indexOf(hash) !== -1) {
+    var pgEl = document.getElementById('pg-'+hash);
+    if (!pgEl) return; // page may be hidden/removed for this role
+    if (TRAY_PAGES.has(hash)) {
+      // Tray page — activate via tray button if visible
+      var trayBtn = document.getElementById('nb-'+hash);
+      goPageFromTray(hash, trayBtn || null);
+    } else {
+      // Primary nav page — find and click the matching nav button
+      var navBtn = document.getElementById('nb-'+hash);
+      goPage(hash, navBtn || null);
+    }
+  }
+})();
 
 // ── ADMIN ASSET CONTROLS ──
 
