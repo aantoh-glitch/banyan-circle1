@@ -202,7 +202,7 @@ function dots(state) {
 
 function checkPin() {
   if (!sel) { setTimeout(checkPin, 300); return; }
-  if (pin !== String(sel.pin)) {
+  if (pin !== String(sel.pin).trim()) {
     dots('err');
     document.getElementById('pin-err').textContent = 'Incorrect PIN';
     setTimeout(()=>{ pin=''; dots(); document.getElementById('pin-err').textContent=''; }, 1200);
@@ -256,7 +256,7 @@ window.cpdel = () => { cpPin = cpPin.slice(0, -1); setCpDots(); };
 
 async function handleCpPin() {
   if (cpStep === 'verify') {
-    if (cpPin !== String(sel.pin)) {
+    if (cpPin !== String(sel.pin).trim()) {
       setCpDots('err');
       document.getElementById('cp-err').textContent = 'Incorrect PIN. Try again.';
       setTimeout(() => { cpPin = ''; setCpDots(); document.getElementById('cp-err').textContent = ''; }, 1400);
