@@ -795,17 +795,26 @@ showPanel('profile');
       var me=JSON.parse(localStorage.getItem('bc_me')||'null');
       if(me) try{ iframe.contentWindow.initMessagingPanel(me); }catch(e){}
     }
+    /* Show overlay first */
     overlay.style.display='block';
+    /* Force reflow so the panel is in the render tree before we animate */
+    panel.getBoundingClientRect();
+    /* Slide up */
     panel.style.transform='translateY(0)';
     panelOpen=true;
     document.body.style.overflow='hidden';
   };
 
   window.closeMessagingPanel=function(){
-    document.getElementById('msg-panel-overlay').style.display='none';
-    document.getElementById('msg-panel').style.transform='translateY(calc(100% + 60px))';
+    var panel=document.getElementById('msg-panel');
+    /* Slide panel down */
+    panel.style.transform='translateY(calc(100% + 60px))';
     panelOpen=false;
     document.body.style.overflow='';
+    /* Hide overlay after transition completes (matches 300ms CSS transition) */
+    setTimeout(function(){
+      document.getElementById('msg-panel-overlay').style.display='none';
+    }, 320);
   };
 
   /* Listen for messages from the iframe */
