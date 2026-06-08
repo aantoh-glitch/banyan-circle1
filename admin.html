@@ -1853,21 +1853,21 @@ async function loadTalentsPage(){
   </div>`;
 }
 
-// Render venue pills into the modal; preSelected is an array of property_name strings
+// Render venue pills into the modal; preSelected is an array of venue name strings
 async function renderVenuePills(preSelected=[]) {
   const wrap = document.getElementById('mtal-venues-wrap');
   wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Loading venues…</div>';
-  let landlords = [];
+  let profiles = [];
   try {
-    landlords = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+    profiles = await api('/rest/v1/talent-profiles?select=venues&order=venues') || [];
   } catch(e) {
     wrap.innerHTML = '<div style="font-size:12px;color:var(--r)">Could not load venues</div>';
     return;
   }
-  // Deduplicate property names
-  const names = [...new Set(landlords.map(l=>l.property_name).filter(Boolean))];
+  // Flatten text[] arrays from all rows and deduplicate
+  const names = [...new Set(profiles.flatMap(p => Array.isArray(p.venues) ? p.venues : []).filter(Boolean))].sort();
   if (!names.length) {
-    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">No venues found — add a landlord first</div>';
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">No venues found — add venues to talent profiles first</div>';
     return;
   }
   const sel = new Set(preSelected || []);
