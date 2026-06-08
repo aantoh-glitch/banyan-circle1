@@ -1293,7 +1293,7 @@ async function glInit(){
 }
 
 async function glLoadProps(){
-  const data = await api('/rest/v1/guest_profiles?select=property_name&order=property_name&limit=100') || [];
+  const data = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
   const seen = new Set();
   glProps = data
     .filter(r=>r.property_name&&!seen.has(r.property_name)&&seen.add(r.property_name))
