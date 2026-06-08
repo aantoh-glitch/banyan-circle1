@@ -341,7 +341,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
     <div id="leave-fields" style="display:none">
       <div class="fg">
         <label class="fl">Start Date</label>
-        <input type="date" class="fc" id="leave-start-date"/>
+        <input type="date" class="fc" id="leave-start-date" onchange="onLeaveStartChange()"/>
       </div>
       <div class="fg">
         <label class="fl">End Date</label>
@@ -969,19 +969,32 @@ function setLeaveDur(val){
   document.getElementById('leave-half').classList.toggle('leave-dur-on', val==='half');
   document.getElementById('leave-full').classList.toggle('leave-dur-on', val==='full');
 }
+function onLeaveStartChange(){
+  var startEl = document.getElementById("leave-start-date");
+  var endEl   = document.getElementById("leave-end-date");
+  var startVal = startEl.value;
+  if(startVal){
+    endEl.min = startVal;
+    if(endEl.value && endEl.value < startVal) endEl.value = startVal;
+  }
+}
 function onTopicChange(){
   var t = document.getElementById('compose-topic').value;
   document.getElementById('booking-date-fields').style.display = t==='Booking Request' ? 'block' : 'none';
   document.getElementById('leave-fields').style.display         = t==='Leave'           ? 'block' : 'none';
-  if(t==='Booking Request') loadVenues();
+  if(t==='Booking Request'){
+    loadVenues();
+    var today = new Date().toISOString().slice(0,10);
+    document.getElementById('booking-date').min = today;
+  }
   if(t==='Leave'){
     var today = new Date().toISOString().slice(0,10);
-    if(!document.getElementById('leave-start-date').value){
-      document.getElementById('leave-start-date').value = today;
-    }
-    if(!document.getElementById('leave-end-date').value){
-      document.getElementById('leave-end-date').value = today;
-    }
+    var startEl = document.getElementById('leave-start-date');
+    var endEl   = document.getElementById('leave-end-date');
+    startEl.min = today;
+    endEl.min   = today;
+    if(!startEl.value) startEl.value = today;
+    if(!endEl.value)   endEl.value   = today;
     leaveDur='full';
     document.getElementById('leave-half').classList.remove('leave-dur-on');
     document.getElementById('leave-full').classList.add('leave-dur-on');

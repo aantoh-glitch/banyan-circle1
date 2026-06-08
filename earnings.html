@@ -431,9 +431,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
   <!-- CUSTOM RANGE -->
   <div class="custom-range" id="custom-range">
-    <input type="date" id="range-from" onchange="onCustomChange()"/>
+    <input type="date" id="range-from" onchange="onRangeFromChange()" max=""/>
     <span>→</span>
-    <input type="date" id="range-to" onchange="onCustomChange()"/>
+    <input type="date" id="range-to" onchange="onCustomChange()" min=""/>
   </div>
 
   <!-- DOWNLOAD -->
@@ -544,7 +544,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <!-- DATE -->
     <div class="form-field">
       <label class="form-label">Date</label>
-      <input class="form-input" id="f-date" type="date"/>
+      <input class="form-input" id="f-date" type="date" max=""/>
     </div>
 
     <!-- NOTES -->
@@ -554,6 +554,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     </div>
 
     <button class="submit-btn" id="submit-btn" onclick="submitEntry()">Add Entry</button>
+
   </div>
 </div>
 
@@ -642,7 +643,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <!-- DATE -->
     <div class="form-field">
       <label class="form-label">Date</label>
-      <input class="form-input" id="ef-date" type="date"/>
+      <input class="form-input" id="ef-date" type="date" max=""/>
     </div>
 
     <!-- NOTES -->
@@ -814,6 +815,31 @@ function setPeriod(p) {
 function onCustomChange() {
   renderLog();
   renderKPIs();
+}
+
+function onRangeFromChange() {
+  const fromVal = document.getElementById('range-from').value;
+  const toInput = document.getElementById('range-to');
+  // 'To' date must not be earlier than 'From' date
+  toInput.min = fromVal || '';
+  // If current 'To' value is before the new 'From', bump it up
+  if (toInput.value && fromVal && toInput.value < fromVal) {
+    toInput.value = fromVal;
+  }
+  onCustomChange();
+}
+
+function initDateConstraints() {
+  const today = todayStr();
+  // Add Entry sheet: no future dates allowed
+  const fDate = document.getElementById('f-date');
+  if (fDate) fDate.max = today;
+  // Edit Entry sheet: no future dates allowed
+  const efDate = document.getElementById('ef-date');
+  if (efDate) efDate.max = today;
+  // Custom range 'From': cap at today
+  const rangeFrom = document.getElementById('range-from');
+  if (rangeFrom) rangeFrom.max = today;
 }
 
 // Returns {from, to} as Date objects for the active period
@@ -1521,6 +1547,7 @@ function showToast(msg) {
    INIT
 ═══════════════════════════════════════════ */
 populateHeads();
+initDateConstraints();
 
 async function init() {
   if (isAdmin) await loadEntityLists();
