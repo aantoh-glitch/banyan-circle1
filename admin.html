@@ -1853,36 +1853,23 @@ async function loadTalentsPage(){
   </div>`;
 }
 
-// Render venue pills into the modal; preSelected is an array of venue name strings
-async function renderVenuePills(preSelected=[]) {
+// Render read-only venue pills from talent-profiles for a given talent id
+async function renderVenuePills(talentId) {
   const wrap = document.getElementById('mtal-venues-wrap');
-  wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Loading venues…</div>';
+  if (!talentId) { wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Save the talent first to see venues</div>'; return; }
+  wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">Loading venues\u2026</div>';
   let profiles = [];
   try {
-    profiles = await api('/rest/v1/talent-profiles?select=venues&order=venues') || [];
+    profiles = await api('/rest/v1/talent_profiles?select=venues&talent_id=eq.'+encodeURIComponent(talentId)) || [];
   } catch(e) {
     wrap.innerHTML = '<div style="font-size:12px;color:var(--r)">Could not load venues</div>';
     return;
   }
-  // Flatten text[] arrays from all rows and deduplicate
   const names = [...new Set(profiles.flatMap(p => Array.isArray(p.venues) ? p.venues : []).filter(Boolean))].sort();
-  if (!names.length) {
-    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">No venues found — add venues to talent profiles first</div>';
-    return;
-  }
-  const sel = new Set(preSelected || []);
-  wrap.innerHTML = names.map(n => {
-    const on = sel.has(n) ? ' on' : '';
-    return `<span class="venue-pill${on}" data-venue="${n.replace(/"/g,'&quot;')}" onclick="toggleVenuePill(this)">${n}</span>`;
-  }).join('');
-}
-
-function toggleVenuePill(el) {
-  el.classList.toggle('on');
-}
-
-function getSelectedVenues() {
-  return Array.from(document.querySelectorAll('#mtal-venues-wrap .venue-pill.on')).map(el=>el.dataset.venue);
+  if (!names.length) { wrap.innerHTML = '<div style="font-size:12px;color:var(--muted)">No venues assigned</div>'; return; }
+  wrap.innerHTML = names.map(n =>
+    `<span class="venue-pill on" style="pointer-events:none;cursor:default">${n}</span>`
+  ).join('');
 }
 
 function openTalentModal(){
@@ -1890,7 +1877,7 @@ function openTalentModal(){
   document.getElementById('mtal-ttl').textContent='Add talent';
   ['mtal-name','mtal-pin','mtal-desc'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-cat').value='Yoga';
-  renderVenuePills([]);
+  renderVenuePills(null);
   openModal('modal-talent');
 }
 function editTalentRow(t){
@@ -1900,27 +1887,19 @@ function editTalentRow(t){
   document.getElementById('mtal-pin').value=t.pin||'';
   document.getElementById('mtal-desc').value=t.short_desc||'';
   document.getElementById('mtal-cat').value=t.category||'Yoga';
-  renderVenuePills(Array.isArray(t.venues) ? t.venues : []);
+  renderVenuePills(t.id);
   openModal('modal-talent');
 }
 async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
-  const venues = getSelectedVenues();
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,venues};
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   try{
     if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
     else await api('/rest/v1/talents','POST',body);
-
-    // Write talent_name back to each selected landlord row
-    if(venues.length){
-      await Promise.all(venues.map(propName =>
-        api('/rest/v1/landlords?property_name=eq.'+encodeURIComponent(propName),'PATCH',{talent_name:name}).catch(()=>null)
-      ));
-    }
 
     closeModal('modal-talent'); toast('Saved'); loadTalentsPage();
   }catch(e){ alert('Save failed: '+e.message); }
