@@ -1157,7 +1157,7 @@ function requirePin(label, action) {
   _pendingAction = action;
   _pcPin = '';
   pcDots();
-  document.getElementById('pin-confirm-name').textContent = label;
+  document.getElementById('pin-confirm-name').textContent = label || '';
   document.getElementById('pin-confirm-err').textContent = '';
   openModal('modal-pin-confirm');
 }
@@ -2214,8 +2214,8 @@ async function saveTalentDoc(){
 
 <!-- PIN Confirm Modal for staff removal -->
 <div class="modal" id="modal-pin-confirm"><div class="modal-card" style="max-width:320px">
-  <div class="modal-title" id="pin-confirm-title">Confirm removal</div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Enter the Office PIN to remove <strong id="pin-confirm-name"></strong>.</p>
+  <div class="modal-ttl" id="pin-confirm-title">Enter PIN for confirmation</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:16px" id="pin-confirm-name"></p>
   <div style="display:flex;justify-content:center;gap:14px;margin-bottom:16px" id="pin-confirm-dots">
     <div class="dot" id="pc-d0"></div><div class="dot" id="pc-d1"></div>
     <div class="dot" id="pc-d2"></div><div class="dot" id="pc-d3"></div>
