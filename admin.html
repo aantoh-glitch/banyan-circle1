@@ -163,6 +163,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('laundry',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Laundry</button>
     <button class="sb-btn" onclick="goPage('tasks',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</button>
     <button class="sb-btn" onclick="goPage('talents',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Talents</button>
+    <button class="sb-btn" id="sb-msgs" onclick="goPage('msgs',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messaging<span id="sb-msgs-badge" style="margin-left:auto;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;display:none;min-width:16px;text-align:center"></span></button>
     <button class="sb-btn" onclick="goPage('billing',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Billing</button>
     <button class="sb-btn" onclick="goPage('bookings',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bookings</button>
     <button class="sb-btn" onclick="goPage('loans',this)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>Loan Register</button>
@@ -512,51 +513,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <iframe id="laundry-frame" src="about:blank" style="width:100%;height:100vh;border:none;display:block"></iframe>
 </div>
 
-<div class="pg" id="pg-msgs">
-  <div class="pg-title">Internal messages</div>
-  <div class="pg-sub">Threads between Office, Manager, Landlords and Talents</div>
-
-  <!-- Sub-tabs: Property threads | Talent threads -->
-  <div style="display:flex;gap:8px;margin-bottom:18px">
-    <button class="ptab on" id="msgtab-property" onclick="setMsgTab('property',this)">Property Threads</button>
-    <button class="ptab" id="msgtab-talent" onclick="setMsgTab('talent',this)">Talent Threads</button>
-  </div>
-
-  <!-- PROPERTY THREAD PANEL -->
-  <div id="msg-panel-property">
-    <div class="prop-tabs" id="msgs-prop-tabs"></div>
-    <div class="card">
-      <div class="card-ttl" id="msgs-prop-label">Thread</div>
-      <div id="msgs-list" style="max-height:420px;overflow-y:auto;margin-bottom:14px">Loading…</div>
-      <div style="display:flex;gap:8px">
-        <input class="fc" id="msg-input" type="text" placeholder="Write a message…" style="flex:1"/>
-        <button class="btn-p" onclick="sendMsg()">Send</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TALENT THREAD PANEL -->
-  <div id="msg-panel-talent" style="display:none">
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <select class="fc" id="admin-talent-select" onchange="loadAdminTalentThread()" style="max-width:280px">
-        <option value="">Select a talent…</option>
-      </select>
-    </div>
-    <div class="card" style="padding:0;display:flex;flex-direction:column;height:520px">
-      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--br)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span style="font-size:13px;font-weight:500" id="admin-talent-thread-label">Select a talent to view thread</span>
-        <button onclick="loadAdminTalentThread()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--muted)">↻ Refresh</button>
-      </div>
-      <div id="admin-talent-msgs-list" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">
-        <div class="empty">Select a talent above to start messaging</div>
-      </div>
-      <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">
-        <input class="fc" id="admin-talent-msg-input" type="text" placeholder="Write to talent…" style="flex:1" onkeydown="if(event.key==='Enter')sendAdminTalentMsg()"/>
-        <button class="btn-p" onclick="sendAdminTalentMsg()">Send</button>
-      </div>
-    </div>
-  </div>
+<div class="pg" id="pg-msgs" style="padding:0">
+  <iframe id="messaging-frame" src="" style="width:100%;height:calc(100vh - 60px);border:none;display:block"></iframe>
 </div>
 
 
@@ -947,18 +905,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="modal" id="modal-talent"><div class="modal-card">
   <div class="modal-ttl" id="mtal-ttl">Add talent</div><input type="hidden" id="mtal-id"/>
   <div class="fg"><label class="fl">Name <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-name" placeholder="Full name"/></div>
-  <div class="row-grid">
-    <div class="fg"><label class="fl">PIN (4 digits) <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-pin" maxlength="4" placeholder="e.g. 4821"/></div>
-    <div class="fg"><label class="fl">Short description (max 10 chars)</label><input class="fc" id="mtal-desc" maxlength="10" placeholder="e.g. Yoga"/></div>
-  </div>
-  <div class="fg"><label class="fl">Category</label>
-    <select class="fc" id="mtal-cat">
-      <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
-      <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
-      <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
-      <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
-    </select>
-  </div>
+  <div class="fg"><label class="fl">PIN (4 digits) <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-pin" maxlength="4" placeholder="e.g. 4821"/></div>
+  <input type="hidden" id="mtal-desc"/>
+  <input type="hidden" id="mtal-cat"/>
   <div class="fg">
     <label class="fl">Venues</label>
     <div id="mtal-venues-wrap" style="min-height:36px;padding:4px 0">
@@ -1034,9 +983,8 @@ function goPage(id,btn){
   if(id==='docs')       loadDocsPage();
   if(id==='utilities'){var ff=document.getElementById('financials-frame');if(!ff.src||ff.src==='about:blank'||ff.src.indexOf('financials.html')===-1)ff.src='financials.html';}
   if(id==='maint')      loadMaintPage();
-  if(id==='msgs')       loadMsgsPage();
-  if(id==='assets')     loadAssetsPage();
-  if(id==='talents')    loadTalentsPage();
+  if(id==='msgs'){var mf=document.getElementById('messaging-frame');if(!mf.src||mf.src==='about:blank'||mf.src.indexOf('messaging.html')===-1)mf.src='messaging.html';}
+  if(id==='assets')     loadAssetsPage();  if(id==='talents')    loadTalentsPage();
   if(id==='billing'){var bf=document.getElementById('billing-frame');if(!bf.src||bf.src==='about:blank'||bf.src.indexOf('billing.html')===-1)bf.src='billing.html';}
   if(id==='bookings'){var bkf=document.getElementById('bookings-frame');if(!bkf.src||bkf.src==='about:blank'||bkf.src.indexOf('booking.html')===-1)bkf.src='booking.html';}
   if(id==='laundry'){var lf=document.getElementById('laundry-frame');if(!lf.src||lf.src==='about:blank'||lf.src.indexOf('laundry.html')===-1)lf.src='laundry.html';}
@@ -2616,10 +2564,10 @@ async function saveTalentDoc(){
 </script>
 
 <!-- MESSAGING FAB -->
-<a href="messaging.html" id="msg-fab" style="position:fixed;bottom:24px;right:24px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
+<button onclick="goPage('msgs', document.getElementById('sb-msgs'))" id="msg-fab" style="position:fixed;bottom:24px;right:24px;z-index:999;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);border:none;cursor:pointer" title="Messages">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
-</a>
+</button>
 <script>
 (function(){
   var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
@@ -2630,9 +2578,15 @@ async function saveTalentDoc(){
       var data=await res.json();
       var count=Array.isArray(data)?data.length:0;
       var badge=document.getElementById('msg-fab-badge');
-      if(!badge)return;
-      if(count>0){badge.textContent=count>99?'99+':count;badge.style.display='block';}
-      else{badge.style.display='none';}
+      var sbBadge=document.getElementById('sb-msgs-badge');
+      if(count>0){
+        var label=count>99?'99+':count;
+        if(badge){badge.textContent=label;badge.style.display='block';}
+        if(sbBadge){sbBadge.textContent=label;sbBadge.style.display='';}
+      } else {
+        if(badge)badge.style.display='none';
+        if(sbBadge)sbBadge.style.display='none';
+      }
     }catch(e){console.error('FAB badge error',e);}
   }
   updateFabBadge();

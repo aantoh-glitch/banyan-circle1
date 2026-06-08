@@ -226,7 +226,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500">Edit Profile</div>
       <span id="save-status" style="font-size:12px;color:var(--g);display:none;margin-left:auto;flex-shrink:0">&#10003; Saved</span>
     </div>
-    <div class="fg"><label class="fl">Name *</label><input class="fc" id="p-name" placeholder="Your full name"/></div>
+    <div class="fg"><label class="fl">Name</label><input class="fc" id="p-name" readonly style="background:var(--bg,#f7f7f5);color:var(--muted);cursor:default" title="Name is set by admin and cannot be changed here"/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label class="fl">Age</label><input class="fc" id="p-age" type="number" placeholder="28"/></div>
       <div class="fg"><label class="fl">Phone</label><input class="fc" id="p-phone" placeholder="+91…"/></div>
@@ -518,7 +518,7 @@ async function loadProperties(){
 function setVenueChecks(arr){document.querySelectorAll('[name="venue"]').forEach(function(cb){cb.checked=arr.includes(cb.value);});}
 function getVenueChecks(){return Array.from(document.querySelectorAll('[name="venue"]:checked')).map(function(cb){return cb.value;});}
 async function saveProfile(){
-  const name=document.getElementById('p-name').value.trim();
+  const name=talentNameParam||document.getElementById('p-name').value.trim();
   if(!name){alert('Name is required');return;}
   const body={talent_id:talentId,name:name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,category:document.getElementById('p-cat').value||null,category_other:document.getElementById('p-cat').value==='Others'?document.getElementById('p-cat-other').value.trim()||null:null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
   const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving…';
