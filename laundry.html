@@ -434,8 +434,8 @@ async function loadList(){
         </div>
         <div class="card-right">
           ${isDone
-            ? `<span class="bdg bdg-g">✓ Collected</span>`
-            : `<button class="btn-collect" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collected Back</button>`}
+            ? `<span class="bdg bdg-g">✓ Collected Back</span>`
+            : `<button class="btn-collect" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`}
         </div>
       </div>`;
     }).join('');
@@ -460,7 +460,7 @@ async function loadList(){
           <td><span class="bdg ${r.status==='collected'?'bdg-g':'bdg-a'}">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
           <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
             ${r.status!=='collected'
-              ? `<button class="btn-edit" style="background:var(--g-l);color:var(--g);font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collected Back</button>`
+              ? `<button class="btn-edit" style="background:var(--g-l);color:var(--g);font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`
               : `<span style="font-size:11px;color:var(--muted)">✓ Done</span>`}
             <button onclick='requirePin("Delete log",()=>deleteLog("${r.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px">×</button>
           </td>
