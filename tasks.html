@@ -805,7 +805,7 @@ function bundleRow(b){
       + '<td>' + fmtTs(t.created_at) + '</td>'
       + '<td id="ts-ack-'+t.id+'">' + fmtTs(t.acknowledged_at) + '</td>'
       + '<td id="ts-done-'+t.id+'">' + fmtTs(t.completed_at) + '</td>'
-      + '<td style="text-align:right"><button class="btn-del" onclick="deleteTask(\''+t.id+'\')">✕</button></td>'
+      + '<td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="editTask('+JSON.stringify(t).replace(/"/g,\'&quot;\').replace(/\'/g,\'&#39;\')+')" style="margin-right:4px">Edit</button><button class="btn-del" onclick="deleteTask(\''+t.id+'\')">✕</button></td>'
       + '</tr>';
   });
   return html;
@@ -864,7 +864,7 @@ function adminRow(t){
     <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
     <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
-      ${!t.bundle_name && !t.bundle_id ? `<button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>` : ''}
+      <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
       <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
     </td>
   </tr>`;
