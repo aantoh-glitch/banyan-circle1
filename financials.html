@@ -130,11 +130,11 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="controls-row">
     <div class="fg">
       <label class="fl">From</label>
-      <input class="fc" type="date" id="date-from"/>
+      <input class="fc" type="date" id="date-from" onchange="onFromChange()"/>
     </div>
     <div class="fg">
       <label class="fl">To</label>
-      <input class="fc" type="date" id="date-to"/>
+      <input class="fc" type="date" id="date-to" onchange="onToChange()"/>
     </div>
     <button class="btn-sec" onclick="applyDates()" style="white-space:nowrap;padding:9px 18px">Apply</button>
     <button class="btn-sec" onclick="clearDates()" style="white-space:nowrap;padding:9px 14px">Clear</button>
@@ -200,7 +200,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="modal-ttl">Add Expense</div>
   <div class="fg"><label class="fl">Property</label><select class="fc" id="exp-prop"><option>Property By Heritance</option></select></div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Date</label><input class="fc" id="exp-date" type="date"/></div>
+    <div class="fg"><label class="fl">Date</label><input class="fc" id="exp-date" type="date" max=""/></div>
     <div class="fg"><label class="fl">Category</label>
       <input class="fc" id="exp-cat" type="text" placeholder="e.g. Repairs, Cleaning…"/>
     </div>
@@ -235,7 +235,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <select class="fc" id="util-status"><option>pending</option><option>paid</option></select>
     </div>
   </div>
-  <div class="fg"><label class="fl">Paid on (if paid)</label><input class="fc" id="util-paid" type="date"/></div>
+  <div class="fg"><label class="fl">Paid on (if paid)</label><input class="fc" id="util-paid" type="date" max=""/></div>
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="util-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="util-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="util-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
@@ -250,7 +250,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="fg"><label class="fl">Property</label><select class="fc" id="rev-prop"></select></div>
   <div class="fg"><label class="fl">Item / Source</label><input class="fc" id="rev-item" placeholder="e.g. Booking — Airbnb"/></div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Date</label><input class="fc" id="rev-date" type="date"/></div>
+    <div class="fg"><label class="fl">Date</label><input class="fc" id="rev-date" type="date" max=""/></div>
     <div class="fg"><label class="fl">Amount (₹)</label>
       <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="rev-amount" type="number" min="0" placeholder="0"/></div>
     </div>
@@ -287,7 +287,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="fg" id="earn-pct-fg" style="display:none"><label class="fl">Percentage (%)</label>
     <input class="fc" id="earn-pct" type="number" min="0" max="100" step="0.01" placeholder="0.00"/>
   </div>
-  <div class="fg"><label class="fl">Date</label><input class="fc" id="earn-date" type="date"/></div>
+  <div class="fg"><label class="fl">Date</label><input class="fc" id="earn-date" type="date" max=""/></div>
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="earn-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="earn-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="earn-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
@@ -519,12 +519,29 @@ function setFileStatus(id,msg,ok){const el=document.getElementById(id);if(el){el
 window.openModal=function(id){
   const today=new Date().toISOString().split('T')[0];
   const month=new Date().toISOString().slice(0,7);
-  if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status','');}
-  if(id==='modal-utility'){document.getElementById('util-month').value=month; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
-  if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status','');}
-  if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); loadEarnPersons();}
+  if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-date').max=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status','');}
+  if(id==='modal-utility'){document.getElementById('util-month').value=month; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
+  if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status','');}
+  if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-date').max=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); loadEarnPersons();}
   document.getElementById(id).classList.add('on');
 };
+
+function onFromChange(){
+  const from=document.getElementById('date-from').value;
+  const toEl=document.getElementById('date-to');
+  // "To" must be >= "From"
+  toEl.min=from||'';
+  // If current "To" is before new "From", clear it
+  if(toEl.value && from && toEl.value < from) toEl.value='';
+}
+function onToChange(){
+  const to=document.getElementById('date-to').value;
+  const fromEl=document.getElementById('date-from');
+  // "From" must be <= "To"
+  fromEl.max=to||'';
+  // If current "From" is after new "To", clear it
+  if(fromEl.value && to && fromEl.value > to) fromEl.value='';
+}
 
 async function saveExpense(){
   const body={property_name:document.getElementById('exp-prop').value,date:document.getElementById('exp-date').value,amount:parseFloat(document.getElementById('exp-amount').value)||0,category:document.getElementById('exp-cat').value,description:document.getElementById('exp-desc').value.trim()||null,notes:document.getElementById('exp-notes').value.trim()||null,logged_by:'OFFICE'};

@@ -18,7 +18,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .hdr-name{font-size:15px;font-weight:500}
 .hdr-prop{font-size:12px;color:var(--muted)}
 .hdr-out{background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);font-family:inherit;padding:4px 8px;border-radius:6px}
-.bnav{background:var(--white);border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:500;max-width:430px;margin:0 auto}
+.bnav{background:var(--white);border-top:1px solid var(--border);display:flex;position:fixed;bottom:0;left:0;right:0;z-index:510;max-width:430px;margin:0 auto}
 .bnt{flex:1;padding:10px 2px 8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:9px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
 .bnt svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .bnt.on{color:var(--br)}
@@ -508,6 +508,8 @@ function checkLateCheckout() {
 }
 
 function goPage(id, btn) {
+  /* Close messaging panel if open */
+  if(typeof closeMessagingPanel==='function') closeMessagingPanel();
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
   document.querySelectorAll('.bnt').forEach(function(b){b.classList.remove('on');});
   document.getElementById('pg-'+id).classList.add('on');
@@ -1220,16 +1222,22 @@ function closeRevSheet(sheetId, backdropId) {
       if(me) try{ iframe.contentWindow.initMessagingPanel(me); }catch(e){}
     }
     overlay.style.display='block';
+    /* Force reflow so transition fires */
+    panel.getBoundingClientRect();
     panel.style.transform='translateY(0)';
     panelOpen=true;
     document.body.style.overflow='hidden';
   };
 
   window.closeMessagingPanel=function(){
-    document.getElementById('msg-panel-overlay').style.display='none';
-    document.getElementById('msg-panel').style.transform='translateY(calc(100% + 58px))';
+    var panel=document.getElementById('msg-panel');
+    panel.style.transform='translateY(calc(100% + 58px))';
     panelOpen=false;
     document.body.style.overflow='';
+    /* Hide overlay after transition completes (matches 300ms CSS transition) */
+    setTimeout(function(){
+      document.getElementById('msg-panel-overlay').style.display='none';
+    }, 320);
   };
 
   window.addEventListener('message',function(e){
