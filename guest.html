@@ -71,6 +71,10 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
 .done-banner{background:var(--g-l);border-radius:10px;padding:13px 16px;font-size:13px;color:var(--g);display:none;align-items:center;gap:10px;margin-bottom:18px}
 .done-banner svg{width:16px;height:16px;stroke:var(--g);fill:none;stroke-width:2.5;flex-shrink:0}
+.late-checkout-banner{background:var(--a-l);border:1.5px solid rgba(133,79,11,.25);border-radius:10px;padding:13px 16px;font-size:13px;color:var(--a);display:none;align-items:flex-start;gap:10px;margin-top:10px}
+.late-checkout-banner svg{width:16px;height:16px;stroke:var(--a);fill:none;stroke-width:2.5;flex-shrink:0;margin-top:1px}
+.late-checkout-banner strong{display:block;font-weight:600;margin-bottom:3px;font-size:13px}
+.late-checkout-banner p{font-size:12px;color:var(--a);line-height:1.6;opacity:.9}
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:12px}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
 .bdg-a{background:var(--a-l);color:var(--a)}.bdg-g{background:var(--g-l);color:var(--g)}.bdg-r{background:#FCEBEB;color:#791F1F}
@@ -221,7 +225,14 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label class="fl">Departure Date<span>*</span></label><input class="fc" id="ci-dep-date" type="date"/></div>
-      <div class="fg"><label class="fl">Departure Time<span>*</span></label><input class="fc" id="ci-dep-time" type="time"/></div>
+      <div class="fg"><label class="fl">Departure Time<span>*</span></label><input class="fc" id="ci-dep-time" type="time" oninput="checkLateCheckout()"/></div>
+    </div>
+    <div class="late-checkout-banner" id="late-checkout-banner">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>
+        <strong>Late checkout requested</strong>
+        <p>Our standard checkout is 11:00 AM. Departures after this time need to be confirmed by the managing team and will be permitted only if the property is not booked for the following day. We'll get back to you to confirm.</p>
+      </div>
     </div>
     <div class="fg"><label class="fl">Size of your group<span>*</span></label><input class="fc" id="ci-guests" type="number" min="1" value="1"/></div>
     <div class="fg">
@@ -471,9 +482,21 @@ document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
 document.getElementById('ci-name').value = me.name || '';
 if(me.check_in) document.getElementById('ci-arr-date').value = me.check_in;
 if(me.check_out) document.getElementById('ci-dep-date').value = me.check_out;
+checkLateCheckout();
 
 function signOut() { localStorage.removeItem('bc_me'); location.href = '/glogin.html'; }
 function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(function(){t.style.display='none';},2500); }
+
+function checkLateCheckout() {
+  var timeVal = document.getElementById('ci-dep-time').value;
+  var banner  = document.getElementById('late-checkout-banner');
+  if (!timeVal) { banner.style.display = 'none'; return; }
+  var parts = timeVal.split(':');
+  var hours = parseInt(parts[0], 10);
+  var mins  = parseInt(parts[1], 10);
+  var isLate = hours > 11 || (hours === 11 && mins > 0);
+  banner.style.display = isLate ? 'flex' : 'none';
+}
 
 function goPage(id, btn) {
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
