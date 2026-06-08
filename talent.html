@@ -13,8 +13,8 @@
   --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
   --nav-h:60px;--top-h:52px;
 }
-html{height:100%}
-body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;position:fixed;width:100%}
+html{height:100%;overscroll-behavior-y:none}
+body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;position:fixed;width:100%;overscroll-behavior-y:none}
 
 /* TOP BAR */
 .top-bar{
@@ -744,6 +744,58 @@ loadProperties();
 
 // Show first tab (Profile) on load
 showPanel('profile');
+
+// PULL TO REFRESH
+(function(){
+  var panels = document.querySelectorAll('.panel');
+  var refreshers = {
+    'panel-profile':   function(){ loadProfile(); toast('Profile refreshed'); },
+    'panel-schedule':  function(){ renderSchedule(); toast('Schedule refreshed'); },
+    'panel-ratings':   function(){ loadRatings(); toast('Ratings refreshed'); },
+    'panel-earnings':  function(){
+      var fr = document.getElementById('iframe-earnings');
+      fr.src = fr.src;
+      toast('Earnings refreshed');
+    }
+  };
+  var THRESHOLD = 80;
+  panels.forEach(function(panel){
+    var startY = 0, pulling = false, indicator = null;
+    panel.addEventListener('touchstart', function(e){
+      if(panel.scrollTop === 0){
+        startY = e.touches[0].clientY;
+        pulling = true;
+      }
+    }, {passive:true});
+    panel.addEventListener('touchmove', function(e){
+      if(!pulling) return;
+      var dist = e.touches[0].clientY - startY;
+      if(dist > 10 && panel.scrollTop === 0){
+        if(!indicator){
+          indicator = document.createElement('div');
+          indicator.style.cssText = 'text-align:center;font-size:13px;color:var(--muted);padding:10px 0;transition:opacity .2s';
+          indicator.textContent = '↓ Pull to refresh';
+          panel.insertBefore(indicator, panel.firstChild);
+        }
+        indicator.textContent = dist >= THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
+        indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
+      }
+    }, {passive:true});
+    panel.addEventListener('touchend', function(e){
+      if(!pulling) return;
+      pulling = false;
+      var dist = e.changedTouches[0].clientY - startY;
+      if(indicator){ indicator.remove(); indicator = null; }
+      // Use currentPanel (the active tab) not panel.id — prevents stale panel from hijacking
+      if(dist >= THRESHOLD && panel.scrollTop === 0){
+        var activeId = 'panel-' + currentPanel;
+        var fn = refreshers[activeId];
+        if(fn) fn();
+      }
+      startY = 0;
+    }, {passive:true});
+  });
+})();
 </script>
 
 
