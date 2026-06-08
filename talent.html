@@ -174,14 +174,16 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   <!-- VIEW MODE -->
   <div id="profile-view">
     <div style="background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px">
-      <div id="view-photo-banner" style="height:130px;background:var(--br-l);display:flex;align-items:center;justify-content:center;overflow:hidden">
-        <div class="prof-avatar-lg" id="prof-avatar-lg" style="width:72px;height:72px;font-size:28px">?</div>
-      </div>
-      <div style="padding:16px">
-        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;margin-bottom:2px" id="view-name">—</div>
-        <div style="font-size:13px;color:var(--br);font-weight:500;margin-bottom:4px" id="view-talent-name"></div>
-        <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:10px" id="view-tagline"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px" id="view-badges"></div>
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:16px">
+        <div id="view-photo-banner" style="width:88px;height:88px;flex-shrink:0;border-radius:12px;background:var(--br-l);display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <div class="prof-avatar-lg" id="prof-avatar-lg" style="width:72px;height:72px;font-size:28px">?</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:500;margin-bottom:2px" id="view-name">—</div>
+          <div style="font-size:13px;color:var(--br);font-weight:500;margin-bottom:4px" id="view-talent-name"></div>
+          <div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:10px" id="view-tagline"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px" id="view-badges"></div>
+        </div>
       </div>
     </div>
 
@@ -280,7 +282,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     </div>
     <div class="cal-grid" id="sched-grid"></div>
   </div>
-  <button class="btn-p" onclick="openBookingRequestModal()" style="margin-top:4px">+ Request a Booking</button>
 </div>
 
 <!-- PANEL: RATINGS -->
@@ -438,7 +439,7 @@ function renderProfileView(d){
   const av=document.getElementById('prof-avatar-lg');
   const banner=document.getElementById('view-photo-banner');
   if(d.photo_url){
-    banner.innerHTML='<img src="'+d.photo_url+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML=\'<div class=prof-avatar-lg style=width:72px;height:72px;font-size:28px>'+ini(d.name||talentNameParam)+'</div>\'"/>';
+    banner.innerHTML='<img src="'+d.photo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentElement.innerHTML=\'<div class=prof-avatar-lg style=width:72px;height:72px;font-size:28px>'+ini(d.name||talentNameParam)+'</div>\'"/>';
   } else {
     av.textContent=ini(d.name||talentNameParam);
   }
@@ -614,9 +615,9 @@ async function saveDaySlot(){
       const s=document.getElementById('modal-start').value,en=document.getElementById('modal-end').value;
       if(!s||!en){toast('Set both times');return;}
       if(en<=s){toast('End must be after start');return;}
-      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'available',time_start:s,time_end:en});
+      await apiUpsert({talent_id:talentId,schedule_name:talentNameParam,date:modalDateStr,status:'available',time_start:s,time_end:en});
     } else {
-      await apiUpsert({talent_id:talentId,date:modalDateStr,status:'free',time_start:null,time_end:null});
+      await apiUpsert({talent_id:talentId,schedule_name:talentNameParam,date:modalDateStr,status:'free',time_start:null,time_end:null});
     }
   }catch(e){toast('ERR: '+e.message);console.error('saveDaySlot error',e);return;}
   closeDayModal();await renderSchedule();toast('Saved ✓');
@@ -629,7 +630,7 @@ async function apiUpsert(payload){
     r=await fetch(SB+'/rest/v1/talent_schedule?talent_id=eq.'+encodeURIComponent(talentId)+'&date=eq.'+payload.date,{
       method:'PATCH',
       headers:Object.assign({},h,{Prefer:'return=minimal'}),
-      body:JSON.stringify({status:payload.status,time_start:payload.time_start,time_end:payload.time_end})
+      body:JSON.stringify({schedule_name:talentNameParam,status:payload.status,time_start:payload.time_start,time_end:payload.time_end})
     });
   } else {
     r=await fetch(SB+'/rest/v1/talent_schedule',{
