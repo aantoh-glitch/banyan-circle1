@@ -782,6 +782,7 @@ function bundleRow(b){
     + '</td>'
     + '<td>' + staffCell + '</td>'
     + '<td>' + (b.tasks[0]&&b.tasks[0].property_name ? '<span style="font-size:11px;font-weight:500;background:var(--br-l);color:var(--br);padding:2px 8px;border-radius:6px">'+escHtml(b.tasks[0].property_name)+'</span>' : '<span style="color:var(--muted)">—</span>') + '</td>'
+    + '<td>' + (b.tasks[0]&&b.tasks[0].task_type ? taskTypeBadge(b.tasks[0].task_type) : '<span style="color:var(--muted)">—</span>') + '</td>'
     + '<td>' + priorityBadge(b.priority) + '</td>'
     + '<td style="font-size:12px">' + due + '</td>'
     + '<td id="bundle-ack-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
@@ -794,6 +795,8 @@ function bundleRow(b){
   tasks.forEach(t => {
     html += '<tr class="bundle-sub-row hidden" id="sub-'+bid+'">'
       + '<td><div style="font-size:12px;line-height:1.4;color:var(--text)">' + escHtml(t.work) + '</div></td>'
+      + '<td></td>'
+      + '<td></td>'
       + '<td></td>'
       + '<td></td>'
       + '<td></td>'
