@@ -160,7 +160,7 @@ var submitted = {
 
 async function loadStaff(){
   try {
-    var rows = await api('/rest/v1/staff?select=id,name,designation,assigned_properties&order=name') || [];
+    var rows = await api('/rest/v1/staff?select=id,name,designation,assigned_properties&role=eq.Operations&order=name') || [];
     // If we know the guest's property, only show staff assigned to it
     if (urlProp) {
       rows = rows.filter(function(s){
