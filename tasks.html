@@ -788,7 +788,7 @@ function bundleRow(b){
     + '<td id="bundle-ack-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
     + '<td id="bundle-done-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
     + '<td></td><td></td><td></td>'
-    + '<td style="text-align:right"><button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
+    + '<td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="event.stopPropagation();editBundle(\''+b.bundle_id+'\')">Edit</button> <button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
     + '</tr>';
 
   // Sub-rows (hidden by default)
@@ -1188,6 +1188,30 @@ function pickPreset(btn, value){
 
 async function saveTask(){
   const id          = document.getElementById('t-id').value;
+
+  // Bundle edit: id is '__bundle__<uuid>'
+  if(id && id.startsWith('__bundle__')){
+    const bundleId = id.replace('__bundle__','');
+    const staffId  = document.getElementById('t-staff').value;
+    const priority = document.getElementById('t-priority').value;
+    const due_date = document.getElementById('t-due').value || null;
+    const task_type = document.getElementById('t-type').value || null;
+    const property_name = document.getElementById('t-property').value || null;
+    const staff = ALL_STAFF.find(s=>s.id===staffId);
+    if(!staffId){ alert('Please select a staff member.'); return; }
+    const btn = document.getElementById('btn-save-task');
+    btn.disabled = true; btn.textContent = 'Updating…';
+    try {
+      const patch = { staff_id: staffId, staff_name: staff?staff.name:null, priority, due_date, task_type, property_name };
+      await api('/rest/v1/tasks?bundle_id=eq.'+bundleId, 'PATCH', patch);
+      // Update local array
+      ALL_TASKS.forEach(t => { if(t.bundle_id === bundleId) Object.assign(t, patch); });
+      closeModal(); toast('Bundle updated ✓'); await loadAdminTasks();
+    } catch(e){ toast('Update failed: '+e.message); }
+    finally{ btn.disabled=false; btn.textContent='Update All Tasks'; }
+    return;
+  }
+
   const workEl      = document.getElementById('t-work');
   const work        = workEl.value.trim();
   const bundleName  = workEl.dataset.bundle || '';
@@ -1324,6 +1348,27 @@ function downloadReport(){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('Report downloaded ✓');
+}
+
+function editBundle(bundleId){
+  const tasks = ALL_TASKS.filter(t => t.bundle_id === bundleId);
+  if(!tasks.length) return;
+  const first = tasks[0];
+  // Populate modal with bundle's shared fields
+  document.getElementById('t-id').value = '__bundle__' + bundleId;
+  document.getElementById('t-work').value = first.bundle_name || '';
+  document.getElementById('t-staff').value = first.staff_id || '';
+  document.getElementById('t-priority').value = first.priority || 'medium';
+  document.getElementById('t-due').value = first.due_date || '';
+  document.getElementById('t-notes').value = '';
+  document.getElementById('t-property').value = first.property_name || '';
+  document.getElementById('t-type').value = first.task_type || '';
+  document.getElementById('task-modal-ttl').textContent = 'Edit Bundle: ' + (first.bundle_name || 'Bundle');
+  document.getElementById('btn-save-task').textContent = 'Update All Tasks';
+  // Hide preset chips — not relevant for bundle edit
+  document.getElementById('preset-chips').innerHTML = '';
+  document.getElementById('preset-bundle-note').style.display = 'none';
+  document.getElementById('modal-task').classList.add('on');
 }
 
 async function deleteTask(id){
