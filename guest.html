@@ -515,7 +515,27 @@ function goPage(id, btn) {
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
   if(id==='finalbill') loadFinalBill();
+  /* Persist active tab in URL hash so refresh stays on same page */
+  history.replaceState(null, '', '#' + id);
 }
+
+/* On load: restore tab from URL hash */
+(function(){
+  var hash = location.hash.replace('#','');
+  var validPages = ['checkin','experience','finalbill','reviews'];
+  if(hash && validPages.indexOf(hash) !== -1) {
+    /* Find matching nav button and activate */
+    var btns = document.querySelectorAll('.bnt');
+    var matched = false;
+    btns.forEach(function(b){
+      var onclick = b.getAttribute('onclick') || '';
+      if(onclick.indexOf("'"+hash+"'") !== -1 || onclick.indexOf('"'+hash+'"') !== -1) {
+        b.click();
+        matched = true;
+      }
+    });
+  }
+})();
 
 // EXPERIENCE
 var expLoaded = false;
