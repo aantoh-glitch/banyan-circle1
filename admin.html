@@ -735,7 +735,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">Property Name <span style="color:var(--r)">*</span></label><input class="fc" id="ml-prop" type="text" placeholder="e.g. Villa 21" autocomplete="off"/></div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Email</label><input class="fc" id="ml-email"/></div>
-    <div class="fg"><label class="fl">Mobile</label><input class="fc" id="ml-mobile"/></div>
+    <div class="fg"><label class="fl">Mobile <span style="color:var(--r)">*</span></label><input class="fc" id="ml-mobile"/></div>
   </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="ml-notes"></textarea></div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-landlord')">Cancel</button><button class="btn-p" onclick="saveLandlord()">Save</button></div>
@@ -821,7 +821,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div style="font-family:'Playfair Display',serif;font-size:22px">Guest Registration</div>
       <div style="display:flex;gap:8px">
-        <button class="btn-p" onclick="downloadAdminRegPDF()" style="font-size:13px;padding:8px 16px">⬇ Download PDF</button>
+        <button class="btn-p" onclick="downloadAdminRegPDF()" style="font-size:13px;padding:8px 16px">⬇ Download Check-In Form</button>
+        <button class="btn-sec" onclick="downloadAdminRegIDs()" style="font-size:13px;padding:8px 16px">⬇ Download ID</button>
         <button class="btn-sec" onclick="closeModal('admin-reg-modal')">✕ Close</button>
       </div>
     </div>
@@ -1149,7 +1150,7 @@ async function loadLandlords(){
 function fillPropSelect(id,current){ document.getElementById(id).innerHTML=PROPS.map(p=>`<option value="${p.name}"${p.name===current?' selected':''}>${p.name}</option>`).join(''); }
 function openLandlordModal(){ document.getElementById('ml-id').value=''; document.getElementById('ml-ttl').textContent='Add landlord'; ['ml-pin','ml-name','ml-prop','ml-email','ml-mobile','ml-notes'].forEach(i=>document.getElementById(i).value=''); openModal('modal-landlord'); setTimeout(()=>document.getElementById('ml-pin').focus(),100); }
 function editLandlord(l){ document.getElementById('ml-id').value=l.id; document.getElementById('ml-ttl').textContent='Edit landlord'; document.getElementById('ml-name').value=l.name||''; document.getElementById('ml-pin').value=l.pin||''; document.getElementById('ml-prop').value=l.property_name||''; document.getElementById('ml-email').value=l.email||''; document.getElementById('ml-mobile').value=l.mobile||''; document.getElementById('ml-notes').value=l.notes||''; openModal('modal-landlord'); }
-async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(id)await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body); else await api('/rest/v1/landlords','POST',body);
+async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(id)await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body); else await api('/rest/v1/landlords','POST',body);
   // Ensure a matching row exists in properties table so the portal icon appears
   if(!id && body.property_name){
     const existing=await api('/rest/v1/properties?name=eq.'+encodeURIComponent(body.property_name)+'&select=id').catch(()=>null);
@@ -1427,7 +1428,7 @@ async function loadGuestRegistrations(){
     <thead><tr><th>Guest</th><th>Property</th><th>Submitted</th><th>From → To</th><th>Group</th><th>IDs</th><th></th></tr></thead>
     <tbody>${data.map(c=>{
       const n=(c.id_proof_urls||[]).length;
-      const idHtml=n?`<span class="bdg bdg-b">${n} doc${n>1?'s':''}</span> <button class="btn-edit" onclick="downloadRegIDs('${c.id}')" title="Download ID${n>1?'s':''}" style="padding:4px 9px;font-size:12px">⬇</button>`:'<span style="color:var(--muted);font-size:12px">—</span>';
+      const idHtml=n?`<span class="bdg bdg-b">${n} doc${n>1?'s':''}</span>`:'<span style="color:var(--muted);font-size:12px">—</span>';
       return `<tr>
         <td style="font-weight:500">${c.guest_name||'—'}</td>
         <td>${c.property_name||'—'}</td>
@@ -1533,6 +1534,13 @@ function dlAdminDoc(idx,section){
   const doc=docs[idx];
   if(!doc?.data){toast('No file data available');return;}
   const a=document.createElement('a'); a.href=doc.data; a.download=doc.name||'document'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function downloadAdminRegIDs(){
+  if(!ADMIN_REG){toast('No record loaded');return;}
+  const cid=ADMIN_REG.id;
+  if(!cid){toast('Record has no ID');return;}
+  downloadRegIDs(cid);
 }
 
 function downloadAdminRegPDF(){
