@@ -350,7 +350,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     <div class="refund-section" id="wh-refund-section">
       <div class="fg">
         <label class="fl" style="margin-bottom:5px">Quantity Returned</label>
-        <input class="fc" id="wh-returned-qty" type="number" min="0" placeholder="0" style="max-width:160px;margin-bottom:10px"/>
+        <input class="fc" id="wh-returned-qty" type="number" min="0" placeholder="0" style="max-width:160px;margin-bottom:10px" oninput="clampReturnedQty()"/>
       </div>
       <div class="fg">
         <div class="tog-wrap" style="margin-bottom:10px">
@@ -664,12 +664,13 @@ function setPropFilter(prop, el){
   ACTIVE_PROP = prop;
   document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-  // Hide Add Stock and Use Stock on warehouse; show on property
   const isWarehouse = prop === 'warehouse';
   const addBtn = document.getElementById('d-btn-add');
   const useBtn = document.getElementById('d-btn-use');
+  const whBtn  = document.getElementById('d-btn-warehouse');
   if(addBtn) addBtn.style.display = isWarehouse ? 'none' : '';
   if(useBtn) useBtn.style.display = isWarehouse ? 'none' : '';
+  if(whBtn)  whBtn.style.display  = isWarehouse ? '' : 'none';
   if(prop === 'warehouse'){
     loadWarehouseView();
   } else {
@@ -958,7 +959,6 @@ function toggleCheckedSection(){
   document.getElementById('wh-damaged-wrap').style.display = checked ? 'block' : 'none';
   if(!checked){
     document.getElementById('wh-damaged').value = '';
-    // If returned is checked, clear returned qty too
     if(document.getElementById('wh-returned').checked){
       document.getElementById('wh-returned-qty').value = '';
     }
@@ -966,11 +966,25 @@ function toggleCheckedSection(){
 }
 
 function syncDamagedToReturned(){
-  // Only sync if "returned" is checked — keep returned qty in sync with damaged by default
-  if(document.getElementById('wh-returned').checked){
-    const damaged = document.getElementById('wh-damaged').value;
-    document.getElementById('wh-returned-qty').value = damaged;
+  const qty     = parseInt(document.getElementById('wh-qty').value)||0;
+  const damagedEl = document.getElementById('wh-damaged');
+  let damaged   = parseInt(damagedEl.value)||0;
+  // Clamp damaged to qty
+  if(qty > 0 && damaged > qty){
+    damaged = qty;
+    damagedEl.value = qty;
   }
+  // Keep returned qty in sync with (clamped) damaged
+  if(document.getElementById('wh-returned').checked){
+    document.getElementById('wh-returned-qty').value = damaged || '';
+  }
+}
+
+function clampReturnedQty(){
+  const damaged    = parseInt(document.getElementById('wh-damaged').value)||0;
+  const returnedEl = document.getElementById('wh-returned-qty');
+  const val        = parseInt(returnedEl.value)||0;
+  if(damaged > 0 && val > damaged) returnedEl.value = damaged;
 }
 
 function toggleReturnedSection(){
@@ -1009,6 +1023,14 @@ async function saveWarehouseStock(){
   const pricePerUnit = parseFloat(document.getElementById('wh-price-per').value);
   if(!pricePerUnit || pricePerUnit <= 0){ alert('Please enter a price per unit'); return; }
 
+  const isChecked  = document.getElementById('wh-checked').checked;
+  const numDamaged = isChecked ? (parseInt(document.getElementById('wh-damaged').value)||0) : null;
+  if(isChecked && numDamaged > qty){ alert('Number damaged cannot exceed quantity ('+qty+')'); return; }
+
+  const isReturned  = document.getElementById('wh-returned').checked;
+  const returnedQty = isReturned ? (parseInt(document.getElementById('wh-returned-qty').value)||0) : null;
+  if(isReturned && numDamaged != null && returnedQty > numDamaged){ alert('Quantity returned cannot exceed number damaged ('+numDamaged+')'); return; }
+
   const item = ALL_ITEMS.find(i=>i.id===itemId)||{};
   const body = {
     item_id:         itemId,
@@ -1019,10 +1041,10 @@ async function saveWarehouseStock(){
     quantity:        qty,
     price_per_unit:  pricePerUnit,
     total_price:     parseFloat(document.getElementById('wh-total').value)||null,
-    checked:         document.getElementById('wh-checked').checked,
-    num_damaged:     document.getElementById('wh-checked').checked ? (parseInt(document.getElementById('wh-damaged').value)||0) : null,
-    returned:        document.getElementById('wh-returned').checked,
-    returned_qty:    document.getElementById('wh-returned').checked ? (parseInt(document.getElementById('wh-returned-qty').value)||null) : null,
+    checked:         isChecked,
+    num_damaged:     numDamaged,
+    returned:        isReturned,
+    returned_qty:    returnedQty,
     refund_expected: document.getElementById('wh-refund-expected').checked,
     refund_received: document.getElementById('wh-refund-received').checked,
     refund_amount:   parseFloat(document.getElementById('wh-refund-amt').value)||null,
@@ -1334,6 +1356,7 @@ function renderLog(rows){
   container.innerHTML=`<div style="overflow-x:auto"><table class="tbl">
     <thead><tr>
       <th>Date</th><th>Type</th><th>Item</th><th>Property</th><th>Qty</th>
+      <th>Damaged</th><th>Returned</th>
       <th>Price/Unit</th><th>Total</th><th>Flags</th><th>Notes</th>
     </tr></thead>
     <tbody>${filtered.map(r=>{
@@ -1343,12 +1366,20 @@ function renderLog(rows){
         r.refund_expected?'Refund Exp.':null,
         r.refund_received?`Refund Rcvd${r.refund_amount?(' ₹'+Number(r.refund_amount).toLocaleString('en-IN')):''}`:null,
       ].filter(Boolean).join(' · ')||'—';
+      const damagedCell = r.num_damaged != null
+        ? `<span style="color:var(--r);font-weight:600">${r.num_damaged}</span>`
+        : '<span style="color:var(--muted)">—</span>';
+      const returnedCell = r.returned_qty != null
+        ? `<span style="font-weight:600">${r.returned_qty}</span>`
+        : '<span style="color:var(--muted)">—</span>';
       return `<tr>
         <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${fmtDate(r.date||r.created_at)}</td>
         <td>${typeLabel(r.type)}</td>
         <td style="font-weight:500">${r.item_name||'—'}</td>
         <td style="font-size:12px;color:var(--muted)">${r.property||'Warehouse'}</td>
         <td style="font-weight:600">${r.quantity??'—'}</td>
+        <td style="font-size:12px;text-align:center">${damagedCell}</td>
+        <td style="font-size:12px;text-align:center">${returnedCell}</td>
         <td>${r.price_per_unit!=null?'₹'+Number(r.price_per_unit).toLocaleString('en-IN'):'—'}</td>
         <td>${r.total_price!=null?'₹'+Number(r.total_price).toLocaleString('en-IN'):'—'}</td>
         <td style="font-size:11px;color:var(--muted)">${flags}</td>
@@ -1364,13 +1395,15 @@ function renderLog(rows){
 function downloadLogExcel(){
   const rows = LOG_FILTER==='all' ? LOG_CACHE : LOG_CACHE.filter(r=>r.type===LOG_FILTER);
   if(!rows.length){ alert('No data to download'); return; }
-  const headers=['Date','Type','Item','Property','Quantity','Price/Unit','Total Price','Checked','Returned','Refund Expected','Refund Received','Refund Amount','Notes'];
+  const headers=['Date','Type','Item','Property','Quantity','Damaged','Returned Qty','Price/Unit','Total Price','Checked','Returned','Refund Expected','Refund Received','Refund Amount','Notes'];
   const csvRows=[headers.join(','),...rows.map(r=>[
     fmtDate(r.date||r.created_at),
     r.type==='warehouse'?'Warehouse In':r.type==='add'?'Property In':'Used',
     '"'+(r.item_name||'').replace(/"/g,'""')+'"',
     '"'+(r.property||'Warehouse').replace(/"/g,'""')+'"',
     r.quantity??'',
+    r.num_damaged??'',
+    r.returned_qty??'',
     r.price_per_unit??'',
     r.total_price??'',
     r.checked?'Yes':'',
