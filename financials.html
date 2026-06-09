@@ -251,6 +251,13 @@ textarea.fc{resize:vertical;min-height:72px}
       <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="rev-amount" type="number" min="0" placeholder="0"/></div>
     </div>
   </div>
+  <div class="fg"><label class="fl">Payment Status</label>
+    <div style="display:flex;gap:8px">
+      <button id="rev-st-pending" class="ppill on" onclick="setRevStatus('pending')">⏳ Pending</button>
+      <button id="rev-st-paid"    class="ppill"    onclick="setRevStatus('paid')">✓ Paid</button>
+    </div>
+    <input type="hidden" id="rev-status" value="pending"/>
+  </div>
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="rev-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="rev-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="rev-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
@@ -359,6 +366,12 @@ function setExpStatus(s){
   document.getElementById('exp-status').value=s;
   document.getElementById('exp-st-pending').classList.toggle('on',s==='pending');
   document.getElementById('exp-st-paid').classList.toggle('on',s==='paid');
+}
+
+function setRevStatus(s){
+  document.getElementById('rev-status').value=s;
+  document.getElementById('rev-st-pending').classList.toggle('on',s==='pending');
+  document.getElementById('rev-st-paid').classList.toggle('on',s==='paid');
 }
 
 // Date filters
@@ -488,11 +501,12 @@ async function loadLog(){
     RECEIVABLE_ROWS=(revenues||[]).filter(r=>r.bill_id).map(r=>({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.property_name,_prop:r.property_name,payment_status:r.payment_status}));
     RECEIVABLE_ROWS.sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
 
-    // Payables: earnings_log + utility_payments with status pending
+    // Payables: earnings_log + utility_payments + expenses + pending revenues with status pending
     const payableEarnings=earnFiltered.filter(r=>r.status==='pending').map(r=>({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
     const payableUtils=(utilities||[]).filter(r=>r.status==='pending').map(r=>({...r,_type:'utility',_date:r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_sub:(r.bill_date||r.month),_prop:r.property_name}));
     const payableExp=(expenses||[]).filter(r=>r.status==='pending').map(r=>({...r,_type:'expense',_date:r.date,_amount:r.amount,_label:r.description||r.category,_sub:r.category,_prop:r.property_name}));
-    PAYABLE_ROWS=[...payableEarnings,...payableUtils,...payableExp].sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
+    const payableRev=(revenues||[]).filter(r=>r.payment_status==='pending').map(r=>({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.property_name,_prop:r.property_name,payment_status:r.payment_status}));
+    PAYABLE_ROWS=[...payableEarnings,...payableUtils,...payableExp,...payableRev].sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
 
     const recPendingCount=RECEIVABLE_ROWS.filter(r=>r.payment_status==='pending').length;
     const recBtn=document.getElementById('btn-receivables');
@@ -677,7 +691,7 @@ window.openModal=function(id){
   const month=new Date().toISOString().slice(0,7);
   if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-date').max=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status',''); setExpStatus('pending');}
   if(id==='modal-utility'){document.getElementById('util-bill-date').value=today; document.getElementById('util-bill-date').max=today; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; setUtilStatus('pending'); const selProp=document.getElementById('util-prop').value; const pb=document.getElementById('util-paid-by'); const pbOpts=['Property By Heritance']; if(selProp&&selProp!=='Property By Heritance') pbOpts.push(selProp); pb.innerHTML=pbOpts.map(n=>`<option>${n}</option>`).join(''); document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
-  if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status','');}
+  if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status',''); setRevStatus('pending');}
   if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-date').max=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); setEarnStatus('pending'); loadEarnPersons();}
   document.getElementById(id).classList.add('on');
 };
@@ -743,7 +757,7 @@ async function saveUtility(){
 }
 
 async function saveRevenue(){
-  const body={property_name:document.getElementById('rev-prop').value,item:document.getElementById('rev-item').value.trim(),date:document.getElementById('rev-date').value,amount:parseFloat(document.getElementById('rev-amount').value)||0,notes:document.getElementById('rev-notes').value.trim()||null};
+  const body={property_name:document.getElementById('rev-prop').value,item:document.getElementById('rev-item').value.trim(),date:document.getElementById('rev-date').value,amount:parseFloat(document.getElementById('rev-amount').value)||0,payment_status:document.getElementById('rev-status').value,notes:document.getElementById('rev-notes').value.trim()||null};
   if(!body.item||!body.date){alert('Need item and date');return;}
   setBtn('rev-btn',true);
   try{
