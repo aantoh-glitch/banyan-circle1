@@ -493,7 +493,7 @@ async function loadLog(){
       display=rows.filter(r=>r._type==='earnings');
       if(PAYOUT_SUB==='team')    display=display.filter(r=>r.entity_type==='staff');
       else if(PAYOUT_SUB==='talent')   display=display.filter(r=>r.entity_type==='talent');
-      else if(PAYOUT_SUB==='landlord') display=display.filter(r=>r.entity_type==='property');
+      else if(PAYOUT_SUB==='landlord') display=display.filter(r=>r.entity_type==='landlord');
       if(PAYOUT_NAME && PAYOUT_NAME!=='all') display=display.filter(r=>r.entity_name===PAYOUT_NAME);
     } else {
       display=ACTIVE_TYPE==='all'?rows:rows.filter(r=>r._type===ACTIVE_TYPE);
@@ -616,6 +616,7 @@ async function saveUtility(){
         type:        'positive',
         head:        'Expenses Borne',
         amount:      body.amount,
+        entity_type: 'landlord',
         entity_name: body.property_name,
         entry_date:  body.paid_on,
         notes:       'Auto-logged: '+body.utility_type+' utility paid by '+body.paid_by,
@@ -665,7 +666,7 @@ async function loadEarnPersons(){
 async function saveEarnings(){
   const isPct=document.getElementById('earn-head').value==='Percentage of Revenue';
   const ptype=document.getElementById('earn-ptype').value;
-  const body={type:earnType,head:document.getElementById('earn-head').value,amount:isPct?null:parseFloat(document.getElementById('earn-amount').value)||0,percentage:isPct?parseFloat(document.getElementById('earn-pct').value)||null:null,entity_type:ptype==='landlord'?'property':ptype,entity_name:document.getElementById('earn-person').value,entry_date:document.getElementById('earn-date').value,notes:document.getElementById('earn-notes').value.trim()||null,recorded_by:'OFFICE'};
+  const body={type:earnType,head:document.getElementById('earn-head').value,amount:isPct?null:parseFloat(document.getElementById('earn-amount').value)||0,percentage:isPct?parseFloat(document.getElementById('earn-pct').value)||null:null,entity_type:ptype,entity_name:document.getElementById('earn-person').value,entry_date:document.getElementById('earn-date').value,notes:document.getElementById('earn-notes').value.trim()||null,recorded_by:'OFFICE'};
   if(!body.entity_name||!body.entry_date){alert('Select person and date');return;}
   setBtn('earn-btn',true);
   try{
