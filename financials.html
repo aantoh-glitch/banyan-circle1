@@ -611,7 +611,24 @@ async function saveUtility(){
   try{
     const file=document.getElementById('util-file').files[0];
     if(file){setFileStatus('util-file-status','Uploading…');const url=await uploadDoc(file,'utility/'+body.property_name,'utility-uploads');body.proof_url=url;setFileStatus('util-file-status','Uploaded ✓',true);}
-    await api('/rest/v1/utility_payments','POST',body);closeModal('modal-utility');toast('Utility bill saved ✓');loadLog();
+    await api('/rest/v1/utility_payments','POST',body);
+
+    // If paid by a non-"Property By Heritance" party, log an "Expenses Borne"
+    // positive entry in earnings_log under that property's header
+    if(body.status==='paid' && body.paid_by && body.paid_by!=='Property By Heritance'){
+      await api('/rest/v1/earnings_log','POST',{
+        type:        'positive',
+        head:        'Expenses Borne',
+        amount:      body.amount,
+        entity_type: 'property',
+        entity_name: body.property_name,
+        entry_date:  body.paid_on,
+        notes:       'Auto-logged: '+body.utility_type+' utility paid by '+body.paid_by,
+        recorded_by: 'OFFICE'
+      });
+    }
+
+    closeModal('modal-utility');toast('Utility bill saved ✓');loadLog();
   }catch(e){alert('Error: '+e.message);}finally{setBtn('util-btn',false);}
 }
 
