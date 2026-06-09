@@ -346,7 +346,8 @@ const EARN_NEG_HEADS = ['Deduction','Loss'];
 
 let PROPS=[], ACTIVE_PROP='all', ACTIVE_TYPE='all', earnType='positive';
 let DATE_FROM='', DATE_TO='';
-let ALL_ROWS=[]; // cached for Excel
+let ALL_ROWS=[];
+let BILL_MAP={};  // id -> full bill row, for safe PDF/delete lookup // cached for Excel
 let PAYOUT_SUB='all', PAYOUT_NAME='all';
 let RECEIVABLE_ROWS=[], PAYABLE_ROWS=[];
 
@@ -520,6 +521,7 @@ async function loadLog(){
     (revenues||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.bill_id?'Bill · '+r.property_name:null,_prop:r.property_name,payment_status:r.payment_status}));
     earnFiltered.forEach(r=>rows.push({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
     billRows.forEach(r=>rows.push(r));
+    BILL_MAP={}; billRows.forEach(r=>{ BILL_MAP[String(r.id)]=r; });
 
     rows.sort((a,b)=>(b._date||'')>(a._date||'')?1:-1);
     ALL_ROWS=rows;
@@ -630,7 +632,10 @@ async function loadLog(){
         (r._type==='earnings'||r._type==='revenue'||r._type==='utility'||r._type==='expense'||r._type==='bill')
           ? (()=>{ const s=(r._type==='utility'||r._type==='expense')?r.status:r.payment_status; const isPaid=s==='paid'; return `<span class="bdg" style="${isPaid?'background:var(--g-l);color:#27500A':'background:#fff3e0;color:#7c4a00'}">${isPaid?'✓ Paid':'⏳ Pending'}</span> `; })()
           : ''
-      }${r._type==='bill'?`<button class="btn-pdf" onclick='billPdf(${JSON.stringify(r).replace(/\/g,"&#x5C;").replace(/'/g,"&#39;")})' style="padding:5px 10px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;margin-right:4px">PDF</button><button class="btn-edit" onclick="editBillRow('${r.id}')">Edit</button> <button class="btn-del" onclick="deleteBillRow('${r.id}','${(r.guest_name||'Bill').replace(/'/g,'')}')">Delete</button>`:`<button class="btn-edit" onclick="editRow('${r._type}','${r.id}')">Edit</button> <button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button>`}</td>
+      }${r._type==='bill'
+        ? `<button class="btn-pdf" onclick="billPdf('${r.id}')" style="padding:5px 10px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;margin-right:4px">PDF</button><button class="btn-edit" onclick="editBillRow('${r.id}')" style="margin-right:4px">Edit</button><button class="btn-del" onclick="deleteBillRow('${r.id}')">Delete</button>`
+        : `<button class="btn-edit" onclick="editRow('${r._type}','${r.id}')">Edit</button> <button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button>`
+      }</td>
     </tr>`).join('')}</tbody></table>`;
   }catch(e){el.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
 }
@@ -1038,7 +1043,11 @@ document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{
 }));
 
 // ── Bill helpers (for bills shown in financials log) ──
-function billPdf(b){
+function billPdf(idOrObj){
+  const b = (typeof idOrObj === 'string' || typeof idOrObj === 'number')
+    ? BILL_MAP[String(idOrObj)]
+    : idOrObj;
+  if (!b) { toast('Bill data not found'); return; }
   // Reuse same PDF logic as billing.html
   const items=b.items||[];
   const name=b.guest_name||'Guest';
@@ -1077,8 +1086,9 @@ function editBillRow(id){
   else toast('Open the billing form to edit this bill');
 }
 
-async function deleteBillRow(id, name){
-  document.getElementById('del-bill-name').textContent = name;
+async function deleteBillRow(id){
+  const b = BILL_MAP[String(id)];
+  document.getElementById('del-bill-name').textContent = b ? (b.guest_name||'Bill') : '';
   _pendingDeleteBillId = id;
   document.getElementById('pin-input').value='';
   document.getElementById('pin-error').style.display='none';
