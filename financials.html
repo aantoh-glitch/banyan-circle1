@@ -105,7 +105,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
       Add Utility Bill
     </button>
-    <button class="act-btn green" onclick="openModal('modal-revenue')">
+    <button class="act-btn green" onclick="openBilling()">
       <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
       Add Revenue
     </button>
@@ -1075,7 +1075,18 @@ function billPdf(idOrObj){
   let taxRows=`<tr><td colspan="4" style="color:#888;font-size:12px;border-top:1px dashed #ddd">Taxable Amount</td><td style="text-align:right;color:#888;font-size:12px;border-top:1px dashed #ddd">${fi(taxable)}</td></tr>`;
   if(cgst>0)taxRows+=`<tr><td colspan="4" style="color:#888;font-size:12px">CGST</td><td style="text-align:right;color:#888;font-size:12px">${fi(cgst)}</td></tr>`;
   if(sgst>0)taxRows+=`<tr><td colspan="4" style="color:#888;font-size:12px">SGST</td><td style="text-align:right;color:#888;font-size:12px">${fi(sgst)}</td></tr>`;
-  const doc=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${ref}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}.guest-detail{font-size:12px;color:#666;line-height:1.6}hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}table{width:100%;border-collapse:collapse}th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:${sBg};color:${sCol};margin-top:16px}.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}@media print{body{padding:18px 24px}}</style></head><body><div class="hdr"><div style="min-width:140px"></div><div style="flex:1;text-align:center"><strong style="font-size:18px;color:#993C1D">Properties By Heritance</strong></div><div class="prop"><div>Ref: <strong>${ref}</strong></div><div>${e(b.property_name||'')}</div><div>${fd(b.bill_date||b.created_at)}</div></div></div><div class="guest-card"><div class="guest-name">${e(b.guest_name||'Guest')}</div>${b.guest_address?`<div class="guest-detail">${e(b.guest_address).replace(/\n/g,'<br/>')}</div>`:''}</div><hr/><table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>${itemRows}${taxRows}<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">${fi(b.amount)}</td></tr></tbody></table><div class="status-pill">${statusStr}</div>${b.remarks?`<div style="font-size:12px;color:#888;margin-top:8px">Note: ${e(b.remarks)}</div>`:''}<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div><script>window.onload=function(){document.title="${ref}";window.print();}<\/script></body></html>`;
+  const doc=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${ref}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}.guest-detail{font-size:12px;color:#666;line-height:1.6}hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}table{width:100%;border-collapse:collapse}th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:${sBg};color:${sCol};margin-top:16px}.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}@media print{body{padding:18px 24px}}</style></head><body><div class="hdr"><div style="min-width:140px"></div><div style="flex:1;text-align:center"><strong style="font-size:18px;color:#993C1D">Properties By Heritance</strong></div><div class="prop"><div>Ref: <strong>${ref}</strong></div><div>${e(b.property_name||'')}</div><div>${fd(b.bill_date||b.created_at)}</div></div></div><div class="guest-card"><div class="guest-name">${e(b.guest_name||'Guest')}</div>${b.guest_address?`<div class="guest-detail">${e(b.guest_address).replace(/\n/g,'<br/>')}</div>`:''}</div><hr/><table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>${itemRows}${taxRows}<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">${fi(b.amount)}</td></tr></tbody></table><div class="status-pill">${statusStr}</div>${b.remarks?`<div style="font-size:12px;color:#888;margin-top:8px">Note: ${e(b.remarks)}</div>`:''}<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div><script>window.onload=function(){document.title="${ref}";window.print();}<\/script>
+<!-- BILLING OVERLAY -->
+<div id="billing-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:flex-start;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:860px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.22)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,0.1);flex-shrink:0">
+      <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500">New Bill</span>
+      <button onclick="closeBillingOverlay()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5F5E5A;line-height:1;padding:2px 8px">×</button>
+    </div>
+    <iframe id="billing-iframe" src="" style="flex:1;border:none;min-height:620px"></iframe>
+  </div>
+</div>
+</body></html>`;
   window.open(URL.createObjectURL(new Blob([doc],{type:'text/html'})),'_blank');
 }
 
@@ -1097,7 +1108,36 @@ async function deleteBillRow(id){
 }
 let _pendingDeleteBillId = null;
 
+
+function openBilling(){
+  var overlay = document.getElementById('billing-overlay');
+  var iframe  = document.getElementById('billing-iframe');
+  overlay.style.display = 'flex';
+  if (!iframe.src || iframe.src === 'about:blank' || iframe.src.indexOf('billing.html') === -1) {
+    iframe.src = 'billing.html';
+  }
+}
+function closeBillingOverlay(){
+  document.getElementById('billing-overlay').style.display = 'none';
+  loadLog();
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var ov = document.getElementById('billing-overlay');
+  if (ov) ov.addEventListener('click', function(e){ if (e.target === this) closeBillingOverlay(); });
+});
+
 loadProps().then(()=>loadLog());
 </script>
+
+<!-- BILLING OVERLAY -->
+<div id="billing-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:flex-start;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:860px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.22)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,0.1);flex-shrink:0">
+      <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500">New Bill</span>
+      <button onclick="closeBillingOverlay()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5F5E5A;line-height:1;padding:2px 8px">×</button>
+    </div>
+    <iframe id="billing-iframe" src="" style="flex:1;border:none;min-height:620px"></iframe>
+  </div>
+</div>
 </body>
 </html>
