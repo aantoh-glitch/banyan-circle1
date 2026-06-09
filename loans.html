@@ -117,6 +117,9 @@ body.mobile .btn-sec:active{background:var(--bg)}
 .btn-return-dmg:hover{background:#f7d0d0}
 .btn-return-dmg.selected{border-color:var(--r)}
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.date-tab{padding:7px 14px;border-radius:8px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.date-tab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.date-tab:hover:not(.on){border-color:var(--br);color:var(--br)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
 </style>
 </head>
@@ -212,13 +215,19 @@ body.mobile .btn-sec:active{background:var(--bg)}
     </div>
     <div class="fg">
       <label class="fl">Loan date &amp; time</label>
-      <input class="fc" type="datetime-local" id="loan-datetime"/>
+      <div style="display:flex;gap:8px;margin-bottom:8px" id="loan-date-tabs">
+        <button type="button" class="date-tab on" onclick="setLoanDateTab(0,this)">Today</button>
+        <button type="button" class="date-tab" onclick="setLoanDateTab(1,this)">Yesterday</button>
+        <button type="button" class="date-tab" onclick="setLoanDateTab(2,this)">2 days ago</button>
+      </div>
+      <input class="fc" type="time" id="loan-time" style="max-width:160px"/>
+      <input type="hidden" id="loan-datetime"/>
     </div>
     <div class="fg">
       <label class="fl">Pre-loan video taken</label>
       <div class="toggle-wrap">
         <label class="toggle"><input type="checkbox" id="loan-pre-video"/><span class="toggle-slider"></span></label>
-        <span style="font-size:13px;color:var(--muted)">Toggle on if video was recorded before handing over</span>
+
       </div>
     </div>
     <div class="modal-actions">
@@ -412,10 +421,35 @@ function renderMobile() {
 }
 
 /* ── New Loan Modal ── */
+let _loanDayOffset = 0;
+
+function setLoanDateTab(offset, btn) {
+  _loanDayOffset = offset;
+  document.querySelectorAll('#loan-date-tabs .date-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  syncLoanDatetime();
+}
+
+function syncLoanDatetime() {
+  const timeVal = document.getElementById('loan-time').value;
+  const [h, m] = timeVal ? timeVal.split(':') : [new Date().getHours(), new Date().getMinutes()];
+  const d = new Date();
+  d.setDate(d.getDate() - _loanDayOffset);
+  d.setHours(parseInt(h), parseInt(m), 0, 0);
+  // store as local ISO
+  const pad = n => String(n).padStart(2,'0');
+  const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  document.getElementById('loan-datetime').value = local;
+}
+
 async function openLoanModal() {
+  _loanDayOffset = 0;
+  document.querySelectorAll('#loan-date-tabs .date-tab').forEach((b,i) => b.classList.toggle('on', i===0));
   const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  document.getElementById('loan-datetime').value = now.toISOString().slice(0,16);
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('loan-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('loan-time').oninput = syncLoanDatetime;
+  syncLoanDatetime();
   document.getElementById('loan-item').value = '';
   document.getElementById('loan-pre-video').checked = false;
 
