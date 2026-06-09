@@ -101,7 +101,9 @@ body{padding:28px 32px 60px}
 
   <div class="fg">
     <label class="fl">Bill Date <span style="color:var(--r)">*</span></label>
-    <input class="fc" id="bill-date" type="date" max=""/>
+    <div onclick="var i=document.getElementById('bill-date');try{i.showPicker();}catch(e){i.click();}" style="cursor:pointer">
+      <input class="fc" id="bill-date" type="date" max="" style="pointer-events:none"/>
+    </div>
   </div>
 
   <div class="fg">
@@ -314,6 +316,7 @@ async function init() {
   var billDateEl = document.getElementById('bill-date');
   billDateEl.value = today;
   billDateEl.max = today;
+  setPayMethod('pending');
   await loadGuests();
   await loadBills();
 }
@@ -540,6 +543,7 @@ function cancelEdit() {
   document.getElementById('grand-total').textContent = '₹0';
   payMethod = '';
   document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
+  setPayMethod('pending');
   document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('bill-remarks').value = '';
 }
@@ -753,8 +757,9 @@ function downloadBillPdf(b) {
     'body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}' +
     'h1{font-size:22px;color:#993C1D;margin-bottom:2px}' +
     '.sub{font-size:11px;color:#888;margin-bottom:24px}' +
-    '.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
-    '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}' +
+    '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
+    '.hdr-spacer{min-width:140px}' +
+    '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7;min-width:140px}' +
     '.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}' +
     '.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}' +
     '.guest-detail{font-size:12px;color:#666;line-height:1.6}' +
@@ -769,7 +774,8 @@ function downloadBillPdf(b) {
     '@media print{body{padding:18px 24px}}' +
     '</style></head><body>' +
     '<div class="hdr">' +
-      '<div style="display:flex;align-items:center;gap:12px">' + (logoSrc ? '<img src="' + logoSrc + '" alt="" style="max-height:56px;max-width:140px;object-fit:contain"/>' : '') + '<div><h1>Properties By Heritance</h1></div></div>' +
+      '<div class="hdr-spacer"></div>' +
+      '<div style="flex:1;text-align:center">' + (logoSrc ? '<img src="' + logoSrc + '" alt="" style="max-height:72px;max-width:180px;object-fit:contain"/>' : '') + '</div>' +
       '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.bill_date||b.created_at) + '</div></div>' +
     '</div>' +
     '<div class="guest-card">' +
