@@ -1147,6 +1147,10 @@ loadDescription();
         <button type="button" id="ub-btn-paid" onclick="setUtilityStatus('paid')" style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">✅ Paid</button>
       </div>
     </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Bill Date</label>
+      <input id="ub-bill-date" class="fc" type="date"/>
+    </div>
     <div id="ub-date-section" style="display:none;margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Date of Payment</label>
       <input id="ub-paid-date" class="fc" type="date"/>
@@ -1168,6 +1172,7 @@ var _utilityStatus = 'pending';
 function openAddUtilityModal() {
   document.getElementById('ub-item').value = '';
   document.getElementById('ub-amount').value = '';
+  document.getElementById('ub-bill-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('ub-paid-date').value = '';
   document.getElementById('ub-receipt-file').value = '';
   document.getElementById('ub-date-section').style.display = 'none';
@@ -1204,10 +1209,12 @@ async function saveUtilityBill() {
   var btn    = document.getElementById('ub-save-btn');
   var item   = document.getElementById('ub-item').value.trim();
   var amount = parseFloat(document.getElementById('ub-amount').value);
+  var bd     = document.getElementById('ub-bill-date').value;
   var pd     = document.getElementById('ub-paid-date').value;
   var file   = document.getElementById('ub-receipt-file').files[0];
   if (!item)               { toast('Enter a utility type', true); return; }
   if (!amount || amount<=0){ toast('Enter a valid amount', true); return; }
+  if (!bd)                 { toast('Enter a bill date', true); return; }
   if (_utilityStatus==='paid' && !pd){ toast('Select payment date', true); return; }
   btn.disabled=true; btn.textContent='Saving…';
 
@@ -1231,9 +1238,9 @@ async function saveUtilityBill() {
     }
   }
 
-  var month = _utilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
+  var month = _utilityStatus==='paid' ? pd.slice(0,7) : bd.slice(0,7);
   var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month };
-  if (_utilityStatus==='paid') body.paid_on = pd;
+  body.paid_on = _utilityStatus==='paid' ? pd : bd;
   if (proof_url) body.proof_url = proof_url;
 
   btn.textContent='Saving…';
