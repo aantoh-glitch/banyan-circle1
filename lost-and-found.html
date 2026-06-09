@@ -250,7 +250,7 @@ body.mobile .btn-sec:active{background:var(--bg)}
     </div>
     <div class="row-grid">
       <div class="fg">
-        <label class="fl">Property</label>
+        <label class="fl">Property *</label>
         <select class="fc" id="f-property"><option value="">— select —</option></select>
       </div>
       <div class="fg">
@@ -279,12 +279,20 @@ body.mobile .btn-sec:active{background:var(--bg)}
           <label class="toggle"><input type="checkbox" id="f-informed" onchange="syncStatus()"/><span class="toggle-slider"></span></label>
           <span class="toggle-label" id="lbl-informed">No</span>
         </div>
+        <div id="informed-date-wrap" style="display:none;margin-top:10px">
+          <label class="fl">Date Informed</label>
+          <input class="fc" id="f-informed-date" type="date"/>
+        </div>
       </div>
       <div>
         <label class="fl" style="margin-bottom:10px">Collected by Customer</label>
         <div class="toggle-wrap">
           <label class="toggle"><input type="checkbox" id="f-collected" onchange="syncStatus()"/><span class="toggle-slider"></span></label>
           <span class="toggle-label" id="lbl-collected">No</span>
+        </div>
+        <div id="collected-date-wrap" style="display:none;margin-top:10px">
+          <label class="fl">Date Collected</label>
+          <input class="fc" id="f-collected-date" type="date"/>
         </div>
       </div>
     </div>
@@ -571,12 +579,18 @@ function openAddModal() {
   document.getElementById('modal-ttl').textContent = 'Log Lost & Found Item';
   document.getElementById('edit-id').value = '';
   ['f-desc','f-location','f-guestname','f-remarks'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  const today = getTodayStr();
+  document.getElementById('f-date').value = today;
+  applyDateLimits();
   document.getElementById('f-time').value = new Date().toTimeString().slice(0,5);
   document.getElementById('f-informed').checked = false;
   document.getElementById('f-collected').checked = false;
   document.getElementById('lbl-informed').textContent = 'No';
   document.getElementById('lbl-collected').textContent = 'No';
+  document.getElementById('informed-date-wrap').style.display = 'none';
+  document.getElementById('collected-date-wrap').style.display = 'none';
+  document.getElementById('f-informed-date').value = '';
+  document.getElementById('f-collected-date').value = '';
   resetPhoto(); fillPropertySelect();
   document.getElementById('modal-add').classList.add('on');
 }
@@ -591,12 +605,18 @@ function openEditModal(id) {
   document.getElementById('f-time').value    = i.found_time?i.found_time.slice(0,5):'';
   document.getElementById('f-guestname').value= i.guest_name||'';
   document.getElementById('f-remarks').value = i.remarks||'';
+  applyDateLimits();
   const informed  = i.status==='informed'||i.status==='collected';
   const collected = i.status==='collected';
   document.getElementById('f-informed').checked  = informed;
   document.getElementById('f-collected').checked = collected;
   document.getElementById('lbl-informed').textContent  = informed?'Yes':'No';
   document.getElementById('lbl-collected').textContent = collected?'Yes':'No';
+  // Populate informed/collected date fields
+  document.getElementById('f-informed-date').value  = i.informed_date||'';
+  document.getElementById('f-collected-date').value = i.collected_date||'';
+  document.getElementById('informed-date-wrap').style.display  = informed  ? 'block' : 'none';
+  document.getElementById('collected-date-wrap').style.display = collected ? 'block' : 'none';
   existingPhotoUrl = i.photo_url||null; photoFile = null;
   if (existingPhotoUrl) {
     document.getElementById('photo-preview').innerHTML =
@@ -612,6 +632,8 @@ function openEditModal(id) {
 async function saveItem() {
   const desc = document.getElementById('f-desc').value.trim();
   if (!desc) { showToast('Item description is required'); return; }
+  const propVal = document.getElementById('f-property').value;
+  if (!propVal) { showToast('Property is required'); return; }
   const btn = document.getElementById('btn-save');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
@@ -627,8 +649,10 @@ async function saveItem() {
       found_time:       document.getElementById('f-time').value||null,
       guest_name:       document.getElementById('f-guestname').value.trim()||null,
       remarks:          document.getElementById('f-remarks').value.trim()||null,
-      property_id:      document.getElementById('f-property').value||null,
-      photo_url, status
+      property_id:      propVal,
+      photo_url, status,
+      informed_date:    informed  ? (document.getElementById('f-informed-date').value||null)  : null,
+      collected_date:   collected ? (document.getElementById('f-collected-date').value||null) : null,
     };
     // Staff: stamp who logged it and when
     const editId = document.getElementById('edit-id').value;
@@ -653,12 +677,43 @@ async function deleteItem(id) {
   } catch(e) { showToast('Error: '+e.message); }
 }
 
+/* ── Date helpers: today/yesterday only ── */
+function getTodayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+function getYesterdayStr() {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return d.toISOString().slice(0,10);
+}
+function applyDateLimits() {
+  const today = getTodayStr();
+  const yesterday = getYesterdayStr();
+  ['f-date','f-informed-date','f-collected-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.min = yesterday; el.max = today; }
+  });
+}
+
 function syncStatus() {
   const inf = document.getElementById('f-informed');
   const col = document.getElementById('f-collected');
   if (col.checked) { inf.checked=true; }
+  if (!inf.checked) { col.checked=false; }
   document.getElementById('lbl-informed').textContent  = inf.checked?'Yes':'No';
   document.getElementById('lbl-collected').textContent = col.checked?'Yes':'No';
+
+  // Show/hide date pickers
+  const idWrap = document.getElementById('informed-date-wrap');
+  const cdWrap = document.getElementById('collected-date-wrap');
+  idWrap.style.display = inf.checked ? 'block' : 'none';
+  cdWrap.style.display = col.checked ? 'block' : 'none';
+
+  // Pre-fill date if empty when toggled on
+  const today = getTodayStr();
+  if (inf.checked && !document.getElementById('f-informed-date').value)
+    document.getElementById('f-informed-date').value = today;
+  if (col.checked && !document.getElementById('f-collected-date').value)
+    document.getElementById('f-collected-date').value = today;
 }
 
 function previewPhoto(e) {
