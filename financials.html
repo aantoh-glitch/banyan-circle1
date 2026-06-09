@@ -783,19 +783,17 @@ async function updateRow(type, id){
 }
 
 function resetModalToAdd(type){
-  if(type==='expense'){
-    document.getElementById('modal-expense').querySelector('.modal-ttl').textContent='Add Expense';
-    const btn=document.getElementById('exp-btn'); btn.textContent='Save'; btn.onclick=saveExpense;
-  } else if(type==='utility'){
-    document.getElementById('modal-utility').querySelector('.modal-ttl').textContent='Add Utility Bill';
-    const btn=document.getElementById('util-btn'); btn.textContent='Save'; btn.onclick=saveUtility;
-  } else if(type==='revenue'){
-    document.getElementById('modal-revenue').querySelector('.modal-ttl').textContent='Add Revenue';
-    const btn=document.getElementById('rev-btn'); btn.textContent='Save'; btn.onclick=saveRevenue;
-  } else if(type==='earnings'){
-    document.getElementById('modal-earnings').querySelector('.modal-ttl').textContent='Add Payout Entry';
-    const btn=document.getElementById('earn-btn'); btn.textContent='Save'; btn.onclick=saveEarnings;
-  }
+  const map={
+    expense:  {modal:'modal-expense',  ttl:'Add Expense',      btnId:'exp-btn',  fn:saveExpense},
+    utility:  {modal:'modal-utility',  ttl:'Add Utility Bill', btnId:'util-btn', fn:saveUtility},
+    revenue:  {modal:'modal-revenue',  ttl:'Add Revenue',      btnId:'rev-btn',  fn:saveRevenue},
+    earnings: {modal:'modal-earnings', ttl:'Add Payout Entry', btnId:'earn-btn', fn:saveEarnings},
+  };
+  const m=map[type]; if(!m) return;
+  const modal=document.getElementById(m.modal);
+  if(modal){const ttl=modal.querySelector('.modal-ttl');if(ttl)ttl.textContent=m.ttl;}
+  const btn=document.getElementById(m.btnId);
+  if(btn){btn.textContent='Save';btn.dataset.prevText='Save';btn.onclick=m.fn;}
 }
 
 
@@ -888,7 +886,7 @@ async function uploadDoc(file, prefix, bucket='finance-docs'){
   return SB+'/storage/v1/object/public/'+bucket+'/'+path;
 }
 
-function setBtn(id,loading){const b=document.getElementById(id);if(b){b.disabled=loading;b.textContent=loading?'Saving…':'Save';}}
+function setBtn(id,loading){const b=document.getElementById(id);if(b){b.disabled=loading;if(loading){b.dataset.prevText=b.textContent;b.textContent='Saving…';}else{b.textContent=b.dataset.prevText||'Save';}}}
 function setFileStatus(id,msg,ok){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.color=ok?'var(--g)':'var(--muted)';}}
 
 window.openModal=function(id){
