@@ -242,6 +242,20 @@ var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 var payMethod  = '';
 var GUESTS     = [];
 var EDIT_BILL  = null;
+var BILL_SEQ   = 0;
+
+function generateBillId() {
+  var now = new Date();
+  var pad = function(n,l){ return String(n).padStart(l||2,'0'); };
+  var ts = String(now.getFullYear()) +
+           pad(now.getMonth()+1) +
+           pad(now.getDate()) +
+           pad(now.getHours()) +
+           pad(now.getMinutes()) +
+           pad(now.getSeconds());
+  BILL_SEQ++;
+  return ts + pad(BILL_SEQ, 3);
+}
 
 // ── PIN ──
 var ADMIN_PIN   = '0000';
@@ -513,12 +527,13 @@ async function saveBill() {
   try {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
-      if (payStatus === 'paid') await syncToRevenue(body, EDIT_BILL.id);
+      await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
       toast('Bill updated ✓');
     } else {
+      var newBillId = generateBillId();
+      body.bill_id = newBillId;
       var created = await api('/rest/v1/bills', 'POST', body);
-      var newId = created && created[0] ? created[0].id : null;
-      if (payStatus === 'paid') await syncToRevenue(body, newId);
+      await syncToRevenue(body, newBillId);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -548,25 +563,25 @@ function cancelEdit() {
   document.getElementById('bill-remarks').value = '';
 }
 
-// ── Sync to property_revenues when bill is PAID ──
+// ── Sync to property_revenues (always, not just on paid) ──
 async function syncToRevenue(billBody, billId) {
+  if (!billId) return;
   try {
     var revBody = {
-      property_name : billBody.property_name,
-      amount        : billBody.amount,
-      item          : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
-      date          : billBody.bill_date,
-      notes         : 'from billing'
+      property_name  : billBody.property_name,
+      amount         : billBody.amount,
+      item           : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
+      date           : billBody.bill_date,
+      payment_status : billBody.payment_status,
+      bill_id        : billId,
+      notes          : 'from billing'
     };
-    if (billId) {
-      var existing = await api('/rest/v1/property_revenues?bill_source_id=eq.' + billId + '&select=id').catch(function(){ return []; });
-      if (existing && existing.length) {
-        await api('/rest/v1/property_revenues?bill_source_id=eq.' + billId, 'PATCH', revBody).catch(function(){});
-        return;
-      }
-      revBody.bill_source_id = billId;
+    var existing = await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId) + '&select=id').catch(function(){ return []; });
+    if (existing && existing.length) {
+      await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId), 'PATCH', revBody).catch(function(){});
+    } else {
+      await api('/rest/v1/property_revenues', 'POST', revBody);
     }
-    await api('/rest/v1/property_revenues', 'POST', revBody);
   } catch(e) {
     console.warn('Revenue sync failed:', e.message);
   }
