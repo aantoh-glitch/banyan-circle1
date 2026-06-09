@@ -513,12 +513,12 @@ async function saveBill() {
   try {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
-      if (payStatus === 'paid') await syncToRevenue(body, EDIT_BILL.id);
+      await syncToRevenue(body, EDIT_BILL.id, payStatus);
       toast('Bill updated ✓');
     } else {
       var created = await api('/rest/v1/bills', 'POST', body);
       var newId = created && created[0] ? created[0].id : null;
-      if (payStatus === 'paid') await syncToRevenue(body, newId);
+      await syncToRevenue(body, newId, payStatus);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -548,15 +548,16 @@ function cancelEdit() {
   document.getElementById('bill-remarks').value = '';
 }
 
-// ── Sync to property_revenues when bill is PAID ──
-async function syncToRevenue(billBody, billId) {
+// ── Sync ALL bills to property_revenues (paid + pending) ──
+async function syncToRevenue(billBody, billId, payStatus) {
   try {
     var revBody = {
-      property_name : billBody.property_name,
-      amount        : billBody.amount,
-      item          : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
-      date          : billBody.bill_date,
-      notes         : 'from billing'
+      property_name    : billBody.property_name,
+      amount           : billBody.amount,
+      item             : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
+      date             : billBody.bill_date,
+      notes            : 'from billing',
+      payment_status   : payStatus || 'pending'
     };
     if (billId) {
       var existing = await api('/rest/v1/property_revenues?bill_source_id=eq.' + billId + '&select=id').catch(function(){ return []; });

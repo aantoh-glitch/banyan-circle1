@@ -173,6 +173,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <button onclick="setType('utility',this)">Utilities</button>
       <button onclick="setType('revenue',this)">Revenue</button>
       <button onclick="setType('payout',this)">Payout</button>
+      <button onclick="setType('pending',this)" style="border-color:#ffe0b2;color:var(--a)" id="btn-pending">⏳ Pending</button>
     </div>
     <!-- Payout sub-filters (shown only when Payout is active) -->
     <div id="payout-subfilter" style="display:none;margin-top:10px">
@@ -222,22 +223,27 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="modal-ttl">Add Utility Bill</div>
   <div class="fg"><label class="fl">Property</label><select class="fc" id="util-prop"></select></div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Month</label><input class="fc" id="util-month" type="month"/></div>
+    <div class="fg"><label class="fl">Bill Date</label><input class="fc" id="util-bill-date" type="date" max=""/></div>
     <div class="fg"><label class="fl">Utility Type</label>
       <select class="fc" id="util-type"><option>Electricity</option><option>Water</option><option>Gas</option><option>Internet</option><option>Cable</option><option>Other</option></select>
     </div>
   </div>
-  <div class="row-grid">
-    <div class="fg"><label class="fl">Amount (₹)</label>
-      <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="util-amount" type="number" min="0" placeholder="0"/></div>
-    </div>
-    <div class="fg"><label class="fl">Status</label>
-      <select class="fc" id="util-status"><option>pending</option><option>paid</option></select>
-    </div>
+  <div class="fg"><label class="fl">Amount (₹)</label>
+    <div class="rupee-wrap"><span class="rupee-sym">₹</span><input class="fc" id="util-amount" type="number" min="0" placeholder="0"/></div>
   </div>
-  <div class="row-grid">
-    <div class="fg"><label class="fl">Paid on (if paid)</label><input class="fc" id="util-paid" type="date" max=""/></div>
-    <div class="fg"><label class="fl">Paid by</label><select class="fc" id="util-paid-by"></select></div>
+  <div class="fg">
+    <label class="fl">Status</label>
+    <div class="type-toggle" id="util-status-toggle" style="margin-bottom:0">
+      <button id="util-st-pending" class="on" onclick="setUtilStatus('pending')">Pending</button>
+      <button id="util-st-paid" onclick="setUtilStatus('paid')">Paid</button>
+    </div>
+    <input type="hidden" id="util-status" value="pending"/>
+  </div>
+  <div id="util-paid-section" style="display:none">
+    <div class="row-grid">
+      <div class="fg"><label class="fl">Paid on <span style="color:var(--r)">*</span></label><input class="fc" id="util-paid" type="date" max=""/></div>
+      <div class="fg"><label class="fl">Paid by <span style="color:var(--r)">*</span></label><select class="fc" id="util-paid-by"></select></div>
+    </div>
   </div>
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="util-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="util-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="util-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
@@ -311,6 +317,7 @@ let PROPS=[], ACTIVE_PROP='all', ACTIVE_TYPE='all', earnType='positive';
 let DATE_FROM='', DATE_TO='';
 let ALL_ROWS=[]; // cached for Excel
 let PAYOUT_SUB='all', PAYOUT_NAME='all';
+let PENDING_ROWS=[]; // cached pending items
 
 const HDR={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
 
@@ -325,6 +332,13 @@ function fmt(n){return '₹'+Math.round(n||0).toLocaleString('en-IN');}
 function fmtDate(d){return d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
+
+function setUtilStatus(s){
+  document.getElementById('util-status').value=s;
+  document.getElementById('util-st-pending').classList.toggle('on',s==='pending');
+  document.getElementById('util-st-paid').classList.toggle('on',s==='paid');
+  document.getElementById('util-paid-section').style.display=s==='paid'?'block':'none';
+}
 
 // Date filters
 function applyDates(){
@@ -349,10 +363,15 @@ async function loadProps(){
     b.className='ppill';b.dataset.prop=name;b.textContent=name;
     b.onclick=()=>setProp(name,b);pills.appendChild(b);
   });
-  ['exp-prop','util-prop','rev-prop'].forEach(id=>{
+  ['exp-prop','rev-prop'].forEach(id=>{
     const sel=document.getElementById(id);
     sel.innerHTML=unique.map(n=>`<option>${n}</option>`).join('');
   });
+  // util-prop: only landlord properties (no "Property By Heritance")
+  const landlordNames=data.map(p=>p.property_name).filter(Boolean);
+  const utilPropSel=document.getElementById('util-prop');
+  utilPropSel.innerHTML=landlordNames.map(n=>`<option>${n}</option>`).join('');
+  // util-paid-by: Property By Heritance + landlord names (same as page header list)
   const paidBySel=document.getElementById('util-paid-by');
   paidBySel.innerHTML=unique.map(n=>`<option>${n}</option>`).join('');
 }
@@ -412,33 +431,42 @@ async function loadLog(){
   const el=document.getElementById('fin-log');
   el.innerHTML='<div class="empty">Loading…</div>';
   const pf=ACTIVE_PROP!=='all'?'&property_name=eq.'+encodeURIComponent(ACTIVE_PROP):'';
-  const df=DATE_FROM?'&date=gte.'+DATE_FROM:'';
-  const dt=DATE_TO  ?'&date=lte.'+DATE_TO  :'';
 
   try{
     let rows=[];
-    // Always fetch all 4 for summary, filter display by type
-    const [expenses, utilities, revenues, earnings] = await Promise.all([
+    // Always fetch all for summary, filter display by type
+    const [expenses, utilities, revenues, earnings, bills] = await Promise.all([
       api('/rest/v1/expenses?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
       api('/rest/v1/utility_payments?select=*&order=created_at.desc'+pf).catch(()=>[]),
       api('/rest/v1/property_revenues?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
-      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[])
+      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[]),
+      api('/rest/v1/bills?select=*&order=created_at.desc'+pf).catch(()=>[])
     ]);
 
-    // Filter utilities by date client-side (month field)
-    const utilFiltered=(utilities||[]).filter(r=>dateFilter(r.paid_on||r.month));
+    // Filter utilities by date client-side (bill_date or paid_on)
+    const utilFiltered=(utilities||[]).filter(r=>dateFilter(r.paid_on||r.bill_date||r.month));
     const earnFiltered=(earnings||[]).filter(r=>dateFilter(r.entry_date));
 
     // Build full rows
     (expenses||[]).forEach(r=>rows.push({...r,_type:'expense',_date:r.date,_amount:r.amount,_label:r.description||r.category,_sub:r.category,_prop:r.property_name}));
-    utilFiltered.forEach(r=>rows.push({...r,_type:'utility',_date:r.paid_on||r.month,_amount:r.amount,_label:r.utility_type,_sub:r.month+' · '+r.status,_prop:r.property_name}));
+    utilFiltered.forEach(r=>rows.push({...r,_type:'utility',_date:r.paid_on||r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_sub:(r.bill_date||r.month)+' · '+r.status,_prop:r.property_name}));
     (revenues||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:null,_prop:r.property_name}));
     earnFiltered.forEach(r=>rows.push({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
 
     rows.sort((a,b)=>(b._date||'')>(a._date||'')?1:-1);
     ALL_ROWS=rows;
 
-    // Summary
+    // Build pending rows from utility_payments + bills
+    const pendingUtils=(utilities||[]).filter(r=>r.status==='pending').map(r=>({...r,_source:'utility',_type:'utility',_date:r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_prop:r.property_name,_sub:'Utility · '+r.property_name}));
+    const pendingBills=(bills||[]).filter(r=>r.status==='pending').map(r=>({...r,_source:'bill',_type:'bill',_date:r.due_date||r.bill_date||r.created_at,_amount:r.amount,_label:r.description||r.title||r.bill_type||'Bill',_prop:r.property_name,_sub:'Bill · '+r.property_name}));
+    PENDING_ROWS=[...pendingUtils,...pendingBills].sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
+
+    // Update pending pill count badge
+    const pendingCount=PENDING_ROWS.length;
+    const pendingBtn=document.getElementById('btn-pending');
+    if(pendingBtn) pendingBtn.textContent='⏳ Pending'+(pendingCount>0?' ('+pendingCount+')':'');
+
+    // Summary (exclude pending-only view from re-calc — uses ALL_ROWS always)
     const totalRev  = rows.filter(r=>r._type==='revenue').reduce((s,r)=>s+(r._amount||0),0);
     const totalCost = rows.filter(r=>r._type==='expense'||r._type==='utility').reduce((s,r)=>s+(r._amount||0),0);
     const totalEarn = rows.filter(r=>r._type==='earnings').reduce((s,r)=>s+(r._amount||0),0);
@@ -454,7 +482,10 @@ async function loadLog(){
 
     // Filter display by type
     let display;
-    if(ACTIVE_TYPE==='payout'){
+    if(ACTIVE_TYPE==='pending'){
+      display=PENDING_ROWS;
+      if(ACTIVE_PROP!=='all') display=display.filter(r=>r._prop===ACTIVE_PROP);
+    } else if(ACTIVE_TYPE==='payout'){
       display=rows.filter(r=>r._type==='earnings');
       if(PAYOUT_SUB==='team')    display=display.filter(r=>r.entity_type==='staff');
       else if(PAYOUT_SUB==='talent')   display=display.filter(r=>r.entity_type==='talent');
@@ -469,24 +500,26 @@ async function loadLog(){
       expense:'<span class="bdg bdg-r">Expense</span>',
       utility:'<span class="bdg bdg-a">Utility</span>',
       revenue:'<span class="bdg bdg-g">Revenue</span>',
-      earnings:'<span class="bdg bdg-b">Payout</span>'
+      earnings:'<span class="bdg bdg-b">Payout</span>',
+      bill:'<span class="bdg bdg-a">Bill</span>'
     };
+    const pendingBadge='<span class="bdg" style="background:#fff3e0;color:#7c4a00;margin-left:5px">Pending</span>';
     el.innerHTML=`<table class="tbl"><thead><tr>
       <th>Date</th><th>Property</th><th>Type</th><th>Description</th><th style="text-align:right">Amount</th><th></th>
     </tr></thead><tbody>${display.map(r=>`<tr>
       <td style="white-space:nowrap">${fmtDate(r._date)}</td>
       <td>${r._prop||'—'}</td>
-      <td>${badge[r._type]}</td>
+      <td>${badge[r._type]||'<span class="bdg bdg-a">—</span>'}${(ACTIVE_TYPE==='pending'||r.status==='pending')?pendingBadge:''}</td>
       <td><span style="font-weight:500">${r._label||'—'}</span>${r._sub?`<br><span style="font-size:11px;color:var(--muted)">${r._sub}</span>`:''}</td>
       <td style="text-align:right;font-weight:500;color:${r._type==='revenue'?'var(--g)':'var(--r)'}">${fmt(r._amount)}</td>
-      <td style="text-align:right"><button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button></td>
+      <td style="text-align:right">${ACTIVE_TYPE!=='pending'?`<button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button>`:''}</td>
     </tr>`).join('')}</tbody></table>`;
   }catch(e){el.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
 }
 
 async function deleteRow(type,id){
   if(!confirm('Delete this entry?'))return;
-  const tables={expense:'expenses',utility:'utility_payments',revenue:'property_revenues',earnings:'earnings_log'};
+  const tables={expense:'expenses',utility:'utility_payments',revenue:'property_revenues',earnings:'earnings_log',bill:'bills'};
   await api('/rest/v1/'+tables[type]+'?id=eq.'+id,'DELETE');
   toast('Deleted');loadLog();
 }
@@ -525,7 +558,7 @@ window.openModal=function(id){
   const today=new Date().toISOString().split('T')[0];
   const month=new Date().toISOString().slice(0,7);
   if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-date').max=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status','');}
-  if(id==='modal-utility'){document.getElementById('util-month').value=month; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; const utilProp=document.getElementById('util-prop').value; const utilPaidBy=document.getElementById('util-paid-by'); if(utilProp) utilPaidBy.value=utilProp; document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
+  if(id==='modal-utility'){document.getElementById('util-bill-date').value=today; document.getElementById('util-bill-date').max=today; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; setUtilStatus('pending'); document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
   if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status','');}
   if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-date').max=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); loadEarnPersons();}
   document.getElementById(id).classList.add('on');
@@ -560,8 +593,12 @@ async function saveExpense(){
 }
 
 async function saveUtility(){
-  const body={property_name:document.getElementById('util-prop').value,month:document.getElementById('util-month').value,utility_type:document.getElementById('util-type').value,amount:parseFloat(document.getElementById('util-amount').value)||0,status:document.getElementById('util-status').value,paid_on:document.getElementById('util-paid').value||null,paid_by:document.getElementById('util-paid-by').value||null,notes:document.getElementById('util-notes').value.trim()||null,logged_by:'OFFICE'};
-  if(!body.month){alert('Need month');return;}
+  const status=document.getElementById('util-status').value;
+  const paidOn=document.getElementById('util-paid').value||null;
+  const paidBy=document.getElementById('util-paid-by').value||null;
+  if(status==='paid'&&(!paidOn||!paidBy)){alert('Paid on and Paid by are required when status is Paid');return;}
+  const body={property_name:document.getElementById('util-prop').value,bill_date:document.getElementById('util-bill-date').value,utility_type:document.getElementById('util-type').value,amount:parseFloat(document.getElementById('util-amount').value)||0,status,paid_on:paidOn,paid_by:status==='paid'?paidBy:null,notes:document.getElementById('util-notes').value.trim()||null,logged_by:'OFFICE'};
+  if(!body.bill_date){alert('Need bill date');return;}
   setBtn('util-btn',true);
   try{
     const file=document.getElementById('util-file').files[0];
