@@ -258,6 +258,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <button id="rev-st-paid"    class="ppill"    onclick="setRevStatus('paid')">✓ Paid</button>
     </div>
     <input type="hidden" id="rev-status" value="pending"/>
+    <input type="hidden" id="rev-bill-id" value=""/>
   </div>
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="rev-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="rev-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="rev-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
@@ -695,6 +696,7 @@ function openEditModal(type, r){
     document.getElementById('rev-file').value = '';
     setFileStatus('rev-file-status','');
     setRevStatus(r.payment_status||'pending');
+    document.getElementById('rev-bill-id').value = r.bill_id||'';
     const btn=document.getElementById('rev-btn');
     btn.textContent='Update';
     btn.onclick=()=>updateRow('revenue', r.id);
@@ -759,6 +761,16 @@ async function updateRow(type, id){
   }
   try{
     await api('/rest/v1/'+tables[type]+'?id=eq.'+id,'PATCH',body);
+    // Two-way sync: if updating a revenue row linked to a bill, update bills table too
+    if(type==='revenue'){
+      const billId = document.getElementById('rev-bill-id').value;
+      if(billId){
+        const payMethod = body.payment_status==='paid' ? (body.payment_method||null) : null;
+        await api('/rest/v1/bills?bill_id=eq.'+encodeURIComponent(billId), 'PATCH',
+          {payment_status: body.payment_status, payment_method: payMethod}
+        ).catch(()=>{});
+      }
+    }
     const modalMap={expense:'modal-expense',utility:'modal-utility',revenue:'modal-revenue',earnings:'modal-earnings'};
     closeModal(modalMap[type]);
     // Reset modal title and button back to add mode
@@ -831,6 +843,16 @@ async function toggleStatus(type, id, newStatus){
   if(row) row.style.opacity='0.3';
   try{
     await api('/rest/v1/'+m.table+'?id=eq.'+id, 'PATCH', {[m.field]: newStatus});
+    // Two-way sync: if this is a revenue row linked to a bill, update bills table too
+    if(type==='revenue'){
+      const revRow = ALL_ROWS.find(r=>r._type==='revenue' && String(r.id)===String(id))
+                  || RECEIVABLE_ROWS.find(r=>String(r.id)===String(id));
+      if(revRow && revRow.bill_id){
+        await api('/rest/v1/bills?bill_id=eq.'+encodeURIComponent(revRow.bill_id), 'PATCH',
+          {payment_status: newStatus, payment_method: newStatus==='paid' ? (revRow.payment_method||null) : null}
+        ).catch(()=>{});
+      }
+    }
     toast('Status updated ✓');
     await loadLog();
   }catch(e){
@@ -874,7 +896,7 @@ window.openModal=function(id){
   const month=new Date().toISOString().slice(0,7);
   if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-date').max=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status',''); setExpStatus('pending');}
   if(id==='modal-utility'){document.getElementById('util-bill-date').value=today; document.getElementById('util-bill-date').max=today; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; setUtilStatus('pending'); const selProp=document.getElementById('util-prop').value; const pb=document.getElementById('util-paid-by'); const pbOpts=['Property By Heritance']; if(selProp&&selProp!=='Property By Heritance') pbOpts.push(selProp); pb.innerHTML=pbOpts.map(n=>`<option>${n}</option>`).join(''); document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
-  if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status',''); setRevStatus('pending');}
+  if(id==='modal-revenue'){document.getElementById('rev-bill-id').value=''; document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status',''); setRevStatus('pending');}
   if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-date').max=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); setEarnStatus('pending'); loadEarnPersons();}
   document.getElementById(id).classList.add('on');
 };
