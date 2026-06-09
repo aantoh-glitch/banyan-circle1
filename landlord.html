@@ -1156,6 +1156,13 @@ loadDescription();
       <input id="ub-paid-date" class="fc" type="date"/>
     </div>
     <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Paid By</label>
+      <select id="ub-paid-by" class="fc">
+        <option value="Property By Heritance">Property By Heritance</option>
+        <option id="ub-paid-by-prop" value=""></option>
+      </select>
+    </div>
+    <div style="margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Receipt / Proof (optional)</label>
       <input id="ub-receipt-file" class="fc" type="file" accept="image/*,application/pdf" style="padding:8px 12px;font-size:13px"/>
     </div>
@@ -1176,6 +1183,9 @@ function openAddUtilityModal() {
   document.getElementById('ub-paid-date').value = '';
   document.getElementById('ub-receipt-file').value = '';
   document.getElementById('ub-date-section').style.display = 'none';
+  var propOpt = document.getElementById('ub-paid-by-prop');
+  propOpt.value = PROP; propOpt.textContent = PROP;
+  document.getElementById('ub-paid-by').value = 'Property By Heritance';
   setUtilityStatus('pending');
   var m = document.getElementById('modal-add-utility');
   m.style.display = 'flex';
@@ -1239,7 +1249,8 @@ async function saveUtilityBill() {
   }
 
   var month = _utilityStatus==='paid' ? pd.slice(0,7) : bd.slice(0,7);
-  var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month };
+  var paidBy = document.getElementById('ub-paid-by').value;
+  var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month, paid_by: paidBy };
   body.paid_on = _utilityStatus==='paid' ? pd : bd;
   if (proof_url) body.proof_url = proof_url;
 
@@ -1281,16 +1292,17 @@ async function refreshUtilityLog() {
         +'<td style="font-weight:500">₹'+Math.round(u.amount||0).toLocaleString('en-IN')+'</td>'
         +'<td><span class="bdg '+badge+'">'+u.status+'</span></td>'
         +'<td style="font-size:11px;color:var(--muted)">'+(paid_on ? new Date(paid_on).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—')+'</td>'
+        +'<td style="font-size:11px;color:var(--muted)">'+(u.paid_by||'—')+'</td>'
         +'<td style="text-align:right;white-space:nowrap">'
           +proofBtn
-          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+paid_on+'\',\''+encodeURIComponent(u.proof_url||'')+'\'" '
+          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+paid_on+'\',\''+encodeURIComponent(u.proof_url||'')+'\',\''+encodeURIComponent(u.paid_by||'')+'\'" '
             +'style="padding:4px 10px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>'
           +'<button onclick="deleteUtility(\''+u.id+'\')" '
             +'style="padding:4px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>'
         +'</td>'
       +'</tr>';
     }).join('');
-    ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+    ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th>Paid By</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
   } catch(e) {
     ftEl.innerHTML = '<div class="empty">Could not load payments</div>';
     console.error('refreshUtilityLog error:', e);
@@ -1298,14 +1310,21 @@ async function refreshUtilityLog() {
 }
 
 // ── EDIT UTILITY ──
-function openEditUtility(id, itemEnc, amount, status, paidDate, proofUrlEnc) {
+function openEditUtility(id, itemEnc, amount, status, paidDate, proofUrlEnc, paidByEnc) {
   var item = decodeURIComponent(itemEnc);
   var existingProof = proofUrlEnc ? decodeURIComponent(proofUrlEnc) : '';
+  var paidBy = paidByEnc ? decodeURIComponent(paidByEnc) : 'Property By Heritance';
   document.getElementById('eu-id').value        = id;
   document.getElementById('eu-item').value      = item;
   document.getElementById('eu-amount').value    = amount;
   document.getElementById('eu-paid-date').value = paidDate || '';
   document.getElementById('eu-receipt-file').value = '';
+  // Populate paid-by options with property name then restore value
+  var propOpt = document.getElementById('eu-paid-by-prop');
+  propOpt.value = PROP; propOpt.textContent = PROP;
+  var pbSel = document.getElementById('eu-paid-by');
+  pbSel.value = paidBy;
+  if (!pbSel.value) pbSel.value = 'Property By Heritance';
   // Show existing receipt link if any
   var existingEl = document.getElementById('eu-existing-receipt');
   if (existingProof) {
@@ -1374,7 +1393,8 @@ async function saveEditUtility() {
   }
 
   var month = _editUtilityStatus==='paid' ? pd.slice(0,7) : new Date().toISOString().slice(0,7);
-  var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month };
+  var paidBy = document.getElementById('eu-paid-by').value;
+  var body  = { utility_type: item, amount: amount, status: _editUtilityStatus, month: month, paid_by: paidBy };
   if (_editUtilityStatus==='paid') body.paid_on = pd; else body.paid_on = null;
   if (proof_url) body.proof_url = proof_url;
 
@@ -1422,6 +1442,13 @@ async function deleteUtility(id) {
     <div id="eu-date-section" style="display:none;margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Date of Payment</label>
       <input id="eu-paid-date" class="fc" type="date"/>
+    </div>
+    <div style="margin-bottom:13px">
+      <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Paid By</label>
+      <select id="eu-paid-by" class="fc">
+        <option value="Property By Heritance">Property By Heritance</option>
+        <option id="eu-paid-by-prop" value=""></option>
+      </select>
     </div>
     <div style="margin-bottom:13px">
       <label style="display:block;font-size:11px;color:var(--faint);margin-bottom:5px;font-weight:500;letter-spacing:.3px;text-transform:uppercase">Replace Receipt (optional)</label>
