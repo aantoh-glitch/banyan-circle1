@@ -168,7 +168,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('tasks',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</button>
     <button class="sb-btn" onclick="goPage('talents',this)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Talents</button>
     <button class="sb-btn" id="sb-msgs" onclick="goPage('msgs',this)" style="display:none"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messaging<span id="sb-msgs-badge" style="margin-left:auto;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;display:none;min-width:16px;text-align:center"></span></button>
-    <button class="sb-btn" onclick="goPage('billing',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Billing</button>
     <button class="sb-btn" onclick="goPage('bookings',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bookings</button>
     <button class="sb-btn" onclick="goPage('loans',this)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>Loan Register</button>
     <button class="sb-btn" onclick="goPage('lostfound',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>Lost &amp; Found</button>
@@ -288,7 +287,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="dash-tile-sub" id="dash-stock-sub">below critical level</div>
       <span class="dash-tile-nav">›</span>
     </div>
-    <div class="dash-tile tile-billing" onclick="goPage('billing', document.querySelector('.sb-btn[onclick*=billing]'))">
+    <div class="dash-tile tile-billing" onclick="goPage('utilities', document.querySelector('.sb-btn[onclick*=utilities]'))">
       <div class="dash-tile-icon icon-billing">
         <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       </div>
@@ -548,10 +547,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <!-- EARNINGS PAGE -->
 
-<!-- BILLING PAGE -->
-<div class="pg" id="pg-billing" style="padding:0">
-  <iframe id="billing-frame" src="" style="width:100%;height:calc(100vh - 60px);border:none;display:block"></iframe>
-</div>
 
 <!-- BOOKINGS PAGE -->
 <div class="pg" id="pg-bookings" style="padding:0">
@@ -1007,7 +1002,6 @@ function goPage(id,btn){
   if(id==='maint')      loadMaintPage();
   if(id==='msgs'){var mf=document.getElementById('messaging-frame');if(!mf.src||mf.src==='about:blank'||mf.src.indexOf('messaging.html')===-1)mf.src='messaging.html';}
   if(id==='assets')     loadAssetsPage();  if(id==='talents')    loadTalentsPage();
-  if(id==='billing'){var bf=document.getElementById('billing-frame');if(!bf.src||bf.src==='about:blank'||bf.src.indexOf('billing.html')===-1)bf.src='billing.html';}
   if(id==='bookings'){var bkf=document.getElementById('bookings-frame');if(!bkf.src||bkf.src==='about:blank'||bkf.src.indexOf('booking.html')===-1)bkf.src='booking.html';}
   if(id==='laundry'){var lf=document.getElementById('laundry-frame');if(!lf.src||lf.src==='about:blank'||lf.src.indexOf('laundry.html')===-1)lf.src='laundry.html';}
   if(id==='tasks'){var tkf=document.getElementById('tasks-frame');if(!tkf.src||tkf.src==='about:blank'||tkf.src.indexOf('tasks.html')===-1)tkf.src='tasks.html?role=admin';}
@@ -2223,7 +2217,7 @@ async function saveTalentDoc(){
 // Boot — restore page from hash if present
 (function(){
   const hash = location.hash.replace('#','');
-  const validPages = ['dashboard','properties','staff','guests','docs','utilities','maint','msgs','assets','talents','billing','bookings','laundry','tasks','loans','lostfound','reviews','stock','leave'];
+  const validPages = ['dashboard','properties','staff','guests','docs','utilities','maint','msgs','assets','talents','bookings','laundry','tasks','loans','lostfound','reviews','stock','leave'];
   if(hash && validPages.includes(hash)){
     const btn = document.querySelector(`.sb-btn[onclick*="'${hash}'"]`);
     goPage(hash, btn);

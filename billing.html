@@ -107,10 +107,16 @@ body{padding:28px 32px 60px}
   </div>
 
   <div class="fg">
-    <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
+    <label class="fl">Select <span style="color:var(--r)">*</span></label>
     <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
-      <option value="">— choose a guest —</option>
+      <option value="">— choose —</option>
     </select>
+  </div>
+
+  <!-- Other guest — free text name (shown when "Other" selected) -->
+  <div class="fg" id="other-guest-fg" style="display:none">
+    <label class="fl">Guest / Header Name <span style="color:var(--r)">*</span></label>
+    <input class="fc" id="other-guest-name" type="text" placeholder="Type name or header…" oninput="onOtherGuestInput()"/>
   </div>
 
   <!-- Guest info — revealed on selection -->
@@ -340,7 +346,7 @@ async function loadGuests() {
     var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
     GUESTS = data;
     var sel = document.getElementById('bill-guest-select');
-    sel.innerHTML = '<option value="">— choose a guest —</option>' +
+    sel.innerHTML = '<option value="">— choose —</option>' +
       data.map(function(g){
         var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
           (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
@@ -353,10 +359,19 @@ async function loadGuests() {
 
 async function onGuestSelect() {
   var gid = document.getElementById('bill-guest-select').value;
+  var otherFg = document.getElementById('other-guest-fg');
   if (!gid) {
     document.getElementById('guest-info').style.display = 'none';
+    otherFg.style.display = 'none';
     return;
   }
+  if (gid === '__other__') {
+    document.getElementById('guest-info').style.display = 'none';
+    otherFg.style.display = '';
+    document.getElementById('other-guest-name').focus();
+    return;
+  }
+  otherFg.style.display = 'none';
   var g = GUESTS.find(function(x){ return x.id === gid; });
   if (!g) return;
 
@@ -488,10 +503,18 @@ function setPayMethod(m) {
   // method shown via button highlight
 }
 
+function onOtherGuestInput() {
+  // nothing needed — value read at save time
+}
+
 // ── Save ──
 async function saveBill() {
   var gid = document.getElementById('bill-guest-select').value;
   if (!gid) { toast('Please select a guest'); return; }
+  if (gid === '__other__') {
+    var otherName = document.getElementById('other-guest-name').value.trim();
+    if (!otherName) { toast('Please enter a guest / header name'); return; }
+  }
   var items = getItems();
   if (!items.length) { toast('Add at least one item'); return; }
   if (!payMethod) { toast('Select a payment method'); return; }
@@ -499,15 +522,18 @@ async function saveBill() {
   var billDate = document.getElementById('bill-date').value;
   if (!billDate) { toast('Please select a bill date'); return; }
 
-  var g = GUESTS.find(function(x){ return x.id === gid; });
+  var g = gid !== '__other__' ? GUESTS.find(function(x){ return x.id === gid; }) : null;
   var infoBox = document.getElementById('guest-info');
   var amount = calcTotal();
+  var guestName = gid === '__other__'
+    ? document.getElementById('other-guest-name').value.trim()
+    : (g ? g.name : '');
 
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
 
   var body = {
-    guest_profile_id : gid,
-    guest_name       : g ? g.name : '',
+    guest_profile_id : gid !== '__other__' ? gid : null,
+    guest_name       : guestName,
     property_name    : g ? (g.property_name||'') : '',
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
@@ -527,13 +553,11 @@ async function saveBill() {
   try {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
-      await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
       body.bill_id = newBillId;
-      var created = await api('/rest/v1/bills', 'POST', body);
-      await syncToRevenue(body, newBillId);
+      await api('/rest/v1/bills', 'POST', body);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -553,6 +577,8 @@ function cancelEdit() {
   document.getElementById('cancel-btn').style.display = 'none';
   document.getElementById('bill-guest-select').value = '';
   document.getElementById('guest-info').style.display = 'none';
+  document.getElementById('other-guest-fg').style.display = 'none';
+  document.getElementById('other-guest-name').value = '';
   document.getElementById('items-body').innerHTML = '';
   rowCount = 0;
   document.getElementById('grand-total').textContent = '₹0';
@@ -563,29 +589,6 @@ function cancelEdit() {
   document.getElementById('bill-remarks').value = '';
 }
 
-// ── Sync to property_revenues (always, not just on paid) ──
-async function syncToRevenue(billBody, billId) {
-  if (!billId) return;
-  try {
-    var revBody = {
-      property_name  : billBody.property_name,
-      amount         : billBody.amount,
-      item           : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
-      date           : billBody.bill_date,
-      payment_status : billBody.payment_status,
-      bill_id        : billId,
-      notes          : 'from billing'
-    };
-    var existing = await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId) + '&select=id').catch(function(){ return []; });
-    if (existing && existing.length) {
-      await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId), 'PATCH', revBody).catch(function(){});
-    } else {
-      await api('/rest/v1/property_revenues', 'POST', revBody);
-    }
-  } catch(e) {
-    console.warn('Revenue sync failed:', e.message);
-  }
-}
 
 function editBill(bill) {
   requirePin('PIN required to edit bill', function() {

@@ -105,7 +105,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
       Add Utility Bill
     </button>
-    <button class="act-btn green" onclick="openModal('modal-revenue')">
+    <button class="act-btn green" onclick="openBilling()">
       <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
       Add Revenue
     </button>
@@ -1014,7 +1014,38 @@ document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{
     if(typeMap[m.id]) resetModalToAdd(typeMap[m.id]);
   }
 }));
+
+// ── Billing overlay ──
+function openBilling(){
+  var overlay=document.getElementById('billing-overlay');
+  var iframe=document.getElementById('billing-iframe');
+  overlay.style.display='flex';
+  if(!iframe.src||iframe.src==='about:blank'||iframe.src.indexOf('billing.html')===-1){
+    iframe.src='billing.html';
+  }
+}
+function closeBillingOverlay(){
+  document.getElementById('billing-overlay').style.display='none';
+  loadLog();
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var ov=document.getElementById('billing-overlay');
+  if(ov) ov.addEventListener('click',function(e){if(e.target===this)closeBillingOverlay();});
+});
+
 loadProps().then(()=>loadLog());
 </script>
+
+<!-- BILLING OVERLAY -->
+<div id="billing-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:flex-start;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:860px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.22)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,0.1);flex-shrink:0">
+      <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500">New Bill</span>
+      <button onclick="closeBillingOverlay()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5F5E5A;line-height:1;padding:2px 6px">×</button>
+    </div>
+    <iframe id="billing-iframe" src="" style="flex:1;border:none;min-height:600px"></iframe>
+  </div>
+</div>
+
 </body>
 </html>
