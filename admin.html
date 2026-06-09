@@ -91,6 +91,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .dash-tile.tile-tasks::before{background:#993C1D}
 .dash-tile.tile-stock::before{background:#0e7060}
 .dash-tile.tile-billing::before{background:#7c3aed}
+.dash-tile.tile-utility::before{background:#0891b2}
 .dash-tile-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
 .dash-tile-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .icon-ci{background:#edf7f0;color:#2d9e6b}
@@ -102,6 +103,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .icon-tasks{background:#FAECE7;color:#993C1D}
 .icon-stock{background:#e0f4f0;color:#0e7060}
 .icon-billing{background:#f3eeff;color:#7c3aed}
+.icon-utility{background:#e0f7fa;color:#0891b2}
 .dash-tile-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .dash-tile-value{font-family:'Playfair Display',serif;font-size:40px;line-height:1;color:var(--text)}
 .dash-tile-value.loading{font-size:20px;color:var(--muted)}
@@ -293,6 +295,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="dash-tile-label">Pending Payments</div>
       <div class="dash-tile-value loading" id="dash-pending-payments">…</div>
       <div class="dash-tile-sub">awaiting payment</div>
+      <span class="dash-tile-nav">›</span>
+    </div>
+    <div class="dash-tile tile-utility" onclick="goPage('utilities', document.querySelector('.sb-btn[onclick*=utilities]'))">
+      <div class="dash-tile-icon icon-utility">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="dash-tile-label">Utility Payments</div>
+      <div class="dash-tile-value loading" id="dash-utility-pending">…</div>
+      <div class="dash-tile-sub">pending</div>
       <span class="dash-tile-nav">›</span>
     </div>
   </div>
@@ -2146,11 +2157,21 @@ try {
 
   // Pending payments
   try {
-    const pp = await api('/rest/v1/bill?select=id&payment_status=eq.pending') || [];
+    const pp = await api('/rest/v1/bills?select=id&payment_status=eq.pending') || [];
     const el = document.getElementById('dash-pending-payments');
     if(el){ el.textContent = pp.length; el.className = 'dash-tile-value'; }
   } catch(e){
     const el = document.getElementById('dash-pending-payments');
+    if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
+  }
+
+  // Utility payments pending
+  try {
+    const up = await api('/rest/v1/utility_payments?select=id&status=eq.pending') || [];
+    const el = document.getElementById('dash-utility-pending');
+    if(el){ el.textContent = up.length; el.className = 'dash-tile-value'; }
+  } catch(e){
+    const el = document.getElementById('dash-utility-pending');
     if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
   }
 }
