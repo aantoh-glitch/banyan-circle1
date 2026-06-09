@@ -468,11 +468,12 @@ async function loadLog(){
   try{
     let rows=[];
     // Always fetch all for summary, filter display by type
-    const [expenses, utilities, revenues, earnings] = await Promise.all([
+    const [expenses, utilities, revenues, earnings, bills] = await Promise.all([
       api('/rest/v1/expenses?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
       api('/rest/v1/utility_payments?select=*&order=created_at.desc'+pf).catch(()=>[]),
       api('/rest/v1/property_revenues?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
-      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[])
+      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[]),
+      api('/rest/v1/bills?select=*&order=created_at.desc'+pf).catch(()=>[])
     ]);
 
     // Filter utilities by date client-side (bill_date or paid_on)
@@ -482,14 +483,15 @@ async function loadLog(){
     // Build full rows
     (expenses||[]).forEach(r=>rows.push({...r,_type:'expense',_date:r.date,_amount:r.amount,_label:r.description||r.category,_sub:r.category,_prop:r.property_name}));
     utilFiltered.forEach(r=>rows.push({...r,_type:'utility',_date:r.paid_on||r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_sub:(r.bill_date||r.month)+' · '+r.status,_prop:r.property_name}));
-    (revenues||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:null,_prop:r.property_name}));
+    (revenues||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:null,_prop:r.property_name,payment_status:r.payment_status}));
+    (bills||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.due_date||r.bill_date||r.created_at,_amount:r.amount,_label:r.description||r.title||r.bill_type||'Bill',_sub:'Bill · '+r.property_name,_prop:r.property_name,payment_status:r.payment_status,_bill:true}));
     earnFiltered.forEach(r=>rows.push({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
 
     rows.sort((a,b)=>(b._date||'')>(a._date||'')?1:-1);
     ALL_ROWS=rows;
 
-    // Receivables: property_revenues with status pending
-    RECEIVABLE_ROWS=(revenues||[]).filter(r=>r.status==='pending').map(r=>({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:null,_prop:r.property_name}));
+    // Receivables: all bills by payment_status
+    RECEIVABLE_ROWS=(bills||[]).map(r=>({...r,_type:'bill',_date:r.due_date||r.bill_date||r.created_at,_amount:r.amount,_label:r.description||r.title||r.bill_type||'Bill',_sub:r.property_name,_prop:r.property_name,payment_status:r.payment_status}));
     RECEIVABLE_ROWS.sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
 
     // Payables: earnings_log + utility_payments with status pending
@@ -497,10 +499,10 @@ async function loadLog(){
     const payableUtils=(utilities||[]).filter(r=>r.status==='pending').map(r=>({...r,_type:'utility',_date:r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_sub:(r.bill_date||r.month),_prop:r.property_name}));
     PAYABLE_ROWS=[...payableEarnings,...payableUtils].sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
 
-    // Update badge counts
+    const recPendingCount=RECEIVABLE_ROWS.filter(r=>r.payment_status==='pending').length;
     const recBtn=document.getElementById('btn-receivables');
     const payBtn=document.getElementById('btn-payables');
-    if(recBtn) recBtn.textContent='📥 Receivables'+(RECEIVABLE_ROWS.length>0?' ('+RECEIVABLE_ROWS.length+')':'');
+    if(recBtn) recBtn.textContent='📥 Receivables'+(recPendingCount>0?' ('+recPendingCount+' pending)':'');
     if(payBtn) payBtn.textContent='📤 Payables'+(PAYABLE_ROWS.length>0?' ('+PAYABLE_ROWS.length+')':'');
 
     // Summary (exclude pending-only view from re-calc — uses ALL_ROWS always)
@@ -540,7 +542,8 @@ async function loadLog(){
       expense:'<span class="bdg bdg-r">Expense</span>',
       utility:'<span class="bdg bdg-a">Utility</span>',
       revenue:'<span class="bdg bdg-g">Revenue</span>',
-      earnings:'<span class="bdg bdg-b">Payout</span>'
+      earnings:'<span class="bdg bdg-b">Payout</span>',
+      bill:'<span class="bdg bdg-g">Bill</span>'
     };
     el.innerHTML=`<table class="tbl"><thead><tr>
       <th>Date</th><th>Property</th><th>Type</th><th>Description</th><th style="text-align:right">Amount</th><th style="text-align:right">Status / Action</th>
@@ -551,10 +554,10 @@ async function loadLog(){
       <td><span style="font-weight:500">${r._label||'—'}</span>${r._sub?`<br><span style="font-size:11px;color:var(--muted)">${r._sub}</span>`:''}</td>
       <td style="text-align:right;font-weight:500;color:${r._type==='revenue'?'var(--g)':'var(--r)'}">${fmt(r._amount)}</td>
       <td style="text-align:right">${
-        (r._type==='earnings'||r._type==='revenue'||r._type==='utility')
-          ? `<span class="bdg" style="${r.status==='paid'?'background:var(--g-l);color:#27500A':'background:#fff3e0;color:#7c4a00'}">${r.status==='paid'?'✓ Paid':'⏳ Pending'}</span> `
+        (r._type==='earnings'||r._type==='revenue'||r._type==='utility'||r._type==='bill')
+          ? (()=>{ const s=r._type==='utility'?r.status:r.payment_status; const isPaid=s==='paid'; return `<button onclick="toggleStatus('${r._bill?'bill':r._type}','${r.id}','${isPaid?'pending':'paid'}')" class="bdg" style="cursor:pointer;border:none;${isPaid?'background:var(--g-l);color:#27500A':'background:#fff3e0;color:#7c4a00'}" title="Click to toggle">${isPaid?'✓ Paid':'⏳ Pending'}</button> `; })()
           : ''
-      }<button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button></td>
+      }<button class="btn-del" onclick="deleteRow('${r._bill?'bill':r._type}','${r.id}')">Delete</button></td>
     </tr>`).join('')}</tbody></table>`;
   }catch(e){el.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
 }
@@ -577,7 +580,7 @@ async function confirmDelete(){
     return;
   }
   closeModal('modal-pin');
-  const tables={expense:'expenses',utility:'utility_payments',revenue:'property_revenues',earnings:'earnings_log'};
+  const tables={expense:'expenses',utility:'utility_payments',revenue:'property_revenues',earnings:'earnings_log',bill:'bills'};
   await api('/rest/v1/'+tables[_pendingDeleteType]+'?id=eq.'+_pendingDeleteId,'DELETE');
   toast('Deleted'); loadLog();
   _pendingDeleteType=null; _pendingDeleteId=null;
@@ -587,6 +590,23 @@ async function confirmDelete(){
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmDelete();});
 });
+
+async function toggleStatus(type, id, newStatus){
+  // Map type → table and the correct status field name
+  const tableMap={
+    revenue:  {table:'property_revenues', field:'payment_status'},
+    utility:  {table:'utility_payments',  field:'status'},
+    earnings: {table:'earnings_log',      field:'status'},
+    bill:     {table:'bills',             field:'payment_status'}
+  };
+  const m=tableMap[type];
+  if(!m) return;
+  try{
+    await api('/rest/v1/'+m.table+'?id=eq.'+id, 'PATCH', {[m.field]: newStatus});
+    toast('Status updated ✓');
+    loadLog();
+  }catch(e){ alert('Error: '+e.message); }
+}
 
 // Download Excel (CSV)
 function downloadExcel(){
