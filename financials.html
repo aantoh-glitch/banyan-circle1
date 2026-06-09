@@ -75,6 +75,7 @@ textarea.fc{resize:vertical;min-height:72px}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{border-color:var(--br);color:var(--br)}
 .btn-del{padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit{padding:5px 10px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-dl{padding:9px 16px;background:var(--white);color:var(--g);border:1.5px solid #c8e6c9;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
 .btn-dl:hover{background:var(--g-l)}
 .btn-dl svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
@@ -200,7 +201,7 @@ textarea.fc{resize:vertical;min-height:72px}
   </div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="exp-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="exp-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
-    <button class="btn-sec" onclick="closeModal('modal-expense')">Cancel</button>
+    <button class="btn-sec" onclick="closeModal('modal-expense');resetModalToAdd('expense')">Cancel</button>
     <button class="btn-p" id="exp-btn" onclick="saveExpense()">Save</button>
   </div>
 </div></div>
@@ -235,7 +236,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="util-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="util-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="util-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
-    <button class="btn-sec" onclick="closeModal('modal-utility')">Cancel</button>
+    <button class="btn-sec" onclick="closeModal('modal-utility');resetModalToAdd('utility')">Cancel</button>
     <button class="btn-p" id="util-btn" onclick="saveUtility()">Save</button>
   </div>
 </div></div>
@@ -261,7 +262,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="rev-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="rev-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="rev-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
-    <button class="btn-sec" onclick="closeModal('modal-revenue')">Cancel</button>
+    <button class="btn-sec" onclick="closeModal('modal-revenue');resetModalToAdd('revenue')">Cancel</button>
     <button class="btn-p" id="rev-btn" onclick="saveRevenue()">Save</button>
   </div>
 </div></div>
@@ -301,7 +302,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="earn-notes"></textarea></div>
   <div class="fg"><label class="fl">Attach document (optional)</label><input class="fc" id="earn-file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"/><div id="earn-file-status" style="font-size:11px;color:var(--muted);margin-top:4px"></div></div>
   <div class="modal-actions">
-    <button class="btn-sec" onclick="closeModal('modal-earnings')">Cancel</button>
+    <button class="btn-sec" onclick="closeModal('modal-earnings');resetModalToAdd('earnings')">Cancel</button>
     <button class="btn-p" id="earn-btn" onclick="saveEarnings()">Save</button>
   </div>
 </div></div>
@@ -321,7 +322,20 @@ textarea.fc{resize:vertical;min-height:72px}
   </div>
 </div></div>
 
-<div class="toast" id="toast"></div>
+<!-- EDIT PIN MODAL -->
+<div class="modal" id="modal-edit-pin"><div class="modal-card" style="max-width:340px">
+  <div class="modal-ttl" style="font-size:18px">Confirm Edit</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Enter your 4-digit PIN to edit this entry.</p>
+  <div class="fg">
+    <label class="fl">PIN</label>
+    <input class="fc" id="edit-pin-input" type="password" maxlength="4" inputmode="numeric" placeholder="••••" style="letter-spacing:6px;font-size:18px;text-align:center"/>
+    <div id="edit-pin-error" style="color:var(--r);font-size:12px;margin-top:5px;display:none">Incorrect PIN. Try again.</div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn-sec" onclick="closeModal('modal-edit-pin')">Cancel</button>
+    <button class="btn-p" onclick="confirmEdit()">Continue</button>
+  </div>
+</div></div>
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
@@ -595,16 +609,184 @@ async function loadLog(){
       <td>${badge[r._type]||'<span class="bdg bdg-a">—</span>'}</td>
       <td><span style="font-weight:500">${r._label||'—'}</span>${r._sub?`<br><span style="font-size:11px;color:var(--muted)">${r._sub}</span>`:''}</td>
       <td style="text-align:right;font-weight:500;color:${r._type==='revenue'?'var(--g)':'var(--r)'}">${fmt(r._amount)}</td>
-      <td style="text-align:right">${
+      <td style="text-align:right;white-space:nowrap">${
         (r._type==='earnings'||r._type==='revenue'||r._type==='utility'||r._type==='expense')
-          ? (()=>{ const s=(r._type==='utility'||r._type==='expense')?r.status:r.payment_status; const isPaid=s==='paid'; return `<button onclick="toggleStatus('${r._type}','${r.id}','${isPaid?'pending':'paid'}')" class="bdg" style="cursor:pointer;border:none;${isPaid?'background:var(--g-l);color:#27500A':'background:#fff3e0;color:#7c4a00'}" title="Click to toggle">${isPaid?'✓ Paid':'⏳ Pending'}</button> `; })()
+          ? (()=>{ const s=(r._type==='utility'||r._type==='expense')?r.status:r.payment_status; const isPaid=s==='paid'; return `<span class="bdg" style="${isPaid?'background:var(--g-l);color:#27500A':'background:#fff3e0;color:#7c4a00'}">${isPaid?'✓ Paid':'⏳ Pending'}</span> `; })()
           : ''
-      }<button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button></td>
+      }<button class="btn-edit" onclick="editRow('${r._type}','${r.id}')">Edit</button> <button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button></td>
     </tr>`).join('')}</tbody></table>`;
   }catch(e){el.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
 }
 
-let _pendingDeleteType=null, _pendingDeleteId=null;
+let _pendingEditType=null, _pendingEditRow=null;
+
+function editRow(type, id){
+  // Find the row in ALL_ROWS
+  const row = ALL_ROWS.find(r=>r._type===type && String(r.id)===String(id));
+  if(!row){ toast('Row not found'); return; }
+  _pendingEditType=type; _pendingEditRow=row;
+  document.getElementById('edit-pin-input').value='';
+  document.getElementById('edit-pin-error').style.display='none';
+  document.getElementById('modal-edit-pin').classList.add('on');
+  setTimeout(()=>document.getElementById('edit-pin-input').focus(),100);
+}
+
+function confirmEdit(){
+  const pin=document.getElementById('edit-pin-input').value;
+  if(pin!=='0000'){
+    document.getElementById('edit-pin-error').style.display='block';
+    document.getElementById('edit-pin-input').value='';
+    return;
+  }
+  closeModal('modal-edit-pin');
+  openEditModal(_pendingEditType, _pendingEditRow);
+  _pendingEditType=null; _pendingEditRow=null;
+}
+
+function openEditModal(type, r){
+  if(type==='expense'){
+    document.getElementById('exp-prop').value = r.property_name||'';
+    document.getElementById('exp-date').value = r.date||'';
+    document.getElementById('exp-date').max = new Date().toISOString().split('T')[0];
+    document.getElementById('exp-cat').value = r.category||'';
+    document.getElementById('exp-amount').value = r.amount||'';
+    document.getElementById('exp-desc').value = r.description||'';
+    document.getElementById('exp-notes').value = r.notes||'';
+    document.getElementById('exp-file').value = '';
+    setFileStatus('exp-file-status','');
+    setExpStatus(r.status||'pending');
+    // Switch save button to update mode
+    const btn=document.getElementById('exp-btn');
+    btn.textContent='Update';
+    btn.onclick=()=>updateRow('expense', r.id);
+    document.getElementById('modal-expense').querySelector('.modal-ttl').textContent='Edit Expense';
+    document.getElementById('modal-expense').classList.add('on');
+  } else if(type==='utility'){
+    document.getElementById('util-prop').value = r.property_name||'';
+    document.getElementById('util-bill-date').value = r.bill_date||r.month||'';
+    document.getElementById('util-bill-date').max = new Date().toISOString().split('T')[0];
+    document.getElementById('util-type').value = r.utility_type||'Electricity';
+    document.getElementById('util-amount').value = r.amount||'';
+    document.getElementById('util-notes').value = r.notes||'';
+    document.getElementById('util-file').value = '';
+    setFileStatus('util-file-status','');
+    setUtilStatus(r.status||'pending');
+    if(r.status==='paid'){
+      document.getElementById('util-paid').value = r.paid_on||'';
+      document.getElementById('util-paid').max = new Date().toISOString().split('T')[0];
+      const pb=document.getElementById('util-paid-by');
+      const opts=['Property By Heritance'];
+      if(r.property_name && r.property_name!=='Property By Heritance') opts.push(r.property_name);
+      pb.innerHTML=opts.map(n=>`<option>${n}</option>`).join('');
+      pb.value=r.paid_by||'Property By Heritance';
+    }
+    const btn=document.getElementById('util-btn');
+    btn.textContent='Update';
+    btn.onclick=()=>updateRow('utility', r.id);
+    document.getElementById('modal-utility').querySelector('.modal-ttl').textContent='Edit Utility Bill';
+    document.getElementById('modal-utility').classList.add('on');
+  } else if(type==='revenue'){
+    document.getElementById('rev-prop').value = r.property_name||'';
+    document.getElementById('rev-item').value = r.item||'';
+    document.getElementById('rev-date').value = r.date||'';
+    document.getElementById('rev-date').max = new Date().toISOString().split('T')[0];
+    document.getElementById('rev-amount').value = r.amount||'';
+    document.getElementById('rev-notes').value = r.notes||'';
+    document.getElementById('rev-file').value = '';
+    setFileStatus('rev-file-status','');
+    setRevStatus(r.payment_status||'pending');
+    const btn=document.getElementById('rev-btn');
+    btn.textContent='Update';
+    btn.onclick=()=>updateRow('revenue', r.id);
+    document.getElementById('modal-revenue').querySelector('.modal-ttl').textContent='Edit Revenue';
+    document.getElementById('modal-revenue').classList.add('on');
+  } else if(type==='earnings'){
+    // Restore modal to add mode first, then fill
+    setEarnType(r.type||'positive');
+    document.getElementById('earn-ptype').value = r.entity_type||'staff';
+    loadEarnPersons().then(()=>{
+      document.getElementById('earn-person').value = r.entity_name||'';
+    });
+    document.getElementById('earn-head').value = r.head||'';
+    onEarnHeadChange();
+    document.getElementById('earn-amount').value = r.amount||'';
+    document.getElementById('earn-pct').value = r.percentage||'';
+    document.getElementById('earn-date').value = r.entry_date||'';
+    document.getElementById('earn-date').max = new Date().toISOString().split('T')[0];
+    document.getElementById('earn-notes').value = r.notes||'';
+    document.getElementById('earn-file').value = '';
+    setFileStatus('earn-file-status','');
+    setEarnStatus(r.status||'pending');
+    const btn=document.getElementById('earn-btn');
+    btn.textContent='Update';
+    btn.onclick=()=>updateRow('earnings', r.id);
+    document.getElementById('modal-earnings').querySelector('.modal-ttl').textContent='Edit Payout Entry';
+    document.getElementById('modal-earnings').classList.add('on');
+  }
+}
+
+async function updateRow(type, id){
+  const tables={expense:'expenses',utility:'utility_payments',revenue:'property_revenues',earnings:'earnings_log'};
+  let body={};
+  if(type==='expense'){
+    body={property_name:document.getElementById('exp-prop').value,date:document.getElementById('exp-date').value,amount:parseFloat(document.getElementById('exp-amount').value)||0,category:document.getElementById('exp-cat').value,description:document.getElementById('exp-desc').value.trim()||null,notes:document.getElementById('exp-notes').value.trim()||null,status:document.getElementById('exp-status').value};
+    if(!body.date||!body.amount){alert('Need date and amount');return;}
+    const file=document.getElementById('exp-file').files[0];
+    if(file){setFileStatus('exp-file-status','Uploading…');const url=await uploadDoc(file,'expenses/'+body.property_name);body.doc_url=url;setFileStatus('exp-file-status','Uploaded ✓',true);}
+    setBtn('exp-btn',true);
+  } else if(type==='utility'){
+    const status=document.getElementById('util-status').value;
+    const paidOn=document.getElementById('util-paid').value||null;
+    const paidBy=document.getElementById('util-paid-by').value||null;
+    if(status==='paid'&&(!paidOn||!paidBy)){alert('Paid on and Paid by are required when status is Paid');return;}
+    body={property_name:document.getElementById('util-prop').value,bill_date:document.getElementById('util-bill-date').value,utility_type:document.getElementById('util-type').value,amount:parseFloat(document.getElementById('util-amount').value)||0,status,paid_on:paidOn,paid_by:status==='paid'?paidBy:null,notes:document.getElementById('util-notes').value.trim()||null};
+    const file=document.getElementById('util-file').files[0];
+    if(file){setFileStatus('util-file-status','Uploading…');const url=await uploadDoc(file,'utility/'+body.property_name,'utility-uploads');body.proof_url=url;setFileStatus('util-file-status','Uploaded ✓',true);}
+    setBtn('util-btn',true);
+  } else if(type==='revenue'){
+    body={property_name:document.getElementById('rev-prop').value,item:document.getElementById('rev-item').value.trim(),date:document.getElementById('rev-date').value,amount:parseFloat(document.getElementById('rev-amount').value)||0,payment_status:document.getElementById('rev-status').value,notes:document.getElementById('rev-notes').value.trim()||null};
+    if(!body.item||!body.date){alert('Need item and date');return;}
+    const file=document.getElementById('rev-file').files[0];
+    if(file){setFileStatus('rev-file-status','Uploading…');const url=await uploadDoc(file,'revenue/'+body.property_name);body.doc_url=url;setFileStatus('rev-file-status','Uploaded ✓',true);}
+    setBtn('rev-btn',true);
+  } else if(type==='earnings'){
+    const isPct=document.getElementById('earn-head').value==='Percentage of Revenue';
+    body={type:earnType,head:document.getElementById('earn-head').value,amount:isPct?null:parseFloat(document.getElementById('earn-amount').value)||0,percentage:isPct?parseFloat(document.getElementById('earn-pct').value)||null:null,entity_type:document.getElementById('earn-ptype').value,entity_name:document.getElementById('earn-person').value,entry_date:document.getElementById('earn-date').value,status:document.getElementById('earn-status').value,notes:document.getElementById('earn-notes').value.trim()||null};
+    if(!body.entity_name||!body.entry_date){alert('Select person and date');return;}
+    const file=document.getElementById('earn-file').files[0];
+    if(file){setFileStatus('earn-file-status','Uploading…');const url=await uploadDoc(file,'earnings/'+body.entity_name);body.doc_url=url;setFileStatus('earn-file-status','Uploaded ✓',true);}
+    setBtn('earn-btn',true);
+  }
+  try{
+    await api('/rest/v1/'+tables[type]+'?id=eq.'+id,'PATCH',body);
+    const modalMap={expense:'modal-expense',utility:'modal-utility',revenue:'modal-revenue',earnings:'modal-earnings'};
+    closeModal(modalMap[type]);
+    // Reset modal title and button back to add mode
+    resetModalToAdd(type);
+    toast('Updated ✓'); loadLog();
+  }catch(e){alert('Error: '+e.message);}finally{
+    const btnId={expense:'exp-btn',utility:'util-btn',revenue:'rev-btn',earnings:'earn-btn'}[type];
+    setBtn(btnId,false);
+  }
+}
+
+function resetModalToAdd(type){
+  if(type==='expense'){
+    document.getElementById('modal-expense').querySelector('.modal-ttl').textContent='Add Expense';
+    const btn=document.getElementById('exp-btn'); btn.textContent='Save'; btn.onclick=saveExpense;
+  } else if(type==='utility'){
+    document.getElementById('modal-utility').querySelector('.modal-ttl').textContent='Add Utility Bill';
+    const btn=document.getElementById('util-btn'); btn.textContent='Save'; btn.onclick=saveUtility;
+  } else if(type==='revenue'){
+    document.getElementById('modal-revenue').querySelector('.modal-ttl').textContent='Add Revenue';
+    const btn=document.getElementById('rev-btn'); btn.textContent='Save'; btn.onclick=saveRevenue;
+  } else if(type==='earnings'){
+    document.getElementById('modal-earnings').querySelector('.modal-ttl').textContent='Add Payout Entry';
+    const btn=document.getElementById('earn-btn'); btn.textContent='Save'; btn.onclick=saveEarnings;
+  }
+}
+
+
 
 function deleteRow(type,id){
   _pendingDeleteType=type; _pendingDeleteId=id;
@@ -631,6 +813,7 @@ async function confirmDelete(){
 // Allow Enter key in PIN input
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmDelete();});
+  document.getElementById('edit-pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmEdit();});
 });
 
 async function toggleStatus(type, id, newStatus){
@@ -804,7 +987,13 @@ async function saveEarnings(){
   }catch(e){alert('Error: '+e.message);}finally{setBtn('earn-btn',false);}
 }
 
-document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on');}));
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{
+  if(e.target===m){
+    m.classList.remove('on');
+    const typeMap={'modal-expense':'expense','modal-utility':'utility','modal-revenue':'revenue','modal-earnings':'earnings'};
+    if(typeMap[m.id]) resetModalToAdd(typeMap[m.id]);
+  }
+}));
 loadProps().then(()=>loadLog());
 </script>
 </body>
