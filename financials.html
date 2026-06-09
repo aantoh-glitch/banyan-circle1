@@ -105,7 +105,7 @@ textarea.fc{resize:vertical;min-height:72px}
       <svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>
       Add Utility Bill
     </button>
-    <button class="act-btn green" onclick="openBilling()">
+    <button class="act-btn green" onclick="openModal('modal-revenue')">
       <svg viewBox="0 0 24 24"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
       Add Revenue
     </button>
@@ -492,12 +492,23 @@ async function loadLog(){
   try{
     let rows=[];
     // Always fetch all for summary, filter display by type
-    const [expenses, utilities, revenues, earnings] = await Promise.all([
+    const [expenses, utilities, revenues, earnings, bills] = await Promise.all([
       api('/rest/v1/expenses?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
       api('/rest/v1/utility_payments?select=*&order=created_at.desc'+pf).catch(()=>[]),
       api('/rest/v1/property_revenues?select=*&order=date.desc'+pf+(DATE_FROM?'&date=gte.'+DATE_FROM:'')+(DATE_TO?'&date=lte.'+DATE_TO:'')).catch(()=>[]),
-      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[])
+      api('/rest/v1/earnings_log?select=*&order=entry_date.desc'+(ACTIVE_PROP!=='all'?'&entity_name=eq.'+encodeURIComponent(ACTIVE_PROP):'')).catch(()=>[]),
+      api('/rest/v1/bills?select=*&order=bill_date.desc'+pf+(DATE_FROM?'&bill_date=gte.'+DATE_FROM:'')+(DATE_TO?'&bill_date=lte.'+DATE_TO:'')).catch(()=>[])
     ]);
+    // Map bills as revenue-type rows for the log
+    const billRows=(bills||[]).map(b=>({
+      ...b,
+      _type:'bill', _date:b.bill_date||b.created_at||'',
+      _amount:b.amount||0,
+      _label:'Bill — '+(b.guest_name||'Guest'),
+      _sub:b.property_name||null,
+      _prop:b.property_name,
+      payment_status:b.payment_status
+    }));
 
     // Filter utilities by date client-side (bill_date or paid_on)
     const utilFiltered=(utilities||[]).filter(r=>dateFilter(r.paid_on||r.bill_date||r.month));
@@ -508,12 +519,13 @@ async function loadLog(){
     utilFiltered.forEach(r=>rows.push({...r,_type:'utility',_date:r.paid_on||r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_sub:(r.bill_date||r.month)+' · '+r.status,_prop:r.property_name}));
     (revenues||[]).forEach(r=>rows.push({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.bill_id?'Bill · '+r.property_name:null,_prop:r.property_name,payment_status:r.payment_status}));
     earnFiltered.forEach(r=>rows.push({...r,_type:'earnings',_date:r.entry_date,_amount:r.amount,_label:r.head,_sub:r.entity_name,_prop:r.entity_name}));
+    billRows.forEach(r=>rows.push(r));
 
     rows.sort((a,b)=>(b._date||'')>(a._date||'')?1:-1);
     ALL_ROWS=rows;
 
-    // Receivables: property_revenues rows that came from bills (have bill_id), all payment statuses
-    RECEIVABLE_ROWS=(revenues||[]).filter(r=>r.bill_id).map(r=>({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.property_name,_prop:r.property_name,payment_status:r.payment_status}));
+    // Receivables: bills (all statuses) + property_revenues linked to bills
+    RECEIVABLE_ROWS=[...billRows,...(revenues||[]).filter(r=>r.bill_id).map(r=>({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.property_name,_prop:r.property_name,payment_status:r.payment_status}))];
     RECEIVABLE_ROWS.sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
 
     // Payables: earnings_log + utility_payments + expenses + pending revenues with status pending
@@ -521,7 +533,8 @@ async function loadLog(){
     const payableUtils=(utilities||[]).filter(r=>r.status==='pending').map(r=>({...r,_type:'utility',_date:r.bill_date||r.month,_amount:r.amount,_label:r.utility_type,_sub:(r.bill_date||r.month),_prop:r.property_name}));
     const payableExp=(expenses||[]).filter(r=>r.status==='pending').map(r=>({...r,_type:'expense',_date:r.date,_amount:r.amount,_label:r.description||r.category,_sub:r.category,_prop:r.property_name}));
     const payableRev=(revenues||[]).filter(r=>r.payment_status==='pending').map(r=>({...r,_type:'revenue',_date:r.date,_amount:r.amount,_label:r.item,_sub:r.property_name,_prop:r.property_name,payment_status:r.payment_status}));
-    PAYABLE_ROWS=[...payableEarnings,...payableUtils,...payableExp,...payableRev].sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
+    const payableBills=billRows.filter(r=>r.payment_status==='pending');
+    PAYABLE_ROWS=[...payableEarnings,...payableUtils,...payableExp,...payableRev,...payableBills].sort((a,b)=>(a._date||'')>(b._date||'')?1:-1);
 
     const recPendingCount=RECEIVABLE_ROWS.filter(r=>r.payment_status==='pending').length;
     const recBtn=document.getElementById('btn-receivables');
@@ -530,7 +543,7 @@ async function loadLog(){
     if(payBtn) payBtn.textContent='📤 Payables'+(PAYABLE_ROWS.length>0?' ('+PAYABLE_ROWS.length+')':'');
 
     // Summary
-    const totalRev  = rows.filter(r=>r._type==='revenue').reduce((s,r)=>s+(r._amount||0),0);
+    const totalRev  = rows.filter(r=>r._type==='revenue'||r._type==='bill').reduce((s,r)=>s+(r._amount||0),0);
     const totalCost = rows.filter(r=>r._type==='expense'||r._type==='utility').reduce((s,r)=>s+(r._amount||0),0);
     const totalEarn = rows.filter(r=>r._type==='earnings').reduce((s,r)=>s+(r._amount||0),0);
     const net = totalRev - totalCost - totalEarn;
@@ -592,7 +605,9 @@ async function loadLog(){
       else if(PAYOUT_SUB==='landlord') display=display.filter(r=>r.entity_type==='landlord');
       if(PAYOUT_NAME && PAYOUT_NAME!=='all') display=display.filter(r=>r.entity_name===PAYOUT_NAME);
     } else {
-      display=ACTIVE_TYPE==='all'?rows:rows.filter(r=>r._type===ACTIVE_TYPE);
+      if(ACTIVE_TYPE==='all') display=rows;
+      else if(ACTIVE_TYPE==='revenue') display=rows.filter(r=>r._type==='revenue'||r._type==='bill');
+      else display=rows.filter(r=>r._type===ACTIVE_TYPE);
     }
     if(!display.length){el.innerHTML='<div class="empty">No transactions found</div>';return;}
 
@@ -600,7 +615,8 @@ async function loadLog(){
       expense:'<span class="bdg bdg-r">Expense</span>',
       utility:'<span class="bdg bdg-a">Utility</span>',
       revenue:'<span class="bdg bdg-g">Revenue</span>',
-      earnings:'<span class="bdg bdg-b">Payout</span>'
+      earnings:'<span class="bdg bdg-b">Payout</span>',
+      bill:'<span class="bdg bdg-g">Bill</span>'
     };
     el.innerHTML=`<table class="tbl"><thead><tr>
       <th>Date</th><th>Property</th><th>Type</th><th>Description</th><th style="text-align:right">Amount</th><th style="text-align:right">Status / Action</th>
@@ -611,10 +627,10 @@ async function loadLog(){
       <td><span style="font-weight:500">${r._label||'—'}</span>${r._sub?`<br><span style="font-size:11px;color:var(--muted)">${r._sub}</span>`:''}</td>
       <td style="text-align:right;font-weight:500;color:${r._type==='revenue'?'var(--g)':'var(--r)'}">${fmt(r._amount)}</td>
       <td style="text-align:right;white-space:nowrap">${
-        (r._type==='earnings'||r._type==='revenue'||r._type==='utility'||r._type==='expense')
+        (r._type==='earnings'||r._type==='revenue'||r._type==='utility'||r._type==='expense'||r._type==='bill')
           ? (()=>{ const s=(r._type==='utility'||r._type==='expense')?r.status:r.payment_status; const isPaid=s==='paid'; return `<span class="bdg" style="${isPaid?'background:var(--g-l);color:#27500A':'background:#fff3e0;color:#7c4a00'}">${isPaid?'✓ Paid':'⏳ Pending'}</span> `; })()
           : ''
-      }<button class="btn-edit" onclick="editRow('${r._type}','${r.id}')">Edit</button> <button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button></td>
+      }${r._type==='bill'?`<button class="btn-pdf" onclick='billPdf(${JSON.stringify(r).replace(/\/g,"&#x5C;").replace(/'/g,"&#39;")})' style="padding:5px 10px;background:var(--b-l);color:var(--b);border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;margin-right:4px">PDF</button><button class="btn-edit" onclick="editBillRow('${r.id}')">Edit</button> <button class="btn-del" onclick="deleteBillRow('${r.id}','${(r.guest_name||'Bill').replace(/'/g,'')}')">Delete</button>`:`<button class="btn-edit" onclick="editRow('${r._type}','${r.id}')">Edit</button> <button class="btn-del" onclick="deleteRow('${r._type}','${r.id}')">Delete</button>`}</td>
     </tr>`).join('')}</tbody></table>`;
   }catch(e){el.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
 }
@@ -814,6 +830,12 @@ async function confirmDelete(){
     return;
   }
   closeModal('modal-pin');
+  if(_pendingDeleteBillId){
+    await api('/rest/v1/bills?id=eq.'+_pendingDeleteBillId,'DELETE');
+    toast('Bill deleted'); loadLog();
+    _pendingDeleteBillId=null;
+    return;
+  }
   const tables={expense:'expenses',utility:'utility_payments',revenue:'property_revenues',earnings:'earnings_log'};
   await api('/rest/v1/'+tables[_pendingDeleteType]+'?id=eq.'+_pendingDeleteId,'DELETE');
   toast('Deleted'); loadLog();
@@ -1015,37 +1037,57 @@ document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{
   }
 }));
 
-// ── Billing overlay ──
-function openBilling(){
-  var overlay=document.getElementById('billing-overlay');
-  var iframe=document.getElementById('billing-iframe');
-  overlay.style.display='flex';
-  if(!iframe.src||iframe.src==='about:blank'||iframe.src.indexOf('billing.html')===-1){
-    iframe.src='billing.html';
-  }
+// ── Bill helpers (for bills shown in financials log) ──
+function billPdf(b){
+  // Reuse same PDF logic as billing.html
+  const items=b.items||[];
+  const name=b.guest_name||'Guest';
+  const dt=new Date(b.bill_date||b.created_at||Date.now());
+  const ref=name.substring(0,4).toUpperCase()+dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
+  function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function fd(d){return d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';}
+  function fi(n){return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2});}
+  let cgst=0,sgst=0;
+  items.forEach(i=>{const base=(parseFloat(i.qty)||1)*(parseFloat(i.rate)||0);cgst+=base*(parseFloat(i.cgst_pct)||0)/100;sgst+=base*(parseFloat(i.sgst_pct)||0)/100;});
+  const taxable=(parseFloat(b.amount)||0)-cgst-sgst;
+  const itemRows=items.map(i=>{
+    const base=(parseFloat(i.qty)||1)*(parseFloat(i.rate)||0);
+    const cg=parseFloat(i.cgst_pct)||0,sg=parseFloat(i.sgst_pct)||0;
+    const cgstAmt=base*cg/100,sgstAmt=base*sg/100;
+    const tot=parseFloat(i.total)||(base+cgstAmt+sgstAmt);
+    let tx='';
+    if(cg>0)tx+=`<span style="color:#888;font-size:11px"> CGST ${cg}% ${fi(cgstAmt)}</span>`;
+    if(sg>0)tx+=`<span style="color:#888;font-size:11px"> SGST ${sg}% ${fi(sgstAmt)}</span>`;
+    return `<tr><td>${e(i.name||'Item')}</td><td style="color:#888;font-size:12px">${fd(i.date)}</td><td style="text-align:center">${i.qty||1}</td><td style="text-align:right">${fi(i.rate)}${tx}</td><td style="text-align:right;font-weight:600">${fi(tot)}</td></tr>`;
+  }).join('');
+  const isPaid=b.payment_status==='paid';
+  const statusStr=isPaid?('Paid'+(b.payment_method?' · '+b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1):'')):'Pending Payment';
+  const sBg=isPaid?'#EAF3DE':'#FAEEDA', sCol=isPaid?'#27500A':'#633806';
+  let taxRows=`<tr><td colspan="4" style="color:#888;font-size:12px;border-top:1px dashed #ddd">Taxable Amount</td><td style="text-align:right;color:#888;font-size:12px;border-top:1px dashed #ddd">${fi(taxable)}</td></tr>`;
+  if(cgst>0)taxRows+=`<tr><td colspan="4" style="color:#888;font-size:12px">CGST</td><td style="text-align:right;color:#888;font-size:12px">${fi(cgst)}</td></tr>`;
+  if(sgst>0)taxRows+=`<tr><td colspan="4" style="color:#888;font-size:12px">SGST</td><td style="text-align:right;color:#888;font-size:12px">${fi(sgst)}</td></tr>`;
+  const doc=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>${ref}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}.guest-detail{font-size:12px;color:#666;line-height:1.6}hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}table{width:100%;border-collapse:collapse}th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:${sBg};color:${sCol};margin-top:16px}.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}@media print{body{padding:18px 24px}}</style></head><body><div class="hdr"><div style="min-width:140px"></div><div style="flex:1;text-align:center"><strong style="font-size:18px;color:#993C1D">Properties By Heritance</strong></div><div class="prop"><div>Ref: <strong>${ref}</strong></div><div>${e(b.property_name||'')}</div><div>${fd(b.bill_date||b.created_at)}</div></div></div><div class="guest-card"><div class="guest-name">${e(b.guest_name||'Guest')}</div>${b.guest_address?`<div class="guest-detail">${e(b.guest_address).replace(/\n/g,'<br/>')}</div>`:''}</div><hr/><table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>${itemRows}${taxRows}<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">${fi(b.amount)}</td></tr></tbody></table><div class="status-pill">${statusStr}</div>${b.remarks?`<div style="font-size:12px;color:#888;margin-top:8px">Note: ${e(b.remarks)}</div>`:''}<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div><script>window.onload=function(){document.title="${ref}";window.print();}<\/script></body></html>`;
+  window.open(URL.createObjectURL(new Blob([doc],{type:'text/html'})),'_blank');
 }
-function closeBillingOverlay(){
-  document.getElementById('billing-overlay').style.display='none';
-  loadLog();
+
+function editBillRow(id){
+  // Find the bill row and open billing overlay pre-filled — for now open billing page
+  // Billing.html handles its own edit flow; just open the overlay
+  if(typeof openBilling==='function') openBilling();
+  else toast('Open the billing form to edit this bill');
 }
-document.addEventListener('DOMContentLoaded',function(){
-  var ov=document.getElementById('billing-overlay');
-  if(ov) ov.addEventListener('click',function(e){if(e.target===this)closeBillingOverlay();});
-});
+
+async function deleteBillRow(id, name){
+  document.getElementById('del-bill-name').textContent = name;
+  _pendingDeleteBillId = id;
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-error').style.display='none';
+  document.getElementById('modal-pin').classList.add('on');
+  setTimeout(()=>document.getElementById('pin-input').focus(),100);
+}
+let _pendingDeleteBillId = null;
 
 loadProps().then(()=>loadLog());
 </script>
-
-<!-- BILLING OVERLAY -->
-<div id="billing-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:flex-start;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:16px;width:100%;max-width:860px;max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.22)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,0.1);flex-shrink:0">
-      <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500">New Bill</span>
-      <button onclick="closeBillingOverlay()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5F5E5A;line-height:1;padding:2px 6px">×</button>
-    </div>
-    <iframe id="billing-iframe" src="" style="flex:1;border:none;min-height:600px"></iframe>
-  </div>
-</div>
-
 </body>
 </html>
