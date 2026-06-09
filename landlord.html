@@ -1256,8 +1256,8 @@ async function saveUtilityBill() {
 
   var month = _utilityStatus==='paid' ? pd.slice(0,7) : bd.slice(0,7);
   var paidBy = _utilityStatus==='paid' ? document.getElementById('ub-paid-by').value : null;
-  var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month, paid_by: paidBy };
-  body.paid_on = _utilityStatus==='paid' ? pd : bd;
+  var body  = { property_name: PROP, utility_type: item, amount: amount, status: _utilityStatus, month: month, paid_by: paidBy, bill_date: bd };
+  body.paid_on = _utilityStatus==='paid' ? pd : null;
   if (proof_url) body.proof_url = proof_url;
 
   btn.textContent='Saving…';
