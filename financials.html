@@ -373,7 +373,15 @@ async function loadProps(){
   utilPropSel.innerHTML=landlordNames.map(n=>`<option>${n}</option>`).join('');
   // util-paid-by: Property By Heritance + landlord names (same as page header list)
   const paidBySel=document.getElementById('util-paid-by');
-  paidBySel.innerHTML=unique.map(n=>`<option>${n}</option>`).join('');
+  // Populate paid-by based on currently selected util-prop
+  function refreshPaidBy(){
+    const selected=document.getElementById('util-prop').value;
+    const opts=['Property By Heritance'];
+    if(selected && selected!=='Property By Heritance') opts.push(selected);
+    paidBySel.innerHTML=opts.map(n=>`<option>${n}</option>`).join('');
+  }
+  document.getElementById('util-prop').addEventListener('change', refreshPaidBy);
+  refreshPaidBy();
 }
 
 function setProp(prop,el){
@@ -558,7 +566,7 @@ window.openModal=function(id){
   const today=new Date().toISOString().split('T')[0];
   const month=new Date().toISOString().slice(0,7);
   if(id==='modal-expense'){document.getElementById('exp-date').value=today; document.getElementById('exp-date').max=today; document.getElementById('exp-amount').value=''; document.getElementById('exp-desc').value=''; document.getElementById('exp-notes').value=''; document.getElementById('exp-file').value=''; setFileStatus('exp-file-status','');}
-  if(id==='modal-utility'){document.getElementById('util-bill-date').value=today; document.getElementById('util-bill-date').max=today; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; setUtilStatus('pending'); document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
+  if(id==='modal-utility'){document.getElementById('util-bill-date').value=today; document.getElementById('util-bill-date').max=today; document.getElementById('util-amount').value=''; document.getElementById('util-paid').value=''; document.getElementById('util-paid').max=today; setUtilStatus('pending'); const selProp=document.getElementById('util-prop').value; const pb=document.getElementById('util-paid-by'); const pbOpts=['Property By Heritance']; if(selProp&&selProp!=='Property By Heritance') pbOpts.push(selProp); pb.innerHTML=pbOpts.map(n=>`<option>${n}</option>`).join(''); document.getElementById('util-notes').value=''; document.getElementById('util-file').value=''; setFileStatus('util-file-status','');}
   if(id==='modal-revenue'){document.getElementById('rev-date').value=today; document.getElementById('rev-date').max=today; document.getElementById('rev-amount').value=''; document.getElementById('rev-item').value=''; document.getElementById('rev-notes').value=''; document.getElementById('rev-file').value=''; setFileStatus('rev-file-status','');}
   if(id==='modal-earnings'){document.getElementById('earn-date').value=today; document.getElementById('earn-date').max=today; document.getElementById('earn-amount').value=''; document.getElementById('earn-notes').value=''; document.getElementById('earn-file').value=''; setFileStatus('earn-file-status',''); setEarnType('positive'); loadEarnPersons();}
   document.getElementById(id).classList.add('on');
