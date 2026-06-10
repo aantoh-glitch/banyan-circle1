@@ -948,7 +948,7 @@ function expenseToEarningsEntry(exp) {
     percentage:     null,
     notes:          exp.item || null,
     entity_type:    entityType,
-    entity_name:    exp.recipient || null,
+    entity_name:    exp.recipient || exp.property_name || null,
     recorded_by:    null,
     entry_date:     (exp.expense_date || exp.created_at || '').slice(0, 10) || null
   };
@@ -1024,7 +1024,7 @@ async function loadEntries() {
                              : 'Talent';
         filtered = filtered.filter(e =>
           e.payout_type === rolePayoutType &&
-          e.recipient   === viewName
+          (e.recipient === viewName || e.property_name === viewName)
         );
       }
 
