@@ -589,6 +589,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
 
     <div class="fg">
+      <label class="fl">Date <span class="req">*</span></label>
+      <input class="fc" id="ac-exp-date" type="date"/>
+    </div>
+
+    <div class="fg">
       <span class="fl">Status <span class="req">*</span></span>
       <div class="pill-group" id="ac-st-pills">
         <button class="pill-opt status-paid" data-val="Paid" id="ac-st-paid" onclick="acPickSt(this)">Paid</button>
@@ -707,7 +712,7 @@ function acRenderExp() {
         e.status==='Paid to landlord' ? '<span class="bdg bdg-paidlandlord">Paid to landlord</span>' :
         '<span class="bdg bdg-a">'+e.status+'</span>'
       }</td>
-      <td style="color:var(--muted);font-size:12px">${(e.created_at||'').slice(0,10)||'—'}</td>
+      <td style="color:var(--muted);font-size:12px">${(e.date||e.created_at||'').slice(0,10)||'—'}</td>
       <td>${e.file_url?`<a href="${e.file_url}" target="_blank" style="color:var(--br);font-size:12px">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
         <button class="btn-edit" onclick='acEditExp(${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
@@ -728,6 +733,8 @@ function acFilterSt(btn) {
 function acOpenExpModal() {
   const _today = new Date().toISOString().slice(0,10);
   document.getElementById('ac-exp-utility-bill-date').max = _today;
+  document.getElementById('ac-exp-date').max = _today;
+  document.getElementById('ac-exp-date').value = _today;
   document.getElementById('ac-exp-id').value='';
   document.getElementById('ac-exp-ttl').textContent='Add Expense';
   document.getElementById('ac-exp-item').value='';
@@ -765,6 +772,8 @@ function acEditExp(e) {
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
   document.getElementById('ac-exp-utility-bill-date').max = _todayE;
+  document.getElementById('ac-exp-date').max = _todayE;
+  document.getElementById('ac-exp-date').value = e.date ? e.date : _todayE;
   document.getElementById('ac-exp-item').value=e.item||'';
   document.getElementById('ac-exp-amount').value=e.amount||'';
   document.getElementById('ac-exp-desc').value=e.description||'';
@@ -969,11 +978,13 @@ async function acSaveExp() {
   const utilityProp = document.getElementById('ac-exp-utility-property').value;
   const utilityType = document.getElementById('ac-exp-utility-type').value;
   const billDate    = document.getElementById('ac-exp-utility-bill-date').value;
+  const expDate     = document.getElementById('ac-exp-date').value;
 
   if(!item)    { alert('Item is required'); return; }
   if(!amount)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
+  if(!expDate) { alert('Date is required'); return; }
   if(category === 'Payout'  && !payoutType)  { alert('Select a payout type (Talent / Team / Landlords)'); return; }
   if(category === 'Payout'  && !recipient)   { alert('Select a recipient'); return; }
   if(category === 'Utility' && !utilityProp) { alert('Select a property'); return; }
@@ -981,6 +992,7 @@ async function acSaveExp() {
 
   const body = {
     item, amount: Number(amount), category, status,
+    date:          expDate      || null,
     description:   desc     || null,
     file_url:      fileUrl  || null,
     payout_type:   category === 'Payout'  ? payoutType  : null,
