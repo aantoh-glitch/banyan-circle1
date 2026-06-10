@@ -171,7 +171,31 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
 .leave-hdr-info{flex:1;min-width:0}
 .leave-hdr-name{font-size:13px;font-weight:600;color:#0C447C}
 .leave-hdr-dates{font-size:11px;color:#185FA5;margin-top:1px}
-/* ── MISC ── */
+/* ── BILLS CARD ── */
+.bill-card{background:var(--g-l);border:1.5px solid #b6d98a;border-radius:12px;padding:14px 16px;margin-top:6px;font-size:13px}
+.bill-card-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bill-card-label{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.bill-card-val{font-size:14px;font-weight:600;color:var(--text)}
+.bill-amount-val{font-size:18px;font-weight:700;color:#27500A}
+.bill-status-pill{display:inline-block;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:600}
+.bsp-paid{background:#EAF3DE;color:#27500A;border:1.5px solid #b6d98a}
+.bsp-pending{background:var(--a-l);color:var(--a);border:1.5px solid #e0b86a}
+.bill-proof-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--b);text-decoration:none;margin-top:4px}
+.bill-proof-link svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bill-ack-bar{border-top:1px solid var(--border);background:var(--white);padding:14px 16px;flex-shrink:0;display:none}
+.bill-ack-bar.on{display:block}
+.btn-acknowledge{width:100%;padding:13px;background:#27500A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn-acknowledge:hover{opacity:.88}
+.btn-acknowledge:disabled{opacity:.5;cursor:not-allowed}
+.bill-acked-banner{display:none;align-items:center;gap:8px;padding:10px 16px;background:var(--g-l);border-bottom:1px solid rgba(59,109,17,.15);flex-shrink:0;font-size:13px;font-weight:500;color:#27500A}
+.bill-acked-banner.on{display:flex}
+.bill-acked-banner svg{width:16px;height:16px;stroke:#27500A;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+/* ── BILL STATUS PILL PICKER ── */
+.bill-status-picker{display:flex;gap:10px}
+.bsp-btn{flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+.bsp-btn.bsp-btn-paid.on{background:var(--g-l);border-color:var(--g);color:#27500A}
+.bsp-btn.bsp-btn-pending.on{background:var(--a-l);border-color:var(--a);color:var(--a)}
+
 .bk-edit-bar{border-top:1px solid var(--border);background:var(--white);padding:10px 16px;flex-shrink:0;display:none;gap:10px;align-items:center}
 .bk-edit-bar.on{display:flex}
 .btn-edit-booking{flex:1;padding:11px;background:var(--white);color:var(--br);border:1.5px solid var(--br);border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
@@ -264,6 +288,18 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="btn-cancel-decline" onclick="cancelDeclineForm()">Cancel</button>
         <button class="btn-confirm-decline" id="confirm-decline-btn" onclick="confirmDecline()">Confirm Decline</button>
       </div>
+    </div>
+    <!-- Bill acknowledged banner -->
+    <div class="bill-acked-banner" id="bill-acked-banner">
+      <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+      <span id="bill-acked-text">Bill acknowledged</span>
+    </div>
+    <!-- Bill acknowledge bar (admin only) -->
+    <div class="bill-ack-bar" id="bill-ack-bar">
+      <button class="btn-acknowledge" id="ack-btn" onclick="acknowledgeBill()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+        Acknowledge &amp; Save to Expenses
+      </button>
     </div>
     <!-- Normal reply bar -->
     <div class="reply-bar" id="reply-bar">
@@ -359,8 +395,34 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         </div>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl" for="compose-body">Message</label>
+    <!-- Bills fields — shown only when topic = Bills (landlord only) -->
+    <div id="bills-fields" style="display:none">
+      <div class="fg">
+        <label class="fl">Item / Description</label>
+        <input type="text" class="fc" id="bill-item" placeholder="e.g. Electricity, Water, Gas…"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Amount (₹)</label>
+        <input type="number" class="fc" id="bill-amount" placeholder="0.00" min="0" step="0.01"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Property</label>
+        <input type="text" class="fc" id="bill-property" readonly style="background:var(--bg);color:var(--muted);cursor:not-allowed"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Payment Status</label>
+        <div class="bill-status-picker">
+          <button type="button" class="bsp-btn bsp-btn-pending on" id="bsp-pending" onclick="setBillStatus('pending')">⏳ Pending</button>
+          <button type="button" class="bsp-btn bsp-btn-paid" id="bsp-paid" onclick="setBillStatus('paid')">✓ Paid</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Upload Proof (optional)</label>
+        <input type="file" class="fc" id="bill-proof-file" accept="image/*,.pdf" style="padding:8px 13px;cursor:pointer"/>
+        <div id="bill-proof-status" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+      </div>
+    </div>
+
       <textarea class="fc" id="compose-body" placeholder="Write your message…" rows="4"></textarea>
     </div>
     <div class="modal-actions">
@@ -380,7 +442,7 @@ var TOPICS = {
   'admin-talent':   ['Booking Request', 'Payment Related', 'Other'],
   'talent-admin':   ['Payment Related', 'Event Related', 'Others'],
   'admin-landlord': ['General'],
-  'landlord-admin': ['General'],
+  'landlord-admin': ['General', 'Bills'],
   'admin-guest':    ['General'],
   'guest-admin':    ['Complaint', 'Request', 'Feedback', 'Book Banyan Circle'],
   'admin-ops':      ['General', 'Task'],
@@ -622,11 +684,27 @@ function renderThread(msgs){
   el.innerHTML = msgs.map(m=>{
     var mine = iMine(m);
     var senderLabel = mine ? 'You' : esc(m.sender_name);
+    var billCard = '';
+    if(m.bill_item || m.bill_amount){
+      var statusPill = m.bill_status==='paid'
+        ? '<span class="bill-status-pill bsp-paid">✓ Paid</span>'
+        : '<span class="bill-status-pill bsp-pending">⏳ Pending</span>';
+      var proofHtml = m.bill_proof_url
+        ? '<br><a class="bill-proof-link" href="'+esc(m.bill_proof_url)+'" target="_blank"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>View Proof</a>'
+        : '';
+      billCard = '<div class="bill-card">'+
+        '<div class="bill-card-row"><span class="bill-card-label">Item</span><span class="bill-card-val">'+esc(m.bill_item||'—')+'</span></div>'+
+        '<div class="bill-card-row"><span class="bill-card-label">Amount</span><span class="bill-amount-val">₹'+(m.bill_amount ? Number(m.bill_amount).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—')+'</span></div>'+
+        (m.bill_property?'<div class="bill-card-row"><span class="bill-card-label">Property</span><span class="bill-card-val">'+esc(m.bill_property)+'</span></div>':'')+
+        '<div class="bill-card-row"><span class="bill-card-label">Status</span>'+statusPill+'</div>'+
+        proofHtml+
+        '</div>';
+    }
     return '<div class="bubble-wrap'+(mine?' mine':'')+'">'+
       '<div class="bubble-label">'+senderLabel+' · '+fmtDate(m.created_at)+'</div>'+
       '<div class="bubble">'+esc(m.body).replace(/\n/g,'<br>')+
         (m.booking_datetime?'<div class="bubble-booking">📅 '+esc(m.booking_datetime)+(m.booking_venue?' · 📍 '+esc(m.booking_venue):'')+' </div>':'')+
-      '</div></div>';
+      '</div>'+billCard+'</div>';
   }).join('');
 }
 function refreshBookingUI(root){
@@ -645,7 +723,28 @@ function refreshBookingUI(root){
   leaveStrip.classList.remove('on');
   var isLeave   = root && root.topic === 'Leave';
   var isBooking = root && root.topic === 'Booking Request';
-  if(!root || (!isBooking && !isLeave)) return;
+  var isBills   = root && root.topic === 'Bills';
+  /* Hide bill UI by default */
+  var billAckBar    = document.getElementById('bill-ack-bar');
+  var billAckedBanner = document.getElementById('bill-acked-banner');
+  if(billAckBar)    billAckBar.classList.remove('on');
+  if(billAckedBanner) billAckedBanner.classList.remove('on');
+  if(!root || (!isBooking && !isLeave && !isBills)) return;
+  if(isBills){
+    /* For Bills: hide normal reply bar */
+    replyBar.style.display = 'none';
+    var acknowledged = root.bill_acknowledged === true;
+    if(acknowledged){
+      if(billAckedBanner){
+        billAckedBanner.classList.add('on');
+        document.getElementById('bill-acked-text').textContent =
+          'Bill acknowledged' + (root.bill_acknowledged_by ? ' by '+root.bill_acknowledged_by : '') + ' · saved to Expenses';
+      }
+    } else if(isAdmin()){
+      if(billAckBar) billAckBar.classList.add('on');
+    }
+    return;
+  }
   if(isLeave){
     leaveStrip.classList.add('on');
     document.getElementById('leave-hdr-name').textContent = (root.sender_name||'Team') + ' — Leave Request';
@@ -900,6 +999,7 @@ function openCompose(){
   document.getElementById('compose-body').value='';
   document.getElementById('booking-date-fields').style.display='none';
   document.getElementById('leave-fields').style.display='none';
+  document.getElementById('bills-fields').style.display='none';
   document.getElementById('name-list-wrap').style.display='none';
   document.getElementById('booking-venue').innerHTML='<option value="">— Select venue —</option>';
   document.getElementById('fg-topic').style.display='block';
@@ -964,10 +1064,27 @@ function populateTopics(senderRole, recipientRole){
   document.getElementById('leave-fields').style.display='none';
 }
 var leaveDur = 'full';
+var billStatus = 'pending';
 function setLeaveDur(val){
   leaveDur = val;
   document.getElementById('leave-half').classList.toggle('leave-dur-on', val==='half');
   document.getElementById('leave-full').classList.toggle('leave-dur-on', val==='full');
+}
+function setBillStatus(val){
+  billStatus = val;
+  document.getElementById('bsp-paid').classList.toggle('on', val==='paid');
+  document.getElementById('bsp-pending').classList.toggle('on', val==='pending');
+}
+async function uploadBillProof(file){
+  var ext = file.name.split('.').pop();
+  var fname = 'bill-'+Date.now()+'.'+ext;
+  var r = await fetch(SUPA+'/storage/v1/object/utility-proofs/'+fname, {
+    method: 'POST',
+    headers: { 'apikey': KEY, 'Authorization': 'Bearer '+KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+    body: file
+  });
+  if(!r.ok){ var t=await r.text(); throw new Error('Upload failed: '+t); }
+  return SUPA+'/storage/v1/object/public/utility-proofs/'+fname;
 }
 function onLeaveStartChange(){
   var startEl = document.getElementById("leave-start-date");
@@ -982,6 +1099,7 @@ function onTopicChange(){
   var t = document.getElementById('compose-topic').value;
   document.getElementById('booking-date-fields').style.display = t==='Booking Request' ? 'block' : 'none';
   document.getElementById('leave-fields').style.display         = t==='Leave'           ? 'block' : 'none';
+  document.getElementById('bills-fields').style.display         = t==='Bills'           ? 'block' : 'none';
   if(t==='Booking Request'){
     loadVenues();
     var today = new Date().toISOString().slice(0,10);
@@ -998,6 +1116,25 @@ function onTopicChange(){
     leaveDur='full';
     document.getElementById('leave-half').classList.remove('leave-dur-on');
     document.getElementById('leave-full').classList.add('leave-dur-on');
+  }
+  if(t==='Bills'){
+    /* Pre-fill property name from landlord profile */
+    billStatus = 'pending';
+    document.getElementById('bsp-pending').classList.add('on');
+    document.getElementById('bsp-paid').classList.remove('on');
+    document.getElementById('bill-item').value='';
+    document.getElementById('bill-amount').value='';
+    document.getElementById('bill-proof-file').value='';
+    document.getElementById('bill-proof-status').textContent='';
+    /* Try to get property name from landlord profile */
+    if(me && me.role==='landlord'){
+      api('GET','landlords?name=eq.'+encodeURIComponent(me.name)+'&select=property_name&limit=1')
+        .then(function(rows){
+          document.getElementById('bill-property').value = (rows && rows[0] && rows[0].property_name) ? rows[0].property_name : (me.property_name || me.name);
+        }).catch(function(){
+          document.getElementById('bill-property').value = me.property_name || me.name || '';
+        });
+    }
   }
 }
 function closeCompose(){ document.getElementById('compose-overlay').classList.remove('on'); }
@@ -1205,6 +1342,31 @@ async function sendMessage(){
       : 'Leave request: '+fmtStart+' – '+fmtEnd+' ('+durLabel+')\n\n';
     body=leavePrefix+body;
   }
+  /* Bills-specific fields */
+  var billItem=null, billAmount=null, billProperty=null, billProofUrl=null, billStatusVal=null;
+  if(topic==='Bills'){
+    billItem = document.getElementById('bill-item').value.trim();
+    billAmount = parseFloat(document.getElementById('bill-amount').value)||null;
+    billProperty = document.getElementById('bill-property').value.trim()||null;
+    billStatusVal = billStatus || 'pending';
+    if(!billItem){ showToast('Please enter a bill item/description'); return; }
+    if(!billAmount){ showToast('Please enter an amount'); return; }
+    var proofFile = document.getElementById('bill-proof-file').files[0];
+    if(proofFile){
+      var statusEl = document.getElementById('bill-proof-status');
+      statusEl.textContent = 'Uploading…';
+      try{
+        billProofUrl = await uploadBillProof(proofFile);
+        statusEl.textContent = '✓ Uploaded';
+      } catch(upErr){
+        statusEl.textContent = 'Upload failed: '+upErr.message;
+        showToast('Proof upload failed');
+        return;
+      }
+    }
+    /* Auto-fill body if blank */
+    if(!body) body = billItem + (billAmount ? ' — ₹'+billAmount : '') + (billStatusVal==='paid'?' (Paid)':' (Pending)');
+  }
   var payload={
     sender_name:me.name, sender_role:myRole(),
     recipient_name:recipientName, recipient_role:recipientRole,
@@ -1212,6 +1374,11 @@ async function sendMessage(){
     booking_status: (topic==='Booking Request' || topic==='Leave') ? 'pending' : null,
     start_date: leaveStartDate,
     end_date:   leaveEndDate,
+    bill_item: billItem,
+    bill_amount: billAmount,
+    bill_property: billProperty,
+    bill_status: billStatusVal,
+    bill_proof_url: billProofUrl,
     read_by_recipient:false
   };
   try{
@@ -1252,6 +1419,51 @@ async function sendMessage(){
     closeCompose(); renderInbox(); showToast('Message sent ✓');
   } catch(e){ showToast('Failed: '+e.message); }
   finally{ document.getElementById('send-btn').disabled=false; }
+}
+/* ────────────────────────────────
+   BILLS — ACKNOWLEDGE
+──────────────────────────────── */
+async function acknowledgeBill(){
+  if(!currentThread) return;
+  var root = currentThread.msgs.find(m=>!m.thread_id)||currentThread.msgs[0];
+  var btn = document.getElementById('ack-btn');
+  try{
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg> Saving…';
+    /* 1. Mark message as acknowledged */
+    await api('PATCH','messages?id=eq.'+root.id,{
+      bill_acknowledged: true,
+      bill_acknowledged_by: me.name
+    });
+    root.bill_acknowledged = true;
+    root.bill_acknowledged_by = me.name;
+    /* 2. Save to expenses table */
+    var expPayload = {
+      item:         root.bill_item || root.body,
+      amount:       root.bill_amount || null,
+      category:     'Utility',
+      status:       root.bill_status || 'pending',
+      description:  'Bill from landlord: '+(root.sender_name||''),
+      file_url:     root.bill_proof_url || null,
+      payout_type:  'bill',
+      recipient:    root.sender_name || null,
+      property_name: root.bill_property || null,
+      message_id:   root.id,
+      created_at:   new Date().toISOString()
+    };
+    try{
+      await api('POST','expenses', expPayload);
+    } catch(expErr){
+      console.warn('expenses insert failed:', expErr.message);
+      showToast('Acknowledged, but expenses save failed: '+expErr.message);
+    }
+    refreshBookingUI(root);
+    showToast('Bill acknowledged ✓ — saved to Expenses');
+  } catch(e){
+    showToast('Failed: '+e.message);
+    btn.disabled=false;
+    btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg> Acknowledge &amp; Save to Expenses';
+  }
 }
 /* ────────────────────────────────
    HELPERS
