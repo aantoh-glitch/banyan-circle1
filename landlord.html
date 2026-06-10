@@ -56,7 +56,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:100px}
 .pg{display:none;padding:20px 16px 8px;animation:fadeUp .22s ease both}
 .pg.on{display:block}
-#pg-messages.on{display:flex;flex-direction:column;padding:0}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .pg-head{margin-bottom:20px}
@@ -355,19 +354,19 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- ── MESSAGES ── -->
-<div class="pg" id="pg-messages" style="padding:0;display:none;flex-direction:column;height:calc(100dvh - 57px - 73px)">
-  <div style="padding:20px 16px 10px;flex-shrink:0">
+<div class="pg" id="pg-messages">
+  <div class="pg-head">
     <div class="pg-title">Messages</div>
     <div class="pg-sub">Thread with Manager &amp; Office</div>
   </div>
-  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 8px">
-    <div id="msgs-list" style="padding-bottom:4px">
+  <div class="card" style="padding-bottom:14px">
+    <div id="msgs-list" style="max-height:420px;overflow-y:auto;padding-bottom:4px">
       <div class="empty"><div class="empty-icon">💬</div>Loading messages…</div>
     </div>
-  </div>
-  <div class="msg-box" style="flex-shrink:0;padding:10px 16px 12px;background:var(--surface);border-top:1px solid var(--border)">
-    <input class="fc" id="msg-input" type="text" placeholder="Write a message…"/>
-    <button class="btn-p" onclick="sendMsg()">Send</button>
+    <div class="msg-box">
+      <input class="fc" id="msg-input" type="text" placeholder="Write a message…"/>
+      <button class="btn-p" onclick="sendMsg()">Send</button>
+    </div>
   </div>
 </div>
 
@@ -626,13 +625,11 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 const TRAY_PAGES = new Set(['assets','documents','pne','exp','bookings','vendors']);
 
 function goPage(id, btn) {
-  if (typeof closeMsgSheet === 'function') closeMsgSheet();
-  document.querySelectorAll('.pg').forEach(p=>{p.classList.remove('on');p.style.display='none';});
+  if(document.getElementById('msg-sheet-overlay').style.display==='block') closeMsgSheet();
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.tray-btn').forEach(b=>b.classList.remove('on'));
-  var pgEl = document.getElementById('pg-'+id);
-  pgEl.classList.add('on');
-  pgEl.style.display = (id==='messages') ? 'flex' : '';
+  document.getElementById('pg-'+id).classList.add('on');
   if (btn) btn.classList.add('on');
   // If a tray page is active, highlight Others button
   if (TRAY_PAGES.has(id)) {
@@ -660,7 +657,7 @@ function goPage(id, btn) {
 }
 
 function openOthersTray() {
-  if (typeof closeMsgSheet === 'function') closeMsgSheet();
+  if(document.getElementById('msg-sheet-overlay').style.display==='block') closeMsgSheet();
   document.getElementById('others-overlay').classList.add('open');
   document.getElementById('others-tray').classList.add('open');
 }
@@ -1099,96 +1096,40 @@ window.addEventListener('message', function(e) {
 });
 
 
-// ── MESSAGING SHEET ──
-var _msgSheetOpen = false;
-
-function openMsgSheet() {
-  _msgSheetOpen = true;
-  var overlay = document.getElementById('msg-sheet-overlay');
-  var sheet   = document.getElementById('msg-sheet');
-  overlay.style.display = 'block';
-  // Force reflow then slide up
-  requestAnimationFrame(function() {
-    sheet.style.transform = 'translateX(-50%) translateY(0)';
-  });
-  loadMsgSheet();
-}
-
-function closeMsgSheet() {
-  _msgSheetOpen = false;
-  var overlay = document.getElementById('msg-sheet-overlay');
-  var sheet   = document.getElementById('msg-sheet');
-  sheet.style.transform = 'translateX(-50%) translateY(100%)';
-  setTimeout(function(){ overlay.style.display = 'none'; }, 300);
-}
-
-async function loadMsgSheet() {
-  var list = document.getElementById('msg-sheet-list');
-  if (!list) return;
-  list.innerHTML = '<div class="empty"><div class="empty-icon">💬</div>Loading…</div>';
-  var prop = encodeURIComponent(PROP);
-  var r = await fetch(SB+'/rest/v1/guest_complaints?property_name=eq.'+prop+'&order=created_at.asc',{
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Accept':'application/json'}
-  });
-  if (!r || !r.ok) { list.innerHTML = '<div class="empty">Could not load messages</div>'; return; }
-  var msgs = await r.json();
-  if (!msgs || !msgs.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">💬</div>No messages yet</div>'; return; }
-  var myName = me.name || 'You';
-  list.innerHTML = msgs.map(function(m) {
-    var mine = (m.sender === myName || m.sender === 'landlord' || m.role === 'landlord');
-    return '<div class="msg-bubble'+(mine?' mine':'')+'"><div class="msg-inner">'
-      +(mine?'':'<div class="msg-meta">'+esc(m.sender||'Manager')+'</div>')
-      +esc(m.message||m.text||'')
-      +'</div></div>';
-  }).join('');
-  list.scrollTop = list.scrollHeight;
-}
-
-async function sendMsgSheet() {
-  var input = document.getElementById('msg-sheet-input');
-  var text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  var body = { property_name: PROP, message: text, sender: me.name||'Landlord', role:'landlord', status:'open' };
-  var r = await fetch(SB+'/rest/v1/guest_complaints', {
-    method:'POST',
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-    body: JSON.stringify(body)
-  });
-  if (r && r.ok) { loadMsgSheet(); } else { toast('Send failed', true); }
-}
-
-
 // ── BOOT ──
 loadDescription();
 </script>
 
-<!-- MESSAGING PANEL (slide-up sheet, stays above content, below bottom-nav) -->
-<div id="msg-sheet-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:55;" onclick="closeMsgSheet()"></div>
-<div id="msg-sheet" style="position:fixed;bottom:73px;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:430px;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;z-index:56;display:flex;flex-direction:column;height:70dvh;box-shadow:0 -8px 40px rgba(0,0,0,.14);transition:transform .3s cubic-bezier(.32,0,.25,1);">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;flex-shrink:0;border-bottom:1px solid var(--border)">
-    <div>
-      <div style="font-family:'EB Garamond',serif;font-size:19px;font-weight:600;color:var(--text)">Messages</div>
-      <div style="font-size:11px;color:var(--faint)">Thread with Manager &amp; Office</div>
-    </div>
-    <button onclick="closeMsgSheet()" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--faint)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div id="msg-sheet-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 8px">
-    <div class="empty"><div class="empty-icon">💬</div>Loading messages…</div>
-  </div>
-  <div style="display:flex;gap:8px;padding:10px 16px 14px;flex-shrink:0;border-top:1px solid var(--border);background:var(--surface)">
-    <input class="fc" id="msg-sheet-input" type="text" placeholder="Write a message…" style="flex:1;border-radius:22px;padding:9px 14px" onkeydown="if(event.key==='Enter')sendMsgSheet()"/>
-    <button class="btn-p" onclick="sendMsgSheet()" style="width:auto;padding:9px 16px;border-radius:22px;font-size:13px;flex-shrink:0">Send</button>
-  </div>
+<!-- MESSAGING FAB (hidden when viewed inside admin iframe) -->
+<!-- MESSAGING SLIDE-UP SHEET -->
+<div id="msg-sheet-overlay" onclick="closeMsgSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
+<div id="msg-sheet" style="position:fixed;bottom:73px;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:72dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;">
+  <iframe id="msg-sheet-iframe" src="" style="width:100%;height:100%;border:none;display:block;"></iframe>
 </div>
 
-<!-- MESSAGING FAB (hidden when viewed inside admin iframe) -->
-<a href="#" id="msg-fab" onclick="openMsgSheet();return false;" style="position:fixed;bottom:74px;right:14px;z-index:57;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
+<a href="#" id="msg-fab" onclick="openMsgSheet();return false;" style="position:fixed;bottom:74px;right:14px;z-index:60;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);text-decoration:none" title="Messages">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif"></span>
 </a>
+
+<script>
+function openMsgSheet() {
+  var prop = encodeURIComponent(PROP);
+  var role = IS_ADMIN_VIEW ? 'admin' : 'landlord';
+  document.getElementById('msg-sheet-iframe').src = 'messaging.html?property=' + prop + '&role=' + role + '&embedded=1';
+  document.getElementById('msg-sheet-overlay').style.display = 'block';
+  requestAnimationFrame(function() {
+    document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(0)';
+  });
+}
+function closeMsgSheet() {
+  document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(110%)';
+  setTimeout(function() {
+    document.getElementById('msg-sheet-overlay').style.display = 'none';
+    document.getElementById('msg-sheet-iframe').src = '';
+  }, 320);
+}
+</script>
 <script>
 (function(){
   var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
