@@ -553,6 +553,35 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
 
+    <!-- Others items list — shown only when Others is selected -->
+    <div class="fg" id="ac-others-fg" style="display:none">
+      <span class="fl">Select Item <span class="req">*</span></span>
+      <div class="pill-group" id="ac-others-pills" style="flex-wrap:wrap;gap:6px">
+        <button class="pill-opt" data-val="Print &amp; Stationary" onclick="acPickOthersItem(this)">Print &amp; Stationary</button>
+        <button class="pill-opt" data-val="Telephone" onclick="acPickOthersItem(this)">Telephone</button>
+        <button class="pill-opt" data-val="Assets" onclick="acPickOthersItem(this)">Assets</button>
+        <button class="pill-opt" data-val="Travel" onclick="acPickOthersItem(this)">Travel</button>
+        <button class="pill-opt" data-val="Miscellaneous" onclick="acPickOthersItem(this)">Miscellaneous</button>
+        <button class="pill-opt" data-val="Documentation" onclick="acPickOthersItem(this)">Documentation</button>
+        <button class="pill-opt" data-val="Aact &amp; Co" onclick="acPickOthersItem(this)">Aact &amp; Co</button>
+        <button class="pill-opt" data-val="Software" onclick="acPickOthersItem(this)">Software</button>
+        <button class="pill-opt" data-val="Purchase" onclick="acPickOthersItem(this)">Purchase</button>
+        <button class="pill-opt" data-val="Airbnb" onclick="acPickOthersItem(this)">Airbnb</button>
+        <button class="pill-opt" data-val="Renewal" onclick="acPickOthersItem(this)">Renewal</button>
+        <button class="pill-opt" data-val="Commission" onclick="acPickOthersItem(this)">Commission</button>
+        <button class="pill-opt" data-val="Salary" onclick="acPickOthersItem(this)">Salary</button>
+        <button class="pill-opt" data-val="Loan" onclick="acPickOthersItem(this)">Loan</button>
+        <button class="pill-opt" data-val="Designing" onclick="acPickOthersItem(this)">Designing</button>
+        <button class="pill-opt" data-val="Marketing" onclick="acPickOthersItem(this)">Marketing</button>
+        <button class="pill-opt" data-val="Vehicle" onclick="acPickOthersItem(this)">Vehicle</button>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Date <span class="req">*</span></label>
+      <input class="fc" id="ac-exp-date" type="date"/>
+    </div>
+
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Item <span class="req">*</span></label>
@@ -702,6 +731,11 @@ function acFilterSt(btn) {
 }
 
 function acOpenExpModal() {
+  const _today = new Date().toISOString().slice(0,10);
+  const _dateEl = document.getElementById('ac-exp-date');
+  _dateEl.value = _today;
+  _dateEl.max = _today;
+  document.getElementById('ac-exp-utility-bill-date').max = _today;
   document.getElementById('ac-exp-id').value='';
   document.getElementById('ac-exp-ttl').textContent='Add Expense';
   document.getElementById('ac-exp-item').value='';
@@ -721,6 +755,8 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-utility-bill-date').value='';
   document.querySelectorAll('#ac-utility-type-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-utility-fg').style.display='none';
+  document.getElementById('ac-others-fg').style.display='none';
+  document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -735,6 +771,11 @@ function acOpenExpModal() {
 function acEditExp(e) {
   document.getElementById('ac-exp-id').value=e.id;
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
+  const _todayE = new Date().toISOString().slice(0,10);
+  const _dateElE = document.getElementById('ac-exp-date');
+  _dateElE.max = _todayE;
+  _dateElE.value = (e.expense_date || e.created_at||'').slice(0,10) || _todayE;
+  document.getElementById('ac-exp-utility-bill-date').max = _todayE;
   document.getElementById('ac-exp-item').value=e.item||'';
   document.getElementById('ac-exp-amount').value=e.amount||'';
   document.getElementById('ac-exp-desc').value=e.description||'';
@@ -743,10 +784,11 @@ function acEditExp(e) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-exp-status').value=e.status||'';
 
-  // If editing a "To be paid to landlord" expense: hide Paid, show Paid to landlord pill
-  var isTobePaid = e.status === 'To be paid to landlord';
-  document.getElementById('ac-st-paid').style.display = isTobePaid ? 'none' : '';
-  document.getElementById('ac-st-paidlandlord').style.display = isTobePaid ? '' : 'none';
+  // If editing a landlord-related status: hide Paid, show Paid to landlord pill
+  var isTobePaid    = e.status === 'To be paid to landlord';
+  var isPaidLandlord = e.status === 'Paid to landlord';
+  document.getElementById('ac-st-paid').style.display        = (isTobePaid || isPaidLandlord) ? 'none' : '';
+  document.getElementById('ac-st-paidlandlord').style.display = (isTobePaid || isPaidLandlord) ? '' : 'none';
   // Now highlight the matching pill
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.status));
 
@@ -757,6 +799,12 @@ function acEditExp(e) {
   document.getElementById('ac-exp-utility-bill-date').value='';
   document.querySelectorAll('#ac-utility-type-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-utility-fg').style.display='none';
+  document.getElementById('ac-others-fg').style.display='none';
+  document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  if (e.category === 'Others') {
+    document.getElementById('ac-others-fg').style.display = '';
+    document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.item));
+  }
   if (e.category === 'Utility') {
     document.getElementById('ac-utility-fg').style.display = '';
     // Restore utility_type pill
@@ -830,6 +878,13 @@ async function acPickCat(btn) {
     document.getElementById('ac-exp-recipient').innerHTML = '<option value="">— select —</option>';
   }
 
+  // Others section
+  const isOthers = val === 'Others';
+  document.getElementById('ac-others-fg').style.display = isOthers ? '' : 'none';
+  if (!isOthers) {
+    document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  }
+
   // Utility section
   document.getElementById('ac-utility-payment-fg') && (document.getElementById('ac-utility-payment-fg').style.display = 'none');
   if (isUtility) {
@@ -900,6 +955,12 @@ function acPickUtilityType(btn) {
   document.getElementById('ac-exp-utility-type').value = btn.dataset.val;
 }
 
+function acPickOthersItem(btn) {
+  document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('ac-exp-item').value = btn.dataset.val;
+}
+
 function acOnUtilityPropertyChange() {
   const prop = document.getElementById('ac-exp-utility-property').value;
   // Auto-fill Item with property name
@@ -919,11 +980,13 @@ async function acSaveExp() {
   const utilityProp = document.getElementById('ac-exp-utility-property').value;
   const utilityType = document.getElementById('ac-exp-utility-type').value;
   const billDate    = document.getElementById('ac-exp-utility-bill-date').value;
+  const expenseDate = document.getElementById('ac-exp-date').value;
 
   if(!item)    { alert('Item is required'); return; }
   if(!amount)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
+  if(!expenseDate){ alert('Select a date'); return; }
   if(category === 'Payout'  && !payoutType)  { alert('Select a payout type (Talent / Team / Landlords)'); return; }
   if(category === 'Payout'  && !recipient)   { alert('Select a recipient'); return; }
   if(category === 'Utility' && !utilityProp) { alert('Select a property'); return; }
@@ -936,12 +999,13 @@ async function acSaveExp() {
     payout_type:   category === 'Payout'  ? payoutType  : null,
     recipient:     category === 'Payout'  ? recipient   : null,
     property_name: category === 'Utility' ? utilityProp : null,
-    utility_type:  category === 'Utility' ? utilityType : null
+    utility_type:  category === 'Utility' ? utilityType : null,
+    expense_date:  expenseDate || null
   };
 
   try {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', body);
-    else   await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
+    else   await acApi('/rest/v1/expenses', 'POST', {...body, created_at: expenseDate ? expenseDate+'T00:00:00.000Z' : new Date().toISOString()});
 
     // If Payout + Paid + Landlords → mirror to earnings_log
     if (category === 'Payout' && status === 'Paid' && payoutType === 'Landlords' && recipient) {
