@@ -577,11 +577,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
 
-    <div class="fg">
-      <label class="fl">Date <span class="req">*</span></label>
-      <input class="fc" id="ac-exp-date" type="date"/>
-    </div>
-
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Item <span class="req">*</span></label>
@@ -732,9 +727,6 @@ function acFilterSt(btn) {
 
 function acOpenExpModal() {
   const _today = new Date().toISOString().slice(0,10);
-  const _dateEl = document.getElementById('ac-exp-date');
-  _dateEl.value = _today;
-  _dateEl.max = _today;
   document.getElementById('ac-exp-utility-bill-date').max = _today;
   document.getElementById('ac-exp-id').value='';
   document.getElementById('ac-exp-ttl').textContent='Add Expense';
@@ -772,9 +764,6 @@ function acEditExp(e) {
   document.getElementById('ac-exp-id').value=e.id;
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
-  const _dateElE = document.getElementById('ac-exp-date');
-  _dateElE.max = _todayE;
-  _dateElE.value = (e.expense_date || e.created_at||'').slice(0,10) || _todayE;
   document.getElementById('ac-exp-utility-bill-date').max = _todayE;
   document.getElementById('ac-exp-item').value=e.item||'';
   document.getElementById('ac-exp-amount').value=e.amount||'';
@@ -980,13 +969,11 @@ async function acSaveExp() {
   const utilityProp = document.getElementById('ac-exp-utility-property').value;
   const utilityType = document.getElementById('ac-exp-utility-type').value;
   const billDate    = document.getElementById('ac-exp-utility-bill-date').value;
-  const expenseDate = document.getElementById('ac-exp-date').value;
 
   if(!item)    { alert('Item is required'); return; }
   if(!amount)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
-  if(!expenseDate){ alert('Select a date'); return; }
   if(category === 'Payout'  && !payoutType)  { alert('Select a payout type (Talent / Team / Landlords)'); return; }
   if(category === 'Payout'  && !recipient)   { alert('Select a recipient'); return; }
   if(category === 'Utility' && !utilityProp) { alert('Select a property'); return; }
@@ -999,13 +986,12 @@ async function acSaveExp() {
     payout_type:   category === 'Payout'  ? payoutType  : null,
     recipient:     category === 'Payout'  ? recipient   : null,
     property_name: category === 'Utility' ? utilityProp : null,
-    utility_type:  category === 'Utility' ? utilityType : null,
-    expense_date:  expenseDate || null
+    utility_type:  category === 'Utility' ? utilityType : null
   };
 
   try {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', body);
-    else   await acApi('/rest/v1/expenses', 'POST', {...body, created_at: expenseDate ? expenseDate+'T00:00:00.000Z' : new Date().toISOString()});
+    else   await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
 
     // If Payout + Paid + Landlords → mirror to earnings_log
     if (category === 'Payout' && status === 'Paid' && payoutType === 'Landlords' && recipient) {
