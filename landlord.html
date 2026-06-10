@@ -1086,12 +1086,23 @@ async function saveDescription() {
 // document.html posts its scrollHeight via postMessage
 window.addEventListener('message', function(e) {
   if (!e.data) return;
-  var h = e.data.height;
-  if (!h) return;
   if (e.data.type === 'bc_resize') {
+    var h = e.data.height;
+    if (!h) return;
     document.querySelectorAll('iframe').forEach(function(f) {
       try { if (f.contentWindow === e.source) f.style.height = (h + 24) + 'px'; } catch(err){}
     });
+  }
+  /* messaging.html asks for the user object — send it back */
+  if (e.data.type === 'bc_request_me') {
+    var iframe = document.getElementById('msg-sheet-iframe');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
+    }
+  }
+  /* messaging.html wants to close the panel */
+  if (e.data.type === 'bc_close_panel') {
+    closeMsgSheet();
   }
 });
 
@@ -1115,8 +1126,7 @@ loadDescription();
 <script>
 function openMsgSheet() {
   var prop = encodeURIComponent(PROP);
-  var role = IS_ADMIN_VIEW ? 'admin' : 'landlord';
-  document.getElementById('msg-sheet-iframe').src = 'messaging.html?property=' + prop + '&role=' + role + '&embedded=1';
+  document.getElementById('msg-sheet-iframe').src = 'messaging.html?property=' + prop + '&embedded=1';
   document.getElementById('msg-sheet-overlay').style.display = 'block';
   requestAnimationFrame(function() {
     document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(0)';
