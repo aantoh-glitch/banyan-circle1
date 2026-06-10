@@ -1004,26 +1004,26 @@ async function loadEntries() {
     const logEntries = await api(path);
 
     // 2. Load paid payout expenses from expenses table
-    //    Filter: status=Paid AND payout_type in (Landlords, Team, Talent)
+    //    - status=Paid with a payout_type (Landlords/Team/Talent)
+    //    - OR status='Paid to landlord' where payout_type may be null
     let expEntries = [];
     try {
-      const expPath = '/rest/v1/expenses?status=in.(Paid,Paid%20to%20landlord)&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*';
-      const rawExp  = await api(expPath);
-      let filtered  = Array.isArray(rawExp) ? rawExp : [];
+      const [rawPayout, rawPaidLandlord] = await Promise.all([
+        api('/rest/v1/expenses?status=eq.Paid&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*'),
+        api('/rest/v1/expenses?status=eq.Paid%20to%20landlord&order=created_at.desc&select=*')
+      ]);
+      let filtered = [
+        ...(Array.isArray(rawPayout) ? rawPayout : []),
+        ...(Array.isArray(rawPaidLandlord) ? rawPaidLandlord : [])
+      ];
 
       // For non-admin views, only include expenses matching this user's entity
       if (!isAdmin && viewName) {
-        const entityType = PAYOUT_ENTITY_MAP[
-          viewRole === 'landlord' ? 'Landlords'
-          : viewRole === 'staff'  ? 'Team'
-          : 'Talent'
-        ] || viewRole;
-        // We need to match recipient to viewName and payout_type to role
         const rolePayoutType = viewRole === 'landlord' ? 'Landlords'
                              : viewRole === 'staff'    ? 'Team'
                              : 'Talent';
         filtered = filtered.filter(e =>
-          e.payout_type === rolePayoutType &&
+          (e.payout_type === rolePayoutType || e.status === 'Paid to landlord') &&
           (e.recipient === viewName || e.property_name === viewName)
         );
       }
