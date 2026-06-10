@@ -1007,7 +1007,7 @@ async function loadEntries() {
     //    Filter: status=Paid AND payout_type in (Landlords, Team, Talent)
     let expEntries = [];
     try {
-      const expPath = '/rest/v1/expenses?status=in.(Paid,Paid+to+landlord)&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*';
+      const expPath = '/rest/v1/expenses?status=in.(Paid,Paid%20to%20landlord)&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*';
       const rawExp  = await api(expPath);
       let filtered  = Array.isArray(rawExp) ? rawExp : [];
 
