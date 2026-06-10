@@ -249,6 +249,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .pill-opt.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
 .pill-opt.status-paid.on{background:var(--g-l);border-color:var(--g);color:var(--g)}
 .pill-opt.status-pending.on{background:var(--a-l);border-color:var(--a);color:var(--a)}
+.pill-opt.status-tobepaid.on{background:var(--b-l);border-color:var(--b);color:var(--b)}
+.pill-opt.status-paidlandlord.on{background:#F0E8FF;border-color:#7c3aed;color:#7c3aed}
+.bdg-tobepaid{background:var(--b-l);color:#0C447C}
+.bdg-paidlandlord{background:#F0E8FF;color:#5B21B6}
 
 /* ── Upload area ── */
 .upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s}
@@ -307,6 +311,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt status-paid on" data-val="all" onclick="acFilterSt(this)">All</button>
         <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterSt(this)">Paid</button>
         <button class="pill-opt status-pending" data-val="Pending" onclick="acFilterSt(this)">Pending</button>
+        <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" onclick="acFilterSt(this)">To be paid to landlord</button>
+        <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" onclick="acFilterSt(this)">Paid to landlord</button>
       </div>
     </div>
     <table class="tbl">
@@ -561,8 +567,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg">
       <span class="fl">Status <span class="req">*</span></span>
       <div class="pill-group" id="ac-st-pills">
-        <button class="pill-opt status-paid" data-val="Paid" onclick="acPickSt(this)">Paid</button>
-        <button class="pill-opt status-pending" data-val="Pending" onclick="acPickSt(this)">Pending</button>
+        <button class="pill-opt status-paid" data-val="Paid" id="ac-st-paid" onclick="acPickSt(this)">Paid</button>
+        <button class="pill-opt status-pending" data-val="Pending" id="ac-st-pending" onclick="acPickSt(this)">Pending</button>
+        <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" id="ac-st-paidlandlord" onclick="acPickSt(this)" style="display:none">Paid to landlord</button>
       </div>
       <input type="hidden" id="ac-exp-status"/>
     </div>
@@ -669,7 +676,13 @@ function acRenderExp() {
       <td style="font-weight:500">${e.item||'—'}</td>
       <td><span class="bdg bdg-b">${e.category||'—'}</span></td>
       <td>${acFmt(e.amount)}</td>
-      <td>${e.status==='Paid'?'<span class="bdg bdg-g">Paid</span>':'<span class="bdg bdg-a">Pending</span>'}</td>
+      <td>${
+        e.status==='Paid'             ? '<span class="bdg bdg-g">Paid</span>' :
+        e.status==='Pending'          ? '<span class="bdg bdg-a">Pending</span>' :
+        e.status==='To be paid to landlord' ? '<span class="bdg bdg-tobepaid">To be paid to landlord</span>' :
+        e.status==='Paid to landlord' ? '<span class="bdg bdg-paidlandlord">Paid to landlord</span>' :
+        '<span class="bdg bdg-a">'+e.status+'</span>'
+      }</td>
       <td style="color:var(--muted);font-size:12px">${(e.created_at||'').slice(0,10)||'—'}</td>
       <td>${e.file_url?`<a href="${e.file_url}" target="_blank" style="color:var(--br);font-size:12px">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
@@ -711,6 +724,8 @@ function acOpenExpModal() {
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.getElementById('ac-st-paid').style.display = '';
+  document.getElementById('ac-st-paidlandlord').style.display = 'none';
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
   document.getElementById('ac-file-input').value='';
@@ -725,8 +740,15 @@ function acEditExp(e) {
   document.getElementById('ac-exp-desc').value=e.description||'';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.category));
   document.getElementById('ac-exp-cat').value=e.category||'';
-  document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.status));
+  document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-exp-status').value=e.status||'';
+
+  // If editing a "To be paid to landlord" expense: hide Paid, show Paid to landlord pill
+  var isTobePaid = e.status === 'To be paid to landlord';
+  document.getElementById('ac-st-paid').style.display = isTobePaid ? 'none' : '';
+  document.getElementById('ac-st-paidlandlord').style.display = isTobePaid ? '' : 'none';
+  // Now highlight the matching pill
+  document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.status));
 
   // Restore utility sub-section if applicable
   document.getElementById('ac-exp-utility-property').value='';

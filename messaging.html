@@ -1451,7 +1451,7 @@ async function acknowledgeBill(){
       item:         root.bill_item || root.body,
       amount:       root.bill_amount || null,
       category:     'Utility',
-      status:       root.bill_status ? root.bill_status.charAt(0).toUpperCase() + root.bill_status.slice(1) : 'Pending',
+      status:       root.bill_status === 'paid' ? 'To be paid to landlord' : 'Pending',
       description:  'Bill from landlord: '+(root.sender_name||''),
       file_url:     root.bill_proof_url || null,
       payout_type:  (root.bill_status === 'paid' && root.sender_role === 'landlord') ? 'payout_pending' : 'bill',
