@@ -522,6 +522,22 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </select>
     </div>
 
+    <!-- Utility: property picker — shown only when Utility is selected -->
+    <div class="fg" id="ac-utility-property-fg" style="display:none">
+      <label class="fl">Property <span class="req">*</span></label>
+      <select class="fc" id="ac-exp-utility-property" onchange="acOnUtilityPropertyChange()">
+        <option value="">— select property —</option>
+      </select>
+    </div>
+
+    <!-- Utility: matched utility_payments — shown when property selected + status = Paid -->
+    <div class="fg" id="ac-utility-payment-fg" style="display:none">
+      <label class="fl">Link to Utility Payment <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <select class="fc" id="ac-exp-utility-payment">
+        <option value="">— select payment record —</option>
+      </select>
+    </div>
+
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Item <span class="req">*</span></label>
@@ -673,6 +689,12 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-recipient').innerHTML='<option value="">— select —</option>';
   document.getElementById('ac-payout-fg').style.display='none';
   document.getElementById('ac-recipient-fg').style.display='none';
+  // reset utility
+  document.getElementById('ac-exp-utility-property').value='';
+  document.getElementById('ac-exp-utility-property').innerHTML='<option value="">— select property —</option>';
+  document.getElementById('ac-exp-utility-payment').innerHTML='<option value="">— select payment record —</option>';
+  document.getElementById('ac-utility-property-fg').style.display='none';
+  document.getElementById('ac-utility-payment-fg').style.display='none';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -693,12 +715,41 @@ function acEditExp(e) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.status));
   document.getElementById('ac-exp-status').value=e.status||'';
 
-  // Restore payout sub-section if applicable
-  document.getElementById('ac-exp-payout-type').value='';
-  document.getElementById('ac-exp-recipient').innerHTML='<option value="">— select —</option>';
-  document.getElementById('ac-payout-fg').style.display='none';
-  document.getElementById('ac-recipient-fg').style.display='none';
-  document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  // Restore utility sub-section if applicable
+  document.getElementById('ac-exp-utility-property').value='';
+  document.getElementById('ac-exp-utility-property').innerHTML='<option value="">— select property —</option>';
+  document.getElementById('ac-exp-utility-payment').innerHTML='<option value="">— select payment record —</option>';
+  document.getElementById('ac-utility-property-fg').style.display='none';
+  document.getElementById('ac-utility-payment-fg').style.display='none';
+  if (e.category === 'Utility' && e.property_name) {
+    document.getElementById('ac-utility-property-fg').style.display = '';
+    (async () => {
+      try {
+        const d = await acApi('/rest/v1/landlords?select=property_name&order=property_name');
+        const propSel = document.getElementById('ac-exp-utility-property');
+        propSel.innerHTML = '<option value="">— select property —</option>' +
+          (d||[]).map(r=>`<option value="${r.property_name}"${r.property_name===e.property_name?' selected':''}>${r.property_name}</option>`).join('');
+        // If Paid, also load payment records
+        if (e.status === 'Paid') {
+          const payments = await acApi(
+            '/rest/v1/utility_payments?property_name=eq.' + encodeURIComponent(e.property_name) +
+            '&order=bill_date.desc&select=id,utility_type,amount,bill_date,status'
+          );
+          const psel = document.getElementById('ac-exp-utility-payment');
+          if ((payments||[]).length) {
+            psel.innerHTML = '<option value="">— select payment record —</option>' +
+              (payments||[]).map(r => {
+                const dt  = r.bill_date ? new Date(r.bill_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '';
+                const lbl = [r.utility_type, dt, r.amount ? '₹'+Number(r.amount).toLocaleString('en-IN') : ''].filter(Boolean).join(' · ');
+                const sel = (e.utility_payment_id && String(e.utility_payment_id)===String(r.id)) ? ' selected' : '';
+                return `<option value="${r.id}"${sel}>${lbl}</option>`;
+              }).join('');
+            document.getElementById('ac-utility-payment-fg').style.display = '';
+          }
+        }
+      } catch(_) {}
+    })();
+  }
   if (e.category === 'Payout' && e.payout_type) {
     document.getElementById('ac-payout-fg').style.display = '';
     document.getElementById('ac-exp-payout-type').value = e.payout_type;
@@ -737,20 +788,40 @@ function acEditExp(e) {
   document.getElementById('ac-modal-exp').classList.add('on');
 }
 
-function acPickCat(btn) {
+async function acPickCat(btn) {
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   const val = btn.dataset.val;
   document.getElementById('ac-exp-cat').value = val;
-  // Show/hide payout sub-section
-  const isPayout = val === 'Payout';
+
+  const isPayout  = val === 'Payout';
+  const isUtility = val === 'Utility';
+
+  // Payout section
   document.getElementById('ac-payout-fg').style.display    = isPayout ? '' : 'none';
   document.getElementById('ac-recipient-fg').style.display = 'none';
   if (!isPayout) {
-    // Reset payout state when switching away
     document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
     document.getElementById('ac-exp-payout-type').value = '';
     document.getElementById('ac-exp-recipient').innerHTML = '<option value="">— select —</option>';
+  }
+
+  // Utility section
+  document.getElementById('ac-utility-payment-fg').style.display = 'none';
+  if (isUtility) {
+    document.getElementById('ac-utility-property-fg').style.display = '';
+    const sel = document.getElementById('ac-exp-utility-property');
+    if (sel.options.length <= 1) {
+      sel.innerHTML = '<option value="">Loading…</option>';
+      try {
+        const d = await acApi('/rest/v1/landlords?select=property_name&order=property_name');
+        sel.innerHTML = '<option value="">— select property —</option>' +
+          (d||[]).map(r=>`<option value="${r.property_name}">${r.property_name}</option>`).join('');
+      } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
+    }
+  } else {
+    document.getElementById('ac-utility-property-fg').style.display = 'none';
+    document.getElementById('ac-exp-utility-property').value = '';
   }
 }
 
@@ -792,31 +863,77 @@ function acOnRecipientChange() {
 }
 function acPickSt(btn) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on'); document.getElementById('ac-exp-status').value=btn.dataset.val;
+  btn.classList.add('on');
+  document.getElementById('ac-exp-status').value = btn.dataset.val;
+  // If Utility + Paid, try loading payment records
+  if (document.getElementById('ac-exp-cat').value === 'Utility') {
+    acOnUtilityPropertyChange();
+  }
+}
+
+async function acOnUtilityPropertyChange() {
+  const prop   = document.getElementById('ac-exp-utility-property').value;
+  const status = document.getElementById('ac-exp-status').value;
+  const pfg    = document.getElementById('ac-utility-payment-fg');
+  const psel   = document.getElementById('ac-exp-utility-payment');
+
+  // Auto-fill Item with property name
+  if (prop) document.getElementById('ac-exp-item').value = prop;
+
+  if (!prop || status !== 'Paid') { pfg.style.display = 'none'; return; }
+
+  pfg.style.display = '';
+  psel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    const d = await acApi(
+      '/rest/v1/utility_payments?property_name=eq.' + encodeURIComponent(prop) +
+      '&order=bill_date.desc&select=id,utility_type,amount,bill_date,status'
+    );
+    const rows = d || [];
+    if (!rows.length) {
+      psel.innerHTML = '<option value="">No payment records found</option>';
+    } else {
+      psel.innerHTML = '<option value="">— select payment record —</option>' +
+        rows.map(r => {
+          const dt  = r.bill_date ? new Date(r.bill_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '';
+          const lbl = [r.utility_type, dt, r.amount ? '₹'+Number(r.amount).toLocaleString('en-IN') : ''].filter(Boolean).join(' · ');
+          return `<option value="${r.id}">${lbl}</option>`;
+        }).join('');
+    }
+  } catch(_) {
+    psel.innerHTML = '<option value="">Could not load</option>';
+  }
 }
 
 async function acSaveExp() {
-  const id          = document.getElementById('ac-exp-id').value;
-  const item        = document.getElementById('ac-exp-item').value.trim();
-  const amount      = document.getElementById('ac-exp-amount').value;
-  const category    = document.getElementById('ac-exp-cat').value;
-  const status      = document.getElementById('ac-exp-status').value;
-  const desc        = document.getElementById('ac-exp-desc').value.trim();
-  const fileUrl     = document.getElementById('ac-exp-fileurl').value;
-  const payoutType  = document.getElementById('ac-exp-payout-type').value;
-  const recipient   = document.getElementById('ac-exp-recipient').value;
+  const id             = document.getElementById('ac-exp-id').value;
+  const item           = document.getElementById('ac-exp-item').value.trim();
+  const amount         = document.getElementById('ac-exp-amount').value;
+  const category       = document.getElementById('ac-exp-cat').value;
+  const status         = document.getElementById('ac-exp-status').value;
+  const desc           = document.getElementById('ac-exp-desc').value.trim();
+  const fileUrl        = document.getElementById('ac-exp-fileurl').value;
+  const payoutType     = document.getElementById('ac-exp-payout-type').value;
+  const recipient      = document.getElementById('ac-exp-recipient').value;
+  const utilityProp    = document.getElementById('ac-exp-utility-property').value;
+  const utilityPayment = document.getElementById('ac-exp-utility-payment').value;
+
   if(!item)    { alert('Item is required'); return; }
   if(!amount)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
   if(category === 'Payout' && !payoutType) { alert('Select a payout type (Talent / Team / Landlords)'); return; }
   if(category === 'Payout' && !recipient)  { alert('Select a recipient'); return; }
+  if(category === 'Utility' && !utilityProp) { alert('Select a property'); return; }
+
   const body = {
     item, amount:Number(amount), category, status,
-    description: desc||null,
-    file_url:    fileUrl||null,
-    payout_type: category === 'Payout' ? payoutType : null,
-    recipient:   category === 'Payout' ? recipient  : null
+    description:      desc||null,
+    file_url:         fileUrl||null,
+    payout_type:      category === 'Payout'   ? payoutType     : null,
+    recipient:        category === 'Payout'   ? recipient      : null,
+    property_name:    category === 'Utility'  ? utilityProp    : null,
+    utility_payment_id: (category === 'Utility' && utilityPayment) ? utilityPayment : null
   };
   try {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id,'PATCH',body);
