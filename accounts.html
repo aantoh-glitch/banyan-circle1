@@ -333,7 +333,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 
   <div class="fg">
-    <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
+    <label class="fl">Select <span style="color:var(--r)">*</span></label>
     <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
       <option value="">— select —</option>
     </select>
@@ -430,6 +430,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <label class="fl">To</label>
       <input class="fc" id="filter-to" type="date" onchange="onFilterToChange();filterBills()"/>
     </div>
+    <script>
+    (function(){
+      var today = new Date().toISOString().slice(0,10);
+      var ff = document.getElementById('filter-from');
+      var ft = document.getElementById('filter-to');
+      if(ff){ ff.max = today; }
+      if(ft){ ft.max = today; }
+    })();
+    </script>
     <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
   </div>
   <div id="bill-log">Loading…</div>
@@ -824,6 +833,11 @@ async function init() {
   var billDateEl = document.getElementById('bill-date');
   billDateEl.value = today;
   billDateEl.max = today;
+  // Log date filters — never allow future
+  var ffEl = document.getElementById('filter-from');
+  var ftEl = document.getElementById('filter-to');
+  if (ffEl) ffEl.max = today;
+  if (ftEl) ftEl.max = today;
   setPayMethod('pending');
   await loadGuests();
   await loadBills();
@@ -840,7 +854,7 @@ async function loadGuests() {
           (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
         return '<option value="' + g.id + '">' + label + '</option>';
       }).join('') +
-      '<option value="__other__">Other</option>';
+      '<option value="__other__">Others</option>';
   } catch(e) {
     document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
   }
@@ -965,20 +979,29 @@ function getItems() {
 
 // ── Bill log date range enforcement ──
 function onFilterFromChange() {
+  var today  = new Date().toISOString().slice(0,10);
   var fromEl = document.getElementById('filter-from');
   var toEl   = document.getElementById('filter-to');
+  // Clamp to today
+  if (fromEl.value > today) fromEl.value = today;
+  // If "to" is set and is earlier than "from", bump it up
   if (fromEl.value && toEl.value && toEl.value < fromEl.value) {
     toEl.value = fromEl.value;
   }
   toEl.min = fromEl.value || '';
+  toEl.max = today;
 }
 function onFilterToChange() {
+  var today  = new Date().toISOString().slice(0,10);
   var fromEl = document.getElementById('filter-from');
   var toEl   = document.getElementById('filter-to');
+  // Clamp to today
+  if (toEl.value > today) toEl.value = today;
+  // If "from" is set and is later than "to", pull it back
   if (toEl.value && fromEl.value && fromEl.value > toEl.value) {
     fromEl.value = toEl.value;
   }
-  fromEl.max = toEl.value || '';
+  fromEl.max = toEl.value || today;
 }
 
 // ── Payment ──
