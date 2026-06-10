@@ -413,14 +413,22 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="card">
   <div class="log-filters">
     <div class="fg" style="flex:1.5;min-width:180px">
-      <label class="fl">Search Guest</label>
-      <input class="fc" id="filter-guest" type="text" placeholder="Guest name…" oninput="filterBills()"/>
+      <label class="fl">Search</label>
+      <input class="fc" id="filter-guest" type="text" placeholder="Name, item…" oninput="filterBills()"/>
     </div>
     <div class="fg" style="flex:1.2;min-width:160px">
       <label class="fl">Property</label>
       <select class="fc" id="filter-property" onchange="filterBills()">
         <option value="">All properties</option>
       </select>
+    </div>
+    <div class="fg" style="min-width:180px">
+      <label class="fl">Status</label>
+      <div class="pill-group" id="filter-status-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+        <button class="pill-opt on" data-val="" onclick="filterBillStatus(this)">All</button>
+        <button class="pill-opt" data-val="paid" onclick="filterBillStatus(this)">Paid</button>
+        <button class="pill-opt" data-val="pending" onclick="filterBillStatus(this)">Pending</button>
+      </div>
     </div>
     <div class="fg-date fg" style="min-width:140px">
       <label class="fl">From</label>
@@ -1298,15 +1306,24 @@ async function loadBills() {
   }
 }
 
+function filterBillStatus(btn) {
+  document.querySelectorAll('#filter-status-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  filterBills();
+}
+
 function filterBills() {
   var guestQ  = (document.getElementById('filter-guest').value||'').toLowerCase().trim();
   var propQ   = document.getElementById('filter-property').value;
   var fromQ   = document.getElementById('filter-from').value;
   var toQ     = document.getElementById('filter-to').value;
+  var statusQ = (document.querySelector('#filter-status-pills .pill-opt.on')||{}).dataset&&
+                document.querySelector('#filter-status-pills .pill-opt.on').dataset.val || '';
 
   var filtered = ALL_BILLS.filter(function(b){
-    if (guestQ && !(b.guest_name||'').toLowerCase().includes(guestQ)) return false;
-    if (propQ  && (b.property_name||'') !== propQ) return false;
+    if (guestQ  && !(b.guest_name||'').toLowerCase().includes(guestQ)) return false;
+    if (propQ   && (b.property_name||'') !== propQ) return false;
+    if (statusQ && (b.payment_status||'') !== statusQ) return false;
     var billD = (b.bill_date || b.created_at || '').slice(0,10);
     if (fromQ && billD < fromQ) return false;
     if (toQ   && billD > toQ)   return false;
@@ -1322,6 +1339,10 @@ function clearFilters() {
   var toEl   = document.getElementById('filter-to');
   fromEl.value = ''; fromEl.max = '';
   toEl.value   = ''; toEl.min  = '';
+  // Reset status pills to All
+  document.querySelectorAll('#filter-status-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  var allPill = document.querySelector('#filter-status-pills .pill-opt[data-val=""]');
+  if (allPill) allPill.classList.add('on');
   renderBills(ALL_BILLS);
 }
 
