@@ -1466,6 +1466,25 @@ async function acknowledgeBill(){
       console.warn('expenses insert failed:', expErr.message);
       showToast('Acknowledged, but expenses save failed: '+expErr.message);
     }
+    /* 3. If bill_status === 'paid' → also write to utility_payments */
+    if(root.bill_status === 'paid'){
+      var upPayload = {
+        property_name: root.bill_property || null,
+        utility_type:  root.bill_item     || null,
+        amount:        root.bill_amount   || null,
+        status:        'Paid',
+        paid_on:       new Date().toISOString().slice(0,10),
+        bill_date:     null,
+        proof_url:     root.bill_proof_url || null,
+        notes:         'From landlord message: '+(root.sender_name||''),
+        created_at:    new Date().toISOString()
+      };
+      try{
+        await api('POST','utility_payments', upPayload);
+      } catch(upErr){
+        console.warn('utility_payments insert failed:', upErr.message);
+      }
+    }
     refreshBookingUI(root);
     showToast('Bill acknowledged ✓ — saved to Expenses');
   } catch(e){
