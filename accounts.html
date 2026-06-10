@@ -708,7 +708,7 @@ function acEditExp(e) {
       try {
         let items = [];
         if (e.payout_type === 'Talent') {
-          const d = await acApi('/rest/v1/talent?select=id,name&order=name');
+          const d = await acApi('/rest/v1/talents?select=id,name&order=name');
           items = (d||[]).map(r=>r.name);
         } else if (e.payout_type === 'Team') {
           const d = await acApi('/rest/v1/staff?select=id,name&order=name');
@@ -766,7 +766,7 @@ async function acPickPayout(btn) {
   try {
     let items = [];
     if (type === 'Talent') {
-      const d = await acApi('/rest/v1/talent?select=id,name&order=name');
+      const d = await acApi('/rest/v1/talents?select=id,name&order=name');
       items = (d||[]).map(r=>({ id: r.id, label: r.name }));
     } else if (type === 'Team') {
       const d = await acApi('/rest/v1/staff?select=id,name&order=name');
