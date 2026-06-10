@@ -272,6 +272,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .ac-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 24px;border-radius:999px;font-size:13px;z-index:9998;display:none;white-space:nowrap}
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div style="padding:28px 32px;max-width:1280px">
@@ -295,10 +296,16 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="card">
     <div class="card-header">
       <span class="card-ttl">All Expenses</span>
-      <button class="btn-p" onclick="acOpenExpModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Expense
-      </button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-sec" onclick="downloadExpensesXlsx()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Report
+        </button>
+        <button class="btn-p" onclick="acOpenExpModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Expense
+        </button>
+      </div>
     </div>
     <div class="filter-row">
       <div class="pill-group" id="ac-filter-cat">
@@ -414,8 +421,21 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- ─── BILLING KPI ROW ─── -->
+<div class="kpi-row" style="margin-bottom:20px">
+  <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="bl-kpi-total">₹ —</div></div>
+  <div class="kpi"><div class="kpi-label">Received</div><div class="kpi-value" style="color:#27500A" id="bl-kpi-received">₹ —</div></div>
+  <div class="kpi"><div class="kpi-label">Receivables</div><div class="kpi-value" style="color:#854F0B" id="bl-kpi-receivables">₹ —</div></div>
+</div>
+
 <!-- ─── BILL LOG ─── -->
-<div class="section-hdg">Bill Log</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)">
+  <div class="section-hdg" style="margin:0;padding:0;border:none">Bill Log</div>
+  <button class="btn-sec" onclick="downloadBillsXlsx()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Download Report
+  </button>
+</div>
 <div class="card">
   <div class="log-filters">
     <div class="fg" style="flex:1.5;min-width:180px">
@@ -1576,6 +1596,19 @@ function calcBillTax(items) {
 
 function renderBills(data) {
   var el = document.getElementById('bill-log');
+
+  // ── Top KPI row (always reflects ALL bills, not filtered subset) ──
+  var kpiData     = ALL_BILLS.length ? ALL_BILLS : data;
+  var kpiTotal    = kpiData.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var kpiReceived = kpiData.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var kpiPending  = kpiData.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var kpiTotalEl  = document.getElementById('bl-kpi-total');
+  var kpiRcvEl    = document.getElementById('bl-kpi-received');
+  var kpiPndEl    = document.getElementById('bl-kpi-receivables');
+  if (kpiTotalEl) kpiTotalEl.textContent = fmt(kpiTotal);
+  if (kpiRcvEl)  kpiRcvEl.textContent   = fmt(kpiReceived);
+  if (kpiPndEl)  kpiPndEl.textContent   = fmt(kpiPending);
+
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
 
   // ── Totals bar ──
@@ -1746,6 +1779,150 @@ function downloadBillPdf(b) {
 
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Excel export helpers ──
+
+function xlsxDownload(wb, filename) {
+  var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob  = new Blob([wbout], {type:'application/octet-stream'});
+  var url   = URL.createObjectURL(blob);
+  var a     = document.createElement('a');
+  a.href    = url; a.download = filename; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+function xlsxHeaderStyle() {
+  return {font:{bold:true,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'993C1D'}}, alignment:{horizontal:'center'}};
+}
+
+function applyColWidths(ws, widths) {
+  ws['!cols'] = widths.map(function(w){ return {wch:w}; });
+}
+
+function downloadExpensesXlsx() {
+  var data = _acExpenses || [];
+  if (!data.length) { alert('No expenses to export.'); return; }
+
+  // Summary sheet
+  var total  = data.reduce(function(s,e){ return s+(parseFloat(e.amount)||0); },0);
+  var paid   = data.filter(function(e){ return e.status==='Paid'||e.status==='Paid to landlord'; }).reduce(function(s,e){ return s+(parseFloat(e.amount)||0); },0);
+  var pend   = total - paid;
+
+  var wb   = XLSX.utils.book_new();
+
+  // — Summary sheet —
+  var sumRows = [
+    ['Expense Report — Banyan Circle'],
+    ['Generated', new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})],
+    [],
+    ['Metric','Amount (₹)'],
+    ['Total Expenses', total],
+    ['Paid',           paid],
+    ['Pending',        pend],
+  ];
+  var wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
+  applyColWidths(wsSummary, [28, 18]);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  // — Detail sheet —
+  var detailRows = [['Date','Item','Category','Amount (₹)','Status','Description','Receipt URL']];
+  data.forEach(function(e){
+    detailRows.push([
+      (e.date||e.created_at||'').slice(0,10),
+      e.item||'',
+      e.category||'',
+      parseFloat(e.amount)||0,
+      e.status||'',
+      e.description||'',
+      e.file_url||''
+    ]);
+  });
+  var wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
+  applyColWidths(wsDetail, [14,28,14,16,22,34,40]);
+  XLSX.utils.book_append_sheet(wb, wsDetail, 'Expenses');
+
+  var today = new Date().toISOString().slice(0,10);
+  xlsxDownload(wb, 'Expense_Report_' + today + '.xlsx');
+  toast('Expenses exported ✓');
+}
+
+function downloadBillsXlsx() {
+  var data = ALL_BILLS || [];
+  if (!data.length) { alert('No bills to export.'); return; }
+
+  var total    = data.reduce(function(s,b){ return s+(parseFloat(b.amount)||0); },0);
+  var received = data.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.amount)||0); },0);
+  var pending  = total - received;
+
+  var wb = XLSX.utils.book_new();
+
+  // — Summary sheet —
+  var sumRows = [
+    ['Billing Report — Banyan Circle'],
+    ['Generated', new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})],
+    [],
+    ['Metric','Amount (₹)'],
+    ['Total Billed',  total],
+    ['Received',      received],
+    ['Receivables',   pending],
+  ];
+  var wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
+  applyColWidths(wsSummary, [28,18]);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  // — Bills detail sheet —
+  var billRows = [['Date','Guest','Property','Items','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Method','Remarks']];
+  data.forEach(function(b){
+    var items = b.items||[];
+    var tax   = calcBillTax(items);
+    var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
+    var itemStr = items.map(function(i){ return i.name+(i.qty&&i.qty!=1?' x'+i.qty:''); }).join('; ');
+    billRows.push([
+      (b.bill_date||b.created_at||'').slice(0,10),
+      b.guest_name||'',
+      b.property_name||'',
+      itemStr,
+      Math.round(taxable*100)/100,
+      Math.round(tax.cgst*100)/100,
+      Math.round(tax.sgst*100)/100,
+      parseFloat(b.amount)||0,
+      b.payment_status==='paid' ? 'Received' : 'Receivable',
+      b.payment_method||'',
+      b.remarks||''
+    ]);
+  });
+  var wsBills = XLSX.utils.aoa_to_sheet(billRows);
+  applyColWidths(wsBills, [14,24,20,40,14,12,12,14,12,14,30]);
+  XLSX.utils.book_append_sheet(wb, wsBills, 'Bills');
+
+  // — Items detail sheet —
+  var itemRows = [['Bill Date','Guest','Property','Item','Qty','Rate (₹)','CGST %','SGST %','Total (₹)']];
+  data.forEach(function(b){
+    (b.items||[]).forEach(function(i){
+      var base  = (parseFloat(i.qty)||1)*(parseFloat(i.rate)||0);
+      var cgstA = base*(parseFloat(i.cgst_pct)||0)/100;
+      var sgstA = base*(parseFloat(i.sgst_pct)||0)/100;
+      itemRows.push([
+        (b.bill_date||b.created_at||'').slice(0,10),
+        b.guest_name||'',
+        b.property_name||'',
+        i.name||'',
+        parseFloat(i.qty)||1,
+        parseFloat(i.rate)||0,
+        parseFloat(i.cgst_pct)||0,
+        parseFloat(i.sgst_pct)||0,
+        Math.round((parseFloat(i.total)||(base+cgstA+sgstA))*100)/100
+      ]);
+    });
+  });
+  var wsItems = XLSX.utils.aoa_to_sheet(itemRows);
+  applyColWidths(wsItems, [14,24,20,32,8,14,10,10,14]);
+  XLSX.utils.book_append_sheet(wb, wsItems, 'Line Items');
+
+  var today = new Date().toISOString().slice(0,10);
+  xlsxDownload(wb, 'Billing_Report_' + today + '.xlsx');
+  toast('Bills exported ✓');
 }
 
 
