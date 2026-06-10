@@ -412,8 +412,8 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
       <div class="fg">
         <label class="fl">Payment Status</label>
         <div class="bill-status-picker">
-          <button type="button" class="bsp-btn bsp-btn-pending on" id="bsp-pending" onclick="setBillStatus('pending')">⏳ Pending</button>
           <button type="button" class="bsp-btn bsp-btn-paid" id="bsp-paid" onclick="setBillStatus('paid')">✓ Paid</button>
+          <button type="button" class="bsp-btn bsp-btn-pending on" id="bsp-pending" onclick="setBillStatus('pending')">⏳ Pending</button>
         </div>
       </div>
       <div class="fg">
@@ -1442,10 +1442,10 @@ async function acknowledgeBill(){
       item:         root.bill_item || root.body,
       amount:       root.bill_amount || null,
       category:     'Utility',
-      status:       root.bill_status || 'pending',
+      status:       root.bill_status ? root.bill_status.charAt(0).toUpperCase() + root.bill_status.slice(1) : 'Pending',
       description:  'Bill from landlord: '+(root.sender_name||''),
       file_url:     root.bill_proof_url || null,
-      payout_type:  'bill',
+      payout_type:  (root.bill_status === 'paid' && root.sender_role === 'landlord') ? 'payout_pending' : 'bill',
       recipient:    root.sender_name || null,
       property_name: root.bill_property || null,
       message_id:   root.id,
