@@ -921,6 +921,33 @@ async function loadEntityLists() {
 /* ═══════════════════════════════════════════
    LOAD EARNINGS
 ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   PAYOUT TYPE → entity_type MAPPING
+═══════════════════════════════════════════ */
+const PAYOUT_ENTITY_MAP = {
+  'Landlords': 'landlord',
+  'Team':      'staff',
+  'Talent':    'talent'
+};
+
+/* Convert a paid-payout expense row into a synthetic earnings_log entry */
+function expenseToEarningsEntry(exp) {
+  const entityType = PAYOUT_ENTITY_MAP[exp.payout_type] || null;
+  return {
+    id:          'exp_' + exp.id,          // prefixed so it never collides with earnings_log ids
+    _fromExpense: true,                     // flag for rendering tweaks
+    type:        'positive',
+    head:        'Pay',                     // positive head; expense item goes into notes
+    amount:      exp.amount,
+    percentage:  null,
+    notes:       exp.item || null,
+    entity_type: entityType,
+    entity_name: exp.recipient || null,
+    recorded_by: null,
+    entry_date:  (exp.created_at || '').slice(0, 10) || null
+  };
+}
+
 async function loadEntries() {
   let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
 
@@ -967,7 +994,47 @@ async function loadEntries() {
   }
 
   try {
-    allEntries = await api(path);
+    // 1. Load earnings_log entries
+    const logEntries = await api(path);
+
+    // 2. Load paid payout expenses from expenses table
+    //    Filter: status=Paid AND payout_type in (Landlords, Team, Talent)
+    let expEntries = [];
+    try {
+      const expPath = '/rest/v1/expenses?status=eq.Paid&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*';
+      const rawExp  = await api(expPath);
+      let filtered  = Array.isArray(rawExp) ? rawExp : [];
+
+      // For non-admin views, only include expenses matching this user's entity
+      if (!isAdmin && viewName) {
+        const entityType = PAYOUT_ENTITY_MAP[
+          viewRole === 'landlord' ? 'Landlords'
+          : viewRole === 'staff'  ? 'Team'
+          : 'Talent'
+        ] || viewRole;
+        // We need to match recipient to viewName and payout_type to role
+        const rolePayoutType = viewRole === 'landlord' ? 'Landlords'
+                             : viewRole === 'staff'    ? 'Team'
+                             : 'Talent';
+        filtered = filtered.filter(e =>
+          e.payout_type === rolePayoutType &&
+          e.recipient   === viewName
+        );
+      }
+
+      expEntries = filtered.map(expenseToEarningsEntry);
+    } catch(e) {
+      console.warn('Could not load paid expenses — they will not appear in earnings:', e);
+    }
+
+    // 3. Merge: earnings_log entries first, then expense-derived entries
+    //    Sort combined list by entry_date desc
+    allEntries = [...logEntries, ...expEntries].sort((a, b) => {
+      const da = a.entry_date || '';
+      const db = b.entry_date || '';
+      return db.localeCompare(da);
+    });
+
   } catch(e) {
     allEntries = [];
     document.getElementById('log-wrap').innerHTML =
@@ -1085,15 +1152,18 @@ function renderLog() {
       ? `<div class="entry-notes">${esc(e.notes)}</div>` : '';
 
     // Admin: show assign button if unassigned
-    const assignHtml = (isAdmin && isUnassigned)
+    const assignHtml = (isAdmin && isUnassigned && !e._fromExpense)
       ? `<button class="assign-btn" onclick="openAssignSheet('${e.id}')">Assign to head →</button>` : '';
 
-    // Admin: edit + delete on every card
-    const actionsHtml = isAdmin
+    // Admin: edit + delete on every card — hide for expense-sourced entries (managed in Accounts)
+    const actionsHtml = (isAdmin && !e._fromExpense)
       ? `<div class="entry-actions">
           <button class="entry-edit-btn" onclick="openEditSheet('${e.id}')">Edit</button>
           <button class="entry-del-btn" onclick="deleteEntry('${e.id}')">Delete</button>
-         </div>` : '';
+         </div>`
+      : (isAdmin && e._fromExpense)
+        ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);background:var(--bg);padding:5px 10px;border-radius:6px">From Expenses · manage in Accounts</div>`
+        : '';
 
     return `
       <div class="entry-card ${cardClass}">
