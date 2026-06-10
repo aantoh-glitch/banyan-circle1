@@ -498,9 +498,18 @@ async function api(method, path, body){
 window.onload = function(){
   var stored = JSON.parse(localStorage.getItem('bc_me')||'null');
   if(stored){ initMessagingPanel(stored); return; }
-  // Standalone fallback — redirect to login
+  /* Running in iframe — ask parent to re-send the user object */
+  if(window.parent && window.parent !== window){
+    window.parent.postMessage({type:'bc_request_me'},'*');
+    return; /* wait for parent to call initMessagingPanel */
+  }
   window.location.href='index.html';
 };
+window.addEventListener('message', function(e){
+  if(e.data && e.data.type === 'bc_init_me' && e.data.me){
+    initMessagingPanel(e.data.me);
+  }
+});
 
 /* Called by parent page when opening as a panel */
 window.initMessagingPanel = function(meObj){
