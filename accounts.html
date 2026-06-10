@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Banyan Circle — Accounts</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
+.main{flex:1;padding:28px 32px;max-width:1280px}
+.sb-logo{display:flex;align-items:center;justify-content:center;padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sb-nav{flex:1;padding:0 12px;overflow-y:auto}
+.sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
+.sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sb-btn:hover{background:var(--bg);color:var(--text)}
+.sb-btn.on{background:#222;color:#fff;font-weight:500}
+.sb-btn.on svg{stroke:#fff}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.sb-signout{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
+/* Page */
+.pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+.pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+/* Tabs */
+.ac-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:2px solid var(--border)}
+.ac-tab{padding:10px 20px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.ac-tab.on{color:var(--br);border-bottom-color:var(--br);font-weight:500}
+.ac-pane{display:none}.ac-pane.on{display:block}
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:500;font-family:'Playfair Display',serif}
+/* Table card */
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+/* Badges */
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}
+.bdg-a{background:var(--a-l);color:#633806}
+.bdg-r{background:var(--r-l);color:#791F1F}
+.bdg-b{background:var(--b-l);color:#0C447C}
+/* Buttons */
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+.btn-p:hover{background:#712B13}
+.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-del{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit:hover{background:var(--br-l);color:var(--br)}
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{background:var(--white);border-radius:14px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+/* Form */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
+.row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+/* Pill selector */
+.pill-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.pill-opt{padding:7px 16px;border-radius:999px;border:1.5px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s;user-select:none}
+.pill-opt:hover{border-color:#D85A30;color:var(--br)}
+.pill-opt.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.pill-opt.status-paid.on{background:var(--g-l);border-color:#4a8c1f;color:#27500A}
+.pill-opt.status-pending.on{background:var(--a-l);border-color:#c07a2a;color:#633806}
+/* Upload area */
+.upload-area{border:1.5px dashed var(--border);border-radius:10px;padding:16px 18px;cursor:pointer;text-align:center;transition:all .15s;background:var(--bg)}
+.upload-area:hover{border-color:var(--br);background:var(--br-l)}
+.upload-area input[type=file]{display:none}
+.upload-area .up-icon{width:32px;height:32px;margin:0 auto 8px;color:var(--muted)}
+.upload-area .up-icon svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.upload-area .up-label{font-size:13px;color:var(--muted)}
+.upload-area .up-hint{font-size:11px;color:var(--border);margin-top:3px}
+.upload-preview{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--g-l);border-radius:8px;margin-top:8px}
+.upload-preview svg{width:18px;height:18px;stroke:#27500A;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.upload-preview span{font-size:13px;color:#27500A;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-preview button{background:none;border:none;cursor:pointer;color:#27500A;font-size:16px;line-height:1;padding:0 2px}
+/* Filter row */
+.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-row .fc{width:auto;flex:1;min-width:160px}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
+/* Required asterisk */
+.req{color:var(--r);margin-left:1px}
+</style>
+</head>
+<body>
+<div style="min-height:100vh">
+
+<div class="main">
+  <div class="pg-title">Accounts</div>
+  <div class="pg-sub" id="ac-sub">Expenses & Bills</div>
+
+  <!-- TABS -->
+  <div class="ac-tabs">
+    <button class="ac-tab on" onclick="acTab('expenses',this)">Add Expense</button>
+    <button class="ac-tab" onclick="acTab('bills',this)">Bills</button>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       EXPENSES PANE
+  ════════════════════════════════════ -->
+  <div class="ac-pane on" id="pane-expenses">
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Expenses</div>
+        <div class="kpi-value" id="kpi-total">₹ —</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Paid</div>
+        <div class="kpi-value" style="color:#27500A" id="kpi-paid">₹ —</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Pending</div>
+        <div class="kpi-value" style="color:#854F0B" id="kpi-pending">₹ —</div>
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-ttl">All Expenses</span>
+        <button class="btn-p" onclick="acOpenExpenseModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Expense
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <div class="pill-group" id="exp-filter-cat" style="margin-top:0">
+          <button class="pill-opt on" data-val="all" onclick="acFilterCat(this)">All</button>
+          <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
+          <button class="pill-opt" data-val="Utility" onclick="acFilterCat(this)">Utility</button>
+          <button class="pill-opt" data-val="Others" onclick="acFilterCat(this)">Others</button>
+        </div>
+        <div class="pill-group" id="exp-filter-status" style="margin-top:0;margin-left:auto">
+          <button class="pill-opt on" data-val="all" onclick="acFilterStatus(this)">All Status</button>
+          <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterStatus(this)">Paid</button>
+          <button class="pill-opt status-pending" data-val="Pending" onclick="acFilterStatus(this)">Pending</button>
+        </div>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Receipt</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="exp-tbody">
+          <tr><td colspan="7" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /pane-expenses -->
+
+  <!-- ═══════════════════════════════════
+       BILLS PANE
+  ════════════════════════════════════ -->
+  <div class="ac-pane" id="pane-bills">
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Bills</div>
+        <div class="kpi-value" id="kpi-bills-total">₹ —</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Paid</div>
+        <div class="kpi-value" style="color:#27500A" id="kpi-bills-paid">₹ —</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Pending</div>
+        <div class="kpi-value" style="color:#854F0B" id="kpi-bills-pending">₹ —</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-ttl">All Bills</span>
+        <button class="btn-p" onclick="acOpenBillModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Bill
+        </button>
+      </div>
+
+      <div class="filter-row">
+        <div class="pill-group" id="bill-filter-status" style="margin-top:0">
+          <button class="pill-opt on" data-val="all" onclick="acBillFilterStatus(this)">All</button>
+          <button class="pill-opt status-paid" data-val="Paid" onclick="acBillFilterStatus(this)">Paid</button>
+          <button class="pill-opt status-pending" data-val="Pending" onclick="acBillFilterStatus(this)">Pending</button>
+        </div>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Attachment</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="bill-tbody">
+          <tr><td colspan="7" class="empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /pane-bills -->
+
+</div><!-- /main -->
+
+
+<!-- ═══════════════════════════════════
+     EXPENSE MODAL
+════════════════════════════════════ -->
+<div class="modal" id="modal-expense">
+  <div class="modal-card">
+    <div class="modal-ttl" id="exp-modal-ttl">Add Expense</div>
+    <input type="hidden" id="exp-id"/>
+
+    <!-- Category pill selector -->
+    <div class="fg">
+      <span class="fl">Category <span class="req">*</span></span>
+      <div class="pill-group" id="exp-cat-pills">
+        <button class="pill-opt" data-val="Payout" onclick="acPickCat(this)">Payout</button>
+        <button class="pill-opt" data-val="Utility" onclick="acPickCat(this)">Utility</button>
+        <button class="pill-opt" data-val="Others" onclick="acPickCat(this)">Others</button>
+      </div>
+      <input type="hidden" id="exp-cat"/>
+    </div>
+
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl" for="exp-item">Item <span class="req">*</span></label>
+        <input class="fc" id="exp-item" placeholder="e.g. Electrician payout"/>
+      </div>
+      <div class="fg">
+        <label class="fl" for="exp-amount">Amount <span class="req">*</span></label>
+        <input class="fc" id="exp-amount" type="number" min="0" placeholder="0.00"/>
+      </div>
+    </div>
+
+    <!-- Status pill selector -->
+    <div class="fg">
+      <span class="fl">Status <span class="req">*</span></span>
+      <div class="pill-group" id="exp-status-pills">
+        <button class="pill-opt status-paid" data-val="Paid" onclick="acPickStatus(this)">Paid</button>
+        <button class="pill-opt status-pending" data-val="Pending" onclick="acPickStatus(this)">Pending</button>
+      </div>
+      <input type="hidden" id="exp-status"/>
+    </div>
+
+    <!-- Upload -->
+    <div class="fg">
+      <span class="fl">Receipt / Attachment</span>
+      <div class="upload-area" id="exp-upload-area" onclick="document.getElementById('exp-file-input').click()">
+        <input type="file" id="exp-file-input" accept="image/*,application/pdf" onchange="acHandleFile(this,'exp')"/>
+        <div class="up-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="up-label">Click to upload</div>
+        <div class="up-hint">JPG, PNG or PDF</div>
+      </div>
+      <div class="upload-preview" id="exp-file-preview" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <span id="exp-file-name">file.jpg</span>
+        <button onclick="acClearFile('exp')">×</button>
+      </div>
+      <input type="hidden" id="exp-file-url"/>
+    </div>
+
+    <!-- Description -->
+    <div class="fg">
+      <label class="fl" for="exp-desc">Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea class="fc" id="exp-desc" placeholder="Any additional notes…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="acCloseModal('modal-expense')">Cancel</button>
+      <button class="btn-p" onclick="acSaveExpense()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     BILL MODAL
+════════════════════════════════════ -->
+<div class="modal" id="modal-bill">
+  <div class="modal-card">
+    <div class="modal-ttl" id="bill-modal-ttl">Add Bill</div>
+    <input type="hidden" id="bill-id"/>
+
+    <div class="row-grid">
+      <div class="fg">
+        <label class="fl" for="bill-item">Item <span class="req">*</span></label>
+        <input class="fc" id="bill-item" placeholder="e.g. Electricity bill"/>
+      </div>
+      <div class="fg">
+        <label class="fl" for="bill-amount">Amount <span class="req">*</span></label>
+        <input class="fc" id="bill-amount" type="number" min="0" placeholder="0.00"/>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label class="fl" for="bill-due">Due Date</label>
+      <input class="fc" id="bill-due" type="date"/>
+    </div>
+
+    <!-- Status pill selector -->
+    <div class="fg">
+      <span class="fl">Status <span class="req">*</span></span>
+      <div class="pill-group" id="bill-status-pills">
+        <button class="pill-opt status-paid" data-val="Paid" onclick="acPickBillStatus(this)">Paid</button>
+        <button class="pill-opt status-pending" data-val="Pending" onclick="acPickBillStatus(this)">Pending</button>
+      </div>
+      <input type="hidden" id="bill-status"/>
+    </div>
+
+    <!-- Upload -->
+    <div class="fg">
+      <span class="fl">Attachment</span>
+      <div class="upload-area" id="bill-upload-area" onclick="document.getElementById('bill-file-input').click()">
+        <input type="file" id="bill-file-input" accept="image/*,application/pdf" onchange="acHandleFile(this,'bill')"/>
+        <div class="up-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="up-label">Click to upload</div>
+        <div class="up-hint">JPG, PNG or PDF</div>
+      </div>
+      <div class="upload-preview" id="bill-file-preview" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <span id="bill-file-name">file.jpg</span>
+        <button onclick="acClearFile('bill')">×</button>
+      </div>
+      <input type="hidden" id="bill-file-url"/>
+    </div>
+
+    <div class="fg">
+      <label class="fl" for="bill-notes">Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea class="fc" id="bill-notes" placeholder="Any additional notes…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="acCloseModal('modal-bill')">Cancel</button>
+      <button class="btn-p" onclick="acSaveBill()">Save Bill</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="ac-toast"></div>
+
+<script>
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+const STORAGE_BUCKET = 'utility-uploads';
+
+/* ── helpers ── */
+async function sbFetch(path, method='GET', body=null){
+  const opts = {
+    method,
+    headers:{ 'apikey': KEY, 'Authorization':'Bearer '+KEY, 'Content-Type':'application/json',
+              'Prefer': method==='POST'?'return=representation':'return=representation' }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB+path, opts);
+  if(!r.ok){ const t=await r.text(); throw new Error(t); }
+  return r.status===204 ? null : r.json();
+}
+
+function toast(msg){
+  const t=document.getElementById('ac-toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',2600);
+}
+
+function fmt(n){ return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+
+/* ── tab switching ── */
+function acTab(id, btn){
+  document.querySelectorAll('.ac-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.ac-pane').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('pane-'+id).classList.add('on');
+  if(id==='expenses') acLoadExpenses();
+  if(id==='bills')    acLoadBills();
+}
+
+/* ══════════════════════════
+   EXPENSES
+══════════════════════════ */
+let allExpenses=[], expCatFilter='all', expStatusFilter='all';
+
+async function acLoadExpenses(){
+  try{
+    const data = await sbFetch('/rest/v1/expenses?order=created_at.desc&select=*');
+    allExpenses = Array.isArray(data)?data:[];
+    acRenderExpenses();
+    acRenderKPIs();
+  } catch(e){
+    document.getElementById('exp-tbody').innerHTML='<tr><td colspan="7" class="empty">Could not load expenses — table may not exist yet.</td></tr>';
+    console.error(e);
+  }
+}
+
+function acRenderKPIs(){
+  const total = allExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+  const paid  = allExpenses.filter(e=>e.status==='Paid').reduce((s,e)=>s+Number(e.amount||0),0);
+  const pend  = allExpenses.filter(e=>e.status==='Pending').reduce((s,e)=>s+Number(e.amount||0),0);
+  document.getElementById('kpi-total').textContent   = fmt(total);
+  document.getElementById('kpi-paid').textContent    = fmt(paid);
+  document.getElementById('kpi-pending').textContent = fmt(pend);
+}
+
+function acRenderExpenses(){
+  let d=[...allExpenses];
+  if(expCatFilter!=='all')    d=d.filter(e=>e.category===expCatFilter);
+  if(expStatusFilter!=='all') d=d.filter(e=>e.status===expStatusFilter);
+  const tb=document.getElementById('exp-tbody');
+  if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No expenses found.</td></tr>'; return; }
+  tb.innerHTML=d.map(e=>`
+    <tr>
+      <td style="font-weight:500">${e.item||'—'}</td>
+      <td><span class="bdg bdg-b">${e.category||'—'}</span></td>
+      <td>${fmt(e.amount)}</td>
+      <td>${e.status==='Paid'?'<span class="bdg bdg-g">Paid</span>':'<span class="bdg bdg-a">Pending</span>'}</td>
+      <td>${e.file_url?`<a href="${e.file_url}" target="_blank" style="color:var(--br);font-size:12px;text-decoration:none">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td style="color:var(--muted);font-size:12px">${e.created_at?e.created_at.slice(0,10):'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit" onclick="acEditExpense(${JSON.stringify(e).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn-del"  onclick="acDeleteExpense('${e.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+function acFilterCat(btn){
+  document.querySelectorAll('#exp-filter-cat .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  expCatFilter=btn.dataset.val;
+  acRenderExpenses();
+}
+function acFilterStatus(btn){
+  document.querySelectorAll('#exp-filter-status .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  expStatusFilter=btn.dataset.val;
+  acRenderExpenses();
+}
+
+/* ── expense modal ── */
+function acOpenExpenseModal(){
+  document.getElementById('exp-id').value='';
+  document.getElementById('exp-modal-ttl').textContent='Add Expense';
+  document.getElementById('exp-item').value='';
+  document.getElementById('exp-amount').value='';
+  document.getElementById('exp-desc').value='';
+  document.getElementById('exp-cat').value='';
+  document.getElementById('exp-status').value='';
+  document.getElementById('exp-file-url').value='';
+  document.querySelectorAll('#exp-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#exp-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.getElementById('exp-file-preview').style.display='none';
+  document.getElementById('exp-upload-area').style.display='';
+  document.getElementById('exp-file-input').value='';
+  document.getElementById('modal-expense').classList.add('on');
+}
+
+function acEditExpense(e){
+  document.getElementById('exp-id').value=e.id;
+  document.getElementById('exp-modal-ttl').textContent='Edit Expense';
+  document.getElementById('exp-item').value=e.item||'';
+  document.getElementById('exp-amount').value=e.amount||'';
+  document.getElementById('exp-desc').value=e.description||'';
+  // pills
+  document.querySelectorAll('#exp-cat-pills .pill-opt').forEach(b=>{ b.classList.toggle('on',b.dataset.val===e.category); });
+  document.getElementById('exp-cat').value=e.category||'';
+  document.querySelectorAll('#exp-status-pills .pill-opt').forEach(b=>{ b.classList.toggle('on',b.dataset.val===e.status); });
+  document.getElementById('exp-status').value=e.status||'';
+  // file
+  if(e.file_url){
+    document.getElementById('exp-file-url').value=e.file_url;
+    document.getElementById('exp-file-name').textContent=e.file_url.split('/').pop();
+    document.getElementById('exp-file-preview').style.display='flex';
+    document.getElementById('exp-upload-area').style.display='none';
+  } else {
+    document.getElementById('exp-file-url').value='';
+    document.getElementById('exp-file-preview').style.display='none';
+    document.getElementById('exp-upload-area').style.display='';
+  }
+  document.getElementById('modal-expense').classList.add('on');
+}
+
+function acPickCat(btn){
+  document.querySelectorAll('#exp-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('exp-cat').value=btn.dataset.val;
+}
+function acPickStatus(btn){
+  document.querySelectorAll('#exp-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('exp-status').value=btn.dataset.val;
+}
+
+async function acSaveExpense(){
+  const id       = document.getElementById('exp-id').value;
+  const item     = document.getElementById('exp-item').value.trim();
+  const amount   = document.getElementById('exp-amount').value;
+  const category = document.getElementById('exp-cat').value;
+  const status   = document.getElementById('exp-status').value;
+  const desc     = document.getElementById('exp-desc').value.trim();
+  const fileUrl  = document.getElementById('exp-file-url').value;
+
+  if(!item)    { alert('Item is required'); return; }
+  if(!amount)  { alert('Amount is required'); return; }
+  if(!category){ alert('Please select a category'); return; }
+  if(!status)  { alert('Please select a status'); return; }
+
+  const body = { item, amount:Number(amount), category, status, description:desc||null, file_url:fileUrl||null };
+
+  try{
+    if(id){ await sbFetch('/rest/v1/expenses?id=eq.'+id,'PATCH',body); }
+    else  { await sbFetch('/rest/v1/expenses','POST',{...body,created_at:new Date().toISOString()}); }
+    acCloseModal('modal-expense');
+    toast('Saved ✓');
+    await acLoadExpenses();
+  } catch(e){ alert('Error saving: '+e.message); }
+}
+
+async function acDeleteExpense(id){
+  if(!confirm('Delete this expense?')) return;
+  try{
+    await sbFetch('/rest/v1/expenses?id=eq.'+id,'DELETE');
+    toast('Deleted');
+    await acLoadExpenses();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+/* ══════════════════════════
+   BILLS
+══════════════════════════ */
+let allBills=[], billStatusFilter='all';
+
+async function acLoadBills(){
+  try{
+    const data = await sbFetch('/rest/v1/bills?order=created_at.desc&select=*');
+    allBills = Array.isArray(data)?data:[];
+    acRenderBills();
+    acRenderBillKPIs();
+  } catch(e){
+    document.getElementById('bill-tbody').innerHTML='<tr><td colspan="7" class="empty">Could not load bills — table may not exist yet.</td></tr>';
+    console.error(e);
+  }
+}
+
+function acRenderBillKPIs(){
+  const total = allBills.reduce((s,b)=>s+Number(b.amount||0),0);
+  const paid  = allBills.filter(b=>b.status==='Paid').reduce((s,b)=>s+Number(b.amount||0),0);
+  const pend  = allBills.filter(b=>b.status==='Pending').reduce((s,b)=>s+Number(b.amount||0),0);
+  document.getElementById('kpi-bills-total').textContent   = fmt(total);
+  document.getElementById('kpi-bills-paid').textContent    = fmt(paid);
+  document.getElementById('kpi-bills-pending').textContent = fmt(pend);
+}
+
+function acRenderBills(){
+  let d=[...allBills];
+  if(billStatusFilter!=='all') d=d.filter(b=>b.status===billStatusFilter);
+  const tb=document.getElementById('bill-tbody');
+  if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No bills found.</td></tr>'; return; }
+  tb.innerHTML=d.map(b=>`
+    <tr>
+      <td style="font-weight:500">${b.item||'—'}</td>
+      <td>${fmt(b.amount)}</td>
+      <td style="color:var(--muted);font-size:12px">${b.due_date||'—'}</td>
+      <td>${b.status==='Paid'?'<span class="bdg bdg-g">Paid</span>':'<span class="bdg bdg-a">Pending</span>'}</td>
+      <td>${b.file_url?`<a href="${b.file_url}" target="_blank" style="color:var(--br);font-size:12px;text-decoration:none">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
+      <td style="color:var(--muted);font-size:12px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.notes||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit" onclick="acEditBill(${JSON.stringify(b).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn-del"  onclick="acDeleteBill('${b.id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+function acBillFilterStatus(btn){
+  document.querySelectorAll('#bill-filter-status .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  billStatusFilter=btn.dataset.val;
+  acRenderBills();
+}
+
+function acOpenBillModal(){
+  document.getElementById('bill-id').value='';
+  document.getElementById('bill-modal-ttl').textContent='Add Bill';
+  document.getElementById('bill-item').value='';
+  document.getElementById('bill-amount').value='';
+  document.getElementById('bill-due').value='';
+  document.getElementById('bill-notes').value='';
+  document.getElementById('bill-status').value='';
+  document.getElementById('bill-file-url').value='';
+  document.querySelectorAll('#bill-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.getElementById('bill-file-preview').style.display='none';
+  document.getElementById('bill-upload-area').style.display='';
+  document.getElementById('bill-file-input').value='';
+  document.getElementById('modal-bill').classList.add('on');
+}
+
+function acEditBill(b){
+  document.getElementById('bill-id').value=b.id;
+  document.getElementById('bill-modal-ttl').textContent='Edit Bill';
+  document.getElementById('bill-item').value=b.item||'';
+  document.getElementById('bill-amount').value=b.amount||'';
+  document.getElementById('bill-due').value=b.due_date||'';
+  document.getElementById('bill-notes').value=b.notes||'';
+  document.querySelectorAll('#bill-status-pills .pill-opt').forEach(p=>{ p.classList.toggle('on',p.dataset.val===b.status); });
+  document.getElementById('bill-status').value=b.status||'';
+  if(b.file_url){
+    document.getElementById('bill-file-url').value=b.file_url;
+    document.getElementById('bill-file-name').textContent=b.file_url.split('/').pop();
+    document.getElementById('bill-file-preview').style.display='flex';
+    document.getElementById('bill-upload-area').style.display='none';
+  } else {
+    document.getElementById('bill-file-url').value='';
+    document.getElementById('bill-file-preview').style.display='none';
+    document.getElementById('bill-upload-area').style.display='';
+  }
+  document.getElementById('modal-bill').classList.add('on');
+}
+
+function acPickBillStatus(btn){
+  document.querySelectorAll('#bill-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('bill-status').value=btn.dataset.val;
+}
+
+async function acSaveBill(){
+  const id      = document.getElementById('bill-id').value;
+  const item    = document.getElementById('bill-item').value.trim();
+  const amount  = document.getElementById('bill-amount').value;
+  const dueDate = document.getElementById('bill-due').value;
+  const status  = document.getElementById('bill-status').value;
+  const notes   = document.getElementById('bill-notes').value.trim();
+  const fileUrl = document.getElementById('bill-file-url').value;
+
+  if(!item)  { alert('Item is required'); return; }
+  if(!amount){ alert('Amount is required'); return; }
+  if(!status){ alert('Please select a status'); return; }
+
+  const body = { item, amount:Number(amount), due_date:dueDate||null, status, notes:notes||null, file_url:fileUrl||null };
+
+  try{
+    if(id){ await sbFetch('/rest/v1/bills?id=eq.'+id,'PATCH',body); }
+    else  { await sbFetch('/rest/v1/bills','POST',{...body,created_at:new Date().toISOString()}); }
+    acCloseModal('modal-bill');
+    toast('Saved ✓');
+    await acLoadBills();
+  } catch(e){ alert('Error saving: '+e.message); }
+}
+
+async function acDeleteBill(id){
+  if(!confirm('Delete this bill?')) return;
+  try{
+    await sbFetch('/rest/v1/bills?id=eq.'+id,'DELETE');
+    toast('Deleted');
+    await acLoadBills();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+/* ══════════════════════════
+   FILE UPLOAD (Supabase Storage → utility-uploads)
+══════════════════════════ */
+async function acHandleFile(input, prefix){
+  const file = input.files[0];
+  if(!file) return;
+  const ext  = file.name.split('.').pop();
+  const path = `${prefix}-uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  try{
+    const r = await fetch(`${SB}/storage/v1/object/${STORAGE_BUCKET}/${path}`, {
+      method:'POST',
+      headers:{ 'apikey':KEY, 'Authorization':'Bearer '+KEY, 'Content-Type':file.type, 'x-upsert':'true' },
+      body: file
+    });
+    if(!r.ok){ const t=await r.text(); throw new Error(t); }
+    const url = `${SB}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+    document.getElementById(prefix+'-file-url').value  = url;
+    document.getElementById(prefix+'-file-name').textContent = file.name;
+    document.getElementById(prefix+'-file-preview').style.display = 'flex';
+    document.getElementById(prefix+'-upload-area').style.display  = 'none';
+    toast('Uploaded ✓');
+  } catch(e){ alert('Upload failed: '+e.message); }
+}
+
+function acClearFile(prefix){
+  document.getElementById(prefix+'-file-url').value='';
+  document.getElementById(prefix+'-file-input').value='';
+  document.getElementById(prefix+'-file-preview').style.display='none';
+  document.getElementById(prefix+'-upload-area').style.display='';
+}
+
+/* ── close modal on backdrop click ── */
+function acCloseModal(id){ document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('on'); });
+});
+
+/* ── init ── */
+acLoadExpenses();
+</script>
+</body>
+</html>
