@@ -102,14 +102,14 @@ body{padding:28px 32px 60px}
   <div class="fg">
     <label class="fl">Bill Date <span style="color:var(--r)">*</span></label>
     <div onclick="var i=document.getElementById('bill-date');try{i.showPicker();}catch(e){i.click();}" style="cursor:pointer">
-      <input class="fc" id="bill-date" type="date" max="" style="pointer-events:none"/>
+      <input class="fc" id="bill-date" type="date" style="pointer-events:none"/>
     </div>
   </div>
 
   <div class="fg">
     <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
     <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
-      <option value="">— choose a guest —</option>
+      <option value="">— select —</option>
     </select>
   </div>
 
@@ -346,7 +346,7 @@ async function loadGuests() {
     var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
     GUESTS = data;
     var sel = document.getElementById('bill-guest-select');
-    sel.innerHTML = '<option value="">— choose a guest —</option>' +
+    sel.innerHTML = '<option value="">— select —</option>' +
       data.map(function(g){
         var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
           (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
@@ -479,17 +479,21 @@ function getItems() {
 function onFilterFromChange() {
   var fromEl = document.getElementById('filter-from');
   var toEl   = document.getElementById('filter-to');
-  if (toEl.value && toEl.value < fromEl.value) {
+  // If To is already set and falls below new From, push To up to match
+  if (fromEl.value && toEl.value && toEl.value < fromEl.value) {
     toEl.value = fromEl.value;
   }
+  // Browser-level: prevent To from being picked below From
   toEl.min = fromEl.value || '';
 }
 function onFilterToChange() {
   var fromEl = document.getElementById('filter-from');
   var toEl   = document.getElementById('filter-to');
-  if (fromEl.value && fromEl.value > toEl.value) {
+  // If From is already set and exceeds new To, pull From down to match
+  if (toEl.value && fromEl.value && fromEl.value > toEl.value) {
     fromEl.value = toEl.value;
   }
+  // Browser-level: prevent From from being picked above To
   fromEl.max = toEl.value || '';
 }
 
@@ -680,8 +684,10 @@ function filterBills() {
 function clearFilters() {
   document.getElementById('filter-guest').value    = '';
   document.getElementById('filter-property').value = '';
-  document.getElementById('filter-from').value     = '';
-  document.getElementById('filter-to').value       = '';
+  var fromEl = document.getElementById('filter-from');
+  var toEl   = document.getElementById('filter-to');
+  fromEl.value = ''; fromEl.max = '';
+  toEl.value   = ''; toEl.min  = '';
   renderBills(ALL_BILLS);
 }
 
