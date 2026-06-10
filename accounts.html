@@ -393,7 +393,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="method-btn" id="m-cash" onclick="setPayMethod('cash')">Cash</button>
       <button class="method-btn" id="m-card" onclick="setPayMethod('card')">Card</button>
       <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
-      <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Pending</button>
+      <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Receivable</button>
     </div>
   </div>
 
@@ -426,8 +426,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <label class="fl">Status</label>
       <div class="pill-group" id="filter-status-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
         <button class="pill-opt on" data-val="" onclick="filterBillStatus(this)">All</button>
-        <button class="pill-opt" data-val="paid" onclick="filterBillStatus(this)">Paid</button>
-        <button class="pill-opt" data-val="pending" onclick="filterBillStatus(this)">Pending</button>
+        <button class="pill-opt" data-val="paid" onclick="filterBillStatus(this)">Received</button>
+        <button class="pill-opt" data-val="pending" onclick="filterBillStatus(this)">Receivables</button>
       </div>
     </div>
     <div class="fg-date fg" style="min-width:140px">
@@ -1475,7 +1475,30 @@ function calcBillTax(items) {
 function renderBills(data) {
   var el = document.getElementById('bill-log');
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
-  el.innerHTML = '<table class="tbl"><thead><tr>' +
+
+  // ── Totals bar ──
+  var totalAmt    = data.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var receivedAmt = data.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var receivables = data.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var totalsBar = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">' +
+    '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px">' +
+      '<div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Billed</div>' +
+      '<div style="font-size:22px;font-weight:600;font-family:\'Playfair Display\',serif">' + fmtF(totalAmt) + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:3px">' + data.length + ' bill' + (data.length!==1?'s':'') + '</div>' +
+    '</div>' +
+    '<div style="background:var(--g-l);border:1px solid rgba(59,109,17,.15);border-radius:10px;padding:14px 18px">' +
+      '<div style="font-size:11px;font-weight:500;color:#27500A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Received</div>' +
+      '<div style="font-size:22px;font-weight:600;font-family:\'Playfair Display\',serif;color:#27500A">' + fmtF(receivedAmt) + '</div>' +
+      '<div style="font-size:11px;color:#27500A;opacity:.7;margin-top:3px">' + data.filter(function(b){return b.payment_status==='paid';}).length + ' paid</div>' +
+    '</div>' +
+    '<div style="background:var(--a-l);border:1px solid rgba(133,79,11,.15);border-radius:10px;padding:14px 18px">' +
+      '<div style="font-size:11px;font-weight:500;color:#633806;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Receivables</div>' +
+      '<div style="font-size:22px;font-weight:600;font-family:\'Playfair Display\',serif;color:#633806">' + fmtF(receivables) + '</div>' +
+      '<div style="font-size:11px;color:#633806;opacity:.7;margin-top:3px">' + data.filter(function(b){return b.payment_status!=='paid';}).length + ' pending</div>' +
+    '</div>' +
+  '</div>';
+
+  el.innerHTML = totalsBar + '<table class="tbl"><thead><tr>' +
     '<th>Guest</th><th>Property</th><th>Date</th>' +
     '<th style="text-align:right">Taxable</th>' +
     '<th style="text-align:right">CGST</th>' +
@@ -1487,8 +1510,8 @@ function renderBills(data) {
         var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
         var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
         var statusLbl = b.payment_status==='paid'
-          ? 'Paid' + methodStr
-          : 'Pending';
+          ? 'Received' + methodStr
+          : 'Receivable';
         var items = b.items || [];
         var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
         var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
