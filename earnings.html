@@ -243,6 +243,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .entry-entity.landlord-tag{color:#0D47A1;background:#E3F2FD}
 .entry-entity.staff-tag{color:#1B5E20;background:#E8F5E9}
 .entry-entity.talent-tag{color:#E65100;background:#FFF3E0}
+.entry-status-chip{
+  font-size:10px;font-weight:500;letter-spacing:.3px;
+  padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;
+}
+.entry-status-chip.paid-landlord{background:#F0E8FF;color:#5B21B6}
 .entry-notes{
   font-size:12px;color:var(--muted);
   margin-top:6px;line-height:1.4;
@@ -934,17 +939,18 @@ const PAYOUT_ENTITY_MAP = {
 function expenseToEarningsEntry(exp) {
   const entityType = PAYOUT_ENTITY_MAP[exp.payout_type] || null;
   return {
-    id:          'exp_' + exp.id,          // prefixed so it never collides with earnings_log ids
-    _fromExpense: true,                     // flag for rendering tweaks
-    type:        'positive',
-    head:        'Pay',                     // positive head; expense item goes into notes
-    amount:      exp.amount,
-    percentage:  null,
-    notes:       exp.item || null,
-    entity_type: entityType,
-    entity_name: exp.recipient || null,
-    recorded_by: null,
-    entry_date:  (exp.created_at || '').slice(0, 10) || null
+    id:             'exp_' + exp.id,          // prefixed so it never collides with earnings_log ids
+    _fromExpense:   true,                     // flag for rendering tweaks
+    _expenseStatus: exp.status || null,       // preserve original expense status for display
+    type:           'positive',
+    head:           'Pay',                    // positive head; expense item goes into notes
+    amount:         exp.amount,
+    percentage:     null,
+    notes:          exp.item || null,
+    entity_type:    entityType,
+    entity_name:    exp.recipient || null,
+    recorded_by:    null,
+    entry_date:     (exp.expense_date || exp.created_at || '').slice(0, 10) || null
   };
 }
 
@@ -1001,7 +1007,7 @@ async function loadEntries() {
     //    Filter: status=Paid AND payout_type in (Landlords, Team, Talent)
     let expEntries = [];
     try {
-      const expPath = '/rest/v1/expenses?status=eq.Paid&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*';
+      const expPath = '/rest/v1/expenses?status=in.(Paid,Paid+to+landlord)&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*';
       const rawExp  = await api(expPath);
       let filtered  = Array.isArray(rawExp) ? rawExp : [];
 
@@ -1151,6 +1157,10 @@ function renderLog() {
     const notesHtml = e.notes
       ? `<div class="entry-notes">${esc(e.notes)}</div>` : '';
 
+    // Status chip — only shown for expense-sourced entries with special statuses
+    const statusChip = (e._fromExpense && e._expenseStatus === 'Paid to landlord')
+      ? `<span class="entry-status-chip paid-landlord">Paid to landlord</span>` : '';
+
     // Admin: show assign button if unassigned
     const assignHtml = (isAdmin && isUnassigned && !e._fromExpense)
       ? `<button class="assign-btn" onclick="openAssignSheet('${e.id}')">Assign to head →</button>` : '';
@@ -1175,6 +1185,7 @@ function renderLog() {
         <div class="entry-meta">
           <span class="entry-date">${fmtDate(e.entry_date)}</span>
           ${entityTag}
+          ${statusChip}
           ${byTag}
         </div>
         ${notesHtml}
