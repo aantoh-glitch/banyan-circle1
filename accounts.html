@@ -495,6 +495,25 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <input type="hidden" id="ac-exp-cat"/>
     </div>
 
+    <!-- Payout sub-category — shown only when Payout is selected -->
+    <div class="fg" id="ac-payout-fg" style="display:none">
+      <span class="fl">Payout To <span class="req">*</span></span>
+      <div class="pill-group" id="ac-payout-pills">
+        <button class="pill-opt" data-val="Talent"    onclick="acPickPayout(this)">Talent</button>
+        <button class="pill-opt" data-val="Team"      onclick="acPickPayout(this)">Team</button>
+        <button class="pill-opt" data-val="Landlords" onclick="acPickPayout(this)">Landlords</button>
+      </div>
+      <input type="hidden" id="ac-exp-payout-type"/>
+    </div>
+
+    <!-- Recipient dropdown — shown after a payout sub-type is picked -->
+    <div class="fg" id="ac-recipient-fg" style="display:none">
+      <label class="fl">Recipient <span class="req">*</span></label>
+      <select class="fc" id="ac-exp-recipient" onchange="acOnRecipientChange()">
+        <option value="">— select —</option>
+      </select>
+    </div>
+
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Item <span class="req">*</span></label>
@@ -642,7 +661,12 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-cat').value='';
   document.getElementById('ac-exp-status').value='';
   document.getElementById('ac-exp-fileurl').value='';
+  document.getElementById('ac-exp-payout-type').value='';
+  document.getElementById('ac-exp-recipient').innerHTML='<option value="">— select —</option>';
+  document.getElementById('ac-payout-fg').style.display='none';
+  document.getElementById('ac-recipient-fg').style.display='none';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
@@ -660,6 +684,38 @@ function acEditExp(e) {
   document.getElementById('ac-exp-cat').value=e.category||'';
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.status));
   document.getElementById('ac-exp-status').value=e.status||'';
+
+  // Restore payout sub-section if applicable
+  document.getElementById('ac-exp-payout-type').value='';
+  document.getElementById('ac-exp-recipient').innerHTML='<option value="">— select —</option>';
+  document.getElementById('ac-payout-fg').style.display='none';
+  document.getElementById('ac-recipient-fg').style.display='none';
+  document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  if (e.category === 'Payout' && e.payout_type) {
+    document.getElementById('ac-payout-fg').style.display = '';
+    document.getElementById('ac-exp-payout-type').value = e.payout_type;
+    document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.payout_type));
+    // Populate recipient dropdown then restore selection
+    (async () => {
+      try {
+        let items = [];
+        if (e.payout_type === 'Talent') {
+          const d = await acApi('/rest/v1/talent?select=id,name&order=name');
+          items = (d||[]).map(r=>r.name);
+        } else if (e.payout_type === 'Team') {
+          const d = await acApi('/rest/v1/staff?select=id,name&order=name');
+          items = (d||[]).map(r=>r.name);
+        } else if (e.payout_type === 'Landlords') {
+          const d = await acApi('/rest/v1/landlords?select=id,property_name&order=property_name');
+          items = (d||[]).map(r=>r.property_name);
+        }
+        const sel = document.getElementById('ac-exp-recipient');
+        sel.innerHTML = '<option value="">— select —</option>' + items.map(n=>`<option value="${n}"${n===e.recipient?' selected':''}>${n}</option>`).join('');
+        document.getElementById('ac-recipient-fg').style.display = '';
+      } catch(_) {}
+    })();
+  }
+
   if(e.file_url){
     document.getElementById('ac-exp-fileurl').value=e.file_url;
     document.getElementById('ac-file-name').textContent=e.file_url.split('/').pop();
@@ -675,7 +731,56 @@ function acEditExp(e) {
 
 function acPickCat(btn) {
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on'); document.getElementById('ac-exp-cat').value=btn.dataset.val;
+  btn.classList.add('on');
+  const val = btn.dataset.val;
+  document.getElementById('ac-exp-cat').value = val;
+  // Show/hide payout sub-section
+  const isPayout = val === 'Payout';
+  document.getElementById('ac-payout-fg').style.display    = isPayout ? '' : 'none';
+  document.getElementById('ac-recipient-fg').style.display = 'none';
+  if (!isPayout) {
+    // Reset payout state when switching away
+    document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+    document.getElementById('ac-exp-payout-type').value = '';
+    document.getElementById('ac-exp-recipient').innerHTML = '<option value="">— select —</option>';
+  }
+}
+
+async function acPickPayout(btn) {
+  document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const type = btn.dataset.val;
+  document.getElementById('ac-exp-payout-type').value = type;
+  // Fetch list from appropriate table
+  const recipientSel = document.getElementById('ac-exp-recipient');
+  recipientSel.innerHTML = '<option value="">Loading…</option>';
+  document.getElementById('ac-recipient-fg').style.display = '';
+  try {
+    let items = [];
+    if (type === 'Talent') {
+      const d = await acApi('/rest/v1/talent?select=id,name&order=name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.name }));
+    } else if (type === 'Team') {
+      const d = await acApi('/rest/v1/staff?select=id,name&order=name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.name }));
+    } else if (type === 'Landlords') {
+      const d = await acApi('/rest/v1/landlords?select=id,property_name&order=property_name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.property_name }));
+    }
+    recipientSel.innerHTML = '<option value="">— select —</option>' +
+      items.map(i=>`<option value="${i.label}">${i.label}</option>`).join('');
+  } catch(e) {
+    recipientSel.innerHTML = '<option value="">Could not load</option>';
+  }
+}
+
+function acOnRecipientChange() {
+  const val = document.getElementById('ac-exp-recipient').value;
+  if (val) {
+    const type = document.getElementById('ac-exp-payout-type').value;
+    // Auto-fill Item field with "Type — Recipient" unless user has already typed something custom
+    document.getElementById('ac-exp-item').value = type + ' — ' + val;
+  }
 }
 function acPickSt(btn) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -683,18 +788,28 @@ function acPickSt(btn) {
 }
 
 async function acSaveExp() {
-  const id       = document.getElementById('ac-exp-id').value;
-  const item     = document.getElementById('ac-exp-item').value.trim();
-  const amount   = document.getElementById('ac-exp-amount').value;
-  const category = document.getElementById('ac-exp-cat').value;
-  const status   = document.getElementById('ac-exp-status').value;
-  const desc     = document.getElementById('ac-exp-desc').value.trim();
-  const fileUrl  = document.getElementById('ac-exp-fileurl').value;
+  const id          = document.getElementById('ac-exp-id').value;
+  const item        = document.getElementById('ac-exp-item').value.trim();
+  const amount      = document.getElementById('ac-exp-amount').value;
+  const category    = document.getElementById('ac-exp-cat').value;
+  const status      = document.getElementById('ac-exp-status').value;
+  const desc        = document.getElementById('ac-exp-desc').value.trim();
+  const fileUrl     = document.getElementById('ac-exp-fileurl').value;
+  const payoutType  = document.getElementById('ac-exp-payout-type').value;
+  const recipient   = document.getElementById('ac-exp-recipient').value;
   if(!item)    { alert('Item is required'); return; }
   if(!amount)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
-  const body = { item, amount:Number(amount), category, status, description:desc||null, file_url:fileUrl||null };
+  if(category === 'Payout' && !payoutType) { alert('Select a payout type (Talent / Team / Landlords)'); return; }
+  if(category === 'Payout' && !recipient)  { alert('Select a recipient'); return; }
+  const body = {
+    item, amount:Number(amount), category, status,
+    description: desc||null,
+    file_url:    fileUrl||null,
+    payout_type: category === 'Payout' ? payoutType : null,
+    recipient:   category === 'Payout' ? recipient  : null
+  };
   try {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id,'PATCH',body);
     else   await acApi('/rest/v1/expenses','POST',{...body,created_at:new Date().toISOString()});
