@@ -272,7 +272,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="sb-btn" onclick="goPage('staff',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team</button>
 
     <button class="sb-btn" onclick="goPage('guests',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Guests</button>
-    <button class="sb-btn" onclick="goPage('utilities',this)"><svg viewBox="0 0 24 24"><polyline points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>Financials</button>
     <button class="sb-btn" onclick="goPage('maint',this)"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button>
     <button class="sb-btn" onclick="goPage('laundry',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Laundry</button>
     <button class="sb-btn" onclick="goPage('tasks',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tasks</button>
@@ -396,24 +395,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="dash-tile-label">Stock</div>
       <div class="dash-tile-value loading" id="dash-stock">…</div>
       <div class="dash-tile-sub" id="dash-stock-sub">below critical level</div>
-      <span class="dash-tile-nav">›</span>
-    </div>
-    <div class="dash-tile tile-billing" onclick="goPage('utilities', document.querySelector('.sb-btn[onclick*=utilities]'))">
-      <div class="dash-tile-icon icon-billing">
-        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      </div>
-      <div class="dash-tile-label">Pending Payments</div>
-      <div class="dash-tile-value loading" id="dash-pending-payments">…</div>
-      <div class="dash-tile-sub">awaiting payment</div>
-      <span class="dash-tile-nav">›</span>
-    </div>
-    <div class="dash-tile tile-utility" onclick="goPage('utilities', document.querySelector('.sb-btn[onclick*=utilities]'))">
-      <div class="dash-tile-icon icon-utility">
-        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      </div>
-      <div class="dash-tile-label">Utility Payments</div>
-      <div class="dash-tile-value loading" id="dash-utility-pending">…</div>
-      <div class="dash-tile-sub">pending</div>
       <span class="dash-tile-nav">›</span>
     </div>
   </div>
@@ -608,10 +589,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <div id="docs-list">Loading…</div>
   </div>
-</div>
-
-<div class="pg" id="pg-utilities" style="padding:0">
-  <iframe id="financials-frame" src="" style="width:100%;height:100vh;border:none;display:block"></iframe>
 </div>
 
 <div class="pg" id="pg-maint">
@@ -1102,14 +1079,13 @@ function goPage(id,btn){
   location.hash = id;
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pg-'+id).classList.add('on');
+  const pg = document.getElementById('pg-'+id); if(pg) pg.classList.add('on');
   if(btn && btn.classList.contains('sb-btn')) btn.classList.add('on');
   if(id==='dashboard')  loadDashboard();
   if(id==='properties'){ loadProperties(); }
   if(id==='staff')      loadStaff();
   if(id==='guests')     loadGuests();
   if(id==='docs')       loadDocsPage();
-  if(id==='utilities'){var ff=document.getElementById('financials-frame');if(!ff.src||ff.src==='about:blank'||ff.src.indexOf('financials.html')===-1)ff.src='financials.html';}
   if(id==='maint')      loadMaintPage();
   if(id==='msgs'){var mf=document.getElementById('messaging-frame');if(!mf.src||mf.src==='about:blank'||mf.src.indexOf('messaging.html')===-1)mf.src='messaging.html';}
   if(id==='assets')     loadAssetsPage();  if(id==='talents')    loadTalentsPage();
@@ -2329,7 +2305,7 @@ async function saveTalentDoc(){
 // Boot — restore page from hash if present
 (function(){
   const hash = location.hash.replace('#','');
-  const validPages = ['dashboard','properties','staff','guests','docs','utilities','maint','msgs','assets','talents','bookings','laundry','tasks','loans','lostfound','reviews','stock','leave'];
+  const validPages = ['dashboard','properties','staff','guests','docs','maint','msgs','assets','talents','bookings','laundry','tasks','loans','lostfound','reviews','stock','leave','accounts'];
   if(hash && validPages.includes(hash)){
     const btn = document.querySelector(`.sb-btn[onclick*="'${hash}'"]`);
     goPage(hash, btn);
@@ -3508,13 +3484,11 @@ async function saveBill() {
   try {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
-      await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
       body.bill_id = newBillId;
       var created = await api('/rest/v1/bills', 'POST', body);
-      await syncToRevenue(body, newBillId);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -3544,30 +3518,6 @@ function cancelEdit() {
   setPayMethod('pending');
   document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('bill-remarks').value = '';
-}
-
-// ── Sync to property_revenues (always, not just on paid) ──
-async function syncToRevenue(billBody, billId) {
-  if (!billId) return;
-  try {
-    var revBody = {
-      property_name  : billBody.property_name,
-      amount         : billBody.amount,
-      item           : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
-      date           : billBody.bill_date,
-      payment_status : billBody.payment_status,
-      bill_id        : billId,
-      notes          : 'from billing'
-    };
-    var existing = await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId) + '&select=id').catch(function(){ return []; });
-    if (existing && existing.length) {
-      await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId), 'PATCH', revBody).catch(function(){});
-    } else {
-      await api('/rest/v1/property_revenues', 'POST', revBody);
-    }
-  } catch(e) {
-    console.warn('Revenue sync failed:', e.message);
-  }
 }
 
 function editBill(bill) {
