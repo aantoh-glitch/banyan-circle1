@@ -6,13 +6,17 @@
 <title>Banyan Circle — Accounts</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <style>
+
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:flex;min-height:100vh}
 .sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
 .main{flex:1;padding:28px 32px;max-width:1280px}
-.sb-logo{display:flex;align-items:center;justify-content:center;padding:0 16px 20px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sb-mark{width:36px;height:36px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:500;font-size:14px}
+.sb-name{font-family:'Playfair Display',serif;font-size:16px}
+.sb-sub{font-size:11px;color:var(--muted)}
 .sb-nav{flex:1;padding:0 12px;overflow-y:auto}
 .sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
 .sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
@@ -22,714 +26,1280 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
 .sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
 .sb-signout{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
-/* Page */
+.pg{display:none}.pg.on{display:block}
 .pg-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
 .pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
-/* Tabs */
-.ac-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:2px solid var(--border)}
-.ac-tab{padding:10px 20px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
-.ac-tab.on{color:var(--br);border-bottom-color:var(--br);font-weight:500}
-.ac-pane{display:none}.ac-pane.on{display:block}
-/* KPI row */
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
-.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.kpi-value{font-size:26px;font-weight:500;font-family:'Playfair Display',serif}
-/* Table card */
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
-.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
-/* Badges */
-.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:var(--g-l);color:#27500A}
-.bdg-a{background:var(--a-l);color:#633806}
-.bdg-r{background:var(--r-l);color:#791F1F}
-.bdg-b{background:var(--b-l);color:#0C447C}
-/* Buttons */
-.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
-.btn-p:hover{background:#712B13}
-.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
+.btn-p{padding:10px 18px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{border-color:var(--br);color:var(--br)}
 .btn-del{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-edit:hover{background:var(--br-l);color:var(--br)}
-/* Modal */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
+.bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:var(--b-l);color:#0C447C}
+.prop-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.ptab{padding:8px 16px;border-radius:999px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
+.ptab.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
 .modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:14px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
-/* Form */
-.fg{margin-bottom:14px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:vertical;min-height:72px;line-height:1.6}
+.modal-card{background:var(--white);border-radius:14px;padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-/* Pill selector */
-.pill-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
-.pill-opt{padding:7px 16px;border-radius:999px;border:1.5px solid var(--border);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s;user-select:none}
-.pill-opt:hover{border-color:#D85A30;color:var(--br)}
-.pill-opt.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
-.pill-opt.status-paid.on{background:var(--g-l);border-color:#4a8c1f;color:#27500A}
-.pill-opt.status-pending.on{background:var(--a-l);border-color:#c07a2a;color:#633806}
-/* Upload area */
-.upload-area{border:1.5px dashed var(--border);border-radius:10px;padding:16px 18px;cursor:pointer;text-align:center;transition:all .15s;background:var(--bg)}
-.upload-area:hover{border-color:var(--br);background:var(--br-l)}
-.upload-area input[type=file]{display:none}
-.upload-area .up-icon{width:32px;height:32px;margin:0 auto 8px;color:var(--muted)}
-.upload-area .up-icon svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.upload-area .up-label{font-size:13px;color:var(--muted)}
-.upload-area .up-hint{font-size:11px;color:var(--border);margin-top:3px}
-.upload-preview{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--g-l);border-radius:8px;margin-top:8px}
-.upload-preview svg{width:18px;height:18px;stroke:#27500A;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.upload-preview span{font-size:13px;color:#27500A;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.upload-preview button{background:none;border:none;cursor:pointer;color:#27500A;font-size:16px;line-height:1;padding:0 2px}
-/* Filter row */
-.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.filter-row .fc{width:auto;flex:1;min-width:160px}
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:20000;display:none;white-space:nowrap}
-/* Required asterisk */
-.req{color:var(--r);margin-left:1px}
+.row-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none}
+.section-hdg{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+.kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-value{font-size:24px;font-weight:500;font-family:'Playfair Display',serif}
+
+.venue-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;margin:3px 4px 3px 0;user-select:none}
+.venue-pill.on{background:var(--br-l);border-color:#D85A30;color:var(--br)}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all .15s;display:inline-block}
+.dot.on{background:var(--br);border-color:var(--br)}
+.dot.err{background:var(--r);border-color:var(--r)}
+.key{height:52px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:20px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;width:100%}
+.key:active{background:var(--br-l);border-color:var(--br);transform:scale(.95)}
+
+/* ── Dashboard ── */
+.dash-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.dash-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.dash-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.dash-tile{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:22px 24px;cursor:pointer;transition:box-shadow .15s,transform .15s;position:relative;overflow:hidden;display:block;text-decoration:none}
+.dash-tile:hover{box-shadow:0 4px 18px rgba(0,0,0,.09);transform:translateY(-2px)}
+.dash-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.dash-tile.tile-ci::before{background:#2d9e6b}
+.dash-tile.tile-co::before{background:#d97706}
+.dash-tile.tile-staff::before{background:#4a90d9}
+.dash-tile.tile-leave::before{background:#9b59b6}
+.dash-tile.tile-laundry::before{background:#e74c3c}
+.dash-tile.tile-repairs::before{background:#f39c12}
+.dash-tile.tile-tasks::before{background:#993C1D}
+.dash-tile.tile-stock::before{background:#0e7060}
+.dash-tile.tile-billing::before{background:#7c3aed}
+.dash-tile.tile-utility::before{background:#0891b2}
+.dash-tile-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.dash-tile-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.icon-ci{background:#edf7f0;color:#2d9e6b}
+.icon-co{background:#fef3e8;color:#d97706}
+.icon-staff{background:#eef4fb;color:#4a90d9}
+.icon-leave{background:#f5eefb;color:#9b59b6}
+.icon-laundry{background:#fef0ef;color:#e74c3c}
+.icon-repairs{background:#fef9ee;color:#f39c12}
+.icon-tasks{background:#FAECE7;color:#993C1D}
+.icon-stock{background:#e0f4f0;color:#0e7060}
+.icon-billing{background:#f3eeff;color:#7c3aed}
+.icon-utility{background:#e0f7fa;color:#0891b2}
+.dash-tile-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.dash-tile-value{font-family:'Playfair Display',serif;font-size:40px;line-height:1;color:var(--text)}
+.dash-tile-value.loading{font-size:20px;color:var(--muted)}
+.dash-tile-sub{font-size:12px;color:var(--muted);margin-top:5px}
+.dash-tile-nav{position:absolute;bottom:18px;right:18px;font-size:18px;color:var(--border)}
+.dash-section-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* ── Leave Calendar inline page ── */
+.lc-cal-grid{width:100%;border-collapse:collapse}
+.lc-cal-grid th{text-align:center;padding:8px 4px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
+.lc-cal-grid td{width:calc(100%/7);height:88px;border:1px solid var(--border);vertical-align:top;padding:6px;cursor:pointer;transition:background .1s;position:relative}
+.lc-cal-grid td:hover:not(.lc-out-month){background:#FAFAF8}
+.lc-cal-grid td.lc-today .lc-day-num{background:var(--br);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500}
+.lc-cal-grid td.lc-out-month{background:var(--bg);opacity:.55;cursor:default}
+.lc-day-num{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.lc-day-leaves{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.lc-leave-pill{font-size:10px;padding:1px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.lc-leave-annual{background:#E3F0FF;color:#0C447C}
+.lc-leave-sick{background:#FCEBEB;color:#791F1F}
+.lc-leave-comp{background:#EAF3DE;color:#27500A}
+.lc-leave-unpaid{background:#F3EAF9;color:#5A2A7A}
+.lc-leave-other{background:#FAEEDA;color:#633806}
+.lc-leave-row{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.lc-leave-row:last-child{border-bottom:none}
+.lc-avatar{width:36px;height:36px;border-radius:50%;background:var(--br-l);color:var(--br);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.lc-info-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.lc-info-meta{font-size:12px;color:var(--muted)}
+.lc-actions{display:flex;gap:6px;align-items:center}
+.bdg-pending{background:#FAEEDA;color:#633806}
+.bdg-approved{background:var(--g-l);color:#27500A}
+.bdg-rejected{background:var(--r-l);color:#791F1F}
+.lc-cal-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.lc-cal-nav{display:flex;align-items:center;gap:10px}
+.lc-month-label{font-family:'Playfair Display',serif;font-size:20px;min-width:180px;text-align:center}
+.lc-icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s}
+.lc-icon-btn:hover{border-color:var(--br);color:var(--br)}
+.lc-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lc-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.lc-filter-pill{padding:6px 14px;border-radius:999px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.lc-filter-pill.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
+.lc-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.lc-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border)}
+.lc-tab{padding:10px 18px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.lc-tab.on{color:var(--br);border-bottom-color:var(--br);font-weight:500}
+
+/* ── Billing module ── */
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
+
+
+.pg-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:20px}
+.card-ttl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.section-hdg{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
+.fc:focus{border-color:var(--br)}
+.btn-p{padding:10px 20px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-del{padding:5px 11px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-del:hover{background:var(--r);color:#fff}
+.btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit:hover{background:var(--br-l);color:var(--br)}
+.btn-pdf{padding:5px 11px;background:var(--b-l);color:var(--b);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-pdf:hover{background:var(--b);color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
+.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
+.guest-info-box{background:var(--bg);border-radius:10px;padding:16px 18px;margin-bottom:16px;border:1px solid var(--border)}
+.guest-info-name{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:4px}
+.guest-info-addr{font-size:13px;color:var(--muted);line-height:1.65}
+.guest-info-meta{display:flex;gap:18px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.guest-info-meta span strong{color:var(--text)}
+.bill-divider{border:none;border-top:2px solid var(--border);margin:20px 0}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:10px}
+.items-table th{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:7px 8px;border-bottom:2px solid var(--border);background:var(--bg);text-align:left}
+.items-table td{padding:5px 4px;border-bottom:1px solid var(--border);vertical-align:middle}
+.items-table tr:last-child td{border-bottom:none}
+.items-table td input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
+.items-table td input:focus{border-color:var(--br)}
+.del-row{padding:5px 8px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.del-row:hover{background:var(--r);color:#fff}
+.bill-total-row{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:12px 8px 0;margin-top:2px;border-top:2px solid var(--text)}
+.bill-total-label{font-size:14px;color:var(--muted);font-weight:500}
+.bill-total-val{font-size:22px;font-weight:600;font-family:'Playfair Display',serif;color:var(--text)}
+.bill-deduct-row{border-top:1px dashed var(--border);padding-top:10px;margin-top:6px}
+.bill-deduct-row .bill-total-label{color:var(--muted);font-weight:400}
+.bill-deduct-input{width:100px;text-align:right;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:15px;font-family:'Playfair Display',serif;font-weight:600;color:var(--g);background:var(--white);outline:none}
+.bill-deduct-input:focus{border-color:var(--g)}
+.bill-pending-row{border-top:2px solid var(--text);padding-top:12px;margin-top:8px}
+.bill-pending-row .bill-total-label{color:var(--text);font-weight:700;font-size:15px}
+.bill-pending-row .bill-total-val{color:var(--r)}
+.method-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.method-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.method-btn.on{border-color:var(--g);background:var(--g-l);color:var(--g);font-weight:500}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 24px;border-radius:999px;font-size:13px;z-index:9999;display:none;white-space:nowrap}
+.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.log-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end}
+.log-filters .fg{margin-bottom:0;flex:1;min-width:160px}
+.log-filters .fg-date{margin-bottom:0;flex:1;min-width:130px}
+.filter-clear{padding:9px 14px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;align-self:flex-end}
+.filter-clear:hover{border-color:var(--br);color:var(--br)}
+/* PIN modal */
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center}
+.pin-box{background:var(--white);border-radius:16px;padding:32px 28px;width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18)}
+.pin-title{font-family:'EB Garamond',Georgia,serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.pin-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--bg);transition:all .15s}
+.pin-dot.filled{background:var(--br);border-color:var(--br)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.pin-key{padding:14px;border:1px solid var(--border);border-radius:10px;font-size:17px;font-weight:500;cursor:pointer;background:var(--white);font-family:inherit;color:var(--text);transition:all .12s}
+.pin-key:hover{background:var(--br-l);border-color:var(--br);color:var(--br)}
+.pin-key:active{transform:scale(.95)}
+.pin-err{font-size:12px;color:var(--r);min-height:16px;margin-bottom:8px}
+.pin-cancel{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:inherit;text-decoration:underline}
+.pin-cancel:hover{color:var(--text)}
+
 </style>
 </head>
 <body>
-<div style="min-height:100vh">
+<div style="padding:28px 32px;max-width:1280px">
+<div class="pg-title">Accounts</div>
+<div class="pg-sub">Expenses &amp; Billing</div>
 
-<div class="main">
-  <div class="pg-title">Accounts</div>
-  <div class="pg-sub" id="ac-sub">Expenses & Bills</div>
+<div class="ac-tabs">
+  <button class="ac-tab on" id="act-expenses" onclick="acTab('expenses',this)">Expenses</button>
+  <button class="ac-tab" id="act-bills" onclick="acTab('bills',this)">Billing</button>
+</div>
 
-  <!-- TABS -->
-  <div class="ac-tabs">
-    <button class="ac-tab on" onclick="acTab('expenses',this)">Add Expense</button>
-    <button class="ac-tab" onclick="acTab('bills',this)">Bills</button>
+<!-- ── EXPENSES PANE ── -->
+<div class="ac-pane on" id="ac-pane-expenses">
+
+  <div class="kpi-row" style="margin-bottom:20px">
+    <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="ac-kpi-total">₹ —</div></div>
+    <div class="kpi"><div class="kpi-label">Paid</div><div class="kpi-value" style="color:#27500A" id="ac-kpi-paid">₹ —</div></div>
+    <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value" style="color:#854F0B" id="ac-kpi-pending">₹ —</div></div>
   </div>
 
-  <!-- ═══════════════════════════════════
-       EXPENSES PANE
-  ════════════════════════════════════ -->
-  <div class="ac-pane on" id="pane-expenses">
-
-    <!-- KPIs -->
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-label">Total Expenses</div>
-        <div class="kpi-value" id="kpi-total">₹ —</div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-ttl">All Expenses</span>
+      <button class="btn-p" onclick="acOpenExpModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Expense
+      </button>
+    </div>
+    <div class="filter-row">
+      <div class="pill-group" id="ac-filter-cat">
+        <button class="pill-opt on" data-val="all" onclick="acFilterCat(this)">All</button>
+        <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
+        <button class="pill-opt" data-val="Utility" onclick="acFilterCat(this)">Utility</button>
+        <button class="pill-opt" data-val="Others" onclick="acFilterCat(this)">Others</button>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Paid</div>
-        <div class="kpi-value" style="color:#27500A" id="kpi-paid">₹ —</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Pending</div>
-        <div class="kpi-value" style="color:#854F0B" id="kpi-pending">₹ —</div>
+      <div class="pill-group" style="margin-left:auto">
+        <button class="pill-opt status-paid on" data-val="all" onclick="acFilterSt(this)">All</button>
+        <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterSt(this)">Paid</button>
+        <button class="pill-opt status-pending" data-val="Pending" onclick="acFilterSt(this)">Pending</button>
       </div>
     </div>
+    <table class="tbl">
+      <thead><tr>
+        <th>Item</th><th>Category</th><th>Amount</th><th>Status</th><th>Date</th><th>Receipt</th><th></th>
+      </tr></thead>
+      <tbody id="ac-exp-tbody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div><!-- /ac-pane-expenses -->
 
-    <!-- Table card -->
-    <div class="card">
-      <div class="card-header">
-        <span class="card-ttl">All Expenses</span>
-        <button class="btn-p" onclick="acOpenExpenseModal()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Expense
-        </button>
-      </div>
+<!-- ── BILLS PANE ── -->
+<div class="ac-pane" id="ac-pane-bills">
+<!-- ─── BILL CREATOR ─── -->
+<div class="card">
+  <div class="card-ttl" id="form-ttl">New Bill</div>
+  <input type="hidden" id="edit-id"/>
 
-      <!-- Filters -->
-      <div class="filter-row">
-        <div class="pill-group" id="exp-filter-cat" style="margin-top:0">
-          <button class="pill-opt on" data-val="all" onclick="acFilterCat(this)">All</button>
-          <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
-          <button class="pill-opt" data-val="Utility" onclick="acFilterCat(this)">Utility</button>
-          <button class="pill-opt" data-val="Others" onclick="acFilterCat(this)">Others</button>
-        </div>
-        <div class="pill-group" id="exp-filter-status" style="margin-top:0;margin-left:auto">
-          <button class="pill-opt on" data-val="all" onclick="acFilterStatus(this)">All Status</button>
-          <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterStatus(this)">Paid</button>
-          <button class="pill-opt status-pending" data-val="Pending" onclick="acFilterStatus(this)">Pending</button>
-        </div>
-      </div>
-
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Category</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Receipt</th>
-            <th>Date</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="exp-tbody">
-          <tr><td colspan="7" class="empty">Loading…</td></tr>
-        </tbody>
-      </table>
+  <div class="fg">
+    <label class="fl">Bill Date <span style="color:var(--r)">*</span></label>
+    <div onclick="var i=document.getElementById('bill-date');try{i.showPicker();}catch(e){i.click();}" style="cursor:pointer">
+      <input class="fc" id="bill-date" type="date" max="" style="pointer-events:none"/>
     </div>
-  </div><!-- /pane-expenses -->
+  </div>
 
-  <!-- ═══════════════════════════════════
-       BILLS PANE
-  ════════════════════════════════════ -->
-  <div class="ac-pane" id="pane-bills">
+  <div class="fg">
+    <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
+      <option value="">— choose a guest —</option>
+    </select>
+  </div>
 
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-label">Total Bills</div>
-        <div class="kpi-value" id="kpi-bills-total">₹ —</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Paid</div>
-        <div class="kpi-value" style="color:#27500A" id="kpi-bills-paid">₹ —</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Pending</div>
-        <div class="kpi-value" style="color:#854F0B" id="kpi-bills-pending">₹ —</div>
-      </div>
+  <!-- Other: free-text name -->
+  <div class="fg" id="other-name-fg" style="display:none">
+    <label class="fl">Name <span style="color:var(--r)">*</span></label>
+    <input class="fc" id="other-guest-name" type="text" placeholder="Type guest or company name…"/>
+  </div>
+
+  <!-- Guest info — revealed on selection -->
+  <div class="guest-info-box" id="guest-info" style="display:none">
+    <div class="guest-info-name" id="ginfo-name">—</div>
+    <div class="guest-info-addr" id="ginfo-addr" style="white-space:pre-line"></div>
+    <div class="guest-info-meta" id="ginfo-meta"></div>
+  </div>
+
+  <hr class="bill-divider"/>
+
+  <!-- Items table -->
+  <div class="card-ttl" style="margin-bottom:10px">Itemized Charges</div>
+  <table class="items-table" id="items-table">
+    <thead>
+      <tr>
+        <th style="width:28%">Item / Description</th>
+        <th style="width:12%">Date</th>
+        <th style="width:9%;text-align:center">Qty</th>
+        <th style="width:12%;text-align:right">Rate (₹)</th>
+        <th style="width:8%;text-align:center">CGST %</th>
+        <th style="width:8%;text-align:center">SGST %</th>
+        <th style="width:13%;text-align:right">Total (₹)</th>
+        <th style="width:10%"></th>
+      </tr>
+    </thead>
+    <tbody id="items-body"></tbody>
+  </table>
+  <div style="margin-bottom:18px">
+    <button class="btn-sec" onclick="addItemRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add item
+    </button>
+  </div>
+
+  <!-- Totals summary -->
+  <div class="bill-total-row">
+    <span class="bill-total-label">Grand Total</span>
+    <span class="bill-total-val" id="grand-total">₹0</span>
+  </div>
+
+  <hr class="bill-divider"/>
+
+  <!-- Payment method — always visible -->
+  <div class="fg" id="method-row-fg">
+    <label class="fl">Payment Method <span style="color:var(--r)">*</span></label>
+    <div class="method-row" id="method-row">
+      <button class="method-btn" id="m-cash" onclick="setPayMethod('cash')">Cash</button>
+      <button class="method-btn" id="m-card" onclick="setPayMethod('card')">Card</button>
+      <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
+      <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Pending</button>
     </div>
+  </div>
 
-    <div class="card">
-      <div class="card-header">
-        <span class="card-ttl">All Bills</span>
-        <button class="btn-p" onclick="acOpenBillModal()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Bill
-        </button>
-      </div>
+  <div class="fg">
+    <label class="fl">Remarks</label>
+    <input class="fc" id="bill-remarks" type="text" placeholder="e.g. Paid at checkout, discount applied…"/>
+  </div>
 
-      <div class="filter-row">
-        <div class="pill-group" id="bill-filter-status" style="margin-top:0">
-          <button class="pill-opt on" data-val="all" onclick="acBillFilterStatus(this)">All</button>
-          <button class="pill-opt status-paid" data-val="Paid" onclick="acBillFilterStatus(this)">Paid</button>
-          <button class="pill-opt status-pending" data-val="Pending" onclick="acBillFilterStatus(this)">Pending</button>
-        </div>
-      </div>
+  <div style="display:flex;gap:10px;margin-top:6px;align-items:center">
+    <button class="btn-p" id="save-btn" onclick="saveBill()">Create Bill</button>
+    <button class="btn-sec" id="cancel-btn" onclick="cancelEdit()" style="display:none">Cancel edit</button>
+  </div>
+</div>
 
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Amount</th>
-            <th>Due Date</th>
-            <th>Status</th>
-            <th>Attachment</th>
-            <th>Notes</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="bill-tbody">
-          <tr><td colspan="7" class="empty">Loading…</td></tr>
-        </tbody>
-      </table>
+<!-- ─── BILL LOG ─── -->
+<div class="section-hdg">Bill Log</div>
+<div class="card">
+  <div class="log-filters">
+    <div class="fg" style="flex:1.5;min-width:180px">
+      <label class="fl">Search Guest</label>
+      <input class="fc" id="filter-guest" type="text" placeholder="Guest name…" oninput="filterBills()"/>
     </div>
-  </div><!-- /pane-bills -->
+    <div class="fg" style="flex:1.2;min-width:160px">
+      <label class="fl">Property</label>
+      <select class="fc" id="filter-property" onchange="filterBills()">
+        <option value="">All properties</option>
+      </select>
+    </div>
+    <div class="fg-date fg" style="min-width:140px">
+      <label class="fl">From</label>
+      <input class="fc" id="filter-from" type="date" onchange="onFilterFromChange();filterBills()"/>
+    </div>
+    <div class="fg-date fg" style="min-width:140px">
+      <label class="fl">To</label>
+      <input class="fc" id="filter-to" type="date" onchange="onFilterToChange();filterBills()"/>
+    </div>
+    <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
+  </div>
+  <div id="bill-log">Loading…</div>
+</div>
 
-</div><!-- /main -->
+<div class="toast" id="bl-toast"></div>
+
+<!-- PIN Modal -->
+<div class="pin-overlay" id="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <div class="pin-title">Admin Access</div>
+    <div class="pin-sub" id="pin-sub">Enter PIN to continue</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('back')" style="font-size:13px;color:var(--muted)">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('clear')" style="font-size:12px;color:var(--muted)">CLR</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <button class="pin-cancel" onclick="pinCancel()">Cancel</button>
+  </div>
+</div>
 
 
-<!-- ═══════════════════════════════════
-     EXPENSE MODAL
-════════════════════════════════════ -->
-<div class="modal" id="modal-expense">
+</div><!-- /ac-pane-bills -->
+
+<!-- ── EXPENSE MODAL ── -->
+<div class="modal" id="ac-modal-exp">
   <div class="modal-card">
-    <div class="modal-ttl" id="exp-modal-ttl">Add Expense</div>
-    <input type="hidden" id="exp-id"/>
+    <div class="modal-ttl" id="ac-exp-ttl">Add Expense</div>
+    <input type="hidden" id="ac-exp-id"/>
 
-    <!-- Category pill selector -->
     <div class="fg">
       <span class="fl">Category <span class="req">*</span></span>
-      <div class="pill-group" id="exp-cat-pills">
+      <div class="pill-group" id="ac-cat-pills">
         <button class="pill-opt" data-val="Payout" onclick="acPickCat(this)">Payout</button>
         <button class="pill-opt" data-val="Utility" onclick="acPickCat(this)">Utility</button>
         <button class="pill-opt" data-val="Others" onclick="acPickCat(this)">Others</button>
       </div>
-      <input type="hidden" id="exp-cat"/>
+      <input type="hidden" id="ac-exp-cat"/>
     </div>
 
     <div class="row-grid">
       <div class="fg">
-        <label class="fl" for="exp-item">Item <span class="req">*</span></label>
-        <input class="fc" id="exp-item" placeholder="e.g. Electrician payout"/>
+        <label class="fl">Item <span class="req">*</span></label>
+        <input class="fc" id="ac-exp-item" placeholder="e.g. Electrician payout"/>
       </div>
       <div class="fg">
-        <label class="fl" for="exp-amount">Amount <span class="req">*</span></label>
-        <input class="fc" id="exp-amount" type="number" min="0" placeholder="0.00"/>
+        <label class="fl">Amount <span class="req">*</span></label>
+        <input class="fc" id="ac-exp-amount" type="number" min="0" placeholder="0.00"/>
       </div>
     </div>
 
-    <!-- Status pill selector -->
     <div class="fg">
       <span class="fl">Status <span class="req">*</span></span>
-      <div class="pill-group" id="exp-status-pills">
-        <button class="pill-opt status-paid" data-val="Paid" onclick="acPickStatus(this)">Paid</button>
-        <button class="pill-opt status-pending" data-val="Pending" onclick="acPickStatus(this)">Pending</button>
+      <div class="pill-group" id="ac-st-pills">
+        <button class="pill-opt status-paid" data-val="Paid" onclick="acPickSt(this)">Paid</button>
+        <button class="pill-opt status-pending" data-val="Pending" onclick="acPickSt(this)">Pending</button>
       </div>
-      <input type="hidden" id="exp-status"/>
+      <input type="hidden" id="ac-exp-status"/>
     </div>
 
-    <!-- Upload -->
     <div class="fg">
       <span class="fl">Receipt / Attachment</span>
-      <div class="upload-area" id="exp-upload-area" onclick="document.getElementById('exp-file-input').click()">
-        <input type="file" id="exp-file-input" accept="image/*,application/pdf" onchange="acHandleFile(this,'exp')"/>
-        <div class="up-icon">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
+      <div class="upload-area" id="ac-upload-area" onclick="document.getElementById('ac-file-input').click()">
+        <input type="file" id="ac-file-input" accept="image/*,application/pdf" onchange="acHandleUpload(this)"/>
+        <div class="up-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
         <div class="up-label">Click to upload</div>
         <div class="up-hint">JPG, PNG or PDF</div>
       </div>
-      <div class="upload-preview" id="exp-file-preview" style="display:none">
+      <div class="upload-preview" id="ac-file-preview" style="display:none">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-        <span id="exp-file-name">file.jpg</span>
-        <button onclick="acClearFile('exp')">×</button>
+        <span id="ac-file-name">file</span>
+        <button onclick="acClearUpload()">×</button>
       </div>
-      <input type="hidden" id="exp-file-url"/>
+      <input type="hidden" id="ac-exp-fileurl"/>
     </div>
 
-    <!-- Description -->
     <div class="fg">
-      <label class="fl" for="exp-desc">Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-      <textarea class="fc" id="exp-desc" placeholder="Any additional notes…"></textarea>
+      <label class="fl">Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea class="fc" id="ac-exp-desc" placeholder="Any additional notes…"></textarea>
     </div>
 
     <div class="modal-actions">
-      <button class="btn-sec" onclick="acCloseModal('modal-expense')">Cancel</button>
-      <button class="btn-p" onclick="acSaveExpense()">Save Expense</button>
+      <button class="btn-sec" onclick="acCloseExpModal()">Cancel</button>
+      <button class="btn-p" onclick="acSaveExp()">Save</button>
     </div>
   </div>
 </div>
-
-<!-- ═══════════════════════════════════
-     BILL MODAL
-════════════════════════════════════ -->
-<div class="modal" id="modal-bill">
-  <div class="modal-card">
-    <div class="modal-ttl" id="bill-modal-ttl">Add Bill</div>
-    <input type="hidden" id="bill-id"/>
-
-    <div class="row-grid">
-      <div class="fg">
-        <label class="fl" for="bill-item">Item <span class="req">*</span></label>
-        <input class="fc" id="bill-item" placeholder="e.g. Electricity bill"/>
-      </div>
-      <div class="fg">
-        <label class="fl" for="bill-amount">Amount <span class="req">*</span></label>
-        <input class="fc" id="bill-amount" type="number" min="0" placeholder="0.00"/>
-      </div>
-    </div>
-
-    <div class="fg">
-      <label class="fl" for="bill-due">Due Date</label>
-      <input class="fc" id="bill-due" type="date"/>
-    </div>
-
-    <!-- Status pill selector -->
-    <div class="fg">
-      <span class="fl">Status <span class="req">*</span></span>
-      <div class="pill-group" id="bill-status-pills">
-        <button class="pill-opt status-paid" data-val="Paid" onclick="acPickBillStatus(this)">Paid</button>
-        <button class="pill-opt status-pending" data-val="Pending" onclick="acPickBillStatus(this)">Pending</button>
-      </div>
-      <input type="hidden" id="bill-status"/>
-    </div>
-
-    <!-- Upload -->
-    <div class="fg">
-      <span class="fl">Attachment</span>
-      <div class="upload-area" id="bill-upload-area" onclick="document.getElementById('bill-file-input').click()">
-        <input type="file" id="bill-file-input" accept="image/*,application/pdf" onchange="acHandleFile(this,'bill')"/>
-        <div class="up-icon">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
-        <div class="up-label">Click to upload</div>
-        <div class="up-hint">JPG, PNG or PDF</div>
-      </div>
-      <div class="upload-preview" id="bill-file-preview" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-        <span id="bill-file-name">file.jpg</span>
-        <button onclick="acClearFile('bill')">×</button>
-      </div>
-      <input type="hidden" id="bill-file-url"/>
-    </div>
-
-    <div class="fg">
-      <label class="fl" for="bill-notes">Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-      <textarea class="fc" id="bill-notes" placeholder="Any additional notes…"></textarea>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="acCloseModal('modal-bill')">Cancel</button>
-      <button class="btn-p" onclick="acSaveBill()">Save Bill</button>
-    </div>
-  </div>
+<div class="ac-toast" id="ac-toast"></div>
 </div>
-
-<div class="toast" id="ac-toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-const STORAGE_BUCKET = 'utility-uploads';
+// ── Accounts
+const AC_SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const AC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const AC_BUCKET = 'utility-uploads';
 
-/* ── helpers ── */
-async function sbFetch(path, method='GET', body=null){
-  const opts = {
-    method,
-    headers:{ 'apikey': KEY, 'Authorization':'Bearer '+KEY, 'Content-Type':'application/json',
-              'Prefer': method==='POST'?'return=representation':'return=representation' }
-  };
-  if(body) opts.body = JSON.stringify(body);
-  const r = await fetch(SB+path, opts);
-  if(!r.ok){ const t=await r.text(); throw new Error(t); }
-  return r.status===204 ? null : r.json();
+async function acApi(path, method, body) {
+  const r = await fetch(AC_SB + path, {
+    method: method||'GET',
+    headers: { apikey: AC_KEY, Authorization: 'Bearer '+AC_KEY, 'Content-Type':'application/json', Prefer:'return=representation' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if(r.status===204) return null;
+  const j = await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((j&&j.message)||('HTTP '+r.status));
+  return j;
 }
 
-function toast(msg){
-  const t=document.getElementById('ac-toast');
-  t.textContent=msg; t.style.display='block';
-  setTimeout(()=>t.style.display='none',2600);
+function acToast(msg) {
+  const t = document.getElementById('ac-toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 2600);
 }
 
-function fmt(n){ return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function acFmt(n) { return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
 
-/* ── tab switching ── */
-function acTab(id, btn){
+let _acExpenses=[], _acCatF='all', _acStF='all';
+
+function acTab(id, btn) {
   document.querySelectorAll('.ac-tab').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.ac-pane').forEach(p=>p.classList.remove('on'));
   btn.classList.add('on');
-  document.getElementById('pane-'+id).classList.add('on');
-  if(id==='expenses') acLoadExpenses();
-  if(id==='bills')    acLoadBills();
+  document.getElementById('ac-pane-'+id).classList.add('on');
+  if(id==='expenses') acLoadExp();
+  if(id==='bills') { if(!window._blReady){ window._blReady=true; init(); } }
 }
 
-/* ══════════════════════════
-   EXPENSES
-══════════════════════════ */
-let allExpenses=[], expCatFilter='all', expStatusFilter='all';
-
-async function acLoadExpenses(){
-  try{
-    const data = await sbFetch('/rest/v1/expenses?order=created_at.desc&select=*');
-    allExpenses = Array.isArray(data)?data:[];
-    acRenderExpenses();
+async function acLoadExp() {
+  try {
+    const d = await acApi('/rest/v1/expenses?order=created_at.desc&select=*');
+    _acExpenses = Array.isArray(d)?d:[];
+    acRenderExp();
     acRenderKPIs();
-  } catch(e){
-    document.getElementById('exp-tbody').innerHTML='<tr><td colspan="7" class="empty">Could not load expenses — table may not exist yet.</td></tr>';
-    console.error(e);
+  } catch(e) {
+    document.getElementById('ac-exp-tbody').innerHTML='<tr><td colspan="7" class="empty">'+e.message+'</td></tr>';
   }
 }
 
-function acRenderKPIs(){
-  const total = allExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
-  const paid  = allExpenses.filter(e=>e.status==='Paid').reduce((s,e)=>s+Number(e.amount||0),0);
-  const pend  = allExpenses.filter(e=>e.status==='Pending').reduce((s,e)=>s+Number(e.amount||0),0);
-  document.getElementById('kpi-total').textContent   = fmt(total);
-  document.getElementById('kpi-paid').textContent    = fmt(paid);
-  document.getElementById('kpi-pending').textContent = fmt(pend);
+function acRenderKPIs() {
+  const tot  = _acExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+  const paid = _acExpenses.filter(e=>e.status==='Paid').reduce((s,e)=>s+Number(e.amount||0),0);
+  const pend = _acExpenses.filter(e=>e.status==='Pending').reduce((s,e)=>s+Number(e.amount||0),0);
+  document.getElementById('ac-kpi-total').textContent   = acFmt(tot);
+  document.getElementById('ac-kpi-paid').textContent    = acFmt(paid);
+  document.getElementById('ac-kpi-pending').textContent = acFmt(pend);
 }
 
-function acRenderExpenses(){
-  let d=[...allExpenses];
-  if(expCatFilter!=='all')    d=d.filter(e=>e.category===expCatFilter);
-  if(expStatusFilter!=='all') d=d.filter(e=>e.status===expStatusFilter);
-  const tb=document.getElementById('exp-tbody');
+function acRenderExp() {
+  let d = [..._acExpenses];
+  if(_acCatF!=='all') d=d.filter(e=>e.category===_acCatF);
+  if(_acStF!=='all')  d=d.filter(e=>e.status===_acStF);
+  const tb = document.getElementById('ac-exp-tbody');
   if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No expenses found.</td></tr>'; return; }
-  tb.innerHTML=d.map(e=>`
+  tb.innerHTML = d.map(e=>`
     <tr>
       <td style="font-weight:500">${e.item||'—'}</td>
       <td><span class="bdg bdg-b">${e.category||'—'}</span></td>
-      <td>${fmt(e.amount)}</td>
+      <td>${acFmt(e.amount)}</td>
       <td>${e.status==='Paid'?'<span class="bdg bdg-g">Paid</span>':'<span class="bdg bdg-a">Pending</span>'}</td>
-      <td>${e.file_url?`<a href="${e.file_url}" target="_blank" style="color:var(--br);font-size:12px;text-decoration:none">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
-      <td style="color:var(--muted);font-size:12px">${e.created_at?e.created_at.slice(0,10):'—'}</td>
+      <td style="color:var(--muted);font-size:12px">${(e.created_at||'').slice(0,10)||'—'}</td>
+      <td>${e.file_url?`<a href="${e.file_url}" target="_blank" style="color:var(--br);font-size:12px">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
       <td style="white-space:nowrap">
-        <button class="btn-edit" onclick="acEditExpense(${JSON.stringify(e).replace(/"/g,'&quot;')})">Edit</button>
-        <button class="btn-del"  onclick="acDeleteExpense('${e.id}')">Delete</button>
+        <button class="btn-edit" onclick='acEditExp(${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
+        <button class="btn-del"  onclick="acDelExp('${e.id}')">Delete</button>
       </td>
     </tr>`).join('');
 }
 
-function acFilterCat(btn){
-  document.querySelectorAll('#exp-filter-cat .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  expCatFilter=btn.dataset.val;
-  acRenderExpenses();
+function acFilterCat(btn) {
+  document.querySelectorAll('#ac-filter-cat .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); _acCatF=btn.dataset.val; acRenderExp();
 }
-function acFilterStatus(btn){
-  document.querySelectorAll('#exp-filter-status .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  expStatusFilter=btn.dataset.val;
-  acRenderExpenses();
+function acFilterSt(btn) {
+  btn.closest('.pill-group').querySelectorAll('.pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); _acStF=btn.dataset.val; acRenderExp();
 }
 
-/* ── expense modal ── */
-function acOpenExpenseModal(){
-  document.getElementById('exp-id').value='';
-  document.getElementById('exp-modal-ttl').textContent='Add Expense';
-  document.getElementById('exp-item').value='';
-  document.getElementById('exp-amount').value='';
-  document.getElementById('exp-desc').value='';
-  document.getElementById('exp-cat').value='';
-  document.getElementById('exp-status').value='';
-  document.getElementById('exp-file-url').value='';
-  document.querySelectorAll('#exp-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('#exp-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  document.getElementById('exp-file-preview').style.display='none';
-  document.getElementById('exp-upload-area').style.display='';
-  document.getElementById('exp-file-input').value='';
-  document.getElementById('modal-expense').classList.add('on');
+function acOpenExpModal() {
+  document.getElementById('ac-exp-id').value='';
+  document.getElementById('ac-exp-ttl').textContent='Add Expense';
+  document.getElementById('ac-exp-item').value='';
+  document.getElementById('ac-exp-amount').value='';
+  document.getElementById('ac-exp-desc').value='';
+  document.getElementById('ac-exp-cat').value='';
+  document.getElementById('ac-exp-status').value='';
+  document.getElementById('ac-exp-fileurl').value='';
+  document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.getElementById('ac-file-preview').style.display='none';
+  document.getElementById('ac-upload-area').style.display='';
+  document.getElementById('ac-file-input').value='';
+  document.getElementById('ac-modal-exp').classList.add('on');
 }
 
-function acEditExpense(e){
-  document.getElementById('exp-id').value=e.id;
-  document.getElementById('exp-modal-ttl').textContent='Edit Expense';
-  document.getElementById('exp-item').value=e.item||'';
-  document.getElementById('exp-amount').value=e.amount||'';
-  document.getElementById('exp-desc').value=e.description||'';
-  // pills
-  document.querySelectorAll('#exp-cat-pills .pill-opt').forEach(b=>{ b.classList.toggle('on',b.dataset.val===e.category); });
-  document.getElementById('exp-cat').value=e.category||'';
-  document.querySelectorAll('#exp-status-pills .pill-opt').forEach(b=>{ b.classList.toggle('on',b.dataset.val===e.status); });
-  document.getElementById('exp-status').value=e.status||'';
-  // file
+function acEditExp(e) {
+  document.getElementById('ac-exp-id').value=e.id;
+  document.getElementById('ac-exp-ttl').textContent='Edit Expense';
+  document.getElementById('ac-exp-item').value=e.item||'';
+  document.getElementById('ac-exp-amount').value=e.amount||'';
+  document.getElementById('ac-exp-desc').value=e.description||'';
+  document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.category));
+  document.getElementById('ac-exp-cat').value=e.category||'';
+  document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.status));
+  document.getElementById('ac-exp-status').value=e.status||'';
   if(e.file_url){
-    document.getElementById('exp-file-url').value=e.file_url;
-    document.getElementById('exp-file-name').textContent=e.file_url.split('/').pop();
-    document.getElementById('exp-file-preview').style.display='flex';
-    document.getElementById('exp-upload-area').style.display='none';
+    document.getElementById('ac-exp-fileurl').value=e.file_url;
+    document.getElementById('ac-file-name').textContent=e.file_url.split('/').pop();
+    document.getElementById('ac-file-preview').style.display='flex';
+    document.getElementById('ac-upload-area').style.display='none';
   } else {
-    document.getElementById('exp-file-url').value='';
-    document.getElementById('exp-file-preview').style.display='none';
-    document.getElementById('exp-upload-area').style.display='';
+    document.getElementById('ac-exp-fileurl').value='';
+    document.getElementById('ac-file-preview').style.display='none';
+    document.getElementById('ac-upload-area').style.display='';
   }
-  document.getElementById('modal-expense').classList.add('on');
+  document.getElementById('ac-modal-exp').classList.add('on');
 }
 
-function acPickCat(btn){
-  document.querySelectorAll('#exp-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('exp-cat').value=btn.dataset.val;
+function acPickCat(btn) {
+  document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); document.getElementById('ac-exp-cat').value=btn.dataset.val;
 }
-function acPickStatus(btn){
-  document.querySelectorAll('#exp-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('exp-status').value=btn.dataset.val;
+function acPickSt(btn) {
+  document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); document.getElementById('ac-exp-status').value=btn.dataset.val;
 }
 
-async function acSaveExpense(){
-  const id       = document.getElementById('exp-id').value;
-  const item     = document.getElementById('exp-item').value.trim();
-  const amount   = document.getElementById('exp-amount').value;
-  const category = document.getElementById('exp-cat').value;
-  const status   = document.getElementById('exp-status').value;
-  const desc     = document.getElementById('exp-desc').value.trim();
-  const fileUrl  = document.getElementById('exp-file-url').value;
-
+async function acSaveExp() {
+  const id       = document.getElementById('ac-exp-id').value;
+  const item     = document.getElementById('ac-exp-item').value.trim();
+  const amount   = document.getElementById('ac-exp-amount').value;
+  const category = document.getElementById('ac-exp-cat').value;
+  const status   = document.getElementById('ac-exp-status').value;
+  const desc     = document.getElementById('ac-exp-desc').value.trim();
+  const fileUrl  = document.getElementById('ac-exp-fileurl').value;
   if(!item)    { alert('Item is required'); return; }
   if(!amount)  { alert('Amount is required'); return; }
-  if(!category){ alert('Please select a category'); return; }
-  if(!status)  { alert('Please select a status'); return; }
-
+  if(!category){ alert('Select a category'); return; }
+  if(!status)  { alert('Select a status'); return; }
   const body = { item, amount:Number(amount), category, status, description:desc||null, file_url:fileUrl||null };
-
-  try{
-    if(id){ await sbFetch('/rest/v1/expenses?id=eq.'+id,'PATCH',body); }
-    else  { await sbFetch('/rest/v1/expenses','POST',{...body,created_at:new Date().toISOString()}); }
-    acCloseModal('modal-expense');
-    toast('Saved ✓');
-    await acLoadExpenses();
-  } catch(e){ alert('Error saving: '+e.message); }
+  try {
+    if(id) await acApi('/rest/v1/expenses?id=eq.'+id,'PATCH',body);
+    else   await acApi('/rest/v1/expenses','POST',{...body,created_at:new Date().toISOString()});
+    acCloseExpModal(); acToast('Saved ✓'); await acLoadExp();
+  } catch(e){ alert('Error: '+e.message); }
 }
 
-async function acDeleteExpense(id){
+async function acDelExp(id) {
   if(!confirm('Delete this expense?')) return;
-  try{
-    await sbFetch('/rest/v1/expenses?id=eq.'+id,'DELETE');
-    toast('Deleted');
-    await acLoadExpenses();
-  } catch(e){ alert('Error: '+e.message); }
+  try { await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE'); acToast('Deleted'); await acLoadExp(); }
+  catch(e){ alert('Error: '+e.message); }
 }
 
-/* ══════════════════════════
-   BILLS
-══════════════════════════ */
-let allBills=[], billStatusFilter='all';
+function acCloseExpModal() { document.getElementById('ac-modal-exp').classList.remove('on'); }
+document.addEventListener('click', e=>{ if(e.target.id==='ac-modal-exp') acCloseExpModal(); });
 
-async function acLoadBills(){
-  try{
-    const data = await sbFetch('/rest/v1/bills?order=created_at.desc&select=*');
-    allBills = Array.isArray(data)?data:[];
-    acRenderBills();
-    acRenderBillKPIs();
-  } catch(e){
-    document.getElementById('bill-tbody').innerHTML='<tr><td colspan="7" class="empty">Could not load bills — table may not exist yet.</td></tr>';
-    console.error(e);
-  }
-}
-
-function acRenderBillKPIs(){
-  const total = allBills.reduce((s,b)=>s+Number(b.amount||0),0);
-  const paid  = allBills.filter(b=>b.status==='Paid').reduce((s,b)=>s+Number(b.amount||0),0);
-  const pend  = allBills.filter(b=>b.status==='Pending').reduce((s,b)=>s+Number(b.amount||0),0);
-  document.getElementById('kpi-bills-total').textContent   = fmt(total);
-  document.getElementById('kpi-bills-paid').textContent    = fmt(paid);
-  document.getElementById('kpi-bills-pending').textContent = fmt(pend);
-}
-
-function acRenderBills(){
-  let d=[...allBills];
-  if(billStatusFilter!=='all') d=d.filter(b=>b.status===billStatusFilter);
-  const tb=document.getElementById('bill-tbody');
-  if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No bills found.</td></tr>'; return; }
-  tb.innerHTML=d.map(b=>`
-    <tr>
-      <td style="font-weight:500">${b.item||'—'}</td>
-      <td>${fmt(b.amount)}</td>
-      <td style="color:var(--muted);font-size:12px">${b.due_date||'—'}</td>
-      <td>${b.status==='Paid'?'<span class="bdg bdg-g">Paid</span>':'<span class="bdg bdg-a">Pending</span>'}</td>
-      <td>${b.file_url?`<a href="${b.file_url}" target="_blank" style="color:var(--br);font-size:12px;text-decoration:none">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
-      <td style="color:var(--muted);font-size:12px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.notes||'—'}</td>
-      <td style="white-space:nowrap">
-        <button class="btn-edit" onclick="acEditBill(${JSON.stringify(b).replace(/"/g,'&quot;')})">Edit</button>
-        <button class="btn-del"  onclick="acDeleteBill('${b.id}')">Delete</button>
-      </td>
-    </tr>`).join('');
-}
-
-function acBillFilterStatus(btn){
-  document.querySelectorAll('#bill-filter-status .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  billStatusFilter=btn.dataset.val;
-  acRenderBills();
-}
-
-function acOpenBillModal(){
-  document.getElementById('bill-id').value='';
-  document.getElementById('bill-modal-ttl').textContent='Add Bill';
-  document.getElementById('bill-item').value='';
-  document.getElementById('bill-amount').value='';
-  document.getElementById('bill-due').value='';
-  document.getElementById('bill-notes').value='';
-  document.getElementById('bill-status').value='';
-  document.getElementById('bill-file-url').value='';
-  document.querySelectorAll('#bill-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  document.getElementById('bill-file-preview').style.display='none';
-  document.getElementById('bill-upload-area').style.display='';
-  document.getElementById('bill-file-input').value='';
-  document.getElementById('modal-bill').classList.add('on');
-}
-
-function acEditBill(b){
-  document.getElementById('bill-id').value=b.id;
-  document.getElementById('bill-modal-ttl').textContent='Edit Bill';
-  document.getElementById('bill-item').value=b.item||'';
-  document.getElementById('bill-amount').value=b.amount||'';
-  document.getElementById('bill-due').value=b.due_date||'';
-  document.getElementById('bill-notes').value=b.notes||'';
-  document.querySelectorAll('#bill-status-pills .pill-opt').forEach(p=>{ p.classList.toggle('on',p.dataset.val===b.status); });
-  document.getElementById('bill-status').value=b.status||'';
-  if(b.file_url){
-    document.getElementById('bill-file-url').value=b.file_url;
-    document.getElementById('bill-file-name').textContent=b.file_url.split('/').pop();
-    document.getElementById('bill-file-preview').style.display='flex';
-    document.getElementById('bill-upload-area').style.display='none';
-  } else {
-    document.getElementById('bill-file-url').value='';
-    document.getElementById('bill-file-preview').style.display='none';
-    document.getElementById('bill-upload-area').style.display='';
-  }
-  document.getElementById('modal-bill').classList.add('on');
-}
-
-function acPickBillStatus(btn){
-  document.querySelectorAll('#bill-status-pills .pill-opt').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('bill-status').value=btn.dataset.val;
-}
-
-async function acSaveBill(){
-  const id      = document.getElementById('bill-id').value;
-  const item    = document.getElementById('bill-item').value.trim();
-  const amount  = document.getElementById('bill-amount').value;
-  const dueDate = document.getElementById('bill-due').value;
-  const status  = document.getElementById('bill-status').value;
-  const notes   = document.getElementById('bill-notes').value.trim();
-  const fileUrl = document.getElementById('bill-file-url').value;
-
-  if(!item)  { alert('Item is required'); return; }
-  if(!amount){ alert('Amount is required'); return; }
-  if(!status){ alert('Please select a status'); return; }
-
-  const body = { item, amount:Number(amount), due_date:dueDate||null, status, notes:notes||null, file_url:fileUrl||null };
-
-  try{
-    if(id){ await sbFetch('/rest/v1/bills?id=eq.'+id,'PATCH',body); }
-    else  { await sbFetch('/rest/v1/bills','POST',{...body,created_at:new Date().toISOString()}); }
-    acCloseModal('modal-bill');
-    toast('Saved ✓');
-    await acLoadBills();
-  } catch(e){ alert('Error saving: '+e.message); }
-}
-
-async function acDeleteBill(id){
-  if(!confirm('Delete this bill?')) return;
-  try{
-    await sbFetch('/rest/v1/bills?id=eq.'+id,'DELETE');
-    toast('Deleted');
-    await acLoadBills();
-  } catch(e){ alert('Error: '+e.message); }
-}
-
-/* ══════════════════════════
-   FILE UPLOAD (Supabase Storage → utility-uploads)
-══════════════════════════ */
-async function acHandleFile(input, prefix){
-  const file = input.files[0];
-  if(!file) return;
+async function acHandleUpload(input) {
+  const file = input.files[0]; if(!file) return;
   const ext  = file.name.split('.').pop();
-  const path = `${prefix}-uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  try{
-    const r = await fetch(`${SB}/storage/v1/object/${STORAGE_BUCKET}/${path}`, {
-      method:'POST',
-      headers:{ 'apikey':KEY, 'Authorization':'Bearer '+KEY, 'Content-Type':file.type, 'x-upsert':'true' },
-      body: file
+  const path = 'exp-uploads/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
+  try {
+    const r = await fetch(AC_SB+'/storage/v1/object/'+AC_BUCKET+'/'+path,{
+      method:'POST', headers:{ apikey:AC_KEY, Authorization:'Bearer '+AC_KEY, 'Content-Type':file.type, 'x-upsert':'true' }, body:file
     });
-    if(!r.ok){ const t=await r.text(); throw new Error(t); }
-    const url = `${SB}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
-    document.getElementById(prefix+'-file-url').value  = url;
-    document.getElementById(prefix+'-file-name').textContent = file.name;
-    document.getElementById(prefix+'-file-preview').style.display = 'flex';
-    document.getElementById(prefix+'-upload-area').style.display  = 'none';
-    toast('Uploaded ✓');
+    if(!r.ok) throw new Error(await r.text());
+    const url = AC_SB+'/storage/v1/object/public/'+AC_BUCKET+'/'+path;
+    document.getElementById('ac-exp-fileurl').value = url;
+    document.getElementById('ac-file-name').textContent = file.name;
+    document.getElementById('ac-file-preview').style.display = 'flex';
+    document.getElementById('ac-upload-area').style.display  = 'none';
+    acToast('Uploaded ✓');
   } catch(e){ alert('Upload failed: '+e.message); }
 }
-
-function acClearFile(prefix){
-  document.getElementById(prefix+'-file-url').value='';
-  document.getElementById(prefix+'-file-input').value='';
-  document.getElementById(prefix+'-file-preview').style.display='none';
-  document.getElementById(prefix+'-upload-area').style.display='';
+function acClearUpload() {
+  document.getElementById('ac-exp-fileurl').value='';
+  document.getElementById('ac-file-input').value='';
+  document.getElementById('ac-file-preview').style.display='none';
+  document.getElementById('ac-upload-area').style.display='';
 }
 
-/* ── close modal on backdrop click ── */
-function acCloseModal(id){ document.getElementById(id).classList.remove('on'); }
-document.querySelectorAll('.modal').forEach(m=>{
-  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('on'); });
-});
+</script>
+<script>
+/* Billing module */
+var blInitDone=false;
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-/* ── init ── */
-acLoadExpenses();
+var payMethod  = '';
+var GUESTS     = [];
+var EDIT_BILL  = null;
+var BILL_SEQ   = 0;
+
+function generateBillId() {
+  var now = new Date();
+  var pad = function(n,l){ return String(n).padStart(l||2,'0'); };
+  var ts = String(now.getFullYear()) +
+           pad(now.getMonth()+1) +
+           pad(now.getDate()) +
+           pad(now.getHours()) +
+           pad(now.getMinutes()) +
+           pad(now.getSeconds());
+  BILL_SEQ++;
+  return ts + pad(BILL_SEQ, 3);
+}
+
+// ── PIN ──
+var ADMIN_PIN   = '0000';
+var pinBuffer   = '';
+var pinCallback = null;
+
+function requirePin(label, cb) {
+  pinBuffer = '';
+  pinCallback = cb;
+  document.getElementById('pin-sub').textContent = label || 'Enter PIN to continue';
+  document.getElementById('pin-err').textContent = '';
+  updatePinDots();
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+
+function pinKey(k) {
+  if (k === 'back')  { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
+  if (k === 'clear') { pinBuffer = ''; updatePinDots(); return; }
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += k;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    if (pinBuffer === ADMIN_PIN) {
+      document.getElementById('pin-overlay').style.display = 'none';
+      var cb = pinCallback; pinCallback = null; pinBuffer = '';
+      updatePinDots();
+      if (cb) cb();
+    } else {
+      document.getElementById('pin-err').textContent = 'Incorrect PIN. Try again.';
+      setTimeout(function(){ pinBuffer = ''; updatePinDots(); document.getElementById('pin-err').textContent=''; }, 700);
+    }
+  }
+}
+
+function updatePinDots() {
+  for (var i=0;i<4;i++) {
+    var d = document.getElementById('pd'+i);
+    if (d) d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+  }
+}
+
+function pinCancel() {
+  pinBuffer = ''; pinCallback = null;
+  document.getElementById('pin-overlay').style.display = 'none';
+  updatePinDots();
+}
+
+async function api(path, method, body) {
+  var h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
+  var r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
+  if(r.status===204) return null;
+  var json = await r.json().catch(function(){return null;});
+  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
+  return json;
+}
+
+function toast(msg) {
+  var t = document.getElementById('bl-toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display='none'; }, 2600);
+}
+
+var fmt = function(n){ return '₹'+Math.round(n||0).toLocaleString('en-IN'); };
+var fmtF = function(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+var fmtDate = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; };
+
+// ── Init ──
+async function init() {
+  var today = new Date().toISOString().slice(0,10);
+  // Default bill date to today, restrict to not future
+  var billDateEl = document.getElementById('bill-date');
+  billDateEl.value = today;
+  billDateEl.max = today;
+  setPayMethod('pending');
+  await loadGuests();
+  await loadBills();
+}
+
+async function loadGuests() {
+  try {
+    var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
+    GUESTS = data;
+    var sel = document.getElementById('bill-guest-select');
+    sel.innerHTML = '<option value="">— choose a guest —</option>' +
+      data.map(function(g){
+        var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
+          (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
+        return '<option value="' + g.id + '">' + label + '</option>';
+      }).join('') +
+      '<option value="__other__">Other</option>';
+  } catch(e) {
+    document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
+  }
+}
+
+async function onGuestSelect() {
+  var gid = document.getElementById('bill-guest-select').value;
+  var otherFg = document.getElementById('other-name-fg');
+  // hide both panels first
+  document.getElementById('guest-info').style.display = 'none';
+  otherFg.style.display = 'none';
+  if (!gid) return;
+  if (gid === '__other__') {
+    otherFg.style.display = '';
+    document.getElementById('other-guest-name').focus();
+    return;
+  }
+  var g = GUESTS.find(function(x){ return x.id === gid; });
+  if (!g) return;
+
+  // Try to fetch latest check-in for address
+  var addr = '', mobile = '', email = '';
+  try {
+    var ci = await api('/rest/v1/guest_checkins?guest_profile_id=eq.' + gid + '&select=form_data&order=checked_in_at.desc&limit=1');
+    if (ci && ci.length && ci[0].form_data) {
+      var fd = ci[0].form_data;
+      addr   = fd.permanent_address || '';
+      mobile = fd.mobile || '';
+      email  = fd.email  || '';
+    }
+  } catch(e) {}
+
+  document.getElementById('ginfo-name').textContent = g.name;
+  document.getElementById('ginfo-addr').textContent  = addr || 'No address on file';
+  var meta = '';
+  if (g.property_name) meta += '<span><strong>' + esc(g.property_name) + '</strong></span>';
+  if (g.check_in)  meta += '<span>Check-in: <strong>' + fmtDate(g.check_in) + '</strong></span>';
+  if (g.check_out) meta += '<span>Check-out: <strong>' + fmtDate(g.check_out) + '</strong></span>';
+  if (mobile)      meta += '<span>📱 ' + esc(mobile) + '</span>';
+  if (email)       meta += '<span>✉ ' + esc(email) + '</span>';
+  document.getElementById('ginfo-meta').innerHTML = meta;
+  document.getElementById('guest-info').style.display = 'block';
+
+  // Pre-fill guest details for when saving
+  document.getElementById('guest-info').setAttribute('data-addr', addr);
+  document.getElementById('guest-info').setAttribute('data-mobile', mobile);
+  document.getElementById('guest-info').setAttribute('data-email', email);
+}
+
+// ── Items ──
+var rowCount = 0;
+function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
+  rowCount++;
+  var rid = 'row-' + rowCount;
+  var tr = document.createElement('tr');
+  tr.id = rid;
+  var q = parseFloat(qty)||0, r = parseFloat(rate)||0;
+  var cg = parseFloat(cgstPct)||0, sg = parseFloat(sgstPct)||0;
+  var base = q * r;
+  var taxAmt = base * (cg + sg) / 100;
+  var tot = base + taxAmt;
+  var today = new Date().toISOString().slice(0,10);
+  var defaultDate = itemDate || document.getElementById('bill-date').value || today;
+  tr.innerHTML =
+    '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:140px"/></td>' +
+    '<td><input type="date" value="' + defaultDate + '" max="' + today + '" style="width:125px;padding:7px 8px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit;color:var(--text);background:var(--white);outline:none"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + (qty||1) + '" oninput="calcRowTotal(this);calcTotal()" style="width:55px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:80px;text-align:right"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:90px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td style="text-align:center"><button class="del-row" onclick="removeRow(\'' + rid + '\')">✕</button></td>';
+  document.getElementById('items-body').appendChild(tr);
+  calcTotal();
+}
+
+function calcRowTotal(input) {
+  var tr = input.closest('tr');
+  var inputs = tr.querySelectorAll('input');
+  // 0=name, 1=date, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
+  var qty  = parseFloat(inputs[2].value) || 0;
+  var rate = parseFloat(inputs[3].value) || 0;
+  var cgst = parseFloat(inputs[4].value) || 0;
+  var sgst = parseFloat(inputs[5].value) || 0;
+  var base = qty * rate;
+  var taxAmt = base * (cgst + sgst) / 100;
+  inputs[6].value = (base + taxAmt).toFixed(2);
+}
+
+function calcTotal() {
+  var totals = document.querySelectorAll('[id$="-tot"]');
+  var sum = 0;
+  totals.forEach(function(t){ sum += parseFloat(t.value) || 0; });
+  document.getElementById('grand-total').textContent = fmtF(sum);
+  return sum;
+}
+
+function removeRow(rid) {
+  var tr = document.getElementById(rid);
+  if (tr) tr.remove();
+  calcTotal();
+}
+
+function getItems() {
+  var items = [];
+  var rows = document.querySelectorAll('#items-body tr');
+  rows.forEach(function(tr){
+    var inputs = tr.querySelectorAll('input');
+    // 0=name, 1=date, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
+    var name    = inputs[0].value.trim();
+    var date    = inputs[1].value || '';
+    var qty     = parseFloat(inputs[2].value) || 0;
+    var rate    = parseFloat(inputs[3].value) || 0;
+    var cgst_pct = parseFloat(inputs[4].value) || 0;
+    var sgst_pct = parseFloat(inputs[5].value) || 0;
+    var tax_pct = cgst_pct + sgst_pct;
+    var total   = parseFloat(inputs[6].value) || 0;
+    if (name) items.push({name:name, date:date, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
+  });
+  return items;
+}
+
+// ── Bill log date range enforcement ──
+function onFilterFromChange() {
+  var fromEl = document.getElementById('filter-from');
+  var toEl   = document.getElementById('filter-to');
+  if (toEl.value && toEl.value < fromEl.value) {
+    toEl.value = fromEl.value;
+  }
+  toEl.min = fromEl.value || '';
+}
+function onFilterToChange() {
+  var fromEl = document.getElementById('filter-from');
+  var toEl   = document.getElementById('filter-to');
+  if (fromEl.value && fromEl.value > toEl.value) {
+    fromEl.value = toEl.value;
+  }
+  fromEl.max = toEl.value || '';
+}
+
+// ── Payment ──
+function setPayMethod(m) {
+  payMethod = m;
+  document.querySelectorAll('.method-btn').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('m-'+m).classList.add('on');
+  // method shown via button highlight
+}
+
+// ── Save ──
+async function saveBill() {
+  var gid = document.getElementById('bill-guest-select').value;
+  if (!gid) { toast('Please select a guest'); return; }
+  var otherName = '';
+  if (gid === '__other__') {
+    otherName = document.getElementById('other-guest-name').value.trim();
+    if (!otherName) { toast('Please enter a name'); document.getElementById('other-guest-name').focus(); return; }
+  }
+  var items = getItems();
+  if (!items.length) { toast('Add at least one item'); return; }
+  if (!payMethod) { toast('Select a payment method'); return; }
+
+  var billDate = document.getElementById('bill-date').value;
+  if (!billDate) { toast('Please select a bill date'); return; }
+
+  var g = gid !== '__other__' ? GUESTS.find(function(x){ return x.id === gid; }) : null;
+  var infoBox = document.getElementById('guest-info');
+  var amount = calcTotal();
+
+  var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
+
+  var body = {
+    guest_profile_id : gid !== '__other__' ? gid : null,
+    guest_name       : gid === '__other__' ? otherName : (g ? g.name : ''),
+    property_name    : g ? (g.property_name||'') : '',
+    guest_address    : infoBox.getAttribute('data-addr')||'',
+    guest_mobile     : infoBox.getAttribute('data-mobile')||'',
+    guest_email      : infoBox.getAttribute('data-email')||'',
+    items            : items,
+    amount           : amount,
+    payment_status   : payStatus,
+    payment_method   : payMethod !== 'pending' ? payMethod : null,
+    remarks          : document.getElementById('bill-remarks').value.trim()||null,
+    bill_date        : billDate,
+    updated_at       : new Date().toISOString()
+  };
+
+  var btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    if (EDIT_BILL) {
+      await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
+      await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
+      toast('Bill updated ✓');
+    } else {
+      var newBillId = generateBillId();
+      body.bill_id = newBillId;
+      var created = await api('/rest/v1/bills', 'POST', body);
+      await syncToRevenue(body, newBillId);
+      toast('Bill created ✓');
+    }
+    cancelEdit();
+    await loadBills();
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = EDIT_BILL ? 'Update Bill' : 'Create Bill';
+}
+
+function cancelEdit() {
+  EDIT_BILL = null;
+  document.getElementById('edit-id').value = '';
+  document.getElementById('form-ttl').textContent = 'New Bill';
+  document.getElementById('save-btn').textContent = 'Create Bill';
+  document.getElementById('cancel-btn').style.display = 'none';
+  document.getElementById('bill-guest-select').value = '';
+  document.getElementById('guest-info').style.display = 'none';
+  document.getElementById('other-name-fg').style.display = 'none';
+  document.getElementById('other-guest-name').value = '';
+  document.getElementById('items-body').innerHTML = '';
+  rowCount = 0;
+  document.getElementById('grand-total').textContent = '₹0';
+  payMethod = '';
+  document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
+  setPayMethod('pending');
+  document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('bill-remarks').value = '';
+}
+
+// ── Sync to property_revenues (always, not just on paid) ──
+async function syncToRevenue(billBody, billId) {
+  if (!billId) return;
+  try {
+    var revBody = {
+      property_name  : billBody.property_name,
+      amount         : billBody.amount,
+      item           : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
+      date           : billBody.bill_date,
+      payment_status : billBody.payment_status,
+      bill_id        : billId,
+      notes          : 'from billing'
+    };
+    var existing = await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId) + '&select=id').catch(function(){ return []; });
+    if (existing && existing.length) {
+      await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId), 'PATCH', revBody).catch(function(){});
+    } else {
+      await api('/rest/v1/property_revenues', 'POST', revBody);
+    }
+  } catch(e) {
+    console.warn('Revenue sync failed:', e.message);
+  }
+}
+
+function editBill(bill) {
+  requirePin('PIN required to edit bill', function() {
+    EDIT_BILL = bill;
+    document.getElementById('form-ttl').textContent = 'Edit Bill — ' + (bill.guest_name||'');
+    document.getElementById('save-btn').textContent = 'Update Bill';
+    document.getElementById('cancel-btn').style.display = '';
+
+    // Restore date
+    document.getElementById('bill-date').value = bill.bill_date
+      ? bill.bill_date.slice(0,10)
+      : (bill.created_at ? bill.created_at.slice(0,10) : new Date().toISOString().slice(0,10));
+
+    // Set guest
+    document.getElementById('bill-guest-select').value = bill.guest_profile_id || '';
+    onGuestSelect();
+
+    // Items
+    document.getElementById('items-body').innerHTML = '';
+    rowCount = 0;
+    (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0); });
+
+    // Payment method
+    if (bill.payment_method) setPayMethod(bill.payment_method);
+    else setPayMethod('pending');
+
+    document.getElementById('bill-remarks').value = bill.remarks || '';
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+}
+
+// ── Load log ──
+var ALL_BILLS = [];
+
+async function loadBills() {
+  var el = document.getElementById('bill-log');
+  el.innerHTML = 'Loading…';
+  try {
+    var data = await api('/rest/v1/bills?select=*&order=created_at.desc') || [];
+    ALL_BILLS = data;
+
+    // Populate property filter
+    var props = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean))).sort();
+    var propSel = document.getElementById('filter-property');
+    var curProp = propSel.value;
+    propSel.innerHTML = '<option value="">All properties</option>' +
+      props.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
+
+    renderBills(data);
+  } catch(e) {
+    document.getElementById('bill-log').innerHTML = '<div class="empty">Could not load bills — ensure billing-tables.sql has been run in Supabase.</div>';
+  }
+}
+
+function filterBills() {
+  var guestQ  = (document.getElementById('filter-guest').value||'').toLowerCase().trim();
+  var propQ   = document.getElementById('filter-property').value;
+  var fromQ   = document.getElementById('filter-from').value;
+  var toQ     = document.getElementById('filter-to').value;
+
+  var filtered = ALL_BILLS.filter(function(b){
+    if (guestQ && !(b.guest_name||'').toLowerCase().includes(guestQ)) return false;
+    if (propQ  && (b.property_name||'') !== propQ) return false;
+    var billD = (b.bill_date || b.created_at || '').slice(0,10);
+    if (fromQ && billD < fromQ) return false;
+    if (toQ   && billD > toQ)   return false;
+    return true;
+  });
+  renderBills(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('filter-guest').value    = '';
+  document.getElementById('filter-property').value = '';
+  document.getElementById('filter-from').value     = '';
+  document.getElementById('filter-to').value       = '';
+  renderBills(ALL_BILLS);
+}
+
+function calcBillTax(items) {
+  var cgst = 0, sgst = 0;
+  (items || []).forEach(function(i) {
+    var base = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
+    cgst += base * (parseFloat(i.cgst_pct)||0) / 100;
+    sgst += base * (parseFloat(i.sgst_pct)||0) / 100;
+  });
+  return { cgst: cgst, sgst: sgst };
+}
+
+function renderBills(data) {
+  var el = document.getElementById('bill-log');
+  if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
+  el.innerHTML = '<table class="tbl"><thead><tr>' +
+    '<th>Guest</th><th>Property</th><th>Date</th>' +
+    '<th style="text-align:right">Taxable</th>' +
+    '<th style="text-align:right">CGST</th>' +
+    '<th style="text-align:right">SGST</th>' +
+    '<th style="text-align:right">Total</th>' +
+    '<th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    data.map(function(b){
+        var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
+        var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+        var statusLbl = b.payment_status==='paid'
+          ? 'Paid' + methodStr
+          : 'Pending';
+        var items = b.items || [];
+        var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
+        var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
+        var tax = calcBillTax(items);
+        var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
+        var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
+        var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
+        return '<tr>' +
+          '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
+          '<td>' + esc(b.property_name||'—') + '</td>' +
+          '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
+          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
+          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + cgstStr + '</td>' +
+          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + sgstStr + '</td>' +
+          '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;font-size:15px">' + fmtF(b.amount) + '</td>' +
+          '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
+          '<td style="text-align:right;white-space:nowrap">' +
+            '<button class="btn-edit" onclick=\'editBill(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' style="margin-right:4px">Edit</button>' +
+            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px">Remove</button>' +
+            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\'>PDF</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table>';
+}
+
+async function deleteBill(id, name) {
+  requirePin('PIN required to remove bill', async function() {
+    if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
+    try {
+      await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
+      toast(name + ' bill removed');
+      loadBills();
+    } catch(e) { toast('Error: ' + e.message); }
+  });
+}
+
+// ── PDF ──
+var LOGO_SRC = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QLcRXhpZgAATU0AKgAAAAgABAE7AAIAAAAGAAABSodpAAQAAAABAAABUJydAAEAAAAMAAACyOocAAcAAAEMAAAAPgAAAAAc6gAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT1JUSE8AAAWQAwACAAAAFAAAAp6QBAACAAAAFAAAArKSkQACAAAAAzMyAACSkgACAAAAAzMyAADqHAAHAAABDAAAAZIAAAAAHOoAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADIwMjY6MDU6MTkgMTM6MDA6MjAAMjAyNjowNToxOSAxMzowMDoyMAAAAE8AUgBUAEgATwAAAP/hBBhodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+DQo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIj48cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPjxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSJ1dWlkOmZhZjViZGQ1LWJhM2QtMTFkYS1hZDMxLWQzM2Q3NTE4MmYxYiIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIi8+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDI2LTA1LTE5VDEzOjAwOjIwLjMyMDwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPjxkYzpjcmVhdG9yPjxyZGY6U2VxIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpsaT5PUlRITzwvcmRmOmxpPjwvcmRmOlNlcT4NCgkJCTwvZGM6Y3JlYXRvcj48L3JkZjpEZXNjcmlwdGlvbj48L3JkZjpSREY+PC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPD94cGFja2V0IGVuZD0n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';
+
+function downloadBillPdf(b) {
+  var logoSrc = LOGO_SRC;
+  var items = b.items || [];
+  var name  = b.guest_name || 'Guest';
+  var dt    = new Date(b.bill_date || b.created_at || Date.now());
+  var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
+
+  var itemRows = items.map(function(i){
+    var iDate   = i.date ? new Date(i.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var baseAmt = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
+    var cgstPct = parseFloat(i.cgst_pct) || 0;
+    var sgstPct = parseFloat(i.sgst_pct) || 0;
+    var cgstAmt = baseAmt * cgstPct / 100;
+    var sgstAmt = baseAmt * sgstPct / 100;
+    var total   = parseFloat(i.total) || (baseAmt + cgstAmt + sgstAmt);
+    var taxStr  = '';
+    if (cgstPct > 0) taxStr += '<span style="color:#888;font-size:11px"> CGST ' + cgstPct + '% ₹' + cgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>';
+    if (sgstPct > 0) taxStr += '<span style="color:#888;font-size:11px"> SGST ' + sgstPct + '% ₹' + sgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>';
+    return '<tr>' +
+      '<td>' + esc(i.name||'Item') + '</td>' +
+      '<td style="color:#888;font-size:12px">' + iDate + '</td>' +
+      '<td style="text-align:center">' + (i.qty||1) + '</td>' +
+      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + taxStr + '</td>' +
+      '<td style="text-align:right;font-weight:600">₹' + total.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+  var statusStr = b.payment_status==='paid'
+    ? 'Paid' + methodStr
+    : 'Pending Payment';
+  var statusColor = b.payment_status==='paid' ? '#27500A' : '#633806';
+  var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
+
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}' +
+    'h1{font-size:22px;color:#993C1D;margin-bottom:2px}' +
+    '.sub{font-size:11px;color:#888;margin-bottom:24px}' +
+    '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
+    '.hdr-spacer{min-width:140px}' +
+    '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7;min-width:140px}' +
+    '.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}' +
+    '.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}' +
+    '.guest-detail{font-size:12px;color:#666;line-height:1.6}' +
+    'hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}' +
+    'table{width:100%;border-collapse:collapse}' +
+    'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
+    'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}' +
+    '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}' +
+    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:' + statusBg + ';color:' + statusColor + ';margin-top:16px}' +
+    '.remarks{font-size:12px;color:#888;margin-top:8px}' +
+    '.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}' +
+    '@media print{body{padding:18px 24px}}' +
+    '</style></head><body>' +
+    '<div class="hdr">' +
+      '<div class="hdr-spacer"></div>' +
+      '<div style="flex:1;text-align:center">' + (logoSrc ? '<img src="' + logoSrc + '" alt="" style="max-height:72px;max-width:180px;object-fit:contain"/>' : '') + '</div>' +
+      '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.bill_date||b.created_at) + '</div></div>' +
+    '</div>' +
+    '<div class="guest-card">' +
+      '<div class="guest-name">' + esc(b.guest_name||'Guest') + '</div>' +
+      '<div class="guest-detail">' + esc(b.guest_address||'').replace(/\n/g,'<br/>') + '</div>' +
+      (b.guest_mobile||b.guest_email ? '<div class="guest-detail" style="margin-top:4px">' + [b.guest_mobile, b.guest_email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ') + '</div>' : '') +
+    '</div>' +
+    '<hr/>' +
+    '<table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+    itemRows +
+    (function(){
+      var tax = calcBillTax(items);
+      var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
+      var rows = '';
+      rows += '<tr><td colspan="4" style="color:#888;font-size:12px;border-top:1px dashed #ddd">Taxable Amount</td><td style="text-align:right;color:#888;font-size:12px;border-top:1px dashed #ddd">₹' + taxable.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+      if (tax.cgst > 0) rows += '<tr><td colspan="4" style="color:#888;font-size:12px">CGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.cgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+      if (tax.sgst > 0) rows += '<tr><td colspan="4" style="color:#888;font-size:12px">SGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.sgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+      return rows;
+    })() +
+    '<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">₹' + Number(b.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
+    '</tbody></table>' +
+    '<div class="status-pill">' + statusStr + '</div>' +
+    (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
+    '<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div>' +
+    '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
+    '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html'});
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
 </script>
 </body>
 </html>
