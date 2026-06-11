@@ -108,7 +108,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .drp-display { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); font-size:13px; color:var(--muted); cursor:pointer; transition:border-color .15s; user-select:none; }
 .drp-display * { pointer-events:none; }
 .drp-display:hover { border-color:var(--br); color:var(--text); }
-.drp-popup { display:none; position:fixed; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:20px; width:360px; }
+.drp-popup { display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:20px; min-width:260px; }
 .drp-days { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 .drp-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:all .1s; }
 .drp-popup.open { display:block; }
@@ -926,17 +926,11 @@ function openDrp(ctx) {
   drpState.end = ev || null;
   drpState.hovered = null;
   renderDrp();
-  // position popup near the display
-  const display = document.getElementById(ctx + 'DrpDisplay');
-  const rect = display.getBoundingClientRect();
+  // move popup into the active drp-wrap so absolute positioning works inside iframe
+  const wrap = document.getElementById(ctx + 'DrpWrap');
   const popup = document.getElementById('drpPopup');
+  wrap.appendChild(popup);
   popup.classList.add('open');
-  // position below the trigger
-  const popW = 360;
-  let left = rect.left;
-  if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
-  popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
-  popup.style.left = left + 'px';
 }
 
 function closeDrp() {
