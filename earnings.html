@@ -747,6 +747,7 @@ let viewMonth = new Date().getMonth();
 let currentPeriod = 'month'; // month|week|quarter|custom
 let allEntries = [];
 let entityLists = { landlord: [], staff: [], talent: [] }; // loaded once
+let panMap = {}; // entity_name → PAN (populated in loadEntityLists)
 let assigningEntryId = null;
 
 /* ═══════════════════════════════════════════
@@ -922,13 +923,18 @@ renderMonthLabel();
 async function loadEntityLists() {
   try {
     const [propLogins, staff, talents] = await Promise.all([
-      api('/rest/v1/landlords?select=property_name&order=property_name.asc'),
-      api('/rest/v1/staff?select=name&order=name.asc'),
-      api('/rest/v1/talents?select=name&order=name.asc').catch(() => [])
+      api('/rest/v1/landlords?select=property_name,pan&order=property_name.asc'),
+      api('/rest/v1/staff?select=name,pan&order=name.asc'),
+      api('/rest/v1/talents?select=name,pan&order=name.asc').catch(() => [])
     ]);
     entityLists.landlord = (propLogins || []).map(r => r.property_name).filter(Boolean);
     entityLists.staff    = (staff    || []).map(r => r.name).filter(Boolean);
     entityLists.talent   = (talents  || []).map(r => r.name).filter(Boolean);
+    // Build name → PAN lookup
+    panMap = {};
+    (propLogins || []).forEach(r => { if (r.property_name && r.pan) panMap[r.property_name] = r.pan; });
+    (staff      || []).forEach(r => { if (r.name        && r.pan) panMap[r.name]            = r.pan; });
+    (talents    || []).forEach(r => { if (r.name        && r.pan) panMap[r.name]            = r.pan; });
   } catch(e) {
     console.warn('Could not load entity lists', e);
   }
@@ -983,15 +989,15 @@ async function loadEntries() {
     let resolvedName = viewName;
     try {
       if (viewRole === 'talent') {
-        const rows = await api('/rest/v1/talents?name=eq.' + encodeURIComponent(viewName) + '&select=name&limit=1');
-        if (rows && rows[0]) resolvedName = rows[0].name;
+        const rows = await api('/rest/v1/talents?name=eq.' + encodeURIComponent(viewName) + '&select=name,pan&limit=1');
+        if (rows && rows[0]) { resolvedName = rows[0].name; if (rows[0].pan) panMap[rows[0].name] = rows[0].pan; }
       } else if (viewRole === 'staff') {
-        const rows = await api('/rest/v1/staff?name=eq.' + encodeURIComponent(viewName) + '&select=name&limit=1');
-        if (rows && rows[0]) resolvedName = rows[0].name;
+        const rows = await api('/rest/v1/staff?name=eq.' + encodeURIComponent(viewName) + '&select=name,pan&limit=1');
+        if (rows && rows[0]) { resolvedName = rows[0].name; if (rows[0].pan) panMap[rows[0].name] = rows[0].pan; }
       } else {
         // landlord
-        const rows = await api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(viewName) + '&select=property_name&limit=1');
-        if (rows && rows[0]) resolvedName = rows[0].property_name;
+        const rows = await api('/rest/v1/landlords?property_name=eq.' + encodeURIComponent(viewName) + '&select=property_name,pan&limit=1');
+        if (rows && rows[0]) { resolvedName = rows[0].property_name; if (rows[0].pan) panMap[rows[0].property_name] = rows[0].pan; }
       }
     } catch(e) {
       console.warn('Could not resolve entity name from table', e);
@@ -1155,10 +1161,13 @@ function renderLog() {
     let tdsBreakdown = '';
     if (e._fromExpense && e._pretaxAmount) {
       const hasTds = e._tdsAmount && e._tdsAmount > 0;
+      const pan    = e.entity_name ? (panMap[e.entity_name] || null) : null;
+      const panTag = pan ? `<span class="tds-chip pretax" style="font-family:monospace;letter-spacing:.5px">PAN: ${esc(pan)}</span>` : '';
       tdsBreakdown = `<div class="tds-breakdown">
         <span class="tds-chip pretax">Pre-tax ${fmtFull(e._pretaxAmount)}</span>
         ${hasTds ? `<span class="tds-chip tds-deduct">TDS ${e._tdsPct ? e._tdsPct+'% ' : ''}−${fmtFull(e._tdsAmount)}</span>` : ''}
         <span class="tds-chip posttax">Paid ${fmtFull(e.amount)}</span>
+        ${hasTds ? panTag : ''}
       </div>`;
     }
 
@@ -1506,7 +1515,7 @@ function downloadPDF() {
       ? parseFloat(e.percentage).toFixed(2) + '%'
       : fmtFull(e.amount);
     const entity = e.entity_name
-      ? `${esc(e.entity_name)} <span style="font-size:10px;color:#888">(${e.entity_type||''})</span>`
+      ? `${esc(e.entity_name)} <span style="font-size:10px;color:#888">(${e.entity_type||''})</span>${panMap[e.entity_name] ? `<br/><span style="font-size:10px;font-family:monospace;color:#555">PAN: ${esc(panMap[e.entity_name])}</span>` : ''}`
       : '<span style="color:#aaa">Unassigned</span>';
     return `<tr>
       <td>${esc(e.head)}</td>
