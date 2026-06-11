@@ -431,11 +431,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <span class="bill-total-label">Grand Total</span>
     <span class="bill-total-val" id="grand-total">₹0</span>
   </div>
-  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">
-    <label class="fl" style="margin-bottom:0;min-width:90px;font-size:12px">GST Number</label>
-    <input class="fc" id="bill-gst-number" type="text" placeholder="e.g. 27AAPFU0939F1ZV" style="max-width:280px"/>
-  </div>
-
   <hr class="bill-divider"/>
 
   <!-- Payment method — always visible -->
@@ -1516,7 +1511,7 @@ async function init() {
 
 async function loadGuests() {
   try {
-    var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
+    var data = await api('/rest/v1/guest_profiles?select=id,name,guest_name,property_name,check_in,check_out&order=name') || [];
     GUESTS = data;
     var sel = document.getElementById('bill-guest-select');
     sel.innerHTML = '<option value="">— select —</option>' +
@@ -1554,20 +1549,35 @@ async function onGuestSelect() {
   var g = GUESTS.find(function(x){ return x.id === gid; });
   if (!g) return;
 
-  // Try to fetch latest check-in for address
-  var addr = '', mobile = '', email = '';
+  // Use guest_name field if available, fallback to name
+  var displayName = g.guest_name || g.name || '';
+
+  // Fetch billing_address (company name + address + GST) and latest check-in for mobile/email
+  var addrDisplay = '', addrSave = '', mobile = '', email = '';
+  try {
+    var baRes = await api('/rest/v1/billing_address?guest_profile_id=eq.' + gid + '&select=company_name,address,gst_number&limit=1');
+    if (baRes && baRes.length) {
+      var ba = baRes[0];
+      var parts = [];
+      if (ba.company_name) parts.push(ba.company_name);
+      if (ba.address)      parts.push(ba.address);
+      if (ba.gst_number)   parts.push('GST: ' + ba.gst_number);
+      addrDisplay = parts.join('\n');
+      addrSave    = parts.join(', ');
+    }
+  } catch(e) {}
+
   try {
     var ci = await api('/rest/v1/guest_checkins?guest_profile_id=eq.' + gid + '&select=form_data&order=checked_in_at.desc&limit=1');
     if (ci && ci.length && ci[0].form_data) {
       var fd = ci[0].form_data;
-      addr   = fd.permanent_address || '';
       mobile = fd.mobile || '';
       email  = fd.email  || '';
     }
   } catch(e) {}
 
-  document.getElementById('ginfo-name').textContent = g.name;
-  document.getElementById('ginfo-addr').textContent  = addr || 'No address on file';
+  document.getElementById('ginfo-name').textContent = displayName;
+  document.getElementById('ginfo-addr').textContent = addrDisplay || 'No billing address on file';
   var meta = '';
   if (g.property_name) meta += '<span><strong>' + esc(g.property_name) + '</strong></span>';
   if (g.check_in)  meta += '<span>Check-in: <strong>' + fmtDate(g.check_in) + '</strong></span>';
@@ -1578,7 +1588,7 @@ async function onGuestSelect() {
   document.getElementById('guest-info').style.display = 'block';
 
   // Pre-fill guest details for when saving
-  document.getElementById('guest-info').setAttribute('data-addr', addr);
+  document.getElementById('guest-info').setAttribute('data-addr', addrSave);
   document.getElementById('guest-info').setAttribute('data-mobile', mobile);
   document.getElementById('guest-info').setAttribute('data-email', email);
 }
@@ -1715,7 +1725,7 @@ async function saveBill() {
 
   var body = {
     guest_profile_id : gid !== '__other__' ? gid : null,
-    guest_name       : gid === '__other__' ? otherName : (g ? g.name : ''),
+    guest_name       : gid === '__other__' ? otherName : (g ? (g.guest_name || g.name || '') : ''),
     property_name    : gid === '__other__' ? otherPropertyVal : (g ? (g.property_name||'') : ''),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
