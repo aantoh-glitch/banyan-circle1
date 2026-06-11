@@ -1,859 +1,881 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Properties By Heritance — Billing</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
-html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-body{padding:28px 32px 60px}
-.pg-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px}
-.pg-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:22px;margin-bottom:20px}
-.card-ttl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
-.section-hdg{font-family:'Playfair Display',serif;font-size:19px;font-weight:500;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)}
-.fg{margin-bottom:12px}
-.fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none}
-.fc:focus{border-color:var(--br)}
-.btn-p{padding:10px 20px;background:var(--br);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.btn-sec:hover{border-color:var(--br);color:var(--br)}
-.btn-del{padding:5px 11px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-del:hover{background:var(--r);color:#fff}
-.btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-edit:hover{background:var(--br-l);color:var(--br)}
-.btn-pdf{padding:5px 11px;background:var(--b-l);color:var(--b);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-pdf:hover{background:var(--b);color:#fff}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
-.bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:var(--g-l);color:#27500A}.bdg-a{background:var(--a-l);color:#633806}
-.guest-info-box{background:var(--bg);border-radius:10px;padding:16px 18px;margin-bottom:16px;border:1px solid var(--border)}
-.guest-info-name{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:4px}
-.guest-info-addr{font-size:13px;color:var(--muted);line-height:1.65}
-.guest-info-meta{display:flex;gap:18px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
-.guest-info-meta span strong{color:var(--text)}
-.bill-divider{border:none;border-top:2px solid var(--border);margin:20px 0}
-.items-table{width:100%;border-collapse:collapse;margin-bottom:10px}
-.items-table th{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:7px 8px;border-bottom:2px solid var(--border);background:var(--bg);text-align:left}
-.items-table td{padding:5px 4px;border-bottom:1px solid var(--border);vertical-align:middle}
-.items-table tr:last-child td{border-bottom:none}
-.items-table td input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
-.items-table td input:focus{border-color:var(--br)}
-.del-row{padding:5px 8px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
-.del-row:hover{background:var(--r);color:#fff}
-.bill-total-row{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:12px 8px 0;margin-top:2px;border-top:2px solid var(--text)}
-.bill-total-label{font-size:14px;color:var(--muted);font-weight:500}
-.bill-total-val{font-size:22px;font-weight:600;font-family:'Playfair Display',serif;color:var(--text)}
-.bill-deduct-row{border-top:1px dashed var(--border);padding-top:10px;margin-top:6px}
-.bill-deduct-row .bill-total-label{color:var(--muted);font-weight:400}
-.bill-deduct-input{width:100px;text-align:right;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:15px;font-family:'Playfair Display',serif;font-weight:600;color:var(--g);background:var(--white);outline:none}
-.bill-deduct-input:focus{border-color:var(--g)}
-.bill-pending-row{border-top:2px solid var(--text);padding-top:12px;margin-top:8px}
-.bill-pending-row .bill-total-label{color:var(--text);font-weight:700;font-size:15px}
-.bill-pending-row .bill-total-val{color:var(--r)}
-.method-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.method-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
-.method-btn.on{border-color:var(--g);background:var(--g-l);color:var(--g);font-weight:500}
-.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 24px;border-radius:999px;font-size:13px;z-index:9999;display:none;white-space:nowrap}
-.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.log-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end}
-.log-filters .fg{margin-bottom:0;flex:1;min-width:160px}
-.log-filters .fg-date{margin-bottom:0;flex:1;min-width:130px}
-.filter-clear{padding:9px 14px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;align-self:flex-end}
-.filter-clear:hover{border-color:var(--br);color:var(--br)}
-/* PIN modal */
-.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center}
-.pin-box{background:var(--white);border-radius:16px;padding:32px 28px;width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18)}
-.pin-title{font-family:'EB Garamond',Georgia,serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
-.pin-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
-.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:20px}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--bg);transition:all .15s}
-.pin-dot.filled{background:var(--br);border-color:var(--br)}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.pin-key{padding:14px;border:1px solid var(--border);border-radius:10px;font-size:17px;font-weight:500;cursor:pointer;background:var(--white);font-family:inherit;color:var(--text);transition:all .12s}
-.pin-key:hover{background:var(--br-l);border-color:var(--br);color:var(--br)}
-.pin-key:active{transform:scale(.95)}
-.pin-err{font-size:12px;color:var(--r);min-height:16px;margin-bottom:8px}
-.pin-cancel{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:inherit;text-decoration:underline}
-.pin-cancel:hover{color:var(--text)}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --br: #993C1D; --br-l: #FAECE7; --br-dark: #712B13;
+  --text: #2C2C2A; --muted: #5F5E5A; --border: rgba(0,0,0,0.1);
+  --bg: #F9F8F6; --white: #fff;
+  --airbnb: #FF5A5F; --booking: #003580; --blocked: #fde8e8; --blocked-text: #c0392b;
+  --radius: 12px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; gap: 16px; height: 60px; flex-shrink: 0; }
+.topbar-mark { width: 34px; height: 34px; background: var(--br); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 500; font-size: 14px; flex-shrink: 0; }
+.topbar-name { font-family: 'Playfair Display', serif; font-size: 16px; white-space: nowrap; margin-right: 4px; }
+.topbar-divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
+.pill-bar { display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow-x: auto; }
+.prop-subbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 44px; display: flex; align-items: center; overflow: hidden; }
+.prop-pill { padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--border); font-size: 13px; cursor: pointer; background: var(--white); color: var(--muted); font-family: inherit; transition: all .15s; white-space: nowrap; }
+.prop-pill:hover { border-color: var(--br); color: var(--br); }
+.prop-pill.active { background: var(--br-l); border-color: #D85A30; color: var(--br); font-weight: 500; }
+.pill-edit-btn { padding: 4px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; cursor: pointer; color: var(--muted); font-family: inherit; transition: all .15s; }
+.pill-edit-btn:hover { background: var(--br-l); color: var(--br); border-color: #D85A30; }
+.topbar-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: auto; }
+.main { flex: 1; padding: 24px 32px; }
+.main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.main-title { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--text); }
+.main-subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.btn { padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: var(--br); color: #fff; }
+.btn-primary:hover { background: var(--br-dark); }
+.btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+.btn-ghost:hover { background: var(--bg); border-color: var(--br); color: var(--br); }
+.btn-danger { background: #fee8e8; color: #c0392b; border: 1.5px solid #f5c6c6; }
+.stats-row { display: flex; gap: 10px; margin-bottom: 20px; }
+.stat-card { background: var(--white); border-radius: var(--radius); padding: 14px 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 500; }
+.stat-value { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--text); line-height: 1; margin-left: 4px; }
+.calendar-container { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+.calendar-header { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 18px 24px; border-bottom: 1px solid var(--border); }
+.calendar-header-row1 { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.cal-nav-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: transparent; cursor: pointer; font-size: 16px; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.cal-nav-btn:hover { background: var(--bg); border-color: var(--br); color: var(--br); }
+.cal-month-label { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); }
+.calendar-legend { display: flex; gap: 20px; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.calendar-grid { padding: 16px 24px 20px; }
+.weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 6px; }
+.weekday { text-align: center; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); padding: 6px 0; }
+.days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.day-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: all 0.12s; font-size: 13px; font-weight: 500; user-select: none; }
+.day-cell:hover:not(.empty):not(.today-cell) { background: var(--bg); }
+.day-cell.empty { cursor: default; pointer-events: none; }
+.day-cell.today-cell { background: var(--br); color: #fff; font-weight: 600; }
+.day-cell.booked { background: #fff0e0; color: #d97706; font-weight: 600; }
+.day-cell.blocked { background: var(--blocked); color: var(--blocked-text); font-weight: 500; }
+.bottom-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+.bookings-list { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-weight: 500; font-size: 14px; color: var(--text); }
+.booking-item { padding: 13px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: background 0.12s; }
+.booking-item:hover { background: var(--bg); }
+.booking-item:last-child { border-bottom: none; }
+.booking-source { padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.source-airbnb { background: #fff0f0; color: var(--airbnb); }
+.source-booking { background: #e8f0fc; color: var(--booking); }
+.source-manual { background: #fff0e0; color: #d97706; }
+.booking-info { flex: 1; }
+.booking-guest { font-weight: 500; font-size: 13px; color: var(--text); }
+.booking-dates { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.booking-property { font-size: 12px; font-weight: 500; }
+.block-panel { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; }
+.block-form { padding: 16px 20px; flex: 1; }
+.form-group { margin-bottom: 13px; }
+.form-label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); margin-bottom: 5px; }
+.form-input, .form-select { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s; appearance: none; }
+.form-input:focus, .form-select:focus { border-color: var(--br); }
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.block-actions { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--white); border-radius: 14px; padding: 24px; width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 18px; color: var(--text); }
+.modal-footer { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border); }
+.modal-detail-row { display: flex; gap: 12px; margin-bottom: 10px; font-size: 13px; }
+.modal-detail-label { width: 80px; color: var(--muted); font-weight: 500; flex-shrink: 0; }
+.modal-detail-value { color: var(--text); }
+.toast { position: fixed; bottom: 24px; right: 24px; background: #222; color: #fff; padding: 10px 20px; border-radius: 999px; font-size: 13px; font-weight: 500; z-index: 200; transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(.4,0,.2,1); }
+.toast.show { transform: translateY(0); opacity: 1; }
+.empty-state { padding: 32px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+.toggle-btn { position:relative; width:42px; height:24px; border-radius:999px; border:none; background:#ddd; cursor:pointer; transition:background 0.2s; flex-shrink:0; padding:0; }
+.toggle-btn[aria-pressed="true"] { background:var(--br); }
+.toggle-knob { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.2s; display:block; }
+.toggle-btn[aria-pressed="true"] .toggle-knob { transform:translateX(18px); }
 </style>
 </head>
 <body>
-
-<div style="text-align:center;margin-bottom:24px">
-  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QLcRXhpZgAATU0AKgAAAAgABAE7AAIAAAAGAAABSodpAAQAAAABAAABUJydAAEAAAAMAAACyOocAAcAAAEMAAAAPgAAAAAc6gAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT1JUSE8AAAWQAwACAAAAFAAAAp6QBAACAAAAFAAAArKSkQACAAAAAzMyAACSkgACAAAAAzMyAADqHAAHAAABDAAAAZIAAAAAHOoAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADIwMjY6MDU6MTkgMTM6MDA6MjAAMjAyNjowNToxOSAxMzowMDoyMAAAAE8AUgBUAEgATwAAAP/hBBhodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+DQo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIj48cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPjxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSJ1dWlkOmZhZjViZGQ1LWJhM2QtMTFkYS1hZDMxLWQzM2Q3NTE4MmYxYiIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIi8+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDI2LTA1LTE5VDEzOjAwOjIwLjMyMDwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPjxkYzpjcmVhdG9yPjxyZGY6U2VxIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpsaT5PUlRITzwvcmRmOmxpPjwvcmRmOlNlcT4NCgkJCTwvZGM6Y3JlYXRvcj48L3JkZjpEZXNjcmlwdGlvbj48L3JkZjpSREY+PC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPD94cGFja2V0IGVuZD0n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" alt="Properties By Heritance" style="max-height:72px;max-width:220px;object-fit:contain;display:block;margin:0 auto 10px"/>
-</div>
-
-
-<!-- ─── BILL CREATOR ─── -->
-<div class="card">
-  <div class="card-ttl" id="form-ttl">New Bill</div>
-  <input type="hidden" id="edit-id"/>
-
-  <div class="fg">
-    <label class="fl">Bill Date <span style="color:var(--r)">*</span></label>
-    <div onclick="var i=document.getElementById('bill-date');try{i.showPicker();}catch(e){i.click();}" style="cursor:pointer">
-      <input class="fc" id="bill-date" type="date" style="pointer-events:none"/>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-mark">B</div>
+    <div class="topbar-name">Booking Manager</div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="openBookingsLog()">Bookings Log</button>
+      <button class="btn btn-ghost" onclick="triggerSync()">Sync</button>
+      <button class="btn btn-primary" onclick="openAddBooking()">+ Manual Booking</button>
     </div>
   </div>
-
-  <div class="fg">
-    <label class="fl">Select Guest <span style="color:var(--r)">*</span></label>
-    <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
-      <option value="">— select —</option>
-    </select>
+  <div class="prop-subbar">
+    <div class="pill-bar" id="pillBar"></div>
   </div>
 
-  <!-- Other: free-text name -->
-  <div class="fg" id="other-name-fg" style="display:none">
-    <label class="fl">Name <span style="color:var(--r)">*</span></label>
-    <input class="fc" id="other-guest-name" type="text" placeholder="Type guest or company name…"/>
-  </div>
-
-  <!-- Guest info — revealed on selection -->
-  <div class="guest-info-box" id="guest-info" style="display:none">
-    <div class="guest-info-name" id="ginfo-name">—</div>
-    <div class="guest-info-addr" id="ginfo-addr" style="white-space:pre-line"></div>
-    <div class="guest-info-meta" id="ginfo-meta"></div>
-  </div>
-
-  <hr class="bill-divider"/>
-
-  <!-- Items table -->
-  <div class="card-ttl" style="margin-bottom:10px">Itemized Charges</div>
-  <table class="items-table" id="items-table">
-    <thead>
-      <tr>
-        <th style="width:28%">Item / Description</th>
-        <th style="width:12%">Date</th>
-        <th style="width:9%;text-align:center">Qty</th>
-        <th style="width:12%;text-align:right">Rate (₹)</th>
-        <th style="width:8%;text-align:center">CGST %</th>
-        <th style="width:8%;text-align:center">SGST %</th>
-        <th style="width:13%;text-align:right">Total (₹)</th>
-        <th style="width:10%"></th>
-      </tr>
-    </thead>
-    <tbody id="items-body"></tbody>
-  </table>
-  <div style="margin-bottom:18px">
-    <button class="btn-sec" onclick="addItemRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add item
-    </button>
-  </div>
-
-  <!-- Totals summary -->
-  <div class="bill-total-row">
-    <span class="bill-total-label">Grand Total</span>
-    <span class="bill-total-val" id="grand-total">₹0</span>
-  </div>
-
-  <hr class="bill-divider"/>
-
-  <!-- Payment method — always visible -->
-  <div class="fg" id="method-row-fg">
-    <label class="fl">Payment Method <span style="color:var(--r)">*</span></label>
-    <div class="method-row" id="method-row">
-      <button class="method-btn" id="m-cash" onclick="setPayMethod('cash')">Cash</button>
-      <button class="method-btn" id="m-card" onclick="setPayMethod('card')">Card</button>
-      <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
-      <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Pending</button>
+  <div class="main">
+    <div class="main-header" style="margin-bottom:12px;">
+      <div>
+        <div class="main-subtitle" id="activePropertyLabel" style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:0;"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="fg">
-    <label class="fl">Remarks</label>
-    <input class="fc" id="bill-remarks" type="text" placeholder="e.g. Paid at checkout, discount applied…"/>
-  </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-dot" style="background:#d97706"></div><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div></div>
+      <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
+    </div>
 
-  <div style="display:flex;gap:10px;margin-top:6px;align-items:center">
-    <button class="btn-p" id="save-btn" onclick="saveBill()">Create Bill</button>
-    <button class="btn-sec" id="cancel-btn" onclick="cancelEdit()" style="display:none">Cancel edit</button>
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <div class="calendar-header-row1">
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+            <div class="cal-month-label" id="calMonthLabel"></div>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+          </div>
+        </div>
+        <div class="calendar-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
+        </div>
+      </div>
+      <div class="calendar-grid">
+        <div class="weekdays">
+          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+          <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+        </div>
+        <div class="days-grid" id="daysGrid"></div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="bookings-list">
+        <div class="panel-header">
+          <div class="panel-title">Upcoming Bookings</div>
+          <div style="font-size:12px;color:var(--muted)" id="bookingCount">0 reservations</div>
+        </div>
+        <div id="bookingsList"></div>
+      </div>
+
+      <div class="block-panel">
+        <div class="panel-header"><div class="panel-title">Block Dates</div></div>
+        <div class="block-form">
+          <div class="form-group">
+            <label class="form-label">Property</label>
+            <select class="form-select" id="blockProperty"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date Range</label>
+            <div class="date-row">
+              <input type="date" class="form-input" id="blockStart" onchange="const e=document.getElementById('blockEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
+              <input type="date" class="form-input" id="blockEnd" onfocus="const s=document.getElementById('blockStart').value;if(s)this.min=s;else this.min=new Date().toISOString().split('T')[0];">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reason (optional)</label>
+            <input type="text" class="form-input" id="blockReason" placeholder="Maintenance, personal stay...">
+          </div>
+        </div>
+        <div class="block-actions">
+          <button class="btn btn-ghost" style="flex:1" onclick="clearBlockForm()">Clear</button>
+          <button class="btn btn-primary" style="flex:2" onclick="blockDates()">Block Dates</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ─── BILL LOG ─── -->
-<div class="section-hdg">Bill Log</div>
-<div class="card">
-  <div class="log-filters">
-    <div class="fg" style="flex:1.5;min-width:180px">
-      <label class="fl">Search Guest</label>
-      <input class="fc" id="filter-guest" type="text" placeholder="Guest name…" oninput="filterBills()"/>
+<!-- ADD PROPERTY MODAL -->
+<div class="modal-overlay" id="addPropertyModal">
+  <div class="modal">
+    <div class="modal-title">Add Property</div>
+    <div class="form-group"><label class="form-label">Property Name</label><input type="text" class="form-input" id="newPropName" placeholder="e.g. Beach Cottage"></div>
+    <div class="form-group"><label class="form-label">Airbnb iCal URL</label><input type="text" class="form-input" id="newAirbnbUrl" placeholder="https://www.airbnb.com/calendar/ical/..."></div>
+    <div class="form-group"><label class="form-label">Booking.com iCal URL</label><input type="text" class="form-input" id="newBookingUrl" placeholder="https://ical.booking.com/v1/..."></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addPropertyModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProperty()">Add Property</button>
     </div>
-    <div class="fg" style="flex:1.2;min-width:160px">
-      <label class="fl">Property</label>
-      <select class="fc" id="filter-property" onchange="filterBills()">
-        <option value="">All properties</option>
+  </div>
+</div>
+
+<!-- ADD BOOKING MODAL -->
+<div class="modal-overlay" id="addBookingModal">
+  <div class="modal">
+    <div class="modal-title">Add Manual Booking</div>
+    <div class="form-group"><label class="form-label">Guest Name</label><input type="text" class="form-input" id="manualGuest" placeholder="Full name"></div>
+    <div class="form-group"><label class="form-label">Property</label><select class="form-select" id="manualProperty"></select></div>
+    <div class="form-group"><label class="form-label">Source</label>
+      <select class="form-select" id="manualSource">
+        <option value="manual">Direct / Manual</option>
+        <option value="airbnb">Airbnb</option>
+        <option value="booking">Booking.com</option>
       </select>
     </div>
-    <div class="fg-date fg" style="min-width:140px">
-      <label class="fl">From</label>
-      <input class="fc" id="filter-from" type="date" onchange="onFilterFromChange();filterBills()"/>
+    <div class="form-group"><label class="form-label">Dates</label>
+      <div class="date-row">
+        <input type="date" class="form-input" id="manualStart" onchange="const e=document.getElementById('manualEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
+        <input type="date" class="form-input" id="manualEnd" onfocus="const s=document.getElementById('manualStart').value;if(s)this.min=s;else this.min=new Date().toISOString().split('T')[0];">
+      </div>
     </div>
-    <div class="fg-date fg" style="min-width:140px">
-      <label class="fl">To</label>
-      <input class="fc" id="filter-to" type="date" onchange="onFilterToChange();filterBills()"/>
+    <div class="date-row" style="margin-bottom:13px;">
+      <div class="form-group" style="margin:0"><label class="form-label">No. of Guests</label><input type="number" class="form-input" id="manualNumGuests" placeholder="e.g. 2" min="1" step="1"></div>
+      <div class="form-group" style="margin:0"><label class="form-label">Discussed Amount</label><input type="number" class="form-input" id="manualDiscAmount" placeholder="e.g. 500" min="0" step="0.01"></div>
     </div>
-    <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
+    <!-- NOT booking whole property toggle -->
+    <div class="form-group" style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <label class="form-label" style="margin:0;">Not Booking Whole Property</label>
+        <button type="button" class="toggle-btn" id="togglePartial" onclick="togglePartialBooking()" aria-pressed="false"><span class="toggle-knob"></span></button>
+      </div>
+      <div id="numRoomsRow" style="display:none;margin-top:10px;">
+        <label class="form-label">Number of Rooms</label>
+        <input type="number" class="form-input" id="manualNumRooms" placeholder="e.g. 2" min="1" step="1">
+      </div>
+    </div>
+    <!-- Banyan Circle toggle -->
+    <div class="form-group" style="margin-bottom:4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <label class="form-label" style="margin:0;">Banyan Circle</label>
+        <button type="button" class="toggle-btn" id="toggleBanyan" onclick="toggleBanyanCircle()" aria-pressed="false"><span class="toggle-knob"></span></button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addBookingModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBooking()">Save Booking</button>
+    </div>
   </div>
-  <div id="bill-log">Loading…</div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="bookingDetailModal">
+  <div class="modal">
+    <div class="modal-title" id="detailTitle"></div>
+    <div id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="deleteCurrentBooking()">Remove</button>
+      <button class="btn btn-ghost" onclick="closeModal('bookingDetailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROPERTY ICAL MODAL -->
+<div class="modal-overlay" id="editPropertyModal">
+  <div class="modal">
+    <div class="modal-title">Edit iCal URLs</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Property: <strong id="editPropNameLabel" style="color:var(--text)"></strong></div>
+    <input type="hidden" id="editPropId">
+    <div class="form-group"><label class="form-label">Airbnb iCal URL</label><input type="text" class="form-input" id="editAirbnbUrl" placeholder="https://www.airbnb.com/calendar/ical/..."></div>
+    <div class="form-group"><label class="form-label">Booking.com iCal URL</label><input type="text" class="form-input" id="editBookingUrl" placeholder="https://ical.booking.com/v1/..."></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('editPropertyModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditProperty()">Save URLs</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKINGS LOG MODAL -->
+<div class="modal-overlay" id="bookingsLogModal" style="align-items:flex-start;padding-top:60px;">
+  <div class="modal" style="width:680px;max-width:96vw;">
+    <div class="modal-title">Bookings Log</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="form-group" style="margin:0"><label class="form-label">From</label><input type="date" class="form-input" id="logFrom" onchange="renderLogTable()"></div>
+      <div class="form-group" style="margin:0"><label class="form-label">To</label><input type="date" class="form-input" id="logTo" onchange="renderLogTable()"></div>
+      <div class="form-group" style="margin:0"><label class="form-label">Property</label><select class="form-select" id="logProperty" onchange="renderLogTable()"><option value="all">All Properties</option></select></div>
+    </div>
+    <div id="logOccupancy" style="margin-bottom:12px;"></div>
+    <div style="max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+      <table id="logTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:var(--bg);position:sticky;top:0;">
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Guest</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Property</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Source</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Check-in</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Check-out</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Nights</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Guests</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody"></tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="logCount"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('bookingsLogModal')">Close</button>
+      <button class="btn btn-primary" onclick="downloadLogExcel()">Download CSV</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- PIN Modal -->
-<div class="pin-overlay" id="pin-overlay" style="display:none">
-  <div class="pin-box">
-    <div class="pin-title">Admin Access</div>
-    <div class="pin-sub" id="pin-sub">Enter PIN to continue</div>
-    <div class="pin-dots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
-    </div>
-    <div class="pin-pad">
-      <button class="pin-key" onclick="pinKey('1')">1</button>
-      <button class="pin-key" onclick="pinKey('2')">2</button>
-      <button class="pin-key" onclick="pinKey('3')">3</button>
-      <button class="pin-key" onclick="pinKey('4')">4</button>
-      <button class="pin-key" onclick="pinKey('5')">5</button>
-      <button class="pin-key" onclick="pinKey('6')">6</button>
-      <button class="pin-key" onclick="pinKey('7')">7</button>
-      <button class="pin-key" onclick="pinKey('8')">8</button>
-      <button class="pin-key" onclick="pinKey('9')">9</button>
-      <button class="pin-key" onclick="pinKey('back')" style="font-size:13px;color:var(--muted)">⌫</button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key" onclick="pinKey('clear')" style="font-size:12px;color:var(--muted)">CLR</button>
-    </div>
-    <div class="pin-err" id="pin-err"></div>
-    <button class="pin-cancel" onclick="pinCancel()">Cancel</button>
-  </div>
-</div>
-
 <script>
-var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const COLORS = ['#e85d75','#4a90d9','#2d9e6b','#c9a84c'];
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let activeProperty = 'all';
+let selectedBookingId = null;
 
-var payMethod  = '';
-var GUESTS     = [];
-var EDIT_BILL  = null;
-var BILL_SEQ   = 0;
+const _urlParams = new URLSearchParams(window.location.search);
+const _viewerParam = _urlParams.get('viewer');
+const _propertyParam = _urlParams.get('property');
 
-function generateBillId() {
-  var now = new Date();
-  var pad = function(n,l){ return String(n).padStart(l||2,'0'); };
-  var ts = String(now.getFullYear()) +
-           pad(now.getMonth()+1) +
-           pad(now.getDate()) +
-           pad(now.getHours()) +
-           pad(now.getMinutes()) +
-           pad(now.getSeconds());
-  BILL_SEQ++;
-  return ts + pad(BILL_SEQ, 3);
+if (_viewerParam === 'landlord') {
+  document.addEventListener('DOMContentLoaded', function() {
+    const tb = document.querySelector('.topbar');
+    if (tb) tb.style.display = 'none';
+  });
+}
+if (_urlParams.get('readonly') === 'true') {
+  document.addEventListener('DOMContentLoaded', function() {
+    const mh = document.querySelector('.main-header');
+    if (mh) mh.style.display = 'none';
+  });
 }
 
-// ── PIN ──
-var ADMIN_PIN   = '0000';
-var pinBuffer   = '';
-var pinCallback = null;
+const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
 
-function requirePin(label, cb) {
-  pinBuffer = '';
-  pinCallback = cb;
-  document.getElementById('pin-sub').textContent = label || 'Enter PIN to continue';
-  document.getElementById('pin-err').textContent = '';
-  updatePinDots();
-  document.getElementById('pin-overlay').style.display = 'flex';
-}
+let properties = [];
+let bookings   = [];
 
-function pinKey(k) {
-  if (k === 'back')  { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
-  if (k === 'clear') { pinBuffer = ''; updatePinDots(); return; }
-  if (pinBuffer.length >= 4) return;
-  pinBuffer += k;
-  updatePinDots();
-  if (pinBuffer.length === 4) {
-    if (pinBuffer === ADMIN_PIN) {
-      document.getElementById('pin-overlay').style.display = 'none';
-      var cb = pinCallback; pinCallback = null; pinBuffer = '';
-      updatePinDots();
-      if (cb) cb();
-    } else {
-      document.getElementById('pin-err').textContent = 'Incorrect PIN. Try again.';
-      setTimeout(function(){ pinBuffer = ''; updatePinDots(); document.getElementById('pin-err').textContent=''; }, 700);
-    }
-  }
-}
-
-function updatePinDots() {
-  for (var i=0;i<4;i++) {
-    var d = document.getElementById('pd'+i);
-    if (d) d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
-  }
-}
-
-function pinCancel() {
-  pinBuffer = ''; pinCallback = null;
-  document.getElementById('pin-overlay').style.display = 'none';
-  updatePinDots();
-}
-
-async function api(path, method, body) {
-  var h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
-  var r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
-  if(r.status===204) return null;
-  var json = await r.json().catch(function(){return null;});
-  if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
-  return json;
-}
-
-function toast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.display = 'block';
-  setTimeout(function(){ t.style.display='none'; }, 2600);
-}
-
-var fmt = function(n){ return '₹'+Math.round(n||0).toLocaleString('en-IN'); };
-var fmtF = function(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-var fmtDate = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; };
-
-// ── Init ──
-async function init() {
-  var today = new Date().toISOString().slice(0,10);
-  // Default bill date to today, restrict to not future
-  var billDateEl = document.getElementById('bill-date');
-  billDateEl.value = today;
-  billDateEl.max = today;
-  setPayMethod('pending');
-  await loadGuests();
-  await loadBills();
-}
-
-async function loadGuests() {
+async function loadPropertiesFromSupabase() {
   try {
-    var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
-    GUESTS = data;
-    var sel = document.getElementById('bill-guest-select');
-    sel.innerHTML = '<option value="">— select —</option>' +
-      data.map(function(g){
-        var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
-          (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
-        return '<option value="' + g.id + '">' + label + '</option>';
-      }).join('') +
-      '<option value="__other__">Other</option>';
+    const res = await fetch(
+      SB + '/rest/v1/landlords?select=id,property_name,airbnb_ical_url,bookingcom_ical_url&order=property_name',
+      { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
+    );
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) return;
+    const seen = new Set();
+    properties = data
+      .filter(l => { if (!l.property_name || seen.has(l.property_name)) return false; seen.add(l.property_name); return true; })
+      .map((l, i) => ({ id: 'p_' + i, supabase_id: l.id, name: l.property_name, color: COLORS[i % COLORS.length], airbnbUrl: l.airbnb_ical_url || '', bookingUrl: l.bookingcom_ical_url || '' }));
+    if (_propertyParam) {
+      const match = properties.find(p => p.name.toLowerCase() === _propertyParam.toLowerCase());
+      if (match) { activeProperty = match.id; }
+    }
+    if (!activeProperty || activeProperty === 'all') {
+      if (properties.length) activeProperty = properties[0].id;
+    }
+    const activeProp = properties.find(p => p.id === activeProperty);
+    document.getElementById('activePropertyLabel').textContent = activeProp?.name || '';
+    renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
+    loadBlockedDates();
+    loadManualBookings();
   } catch(e) {
-    document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
+    showToast('Could not load properties from Supabase', 'error');
   }
 }
 
-async function onGuestSelect() {
-  var gid = document.getElementById('bill-guest-select').value;
-  var otherFg = document.getElementById('other-name-fg');
-  // hide both panels first
-  document.getElementById('guest-info').style.display = 'none';
-  otherFg.style.display = 'none';
-  if (!gid) return;
-  if (gid === '__other__') {
-    otherFg.style.display = '';
-    document.getElementById('other-guest-name').focus();
+async function loadBlockedDates() {
+  try {
+    const res = await fetch(
+      SB + '/rest/v1/blocked_dates?select=id,property_name,start_date,end_date,reason&order=start_date',
+      { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
+    );
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+    data.forEach(row => {
+      const prop = properties.find(p => p.name === row.property_name);
+      if (!prop) return;
+      if (bookings.find(b => b.id === row.id)) return;
+      bookings.push({ id: row.id, guest: 'BLOCKED', property: prop.id, source: 'blocked', start: row.start_date, end: row.end_date, reason: row.reason || 'Blocked' });
+    });
+    renderCalendar(); renderBookings(); renderStats();
+  } catch(e) {
+    showToast('Could not load blocked dates', 'error');
+  }
+}
+
+async function loadManualBookings() {
+  try {
+    const res = await fetch(
+      SB + '/rest/v1/bookings?select=id,property_id,property_name,guest_name,check_in,check_out,num_guests,source,disc-amount&order=check_in',
+      { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
+    );
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+    data.forEach(row => {
+      // Primary: match by property_name text column. Fallback: property_id UUID.
+      let prop = null;
+      if (row.property_name) prop = properties.find(p => p.name === row.property_name);
+      if (!prop && row.property_id) prop = properties.find(p => p.id === row.property_id);
+      if (!prop) return;
+      if (bookings.find(b => b.id === row.id)) return;
+      bookings.push({
+        id: row.id,
+        guest: row.guest_name,
+        property: prop.id,
+        property_name: row.property_name,
+        source: row.source || 'manual',
+        start: row.check_in,
+        end: row.check_out,
+        num_guests: row.num_guests ?? null,
+        disc_amount: row['disc-amount'] ?? null
+      });
+    });
+    renderCalendar(); renderBookings(); renderStats();
+  } catch(e) {
+    // silently fail
+  }
+}
+
+async function triggerSync() { showToast('Sync not connected to a backend', 'error'); }
+
+function formatDate(s) {
+  return new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function getBookingForDate(dateS) {
+  return bookings.find(b => {
+    if (activeProperty !== 'all' && b.property !== activeProperty) return false;
+    return dateS >= b.start && dateS < b.end;
+  });
+}
+
+function renderPills() {
+  const bar = document.getElementById('pillBar');
+  const propPills = properties.map(p =>
+    '<span style="display:inline-flex;align-items:center;gap:3px;">' +
+    '<button class="prop-pill ' + (activeProperty===p.id?'active':'') + '" onclick="setActiveProperty(\'' + p.id + '\')">' + p.name + '</button>' +
+    '<button class="pill-edit-btn" onclick="openEditProperty(\'' + p.id + '\')" title="Edit iCal URLs">&#9998;</button>' +
+    '</span>'
+  ).join('');
+  bar.innerHTML = propPills;
+}
+
+function setActiveProperty(id) {
+  activeProperty = id;
+  renderPills();
+  document.getElementById('activePropertyLabel').textContent =
+    properties.find(p=>p.id===id)?.name || '';
+  renderCalendar(); renderBookings(); renderStats();
+}
+
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent = months[currentMonth] + ' ' + currentYear;
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  const today = new Date().toISOString().split('T')[0];
+  let cells = '';
+  for (let i = 0; i < firstDay; i++) cells += '<div class="day-cell empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const isToday = ds === today;
+    const b = getBookingForDate(ds);
+    let cls = 'day-cell';
+    if (isToday) cls += ' today-cell';
+    else if (b) { if (b.source === 'blocked') cls += ' blocked'; else cls += ' booked'; }
+    cells += '<div class="' + cls + '" onclick="handleDayClick(\'' + ds + '\')">' + d + '</div>';
+  }
+  document.getElementById('daysGrid').innerHTML = cells;
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar(); renderStats();
+}
+
+function handleDayClick(ds) {
+  const b = getBookingForDate(ds);
+  if (b) { showBookingDetail(b.id); return; }
+  document.getElementById('blockStart').value = ds;
+  document.getElementById('blockEnd').value = ds;
+  if (activeProperty !== 'all') document.getElementById('blockProperty').value = activeProperty;
+}
+
+function renderBookings() {
+  const today = new Date().toISOString().split('T')[0];
+  const filtered = bookings.filter(b => {
+    if (activeProperty !== 'all' && b.property !== activeProperty) return false;
+    return b.source !== 'blocked' && b.end >= today;
+  }).sort((a,b) => a.start.localeCompare(b.start));
+  document.getElementById('bookingCount').textContent = filtered.length + ' reservations';
+  if (!filtered.length) {
+    const msg = properties.length === 0 ? 'Add a property to get started' : 'No upcoming bookings';
+    document.getElementById('bookingsList').innerHTML = '<div class="empty-state">' + msg + '</div>';
     return;
   }
-  var g = GUESTS.find(function(x){ return x.id === gid; });
-  if (!g) return;
+  document.getElementById('bookingsList').innerHTML = filtered.map(b => {
+    const prop = properties.find(p=>p.id===b.property);
+    const srcLabel = b.source === 'airbnb' ? 'Airbnb' : b.source === 'booking' ? 'Booking' : 'Direct';
+    return '<div class="booking-item" onclick="showBookingDetail(\'' + b.id + '\')">' +
+      '<div class="booking-source source-' + b.source + '">' + srcLabel + '</div>' +
+      '<div class="booking-info"><div class="booking-guest">' + b.guest + '</div>' +
+      '<div class="booking-dates">' + formatDate(b.start) + ' &rarr; ' + formatDate(b.end) + '</div></div>' +
+      '<div class="booking-property" style="color:' + (prop?.color||'#666') + '">' + (prop?.name||'') + '</div>' +
+      '</div>';
+  }).join('');
+}
 
-  // Try to fetch latest check-in for address
-  var addr = '', mobile = '', email = '';
-  try {
-    var ci = await api('/rest/v1/guest_checkins?guest_profile_id=eq.' + gid + '&select=form_data&order=checked_in_at.desc&limit=1');
-    if (ci && ci.length && ci[0].form_data) {
-      var fd = ci[0].form_data;
-      addr   = fd.permanent_address || '';
-      mobile = fd.mobile || '';
-      email  = fd.email  || '';
+function renderStats() {
+  const now = new Date();
+  const todayS = now.toISOString().split('T')[0];
+  const year = currentYear, month = currentMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  let bookedDays = new Set();
+  bookings.forEach(b => {
+    if (activeProperty !== 'all' && b.property !== activeProperty) return;
+    if (b.source === 'blocked') return;
+    let d = new Date(b.start + 'T00:00:00');
+    const end = new Date(b.end + 'T00:00:00');
+    while (d < end) {
+      if (d.getMonth() === month && d.getFullYear() === year) bookedDays.add(d.getDate());
+      d.setDate(d.getDate()+1);
     }
-  } catch(e) {}
-
-  document.getElementById('ginfo-name').textContent = g.name;
-  document.getElementById('ginfo-addr').textContent  = addr || 'No address on file';
-  var meta = '';
-  if (g.property_name) meta += '<span><strong>' + esc(g.property_name) + '</strong></span>';
-  if (g.check_in)  meta += '<span>Check-in: <strong>' + fmtDate(g.check_in) + '</strong></span>';
-  if (g.check_out) meta += '<span>Check-out: <strong>' + fmtDate(g.check_out) + '</strong></span>';
-  if (mobile)      meta += '<span>📱 ' + esc(mobile) + '</span>';
-  if (email)       meta += '<span>✉ ' + esc(email) + '</span>';
-  document.getElementById('ginfo-meta').innerHTML = meta;
-  document.getElementById('guest-info').style.display = 'block';
-
-  // Pre-fill guest details for when saving
-  document.getElementById('guest-info').setAttribute('data-addr', addr);
-  document.getElementById('guest-info').setAttribute('data-mobile', mobile);
-  document.getElementById('guest-info').setAttribute('data-email', email);
-}
-
-// ── Items ──
-var rowCount = 0;
-function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
-  rowCount++;
-  var rid = 'row-' + rowCount;
-  var tr = document.createElement('tr');
-  tr.id = rid;
-  var q = parseFloat(qty)||0, r = parseFloat(rate)||0;
-  var cg = parseFloat(cgstPct)||0, sg = parseFloat(sgstPct)||0;
-  var base = q * r;
-  var taxAmt = base * (cg + sg) / 100;
-  var tot = base + taxAmt;
-  var today = new Date().toISOString().slice(0,10);
-  var defaultDate = itemDate || document.getElementById('bill-date').value || today;
-  tr.innerHTML =
-    '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:140px"/></td>' +
-    '<td><input type="date" value="' + defaultDate + '" max="' + today + '" style="width:125px;padding:7px 8px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit;color:var(--text);background:var(--white);outline:none"/></td>' +
-    '<td style="text-align:center"><input type="text" value="' + (qty||1) + '" oninput="calcRowTotal(this);calcTotal()" style="width:55px;text-align:center"/></td>' +
-    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:80px;text-align:right"/></td>' +
-    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
-    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
-    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:90px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>' +
-    '<td style="text-align:center"><button class="del-row" onclick="removeRow(\'' + rid + '\')">✕</button></td>';
-  document.getElementById('items-body').appendChild(tr);
-  calcTotal();
-}
-
-function calcRowTotal(input) {
-  var tr = input.closest('tr');
-  var inputs = tr.querySelectorAll('input');
-  // 0=name, 1=date, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
-  var qty  = parseFloat(inputs[2].value) || 0;
-  var rate = parseFloat(inputs[3].value) || 0;
-  var cgst = parseFloat(inputs[4].value) || 0;
-  var sgst = parseFloat(inputs[5].value) || 0;
-  var base = qty * rate;
-  var taxAmt = base * (cgst + sgst) / 100;
-  inputs[6].value = (base + taxAmt).toFixed(2);
-}
-
-function calcTotal() {
-  var totals = document.querySelectorAll('[id$="-tot"]');
-  var sum = 0;
-  totals.forEach(function(t){ sum += parseFloat(t.value) || 0; });
-  document.getElementById('grand-total').textContent = fmtF(sum);
-  return sum;
-}
-
-function removeRow(rid) {
-  var tr = document.getElementById(rid);
-  if (tr) tr.remove();
-  calcTotal();
-}
-
-function getItems() {
-  var items = [];
-  var rows = document.querySelectorAll('#items-body tr');
-  rows.forEach(function(tr){
-    var inputs = tr.querySelectorAll('input');
-    // 0=name, 1=date, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
-    var name    = inputs[0].value.trim();
-    var date    = inputs[1].value || '';
-    var qty     = parseFloat(inputs[2].value) || 0;
-    var rate    = parseFloat(inputs[3].value) || 0;
-    var cgst_pct = parseFloat(inputs[4].value) || 0;
-    var sgst_pct = parseFloat(inputs[5].value) || 0;
-    var tax_pct = cgst_pct + sgst_pct;
-    var total   = parseFloat(inputs[6].value) || 0;
-    if (name) items.push({name:name, date:date, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
   });
-  return items;
+  const monthStartS = year + '-' + String(month+1).padStart(2,'0') + '-01';
+  const remaining = Array.from({length:daysInMonth},(_,i)=>i+1).filter(d => {
+    const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const afterToday = monthStartS.slice(0,7) >= todayS.slice(0,7) ? ds >= todayS : true;
+    return afterToday && !getBookingForDate(ds);
+  }).length;
+  document.getElementById('statBooked').textContent = bookedDays.size;
+  document.getElementById('statAvailable').textContent = remaining;
 }
 
-// ── Bill log date range enforcement ──
-function onFilterFromChange() {
-  var fromEl = document.getElementById('filter-from');
-  var toEl   = document.getElementById('filter-to');
-  // If To is already set and falls below new From, push To up to match
-  if (fromEl.value && toEl.value && toEl.value < fromEl.value) {
-    toEl.value = fromEl.value;
-  }
-  // Browser-level: prevent To from being picked below From
-  toEl.min = fromEl.value || '';
-}
-function onFilterToChange() {
-  var fromEl = document.getElementById('filter-from');
-  var toEl   = document.getElementById('filter-to');
-  // If From is already set and exceeds new To, pull From down to match
-  if (toEl.value && fromEl.value && fromEl.value > toEl.value) {
-    fromEl.value = toEl.value;
-  }
-  // Browser-level: prevent From from being picked above To
-  fromEl.max = toEl.value || '';
-}
-
-// ── Payment ──
-function setPayMethod(m) {
-  payMethod = m;
-  document.querySelectorAll('.method-btn').forEach(function(b){ b.classList.remove('on'); });
-  document.getElementById('m-'+m).classList.add('on');
-  // method shown via button highlight
-}
-
-// ── Save ──
-async function saveBill() {
-  var gid = document.getElementById('bill-guest-select').value;
-  if (!gid) { toast('Please select a guest'); return; }
-  var otherName = '';
-  if (gid === '__other__') {
-    otherName = document.getElementById('other-guest-name').value.trim();
-    if (!otherName) { toast('Please enter a name'); document.getElementById('other-guest-name').focus(); return; }
-  }
-  var items = getItems();
-  if (!items.length) { toast('Add at least one item'); return; }
-  if (!payMethod) { toast('Select a payment method'); return; }
-
-  var billDate = document.getElementById('bill-date').value;
-  if (!billDate) { toast('Please select a bill date'); return; }
-
-  var g = gid !== '__other__' ? GUESTS.find(function(x){ return x.id === gid; }) : null;
-  var infoBox = document.getElementById('guest-info');
-  var amount = calcTotal();
-
-  var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
-
-  var body = {
-    guest_profile_id : gid !== '__other__' ? gid : null,
-    guest_name       : gid === '__other__' ? otherName : (g ? g.name : ''),
-    property_name    : g ? (g.property_name||'') : '',
-    guest_address    : infoBox.getAttribute('data-addr')||'',
-    guest_mobile     : infoBox.getAttribute('data-mobile')||'',
-    guest_email      : infoBox.getAttribute('data-email')||'',
-    items            : items,
-    amount           : amount,
-    payment_status   : payStatus,
-    payment_method   : payMethod !== 'pending' ? payMethod : null,
-    remarks          : document.getElementById('bill-remarks').value.trim()||null,
-    bill_date        : billDate,
-    updated_at       : new Date().toISOString()
-  };
-
-  var btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
+async function blockDates() {
+  const prop = document.getElementById('blockProperty').value;
+  const start = document.getElementById('blockStart').value;
+  const end = document.getElementById('blockEnd').value;
+  const reason = document.getElementById('blockReason').value;
+  if (!prop || !start || !end) { showToast('Fill all required fields','error'); return; }
+  if (end < start) { showToast('End must be after start','error'); return; }
+  const conflict = bookings.find(b => b.property === prop && !(b.end < start || b.start > end));
+  if (conflict) { showToast('Conflicts with existing booking','error'); return; }
+  const propName = properties.find(p => p.id === prop)?.name;
   try {
-    if (EDIT_BILL) {
-      await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
-      await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
-      toast('Bill updated ✓');
-    } else {
-      var newBillId = generateBillId();
-      body.bill_id = newBillId;
-      var created = await api('/rest/v1/bills', 'POST', body);
-      await syncToRevenue(body, newBillId);
-      toast('Bill created ✓');
+    const res = await fetch(SB + '/rest/v1/blocked_dates', {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ property_name: propName, start_date: start, end_date: end, reason: reason || null })
+    });
+    const saved = await res.json();
+    const sbId = Array.isArray(saved) ? saved[0]?.id : null;
+    bookings.push({ id: sbId || 'b'+Date.now(), guest:'BLOCKED', property:prop, source:'blocked', start, end, reason: reason||'Blocked' });
+    clearBlockForm(); renderCalendar(); renderBookings(); renderStats();
+    showToast('Dates blocked and saved');
+  } catch(e) {
+    bookings.push({ id:'b'+Date.now(), guest:'BLOCKED', property:prop, source:'blocked', start, end, reason: reason||'Blocked' });
+    clearBlockForm(); renderCalendar(); renderBookings(); renderStats();
+    showToast('Saved locally - could not reach Supabase', 'error');
+  }
+}
+
+function clearBlockForm() {
+  ['blockStart','blockEnd','blockReason'].forEach(id => document.getElementById(id).value = '');
+}
+
+function populatePropertySelects() {
+  const today = new Date().toISOString().split('T')[0];
+  const blockStartEl = document.getElementById('blockStart');
+  const blockEndEl = document.getElementById('blockEnd');
+  if (blockStartEl) blockStartEl.min = today;
+  if (blockEndEl) blockEndEl.min = today;
+  const opts = properties.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+  const blockOpts = _propertyParam
+    ? properties.filter(p => p.name.toLowerCase() === _propertyParam.toLowerCase()).map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('')
+    : opts;
+  const blockEl = document.getElementById('blockProperty');
+  if (blockEl) blockEl.innerHTML = blockOpts;
+  const manualEl = document.getElementById('manualProperty');
+  if (manualEl) manualEl.innerHTML = opts;
+  if (activeProperty !== 'all') document.getElementById('blockProperty').value = activeProperty;
+}
+
+function openEditProperty(id) {
+  const p = properties.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('editPropId').value = id;
+  document.getElementById('editPropNameLabel').textContent = p.name;
+  document.getElementById('editAirbnbUrl').value = p.airbnbUrl || '';
+  document.getElementById('editBookingUrl').value = p.bookingUrl || '';
+  document.getElementById('editPropertyModal').classList.add('open');
+}
+
+async function saveEditProperty() {
+  const id = document.getElementById('editPropId').value;
+  const p = properties.find(x => x.id === id);
+  if (!p) return;
+  p.airbnbUrl = document.getElementById('editAirbnbUrl').value.trim();
+  p.bookingUrl = document.getElementById('editBookingUrl').value.trim();
+  closeModal('editPropertyModal');
+  try {
+    await fetch(
+      SB + '/rest/v1/landlords?property_name=eq.' + encodeURIComponent(p.name),
+      { method: 'PATCH', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ airbnb_ical_url: p.airbnbUrl, bookingcom_ical_url: p.bookingUrl }) }
+    );
+    showToast('iCal URLs saved for "' + p.name + '"');
+  } catch(e) {
+    showToast('Saved locally - could not reach Supabase', 'error');
+  }
+}
+
+function openAddBooking() {
+  populatePropertySelects();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('manualStart').min = today;
+  document.getElementById('manualEnd').min = today;
+  document.getElementById('manualStart').value = today;
+  document.getElementById('manualEnd').value = today;
+  document.getElementById('addBookingModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function saveProperty() {
+  const name = document.getElementById('newPropName').value.trim();
+  if (!name) { showToast('Name required','error'); return; }
+  properties.push({ id:'p'+Date.now(), name, color: COLORS[properties.length%COLORS.length],
+    airbnbUrl: document.getElementById('newAirbnbUrl').value,
+    bookingUrl: document.getElementById('newBookingUrl').value });
+  ['newPropName','newAirbnbUrl','newBookingUrl'].forEach(id => document.getElementById(id).value='');
+  closeModal('addPropertyModal');
+  renderPills(); populatePropertySelects();
+  showToast('"' + name + '" added');
+}
+
+
+function togglePartialBooking() {
+  const btn = document.getElementById('togglePartial');
+  const active = btn.getAttribute('aria-pressed') === 'true';
+  btn.setAttribute('aria-pressed', String(!active));
+  document.getElementById('numRoomsRow').style.display = !active ? 'block' : 'none';
+  if (active) document.getElementById('manualNumRooms').value = '';
+}
+
+function toggleBanyanCircle() {
+  const btn = document.getElementById('toggleBanyan');
+  const active = btn.getAttribute('aria-pressed') === 'true';
+  btn.setAttribute('aria-pressed', String(!active));
+}
+
+async function saveBooking() {
+  const guest = document.getElementById('manualGuest').value.trim();
+  const prop = document.getElementById('manualProperty').value;
+  const source = document.getElementById('manualSource').value;
+  const start = document.getElementById('manualStart').value;
+  const end = document.getElementById('manualEnd').value;
+  const numGuests = parseInt(document.getElementById('manualNumGuests').value) || null;
+  const discAmount = parseFloat(document.getElementById('manualDiscAmount').value) || null;
+  const partialBooking = document.getElementById('togglePartial').getAttribute('aria-pressed') === 'true';
+  const numRooms = partialBooking ? (parseInt(document.getElementById('manualNumRooms').value) || null) : null;
+  const banyanCircle = document.getElementById('toggleBanyan').getAttribute('aria-pressed') === 'true';
+  if (!guest||!prop||!start||!end) { showToast('Fill all fields','error'); return; }
+  if (end < start) { showToast('End must be after start','error'); return; }
+  const propObj = properties.find(p => p.id === prop);
+  const propName = propObj?.name;
+  try {
+    const res = await fetch(SB + '/rest/v1/bookings', {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null })
+    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error('Supabase error ' + res.status + ':', errBody);
+      throw new Error('Supabase responded with ' + res.status + ': ' + errBody);
     }
-    cancelEdit();
-    await loadBills();
+    const saved = await res.json();
+    const sbId = Array.isArray(saved) ? saved[0]?.id : null;
+    bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount });
+    showToast('Booking for ' + guest + ' saved');
   } catch(e) {
-    toast('Error: ' + e.message);
+    showToast('Could not save to Supabase: ' + e.message, 'error');
+    console.error('saveBooking error:', e);
+    return; // Don't close modal or add locally — let user retry
   }
-  btn.disabled = false;
-  btn.textContent = EDIT_BILL ? 'Update Bill' : 'Create Bill';
+  closeModal('addBookingModal');
+  document.getElementById('manualGuest').value = '';
+  document.getElementById('manualNumGuests').value = '';
+  document.getElementById('manualDiscAmount').value = '';
+  document.getElementById('manualNumRooms').value = '';
+  document.getElementById('togglePartial').setAttribute('aria-pressed','false');
+  document.getElementById('numRoomsRow').style.display = 'none';
+  document.getElementById('toggleBanyan').setAttribute('aria-pressed','false');
+  renderCalendar(); renderBookings(); renderStats();
 }
 
-function cancelEdit() {
-  EDIT_BILL = null;
-  document.getElementById('edit-id').value = '';
-  document.getElementById('form-ttl').textContent = 'New Bill';
-  document.getElementById('save-btn').textContent = 'Create Bill';
-  document.getElementById('cancel-btn').style.display = 'none';
-  document.getElementById('bill-guest-select').value = '';
-  document.getElementById('guest-info').style.display = 'none';
-  document.getElementById('other-name-fg').style.display = 'none';
-  document.getElementById('other-guest-name').value = '';
-  document.getElementById('items-body').innerHTML = '';
-  rowCount = 0;
-  document.getElementById('grand-total').textContent = '₹0';
-  payMethod = '';
-  document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
-  setPayMethod('pending');
-  document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('bill-remarks').value = '';
+function showBookingDetail(id) {
+  const b = bookings.find(x=>x.id===id); if (!b) return;
+  selectedBookingId = id;
+  const prop = properties.find(p=>p.id===b.property);
+  document.getElementById('detailTitle').textContent = b.source==='blocked' ? 'Blocked Period' : 'Booking - ' + b.guest;
+  let html = '<div class="modal-detail-row"><div class="modal-detail-label">Guest</div><div class="modal-detail-value">' + b.guest + '</div></div>';
+  html += '<div class="modal-detail-row"><div class="modal-detail-label">Property</div><div class="modal-detail-value">' + (prop?.name||'--') + '</div></div>';
+  html += '<div class="modal-detail-row"><div class="modal-detail-label">Source</div><div class="modal-detail-value">' + b.source + '</div></div>';
+  html += '<div class="modal-detail-row"><div class="modal-detail-label">Check-in</div><div class="modal-detail-value">' + formatDate(b.start) + '</div></div>';
+  html += '<div class="modal-detail-row"><div class="modal-detail-label">Check-out</div><div class="modal-detail-value">' + formatDate(b.end) + '</div></div>';
+  if (b.num_guests!=null) html += '<div class="modal-detail-row"><div class="modal-detail-label">Guests</div><div class="modal-detail-value">' + b.num_guests + '</div></div>';
+  if (b.disc_amount!=null) html += '<div class="modal-detail-row"><div class="modal-detail-label">Amount</div><div class="modal-detail-value">EUR ' + Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</div></div>';
+  if (b.reason) html += '<div class="modal-detail-row"><div class="modal-detail-label">Note</div><div class="modal-detail-value">' + b.reason + '</div></div>';
+  document.getElementById('detailBody').innerHTML = html;
+  document.getElementById('bookingDetailModal').classList.add('open');
 }
 
-// ── Sync to property_revenues (always, not just on paid) ──
-async function syncToRevenue(billBody, billId) {
-  if (!billId) return;
-  try {
-    var revBody = {
-      property_name  : billBody.property_name,
-      amount         : billBody.amount,
-      item           : billBody.guest_name ? 'Bill — ' + billBody.guest_name : 'Guest Bill',
-      date           : billBody.bill_date,
-      payment_status : billBody.payment_status,
-      bill_id        : billId,
-      notes          : 'from billing'
-    };
-    var existing = await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId) + '&select=id').catch(function(){ return []; });
-    if (existing && existing.length) {
-      await api('/rest/v1/property_revenues?bill_id=eq.' + encodeURIComponent(billId), 'PATCH', revBody).catch(function(){});
-    } else {
-      await api('/rest/v1/property_revenues', 'POST', revBody);
-    }
-  } catch(e) {
-    console.warn('Revenue sync failed:', e.message);
-  }
-}
-
-function editBill(bill) {
-  requirePin('PIN required to edit bill', function() {
-    EDIT_BILL = bill;
-    document.getElementById('form-ttl').textContent = 'Edit Bill — ' + (bill.guest_name||'');
-    document.getElementById('save-btn').textContent = 'Update Bill';
-    document.getElementById('cancel-btn').style.display = '';
-
-    // Restore date
-    document.getElementById('bill-date').value = bill.bill_date
-      ? bill.bill_date.slice(0,10)
-      : (bill.created_at ? bill.created_at.slice(0,10) : new Date().toISOString().slice(0,10));
-
-    // Set guest
-    document.getElementById('bill-guest-select').value = bill.guest_profile_id || '';
-    onGuestSelect();
-
-    // Items
-    document.getElementById('items-body').innerHTML = '';
-    rowCount = 0;
-    (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0); });
-
-    // Payment method
-    if (bill.payment_method) setPayMethod(bill.payment_method);
-    else setPayMethod('pending');
-
-    document.getElementById('bill-remarks').value = bill.remarks || '';
-    window.scrollTo({top:0, behavior:'smooth'});
-  });
-}
-
-// ── Load log ──
-var ALL_BILLS = [];
-
-async function loadBills() {
-  var el = document.getElementById('bill-log');
-  el.innerHTML = 'Loading…';
-  try {
-    var data = await api('/rest/v1/bills?select=*&order=created_at.desc') || [];
-    ALL_BILLS = data;
-
-    // Populate property filter
-    var props = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean))).sort();
-    var propSel = document.getElementById('filter-property');
-    var curProp = propSel.value;
-    propSel.innerHTML = '<option value="">All properties</option>' +
-      props.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
-
-    renderBills(data);
-  } catch(e) {
-    document.getElementById('bill-log').innerHTML = '<div class="empty">Could not load bills — ensure billing-tables.sql has been run in Supabase.</div>';
-  }
-}
-
-function filterBills() {
-  var guestQ  = (document.getElementById('filter-guest').value||'').toLowerCase().trim();
-  var propQ   = document.getElementById('filter-property').value;
-  var fromQ   = document.getElementById('filter-from').value;
-  var toQ     = document.getElementById('filter-to').value;
-
-  var filtered = ALL_BILLS.filter(function(b){
-    if (guestQ && !(b.guest_name||'').toLowerCase().includes(guestQ)) return false;
-    if (propQ  && (b.property_name||'') !== propQ) return false;
-    var billD = (b.bill_date || b.created_at || '').slice(0,10);
-    if (fromQ && billD < fromQ) return false;
-    if (toQ   && billD > toQ)   return false;
-    return true;
-  });
-  renderBills(filtered);
-}
-
-function clearFilters() {
-  document.getElementById('filter-guest').value    = '';
-  document.getElementById('filter-property').value = '';
-  var fromEl = document.getElementById('filter-from');
-  var toEl   = document.getElementById('filter-to');
-  fromEl.value = ''; fromEl.max = '';
-  toEl.value   = ''; toEl.min  = '';
-  renderBills(ALL_BILLS);
-}
-
-function calcBillTax(items) {
-  var cgst = 0, sgst = 0;
-  (items || []).forEach(function(i) {
-    var base = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
-    cgst += base * (parseFloat(i.cgst_pct)||0) / 100;
-    sgst += base * (parseFloat(i.sgst_pct)||0) / 100;
-  });
-  return { cgst: cgst, sgst: sgst };
-}
-
-function renderBills(data) {
-  var el = document.getElementById('bill-log');
-  if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
-  el.innerHTML = '<table class="tbl"><thead><tr>' +
-    '<th>Guest</th><th>Property</th><th>Date</th>' +
-    '<th style="text-align:right">Taxable</th>' +
-    '<th style="text-align:right">CGST</th>' +
-    '<th style="text-align:right">SGST</th>' +
-    '<th style="text-align:right">Total</th>' +
-    '<th>Status</th><th></th>' +
-    '</tr></thead><tbody>' +
-    data.map(function(b){
-        var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
-        var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
-        var statusLbl = b.payment_status==='paid'
-          ? 'Paid' + methodStr
-          : 'Pending';
-        var items = b.items || [];
-        var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
-        var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
-        var tax = calcBillTax(items);
-        var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
-        var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
-        var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
-        return '<tr>' +
-          '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
-          '<td>' + esc(b.property_name||'—') + '</td>' +
-          '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
-          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
-          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + cgstStr + '</td>' +
-          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + sgstStr + '</td>' +
-          '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;font-size:15px">' + fmtF(b.amount) + '</td>' +
-          '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
-          '<td style="text-align:right;white-space:nowrap">' +
-            '<button class="btn-edit" onclick=\'editBill(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' style="margin-right:4px">Edit</button>' +
-            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px">Remove</button>' +
-            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\'>PDF</button>' +
-          '</td>' +
-        '</tr>';
-      }).join('') +
-      '</tbody></table>';
-}
-
-async function deleteBill(id, name) {
-  requirePin('PIN required to remove bill', async function() {
-    if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
+async function deleteCurrentBooking() {
+  const b = bookings.find(x => x.id === selectedBookingId);
+  const isLocalId = String(b.id).startsWith('b') && !isNaN(String(b.id).slice(1));
+  if (b && b.source === 'blocked' && !isLocalId) {
     try {
-      await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
-      toast(name + ' bill removed');
-      loadBills();
-    } catch(e) { toast('Error: ' + e.message); }
-  });
+      const res = await fetch(SB + '/rest/v1/blocked_dates?id=eq.' + b.id, { method: 'DELETE', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Prefer: 'return=minimal' } });
+      if (!res.ok) throw new Error('Delete failed: ' + res.status);
+    } catch(e) { showToast('Could not delete from Supabase', 'error'); return; }
+  } else if (b && b.source !== 'blocked' && !isLocalId) {
+    try {
+      const res = await fetch(SB + '/rest/v1/bookings?id=eq.' + b.id, { method: 'DELETE', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Prefer: 'return=minimal' } });
+      if (!res.ok) throw new Error('Delete failed: ' + res.status);
+    } catch(e) { showToast('Could not delete from Supabase', 'error'); return; }
+  }
+  bookings = bookings.filter(x => x.id !== selectedBookingId);
+  closeModal('bookingDetailModal');
+  renderCalendar(); renderBookings(); renderStats();
+  showToast('Removed');
 }
 
-// ── PDF ──
-var LOGO_SRC = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QLcRXhpZgAATU0AKgAAAAgABAE7AAIAAAAGAAABSodpAAQAAAABAAABUJydAAEAAAAMAAACyOocAAcAAAEMAAAAPgAAAAAc6gAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT1JUSE8AAAWQAwACAAAAFAAAAp6QBAACAAAAFAAAArKSkQACAAAAAzMyAACSkgACAAAAAzMyAADqHAAHAAABDAAAAZIAAAAAHOoAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADIwMjY6MDU6MTkgMTM6MDA6MjAAMjAyNjowNToxOSAxMzowMDoyMAAAAE8AUgBUAEgATwAAAP/hBBhodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+DQo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIj48cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPjxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSJ1dWlkOmZhZjViZGQ1LWJhM2QtMTFkYS1hZDMxLWQzM2Q3NTE4MmYxYiIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIi8+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPjx4bXA6Q3JlYXRlRGF0ZT4yMDI2LTA1LTE5VDEzOjAwOjIwLjMyMDwveG1wOkNyZWF0ZURhdGU+PC9yZGY6RGVzY3JpcHRpb24+PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9InV1aWQ6ZmFmNWJkZDUtYmEzZC0xMWRhLWFkMzEtZDMzZDc1MTgyZjFiIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPjxkYzpjcmVhdG9yPjxyZGY6U2VxIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+PHJkZjpsaT5PUlRITzwvcmRmOmxpPjwvcmRmOlNlcT4NCgkJCTwvZGM6Y3JlYXRvcj48L3JkZjpEZXNjcmlwdGlvbj48L3JkZjpSREY+PC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPD94cGFja2V0IGVuZD0n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';
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.className = 'toast'; t.textContent = (type==='success' ? 'OK ' : 'X ') + msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
 
-function downloadBillPdf(b) {
-  var logoSrc = LOGO_SRC;
-  var items = b.items || [];
-  var name  = b.guest_name || 'Guest';
-  var dt    = new Date(b.bill_date || b.created_at || Date.now());
-  var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target===o) o.classList.remove('open'); });
+});
 
-  var itemRows = items.map(function(i){
-    var iDate   = i.date ? new Date(i.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    var baseAmt = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
-    var cgstPct = parseFloat(i.cgst_pct) || 0;
-    var sgstPct = parseFloat(i.sgst_pct) || 0;
-    var cgstAmt = baseAmt * cgstPct / 100;
-    var sgstAmt = baseAmt * sgstPct / 100;
-    var total   = parseFloat(i.total) || (baseAmt + cgstAmt + sgstAmt);
-    var taxStr  = '';
-    if (cgstPct > 0) taxStr += '<span style="color:#888;font-size:11px"> CGST ' + cgstPct + '% ₹' + cgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>';
-    if (sgstPct > 0) taxStr += '<span style="color:#888;font-size:11px"> SGST ' + sgstPct + '% ₹' + sgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>';
-    return '<tr>' +
-      '<td>' + esc(i.name||'Item') + '</td>' +
-      '<td style="color:#888;font-size:12px">' + iDate + '</td>' +
-      '<td style="text-align:center">' + (i.qty||1) + '</td>' +
-      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + taxStr + '</td>' +
-      '<td style="text-align:right;font-weight:600">₹' + total.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+function openBookingsLog() {
+  const sel = document.getElementById('logProperty');
+  sel.innerHTML = '<option value="all">All Properties</option>' +
+    properties.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+  const now = new Date();
+  const firstOfMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
+  const today = now.toISOString().split('T')[0];
+  document.getElementById('logFrom').value = firstOfMonth;
+  document.getElementById('logTo').value = today;
+  renderLogTable();
+  document.getElementById('bookingsLogModal').classList.add('open');
+}
+
+function getLogFiltered() {
+  const from = document.getElementById('logFrom').value;
+  const to   = document.getElementById('logTo').value;
+  const prop = document.getElementById('logProperty').value;
+  return bookings.filter(b => {
+    if (b.source === 'blocked') return false;
+    if (prop !== 'all' && b.property !== prop) return false;
+    if (from && b.end < from) return false;
+    if (to   && b.start > to) return false;
+    return true;
+  }).sort((a,b) => a.start.localeCompare(b.start));
+}
+
+function nightsBetween(start, end) {
+  return Math.round((new Date(end+'T00:00:00') - new Date(start+'T00:00:00')) / 86400000);
+}
+
+function renderLogTable() {
+  const rows = getLogFiltered();
+  const from = document.getElementById('logFrom').value;
+  const to   = document.getElementById('logTo').value;
+  const propFilter = document.getElementById('logProperty').value;
+  const tbody = document.getElementById('logTableBody');
+
+  const occEl = document.getElementById('logOccupancy');
+  if (from && to && from <= to) {
+    const totalDays = nightsBetween(from, to) + 1;
+    const propsToShow = propFilter === 'all' ? properties : properties.filter(p => p.id === propFilter);
+    if (propsToShow.length) {
+      const cards = propsToShow.map(prop => {
+        const occupiedDays = new Set();
+        bookings.forEach(b => {
+          if (b.source === 'blocked') return;
+          if (b.property !== prop.id) return;
+          const start = b.start > from ? b.start : from;
+          const end   = b.end   < to   ? b.end   : to;
+          if (start > end) return;
+          let d = new Date(start + 'T00:00:00');
+          const endD = new Date(end + 'T00:00:00');
+          while (d <= endD) { occupiedDays.add(d.toISOString().split('T')[0]); d.setDate(d.getDate() + 1); }
+        });
+        const rate = totalDays > 0 ? Math.round((occupiedDays.size / totalDays) * 100) : 0;
+        const barColor = rate >= 80 ? '#2d9e6b' : rate >= 50 ? '#c9a84c' : '#e85d75';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">' +
+          '<div style="width:130px;font-size:12px;font-weight:500;color:' + prop.color + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + prop.name + '">' + prop.name + '</div>' +
+          '<div style="flex:1;background:var(--bg);border-radius:4px;height:8px;overflow:hidden;"><div style="width:' + rate + '%;background:' + barColor + ';height:100%;border-radius:4px;transition:width 0.3s;"></div></div>' +
+          '<div style="width:80px;font-size:12px;color:var(--muted);text-align:right;">' + occupiedDays.size + ' / ' + totalDays + ' days</div>' +
+          '<div style="width:42px;font-size:12px;font-weight:600;color:' + barColor + ';text-align:right;">' + rate + '%</div></div>';
+      }).join('');
+      occEl.innerHTML = '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">' +
+        '<div style="font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:6px;">Occupancy Rate - ' + totalDays + ' day window</div>' + cards + '</div>';
+    } else { occEl.innerHTML = ''; }
+  } else { occEl.innerHTML = ''; }
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--muted);">No bookings found</td></tr>';
+    document.getElementById('logCount').textContent = '0 bookings';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(b => {
+    // Resolve property name: match by local id, fall back to stored property_name column
+    const prop = properties.find(p => p.id === b.property);
+    const propLabel = prop?.name || b.property_name || '--';
+    const propColor = prop?.color || '#666';
+    const nights = nightsBetween(b.start, b.end);
+    const srcLabel = b.source==='airbnb'?'Airbnb':b.source==='booking'?'Booking.com':'Direct';
+    return '<tr style="border-bottom:1px solid var(--border);">' +
+      '<td style="padding:9px 12px;">' + b.guest + '</td>' +
+      '<td style="padding:9px 12px;color:' + propColor + ';font-weight:500;">' + propLabel + '</td>' +
+      '<td style="padding:9px 12px;">' + srcLabel + '</td>' +
+      '<td style="padding:9px 12px;">' + formatDate(b.start) + '</td>' +
+      '<td style="padding:9px 12px;">' + formatDate(b.end) + '</td>' +
+      '<td style="padding:9px 12px;">' + nights + '</td>' +
+      '<td style="padding:9px 12px;">' + (b.num_guests!=null?b.num_guests:'--') + '</td>' +
+      '<td style="padding:9px 12px;">' + (b.disc_amount!=null?'EUR '+Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}):'--') + '</td>' +
       '</tr>';
   }).join('');
-
-  var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
-  var statusStr = b.payment_status==='paid'
-    ? 'Paid' + methodStr
-    : 'Pending Payment';
-  var statusColor = b.payment_status==='paid' ? '#27500A' : '#633806';
-  var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
-
-
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
-    '*{box-sizing:border-box;margin:0;padding:0}' +
-    'body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}' +
-    'h1{font-size:22px;color:#993C1D;margin-bottom:2px}' +
-    '.sub{font-size:11px;color:#888;margin-bottom:24px}' +
-    '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
-    '.hdr-spacer{min-width:140px}' +
-    '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7;min-width:140px}' +
-    '.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}' +
-    '.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}' +
-    '.guest-detail{font-size:12px;color:#666;line-height:1.6}' +
-    'hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}' +
-    'table{width:100%;border-collapse:collapse}' +
-    'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
-    'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}' +
-    '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}' +
-    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:' + statusBg + ';color:' + statusColor + ';margin-top:16px}' +
-    '.remarks{font-size:12px;color:#888;margin-top:8px}' +
-    '.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}' +
-    '@media print{body{padding:18px 24px}}' +
-    '</style></head><body>' +
-    '<div class="hdr">' +
-      '<div class="hdr-spacer"></div>' +
-      '<div style="flex:1;text-align:center">' + (logoSrc ? '<img src="' + logoSrc + '" alt="" style="max-height:72px;max-width:180px;object-fit:contain"/>' : '') + '</div>' +
-      '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.bill_date||b.created_at) + '</div></div>' +
-    '</div>' +
-    '<div class="guest-card">' +
-      '<div class="guest-name">' + esc(b.guest_name||'Guest') + '</div>' +
-      '<div class="guest-detail">' + esc(b.guest_address||'').replace(/\n/g,'<br/>') + '</div>' +
-      (b.guest_mobile||b.guest_email ? '<div class="guest-detail" style="margin-top:4px">' + [b.guest_mobile, b.guest_email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ') + '</div>' : '') +
-    '</div>' +
-    '<hr/>' +
-    '<table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
-    itemRows +
-    (function(){
-      var tax = calcBillTax(items);
-      var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
-      var rows = '';
-      rows += '<tr><td colspan="4" style="color:#888;font-size:12px;border-top:1px dashed #ddd">Taxable Amount</td><td style="text-align:right;color:#888;font-size:12px;border-top:1px dashed #ddd">₹' + taxable.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
-      if (tax.cgst > 0) rows += '<tr><td colspan="4" style="color:#888;font-size:12px">CGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.cgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
-      if (tax.sgst > 0) rows += '<tr><td colspan="4" style="color:#888;font-size:12px">SGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.sgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
-      return rows;
-    })() +
-    '<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">₹' + Number(b.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
-    '</tbody></table>' +
-    '<div class="status-pill">' + statusStr + '</div>' +
-    (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
-    '<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div>' +
-    '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
-    '</body></html>';
-
-  var blob = new Blob([html], {type:'text/html'});
-  window.open(URL.createObjectURL(blob), '_blank');
+  document.getElementById('logCount').textContent = rows.length + ' booking' + (rows.length!==1?'s':'');
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function downloadLogExcel() {
+  const rows = getLogFiltered();
+  if (!rows.length) { showToast('No bookings to export', 'error'); return; }
+  const headers = ['Guest','Property','Source','Check-in','Check-out','Nights','Num Guests','Disc Amount'];
+  const csvRows = [headers.join(',')];
+  rows.forEach(b => {
+    const prop = properties.find(p => p.id === b.property);
+    const propLabel = prop?.name || b.property_name || '';
+    const srcLabel = b.source==='airbnb'?'Airbnb':b.source==='booking'?'Booking.com':'Direct';
+    const nights = nightsBetween(b.start, b.end);
+    csvRows.push(['"'+b.guest+'"', '"'+propLabel+'"', '"'+srcLabel+'"', '"'+formatDate(b.start)+'"', '"'+formatDate(b.end)+'"', nights, b.num_guests!=null?b.num_guests:'', b.disc_amount!=null?b.disc_amount:''].join(','));
+  });
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bookings-log_' + (document.getElementById('logFrom').value||'all') + '_to_' + (document.getElementById('logTo').value||'all') + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Downloading...');
 }
 
-// Start
-init();
+renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
+loadPropertiesFromSupabase();
 </script>
 </body>
 </html>
