@@ -635,6 +635,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <input type="hidden" id="ac-exp-cat"/>
     </div>
 
+    <!-- Fields revealed after category selection -->
+    <div id="ac-exp-fields" style="display:none">
+
     <!-- Payout sub-category — shown only when Payout is selected -->
     <div class="fg" id="ac-payout-fg" style="display:none">
       <span class="fl">Payout To <span class="req">*</span></span>
@@ -792,7 +795,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <textarea class="fc" id="ac-exp-desc" placeholder="Any additional notes…"></textarea>
     </div>
 
-    <div class="modal-actions">
+    </div><!-- /ac-exp-fields -->
+
+    <div class="modal-actions" id="ac-exp-modal-actions" style="display:none">
       <button class="btn-sec" onclick="acCloseExpModal()">Cancel</button>
       <button class="btn-p" onclick="acSaveExp()">Save</button>
     </div>
@@ -1050,10 +1055,10 @@ function acOpenExpModal() {
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
   document.getElementById('ac-file-input').value='';
+  document.getElementById('ac-exp-fields').style.display = 'none';
+  document.getElementById('ac-exp-modal-actions').style.display = 'none';
   document.getElementById('ac-modal-exp').classList.add('on');
 }
-
-function acEditExp(e) {
   document.getElementById('ac-exp-id').value=e.id;
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
@@ -1188,6 +1193,8 @@ function acEditExp(e) {
     document.getElementById('ac-file-preview').style.display='none';
     document.getElementById('ac-upload-area').style.display='';
   }
+  document.getElementById('ac-exp-fields').style.display = '';
+  document.getElementById('ac-exp-modal-actions').style.display = '';
   document.getElementById('ac-modal-exp').classList.add('on');
 }
 
@@ -1196,6 +1203,10 @@ async function acPickCat(btn) {
   btn.classList.add('on');
   const val = btn.dataset.val;
   document.getElementById('ac-exp-cat').value = val;
+
+  // Reveal the rest of the form on first category pick
+  document.getElementById('ac-exp-fields').style.display = '';
+  document.getElementById('ac-exp-modal-actions').style.display = '';
 
   const isPayout  = val === 'Payout';
   const isUtility = val === 'Utility';
