@@ -282,6 +282,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="ac-tabs">
   <button class="ac-tab on" id="act-bills" onclick="acTab('bills',this)">Billing</button>
   <button class="ac-tab" id="act-expenses" onclick="acTab('expenses',this)">Expenses</button>
+  <button class="ac-tab" id="act-summary" onclick="acTab('summary',this)">Summary</button>
 </div>
 
 <!-- ── EXPENSES PANE ── -->
@@ -542,6 +543,82 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 </div><!-- /ac-pane-bills -->
 
+<!-- ── SUMMARY PANE ── -->
+<div class="ac-pane" id="ac-pane-summary">
+
+  <!-- Date Range Picker -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header" style="margin-bottom:12px">
+      <span class="card-ttl">Date Range</span>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div class="fg" style="margin-bottom:0;min-width:140px">
+        <label class="fl">From</label>
+        <input class="fc" id="sm-from" type="date" onchange="smOnFromChange();smRender()"/>
+      </div>
+      <div class="fg" style="margin-bottom:0;min-width:140px">
+        <label class="fl">To</label>
+        <input class="fc" id="sm-to" type="date" onchange="smOnToChange();smRender()"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expenses Row -->
+  <div style="margin-bottom:8px;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:0 2px">Expenses</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+    <div class="kpi" style="border-top:3px solid var(--a)">
+      <div class="kpi-label">Total Payable</div>
+      <div class="kpi-value" style="color:var(--a)" id="sm-kpi-payable">₹ —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Pending + To be paid to landlord</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid var(--g)">
+      <div class="kpi-label">Total Paid</div>
+      <div class="kpi-value" style="color:var(--g)" id="sm-kpi-paid">₹ —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Paid + Paid to landlord</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid var(--text)">
+      <div class="kpi-label">Total Expenses</div>
+      <div class="kpi-value" id="sm-kpi-expenses">₹ —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">All expenses combined</div>
+    </div>
+  </div>
+
+  <!-- Billing Row -->
+  <div style="margin-bottom:8px;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:0 2px">Billing</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+    <div class="kpi" style="border-top:3px solid var(--g)">
+      <div class="kpi-label">Total Received</div>
+      <div class="kpi-value" style="color:var(--g)" id="sm-kpi-received">₹ —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Paid bills</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid var(--a)">
+      <div class="kpi-label">Total Receivable</div>
+      <div class="kpi-value" style="color:var(--a)" id="sm-kpi-receivable">₹ —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Pending bills</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid var(--text)">
+      <div class="kpi-label">Total Billed</div>
+      <div class="kpi-value" id="sm-kpi-billed">₹ —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">All billing combined</div>
+    </div>
+  </div>
+
+  <!-- Profit Row -->
+  <div style="margin-bottom:8px;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:0 2px">Bottom Line</div>
+  <div style="display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:20px">
+    <div class="kpi" id="sm-profit-card" style="border-top:3px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="kpi-label">Profit / Loss</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Total Billed minus Total Expenses</div>
+      </div>
+      <div style="text-align:right">
+        <div class="kpi-value" id="sm-kpi-profit" style="font-size:32px">₹ —</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /ac-pane-summary -->
+
 <!-- ── EXPENSE MODAL ── -->
 <div class="modal" id="ac-modal-exp">
   <div class="modal-card">
@@ -786,6 +863,7 @@ function acTab(id, btn) {
   document.getElementById('ac-pane-'+id).classList.add('on');
   if(id==='expenses') { acLoadExp(); }
   if(id==='bills') { if(!window._blReady){ window._blReady=true; init(); } }
+  if(id==='summary') { smInit(); }
 }
 
 async function acLoadExp() {
@@ -2382,6 +2460,119 @@ function downloadBillsXlsx() {
   xlsxDownload(wb, 'Billing_Report_' + today + '.xlsx');
   toast('Bills exported ✓');
 }
+
+
+// ── SUMMARY TAB ──────────────────────────────────────────────
+var _smReady = false;
+
+function smInit() {
+  if (!_smReady) {
+    _smReady = true;
+    var today = new Date().toISOString().slice(0,10);
+    var monthStart = today.slice(0,7) + '-01';
+    var fromEl = document.getElementById('sm-from');
+    var toEl   = document.getElementById('sm-to');
+    if (fromEl) { fromEl.value = monthStart; fromEl.max = today; }
+    if (toEl)   { toEl.value   = today;      toEl.max   = today; }
+  }
+  smRender();
+}
+
+function smOnFromChange() {
+  var today  = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('sm-from');
+  var toEl   = document.getElementById('sm-to');
+  if (fromEl.value > today) fromEl.value = today;
+  if (fromEl.value && toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
+  toEl.min   = fromEl.value || '';
+  toEl.max   = today;
+  fromEl.max = today;
+}
+
+function smOnToChange() {
+  var today  = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('sm-from');
+  var toEl   = document.getElementById('sm-to');
+  if (toEl.value > today) toEl.value = today;
+  if (toEl.value && fromEl.value && fromEl.value > toEl.value) fromEl.value = toEl.value;
+  fromEl.max = toEl.value || today;
+  toEl.max   = today;
+}
+
+function smRender() {
+  var fromV = (document.getElementById('sm-from')||{}).value || '';
+  var toV   = (document.getElementById('sm-to')||{}).value   || '';
+
+  // ── Expenses ──
+  var expenses = _acExpenses || [];
+  var filteredExp = expenses.filter(function(e) {
+    var dt = (e.date || e.created_at || '').slice(0,10);
+    if (fromV && dt < fromV) return false;
+    if (toV   && dt > toV)   return false;
+    return true;
+  });
+  var totalPayable = filteredExp
+    .filter(function(e){ return e.status==='Pending' || e.status==='To be paid to landlord'; })
+    .reduce(function(s,e){ return s + (parseFloat(e.amount)||0); }, 0);
+  var totalPaid = filteredExp
+    .filter(function(e){ return e.status==='Paid' || e.status==='Paid to landlord'; })
+    .reduce(function(s,e){ return s + (parseFloat(e.amount)||0); }, 0);
+  var totalExpenses = totalPayable + totalPaid;
+
+  // ── Billing ──
+  var bills = ALL_BILLS || [];
+  var filteredBills = bills.filter(function(b) {
+    var dt = (b.bill_date || b.created_at || '').slice(0,10);
+    if (fromV && dt < fromV) return false;
+    if (toV   && dt > toV)   return false;
+    return true;
+  });
+  var totalReceived   = filteredBills.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.amount)||0); }, 0);
+  var totalReceivable = filteredBills.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.amount)||0); }, 0);
+  var totalBilled     = totalReceived + totalReceivable;
+
+  // ── Profit ──
+  var profit = totalBilled - totalExpenses;
+
+  // Update DOM
+  function el(id){ return document.getElementById(id); }
+  el('sm-kpi-payable').textContent  = acFmt(totalPayable);
+  el('sm-kpi-paid').textContent     = acFmt(totalPaid);
+  el('sm-kpi-expenses').textContent = acFmt(totalExpenses);
+  el('sm-kpi-received').textContent   = acFmt(totalReceived);
+  el('sm-kpi-receivable').textContent = acFmt(totalReceivable);
+  el('sm-kpi-billed').textContent     = acFmt(totalBilled);
+
+  var profitEl   = el('sm-kpi-profit');
+  var profitCard = el('sm-profit-card');
+  if (profit >= 0) {
+    profitEl.textContent = acFmt(profit);
+    profitEl.style.color = 'var(--g)';
+    profitCard.style.borderTopColor = 'var(--g)';
+  } else {
+    profitEl.textContent = '−' + acFmt(Math.abs(profit));
+    profitEl.style.color = 'var(--r)';
+    profitCard.style.borderTopColor = 'var(--r)';
+  }
+
+  // Trigger data loads if empty
+  if (!expenses.length && !window._acExpLoading) {
+    window._acExpLoading = true;
+    acLoadExp().then(function(){ smRender(); }).catch(function(){});
+  }
+}
+
+// Patch renderBills to also refresh summary when it's visible
+document.addEventListener('DOMContentLoaded', function() {
+  var _origRenderBills = window.renderBills;
+  if (typeof _origRenderBills === 'function') {
+    window.renderBills = function(data) {
+      _origRenderBills(data);
+      var smPane = document.getElementById('ac-pane-summary');
+      if (smPane && smPane.classList.contains('on')) smRender();
+    };
+  }
+});
 
 
 </script>
