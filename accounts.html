@@ -341,9 +341,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <table class="tbl">
       <thead><tr>
-        <th>Item</th><th>Category</th><th>Utility / Type</th><th>Amount</th><th>Status</th><th>Date</th><th>Receipt</th><th></th>
+        <th>Item</th><th>Category</th><th>Utility / Type</th><th>Pre-tax</th><th>TDS</th><th>Amount</th><th>Status</th><th>Date</th><th>Receipt</th><th></th>
       </tr></thead>
-      <tbody id="ac-exp-tbody"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
+      <tbody id="ac-exp-tbody"><tr><td colspan="10" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </div><!-- /ac-pane-expenses -->
@@ -582,6 +582,28 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </select>
     </div>
 
+    <!-- TDS — shown only when Payout is selected -->
+    <div class="fg" id="ac-tds-fg" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">TDS Applicable</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Tax Deducted at Source</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <span style="font-size:12px;color:var(--muted)" id="ac-tds-lbl">Off</span>
+          <div style="position:relative;width:40px;height:22px" onclick="acToggleTds()">
+            <input type="checkbox" id="ac-tds-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
+            <div id="ac-tds-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
+            <div id="ac-tds-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
+          </div>
+        </label>
+      </div>
+      <div id="ac-tds-pct-row" style="display:none;margin-top:8px">
+        <label class="fl">TDS % <span style="font-size:11px;color:var(--muted)">(default 10%)</span></label>
+        <input class="fc" id="ac-tds-pct" type="number" min="0" max="100" step="0.01" value="10" placeholder="10"/>
+      </div>
+    </div>
+
     <!-- Utility fields — shown only when Utility is selected -->
     <div id="ac-utility-fg" style="display:none">
       <div class="fg">
@@ -644,11 +666,23 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <label class="fl">Item <span class="req">*</span></label>
         <input class="fc" id="ac-exp-item" placeholder="e.g. Electrician payout"/>
       </div>
-      <div class="fg">
-        <label class="fl">Amount <span class="req">*</span></label>
-        <input class="fc" id="ac-exp-amount" type="number" min="0" placeholder="0.00"/>
+      <div class="fg" id="ac-pretax-fg">
+        <label class="fl" id="ac-pretax-lbl">Pre-tax Amount <span class="req">*</span></label>
+        <input class="fc" id="ac-exp-pretax" type="number" min="0" placeholder="0.00" oninput="acCalcPostTax()"/>
       </div>
     </div>
+    <!-- TDS breakdown row — shown when TDS is on -->
+    <div class="row-grid" id="ac-tds-breakdown" style="display:none">
+      <div class="fg">
+        <label class="fl">TDS Deducted</label>
+        <input class="fc" id="ac-exp-tds-amt" type="number" readonly tabindex="-1" style="background:var(--bg);color:#A32D2D;font-weight:500" placeholder="0.00"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Post-tax Amount <span style="font-size:11px;color:var(--muted)">(saved as Amount)</span></label>
+        <input class="fc" id="ac-exp-amount" type="number" readonly tabindex="-1" style="background:var(--bg);color:#3B6D11;font-weight:500" placeholder="0.00"/>
+      </div>
+    </div>
+    <!-- When TDS off: amount = pretax, show as plain field below -->
 
     <div class="fg">
       <label class="fl">Date <span class="req">*</span></label>
@@ -766,7 +800,7 @@ async function acLoadExp() {
     acRenderExp();
     acPopulateExpPropertyFilter();
   } catch(e) {
-    document.getElementById('ac-exp-tbody').innerHTML='<tr><td colspan="8" class="empty">'+e.message+'</td></tr>';
+    document.getElementById('ac-exp-tbody').innerHTML='<tr><td colspan="10" class="empty">'+e.message+'</td></tr>';
   }
 }
 
@@ -796,7 +830,7 @@ function acRenderExp() {
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
-  if(!d.length){ tb.innerHTML='<tr><td colspan="8" class="empty">No expenses found.</td></tr>'; return; }
+  if(!d.length){ tb.innerHTML='<tr><td colspan="10" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
     const utilityLabel = e.category==='Utility' && e.utility_type
       ? `<span class="bdg bdg-b" style="font-size:10px">${e.utility_type}</span>${e.property_name ? '<br/><span style="font-size:11px;color:var(--muted)">'+e.property_name+'</span>' : ''}`
@@ -808,7 +842,9 @@ function acRenderExp() {
       <td style="font-weight:500">${e.item||'—'}</td>
       <td><span class="bdg bdg-b">${e.category||'—'}</span></td>
       <td>${utilityLabel}</td>
-      <td>${acFmt(e.amount)}</td>
+      <td style="color:var(--muted);font-size:12px">${e.pretax_amount ? acFmt(e.pretax_amount) : '<span style="color:var(--border)">—</span>'}</td>
+      <td style="font-size:12px">${e.tds_amount ? '<span style="color:#A32D2D">-'+acFmt(e.tds_amount)+'</span>'+(e.tds_pct?'<br/><span style="font-size:10px;color:var(--muted)">'+e.tds_pct+'%</span>':'') : '<span style="color:var(--border)">—</span>'}</td>
+      <td style="font-weight:500">${acFmt(e.amount)}</td>
       <td>${
         e.status==='Paid'             ? '<span class="bdg bdg-g">Paid</span>' :
         e.status==='Pending'          ? '<span class="bdg bdg-a">Pending</span>' :
@@ -904,7 +940,20 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-payout-type').value='';
   document.getElementById('ac-exp-recipient').innerHTML='<option value="">— select —</option>';
   document.getElementById('ac-payout-fg').style.display='none';
+  document.getElementById('ac-tds-fg').style.display='none';
   document.getElementById('ac-recipient-fg').style.display='none';
+  // Reset TDS
+  const _tdsToggle = document.getElementById('ac-tds-toggle');
+  if(_tdsToggle){ _tdsToggle.checked=false; }
+  document.getElementById('ac-tds-track').style.background='#ccc';
+  document.getElementById('ac-tds-thumb').style.transform='translateX(0)';
+  document.getElementById('ac-tds-lbl').textContent='Off';
+  document.getElementById('ac-tds-pct-row').style.display='none';
+  document.getElementById('ac-tds-breakdown').style.display='none';
+  document.getElementById('ac-tds-pct').value='10';
+  document.getElementById('ac-exp-pretax').value='';
+  document.getElementById('ac-exp-tds-amt').value='';
+  document.getElementById('ac-exp-amount').value='';
   // reset utility
   document.getElementById('ac-exp-utility-property').value='';
   document.getElementById('ac-exp-utility-property').innerHTML='<option value="">— select property —</option>';
@@ -934,7 +983,22 @@ function acEditExp(e) {
   document.getElementById('ac-exp-date').max = _todayE;
   document.getElementById('ac-exp-date').value = e.date ? e.date : _todayE;
   document.getElementById('ac-exp-item').value=e.item||'';
-  document.getElementById('ac-exp-amount').value=e.amount||'';
+  // Restore TDS/pretax fields
+  const _editTdsToggle = document.getElementById('ac-tds-toggle');
+  const hasTds = e.tds_pct && e.tds_pct > 0;
+  if (_editTdsToggle) {
+    _editTdsToggle.checked = !!hasTds;
+    document.getElementById('ac-tds-track').style.background = hasTds ? 'var(--br)' : '#ccc';
+    document.getElementById('ac-tds-thumb').style.transform  = hasTds ? 'translateX(18px)' : 'translateX(0)';
+    document.getElementById('ac-tds-lbl').textContent = hasTds ? 'On' : 'Off';
+    document.getElementById('ac-tds-pct-row').style.display  = hasTds ? '' : 'none';
+    document.getElementById('ac-tds-breakdown').style.display= hasTds ? '' : 'none';
+    document.getElementById('ac-tds-pct').value = e.tds_pct || 10;
+  }
+  const pretaxVal = e.pretax_amount || e.amount || '';
+  document.getElementById('ac-exp-pretax').value = pretaxVal;
+  document.getElementById('ac-exp-tds-amt').value = e.tds_amount || '';
+  document.getElementById('ac-exp-amount').value = e.amount||'';
   document.getElementById('ac-exp-desc').value=e.description||'';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.category));
   document.getElementById('ac-exp-cat').value=e.category||'';
@@ -997,6 +1061,7 @@ function acEditExp(e) {
   }
   if (e.category === 'Payout' && e.payout_type) {
     document.getElementById('ac-payout-fg').style.display = '';
+    document.getElementById('ac-tds-fg').style.display = '';
     document.getElementById('ac-exp-payout-type').value = e.payout_type;
     document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.payout_type));
     // Populate recipient dropdown then restore selection
@@ -1044,11 +1109,15 @@ async function acPickCat(btn) {
 
   // Payout section
   document.getElementById('ac-payout-fg').style.display    = isPayout ? '' : 'none';
+  document.getElementById('ac-tds-fg').style.display       = isPayout ? '' : 'none';
   document.getElementById('ac-recipient-fg').style.display = 'none';
   if (!isPayout) {
     document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
     document.getElementById('ac-exp-payout-type').value = '';
     document.getElementById('ac-exp-recipient').innerHTML = '<option value="">— select —</option>';
+    // Reset TDS
+    const tdsToggle = document.getElementById('ac-tds-toggle');
+    if (tdsToggle && tdsToggle.checked) { tdsToggle.checked = false; acToggleTds(); }
   }
 
   // Others section
@@ -1134,6 +1203,38 @@ function acPickSt(btn) {
   document.getElementById('ac-exp-status').value = btn.dataset.val;
 }
 
+// ── TDS toggle ──
+function acToggleTds() {
+  const cb    = document.getElementById('ac-tds-toggle');
+  const track = document.getElementById('ac-tds-track');
+  const thumb = document.getElementById('ac-tds-thumb');
+  const lbl   = document.getElementById('ac-tds-lbl');
+  const pctRow= document.getElementById('ac-tds-pct-row');
+  const breakdown = document.getElementById('ac-tds-breakdown');
+  const on = cb.checked;
+  track.style.background = on ? 'var(--br)' : '#ccc';
+  thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  lbl.textContent = on ? 'On' : 'Off';
+  pctRow.style.display = on ? '' : 'none';
+  breakdown.style.display = on ? '' : 'none';
+  acCalcPostTax();
+}
+
+function acCalcPostTax() {
+  const pretax = parseFloat(document.getElementById('ac-exp-pretax').value) || 0;
+  const tdsOn  = document.getElementById('ac-tds-toggle') && document.getElementById('ac-tds-toggle').checked;
+  const tdsPct = parseFloat(document.getElementById('ac-tds-pct').value) || 0;
+  if (tdsOn) {
+    const tdsAmt  = Math.round(pretax * tdsPct / 100 * 100) / 100;
+    const postTax = Math.round((pretax - tdsAmt) * 100) / 100;
+    document.getElementById('ac-exp-tds-amt').value = tdsAmt.toFixed(2);
+    document.getElementById('ac-exp-amount').value  = postTax.toFixed(2);
+  } else {
+    // No TDS — amount = pretax
+    document.getElementById('ac-exp-amount').value = pretax ? pretax.toFixed(2) : '';
+  }
+}
+
 function acPickUtilityType(btn) {
   document.querySelectorAll('#ac-utility-type-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
@@ -1155,7 +1256,6 @@ function acOnUtilityPropertyChange() {
 async function acSaveExp() {
   const id          = document.getElementById('ac-exp-id').value;
   const item        = document.getElementById('ac-exp-item').value.trim();
-  const amount      = document.getElementById('ac-exp-amount').value;
   const category    = document.getElementById('ac-exp-cat').value;
   const status      = document.getElementById('ac-exp-status').value;
   const desc        = document.getElementById('ac-exp-desc').value.trim();
@@ -1166,9 +1266,16 @@ async function acSaveExp() {
   const utilityType = document.getElementById('ac-exp-utility-type').value;
   const billDate    = document.getElementById('ac-exp-utility-bill-date').value;
   const expDate     = document.getElementById('ac-exp-date').value;
+  // TDS fields
+  const tdsOn      = document.getElementById('ac-tds-toggle') && document.getElementById('ac-tds-toggle').checked;
+  const pretax     = parseFloat(document.getElementById('ac-exp-pretax').value) || 0;
+  const tdsPct     = tdsOn ? (parseFloat(document.getElementById('ac-tds-pct').value) || 0) : 0;
+  const tdsAmt     = tdsOn ? (parseFloat(document.getElementById('ac-exp-tds-amt').value) || 0) : 0;
+  // amount = post-tax (what gets saved to supabase 'amount' column)
+  const amount     = document.getElementById('ac-exp-amount').value || (pretax ? pretax.toFixed(2) : '');
 
   if(!item)    { alert('Item is required'); return; }
-  if(!amount)  { alert('Amount is required'); return; }
+  if(!pretax)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
   if(!expDate) { alert('Date is required'); return; }
@@ -1186,7 +1293,10 @@ async function acSaveExp() {
     payout_type:   category === 'Payout'  ? payoutType  : null,
     recipient:     category === 'Payout'  ? recipient   : null,
     property_name: category === 'Utility' ? utilityProp : (category === 'Others' ? othersProperty||null : null),
-    utility_type:  category === 'Utility' ? utilityType : null
+    utility_type:  category === 'Utility' ? utilityType : null,
+    pretax_amount: category === 'Payout' && pretax ? pretax : null,
+    tds_pct:       category === 'Payout' && tdsOn ? tdsPct : null,
+    tds_amount:    category === 'Payout' && tdsOn ? tdsAmt : null
   };
 
   try {

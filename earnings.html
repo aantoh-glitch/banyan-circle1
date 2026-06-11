@@ -256,6 +256,17 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .entry-pct{
   font-size:12px;color:var(--muted);margin-top:4px;
 }
+.tds-breakdown{
+  display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;
+}
+.tds-chip{
+  font-size:11px;padding:3px 9px;border-radius:6px;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.tds-chip.pretax{background:#F9F8F6;color:#5F5E5A;border:1px solid rgba(0,0,0,.08)}
+.tds-chip.tds-deduct{background:#FFEBEE;color:#C62828}
+.tds-chip.posttax{background:#E8F5E9;color:#2E7D32;font-weight:500}
+
 .assign-btn{
   font-size:11px;color:var(--br);
   background:var(--br-l);border:1px solid rgba(153,60,29,.18);
@@ -939,12 +950,15 @@ const PAYOUT_ENTITY_MAP = {
 function expenseToEarningsEntry(exp) {
   const entityType = PAYOUT_ENTITY_MAP[exp.payout_type] || null;
   return {
-    id:             'exp_' + exp.id,          // prefixed so it never collides with earnings_log ids
-    _fromExpense:   true,                     // flag for rendering tweaks
-    _expenseStatus: exp.status || null,       // preserve original expense status for display
+    id:             'exp_' + exp.id,
+    _fromExpense:   true,
+    _expenseStatus: exp.status || null,
     type:           'positive',
-    head:           'Pay',                    // positive head; expense item goes into notes
-    amount:         exp.amount,
+    head:           'Pay',
+    amount:         exp.amount,              // post-tax (what was actually paid)
+    _pretaxAmount:  exp.pretax_amount || null,
+    _tdsAmount:     exp.tds_amount    || null,
+    _tdsPct:        exp.tds_pct       || null,
     percentage:     null,
     notes:          exp.item || null,
     entity_type:    entityType,
@@ -1137,6 +1151,17 @@ function renderLog() {
     const statusChip = (e._fromExpense && e._expenseStatus === 'Paid to landlord')
       ? `<span class="entry-status-chip paid-landlord">Paid to landlord</span>` : '';
 
+    // TDS breakdown — shown when payout has TDS data
+    let tdsBreakdown = '';
+    if (e._fromExpense && e._pretaxAmount) {
+      const hasTds = e._tdsAmount && e._tdsAmount > 0;
+      tdsBreakdown = `<div class="tds-breakdown">
+        <span class="tds-chip pretax">Pre-tax ${fmtFull(e._pretaxAmount)}</span>
+        ${hasTds ? `<span class="tds-chip tds-deduct">TDS ${e._tdsPct ? e._tdsPct+'% ' : ''}−${fmtFull(e._tdsAmount)}</span>` : ''}
+        <span class="tds-chip posttax">Paid ${fmtFull(e.amount)}</span>
+      </div>`;
+    }
+
     // Admin: show assign button if unassigned
     const assignHtml = (isAdmin && isUnassigned && !e._fromExpense)
       ? `<button class="assign-btn" onclick="openAssignSheet('${e.id}')">Assign to head →</button>` : '';
@@ -1165,6 +1190,7 @@ function renderLog() {
           ${byTag}
         </div>
         ${notesHtml}
+        ${tdsBreakdown}
         ${assignHtml}
         ${actionsHtml}
       </div>`;
