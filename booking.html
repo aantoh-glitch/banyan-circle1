@@ -69,7 +69,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .bottom-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .block-panel { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 0; }
 .block-panel .panel-header { width: 100%; }
-.block-panel .block-form { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; align-items: end; padding: 16px 20px 0; }
+.block-panel .block-form { display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: 12px; align-items: end; padding: 16px 20px 0; }
 .block-panel .block-form .form-group { margin-bottom: 0; }
 .block-panel .block-actions { width: 100%; }
 .bookings-list { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
@@ -207,13 +207,22 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
             <select class="form-select" id="blockProperty"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Date Range</label>
-            <div class="drp-wrap" id="blockDrpWrap">
-              <div class="drp-display" id="blockDrpDisplay" onclick="openDrp(event,'block')">
-                <span id="blockDrpText">Select check-in date</span>
+            <label class="form-label">Check-in</label>
+            <div class="drp-wrap">
+              <div class="drp-display" id="blockCheckinDisplay" onclick="openCheckinPicker(event,'block')">
+                <span id="blockCheckinText">Select date</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </div>
               <input type="hidden" id="blockStart">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Check-out</label>
+            <div class="drp-wrap">
+              <div class="drp-display" id="blockCheckoutDisplay" onclick="openCheckoutPicker(event,'block')">
+                <span id="blockCheckoutText">Select date</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
               <input type="hidden" id="blockEnd">
             </div>
           </div>
@@ -258,14 +267,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <option value="booking">Booking.com</option>
       </select>
     </div>
-    <div class="form-group"><label class="form-label">Dates</label>
-      <div class="drp-wrap" id="manualDrpWrap">
-        <div class="drp-display" id="manualDrpDisplay" onclick="openDrp(event,'manual')">
-          <span id="manualDrpText">Select check-in date</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <div class="date-row" style="margin-bottom:13px;">
+      <div class="form-group" style="margin:0"><label class="form-label">Check-in</label>
+        <div class="drp-wrap">
+          <div class="drp-display" id="manualCheckinDisplay" onclick="openCheckinPicker(event,'manual')">
+            <span id="manualCheckinText">Select date</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <input type="hidden" id="manualStart">
         </div>
-        <input type="hidden" id="manualStart">
-        <input type="hidden" id="manualEnd">
+      </div>
+      <div class="form-group" style="margin:0"><label class="form-label">Check-out</label>
+        <div class="drp-wrap">
+          <div class="drp-display" id="manualCheckoutDisplay" onclick="openCheckoutPicker(event,'manual')">
+            <span id="manualCheckoutText">Select date</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <input type="hidden" id="manualEnd">
+        </div>
       </div>
     </div>
     <div class="date-row" style="margin-bottom:13px;">
@@ -920,18 +939,20 @@ function downloadLogExcel() {
 renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
 loadPropertiesFromSupabase();
 
-/* ── Two-Step Date Picker (Check-in → Check-out) ── */
-let drpState = { ctx: null, start: null, end: null, month: null, year: null, step: null /* 'checkin' | 'checkout' */ };
+/* ── Independent Check-in / Check-out Pickers ── */
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 function todayStr() {
   const t = new Date();
   return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
 }
 
-function positionPopup(popup, anchorEl) {
-  const rect = anchorEl.getBoundingClientRect();
-  const popW = 300;
-  const popH = 310;
+// Active picker state: { ctx, type ('checkin'|'checkout') }
+let activePicker = null;
+
+function positionPopup(popup, anchor) {
+  const rect = anchor.getBoundingClientRect();
+  const popW = 300, popH = 310;
   let left = rect.left;
   if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
   let top = rect.bottom + 6;
@@ -940,156 +961,170 @@ function positionPopup(popup, anchorEl) {
   popup.style.left = left + 'px';
 }
 
-function openDrp(evtOrCtx, ctx) {
-  if (typeof evtOrCtx === 'string') { ctx = evtOrCtx; } else { evtOrCtx.stopPropagation(); }
-  // Always start at check-in step when clicking the combined display
-  drpState.ctx = ctx;
-  drpState.step = 'checkin';
-  const today = new Date();
-  drpState.month = today.getMonth();
-  drpState.year = today.getFullYear();
-  const sv = document.getElementById(ctx + 'Start').value;
-  drpState.start = sv || null;
-  drpState.end = null;
-  closeAllDrp();
-  const popup = document.getElementById('drpPopupCheckin');
-  const display = document.getElementById(ctx + 'DrpDisplay');
-  renderCheckinDrp();
-  popup.classList.add('open');
-  positionPopup(popup, display);
-}
-
-function closeAllDrp() {
+function closeAllPickers() {
   document.getElementById('drpPopupCheckin').classList.remove('open');
   document.getElementById('drpPopupCheckout').classList.remove('open');
+  activePicker = null;
 }
 
-function drpNavCheckin(dir) {
-  drpState.month += dir;
-  if (drpState.month > 11) { drpState.month = 0; drpState.year++; }
-  if (drpState.month < 0)  { drpState.month = 11; drpState.year--; }
-  renderCheckinDrp();
+function openCheckinPicker(evt, ctx) {
+  evt.stopPropagation();
+  // toggle off if already open for same ctx
+  const ci = document.getElementById('drpPopupCheckin');
+  if (activePicker && activePicker.ctx === ctx && activePicker.type === 'checkin' && ci.classList.contains('open')) {
+    closeAllPickers(); return;
+  }
+  closeAllPickers();
+  activePicker = { ctx, type: 'checkin', month: new Date().getMonth(), year: new Date().getFullYear() };
+  // If already has a value, navigate to that month
+  const val = document.getElementById(ctx + 'Start').value;
+  if (val) { const d = new Date(val+'T00:00:00'); activePicker.month = d.getMonth(); activePicker.year = d.getFullYear(); }
+  renderCheckinPicker();
+  ci.classList.add('open');
+  positionPopup(ci, document.getElementById(ctx + 'CheckinDisplay'));
 }
 
-function drpNavCheckout(dir) {
-  drpState.coMonth += dir;
-  if (drpState.coMonth > 11) { drpState.coMonth = 0; drpState.coYear++; }
-  if (drpState.coMonth < 0)  { drpState.coMonth = 11; drpState.coYear--; }
-  renderCheckoutDrp();
+function openCheckoutPicker(evt, ctx) {
+  evt.stopPropagation();
+  const co = document.getElementById('drpPopupCheckout');
+  if (activePicker && activePicker.ctx === ctx && activePicker.type === 'checkout' && co.classList.contains('open')) {
+    closeAllPickers(); return;
+  }
+  closeAllPickers();
+  // Start checkout calendar from check-in date if set, else today
+  const ciVal = document.getElementById(ctx + 'Start').value;
+  const base = ciVal ? new Date(ciVal+'T00:00:00') : new Date();
+  activePicker = { ctx, type: 'checkout', month: base.getMonth(), year: base.getFullYear() };
+  const coVal = document.getElementById(ctx + 'End').value;
+  if (coVal) { const d = new Date(coVal+'T00:00:00'); activePicker.month = d.getMonth(); activePicker.year = d.getFullYear(); }
+  renderCheckoutPicker();
+  co.classList.add('open');
+  positionPopup(co, document.getElementById(ctx + 'CheckoutDisplay'));
 }
 
-function drpClickCheckin(ds) {
-  drpState.start = ds;
-  // Close check-in popup
-  document.getElementById('drpPopupCheckin').classList.remove('open');
-  // Open check-out popup anchored to same display
-  const ctx = drpState.ctx;
-  const display = document.getElementById(ctx + 'DrpDisplay');
-  // Update check-in label immediately
-  const startEl = document.getElementById(ctx + 'Start');
-  if (startEl) startEl.value = ds;
-  const textEl = document.getElementById(ctx + 'DrpText');
-  if (textEl) textEl.textContent = formatDate(ds) + ' → ?';
-  // Init checkout calendar from check-in date
-  const ciDate = new Date(ds + 'T00:00:00');
-  drpState.coMonth = ciDate.getMonth();
-  drpState.coYear  = ciDate.getFullYear();
-  renderCheckoutDrp();
-  const popup = document.getElementById('drpPopupCheckout');
-  popup.classList.add('open');
-  positionPopup(popup, display);
+function navCheckin(dir) {
+  if (!activePicker) return;
+  activePicker.month += dir;
+  if (activePicker.month > 11) { activePicker.month = 0; activePicker.year++; }
+  if (activePicker.month < 0)  { activePicker.month = 11; activePicker.year--; }
+  renderCheckinPicker();
 }
 
-function drpClickCheckout(ds) {
-  drpState.end = ds;
-  const ctx = drpState.ctx;
-  if (!ctx) { closeAllDrp(); return; }
-  const startEl = document.getElementById(ctx + 'Start');
-  const endEl   = document.getElementById(ctx + 'End');
-  const textEl  = document.getElementById(ctx + 'DrpText');
-  const dispEl  = document.getElementById(ctx + 'DrpDisplay');
-  if (startEl) startEl.value = drpState.start;
-  if (endEl)   endEl.value   = drpState.end;
-  if (textEl)  textEl.textContent = formatDate(drpState.start) + ' → ' + formatDate(drpState.end);
-  if (dispEl)  dispEl.style.color = 'var(--text)';
-  closeAllDrp();
+function navCheckout(dir) {
+  if (!activePicker) return;
+  activePicker.month += dir;
+  if (activePicker.month > 11) { activePicker.month = 0; activePicker.year++; }
+  if (activePicker.month < 0)  { activePicker.month = 11; activePicker.year--; }
+  renderCheckoutPicker();
 }
 
-function renderCheckinDrp() {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function renderCheckinPicker() {
+  if (!activePicker) return;
+  const { ctx, month, year } = activePicker;
   const today = todayStr();
-  const firstDay = new Date(drpState.year, drpState.month, 1).getDay();
-  const daysInMonth = new Date(drpState.year, drpState.month + 1, 0).getDate();
+  const selected = document.getElementById(ctx + 'Start').value;
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   let cells = '';
   for (let i = 0; i < firstDay; i++) cells += '<div class="drp-day drp-day-empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
-    const ds = drpState.year + '-' + String(drpState.month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     let cls = 'drp-day';
     if (ds < today) cls += ' drp-day-past';
-    else if (ds === drpState.start) cls += ' drp-day-start drp-day-end';
+    else if (ds === selected) cls += ' drp-day-start drp-day-end';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
-  document.getElementById('drpCheckinMonthLabel').textContent = months[drpState.month] + ' ' + drpState.year;
+  document.getElementById('drpCheckinMonthLabel').textContent = MONTHS[month] + ' ' + year;
   const el = document.getElementById('drpCheckinDays');
   el.innerHTML = cells;
   el.onmousedown = function(e) {
     const cell = e.target.closest('[data-ds]');
     if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty')) return;
     e.preventDefault(); e.stopPropagation();
-    drpClickCheckin(cell.dataset.ds);
+    selectCheckin(cell.dataset.ds);
   };
 }
 
-function renderCheckoutDrp() {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const minDate = drpState.start; // must be strictly after check-in
-  const firstDay = new Date(drpState.coYear, drpState.coMonth, 1).getDay();
-  const daysInMonth = new Date(drpState.coYear, drpState.coMonth + 1, 0).getDate();
+function selectCheckin(ds) {
+  if (!activePicker) return;
+  const ctx = activePicker.ctx;
+  document.getElementById(ctx + 'Start').value = ds;
+  document.getElementById(ctx + 'CheckinText').textContent = formatDate(ds);
+  document.getElementById(ctx + 'CheckinDisplay').style.color = 'var(--text)';
+  // Clear checkout if it's now before or same as new check-in
+  const endEl = document.getElementById(ctx + 'End');
+  if (endEl.value && endEl.value <= ds) {
+    endEl.value = '';
+    document.getElementById(ctx + 'CheckoutText').textContent = 'Select date';
+    document.getElementById(ctx + 'CheckoutDisplay').style.color = '';
+  }
+  closeAllPickers();
+}
+
+function renderCheckoutPicker() {
+  if (!activePicker) return;
+  const { ctx, month, year } = activePicker;
+  const minDate = document.getElementById(ctx + 'Start').value || todayStr();
+  const selected = document.getElementById(ctx + 'End').value;
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   let cells = '';
   for (let i = 0; i < firstDay; i++) cells += '<div class="drp-day drp-day-empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
-    const ds = drpState.coYear + '-' + String(drpState.coMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     let cls = 'drp-day';
-    if (ds <= minDate) cls += ' drp-day-past'; // disable same day and before
-    else if (ds === drpState.end) cls += ' drp-day-start drp-day-end';
+    if (ds <= minDate) cls += ' drp-day-past';
+    else if (ds === selected) cls += ' drp-day-start drp-day-end';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
-  document.getElementById('drpCheckoutMonthLabel').textContent = months[drpState.coMonth] + ' ' + drpState.coYear;
+  document.getElementById('drpCheckoutMonthLabel').textContent = MONTHS[month] + ' ' + year;
   const el = document.getElementById('drpCheckoutDays');
   el.innerHTML = cells;
   el.onmousedown = function(e) {
     const cell = e.target.closest('[data-ds]');
     if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty')) return;
     e.preventDefault(); e.stopPropagation();
-    drpClickCheckout(cell.dataset.ds);
+    selectCheckout(cell.dataset.ds);
   };
+}
+
+function selectCheckout(ds) {
+  if (!activePicker) return;
+  const ctx = activePicker.ctx;
+  document.getElementById(ctx + 'End').value = ds;
+  document.getElementById(ctx + 'CheckoutText').textContent = formatDate(ds);
+  document.getElementById(ctx + 'CheckoutDisplay').style.color = 'var(--text)';
+  closeAllPickers();
 }
 
 // Close on outside click
 document.addEventListener('click', function(e) {
+  if (!activePicker) return;
   const ci = document.getElementById('drpPopupCheckin');
   const co = document.getElementById('drpPopupCheckout');
-  const ctx = drpState.ctx;
-  const display = ctx ? document.getElementById(ctx + 'DrpDisplay') : null;
-  if (ci.classList.contains('open')) {
-    if (!ci.contains(e.target) && !(display && display.contains(e.target))) {
-      ci.classList.remove('open');
-    }
-  }
-  if (co.classList.contains('open')) {
-    if (!co.contains(e.target) && !(display && display.contains(e.target))) {
-      co.classList.remove('open');
-    }
-  }
+  const ciAnchor = document.getElementById(activePicker.ctx + 'CheckinDisplay');
+  const coAnchor = document.getElementById(activePicker.ctx + 'CheckoutDisplay');
+  if (ci.classList.contains('open') && !ci.contains(e.target) && !(ciAnchor && ciAnchor.contains(e.target))) ci.classList.remove('open');
+  if (co.classList.contains('open') && !co.contains(e.target) && !(coAnchor && coAnchor.contains(e.target))) co.classList.remove('open');
+  if (!ci.classList.contains('open') && !co.classList.contains('open')) activePicker = null;
 });
+
+// Legacy openDrp shim (not used but keeps any residual calls safe)
+function openDrp() {}
 
 // reset helpers used by openAddBooking / clearBlockForm
 function resetDrp(ctx) {
   document.getElementById(ctx + 'Start').value = '';
   document.getElementById(ctx + 'End').value = '';
-  document.getElementById(ctx + 'DrpText').textContent = 'Select check-in date';
-  document.getElementById(ctx + 'DrpDisplay').style.color = '';
-  closeAllDrp();
+  const ciText = document.getElementById(ctx + 'CheckinText');
+  const coText = document.getElementById(ctx + 'CheckoutText');
+  const ciDisp = document.getElementById(ctx + 'CheckinDisplay');
+  const coDisp = document.getElementById(ctx + 'CheckoutDisplay');
+  if (ciText) ciText.textContent = 'Select date';
+  if (coText) coText.textContent = 'Select date';
+  if (ciDisp) ciDisp.style.color = '';
+  if (coDisp) coDisp.style.color = '';
+  closeAllPickers();
 }
 
 </script>
@@ -1098,9 +1133,9 @@ function resetDrp(ctx) {
 <div class="drp-popup" id="drpPopupCheckin" onclick="event.stopPropagation()" style="width:300px;">
   <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--br);margin-bottom:8px;">Check-in Date</div>
   <div class="drp-popup-header">
-    <button class="drp-popup-nav" onclick="drpNavCheckin(-1)">&#8249;</button>
+    <button class="drp-popup-nav" onclick="navCheckin(-1)">&#8249;</button>
     <div class="drp-popup-month" id="drpCheckinMonthLabel"></div>
-    <button class="drp-popup-nav" onclick="drpNavCheckin(1)">&#8250;</button>
+    <button class="drp-popup-nav" onclick="navCheckin(1)">&#8250;</button>
   </div>
   <div class="drp-wdays">
     <div class="drp-wday">Su</div><div class="drp-wday">Mo</div><div class="drp-wday">Tu</div>
@@ -1113,9 +1148,9 @@ function resetDrp(ctx) {
 <div class="drp-popup" id="drpPopupCheckout" onclick="event.stopPropagation()" style="width:300px;">
   <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--br);margin-bottom:8px;">Check-out Date</div>
   <div class="drp-popup-header">
-    <button class="drp-popup-nav" onclick="drpNavCheckout(-1)">&#8249;</button>
+    <button class="drp-popup-nav" onclick="navCheckout(-1)">&#8249;</button>
     <div class="drp-popup-month" id="drpCheckoutMonthLabel"></div>
-    <button class="drp-popup-nav" onclick="drpNavCheckout(1)">&#8250;</button>
+    <button class="drp-popup-nav" onclick="navCheckout(1)">&#8250;</button>
   </div>
   <div class="drp-wdays">
     <div class="drp-wday">Su</div><div class="drp-wday">Mo</div><div class="drp-wday">Tu</div>
