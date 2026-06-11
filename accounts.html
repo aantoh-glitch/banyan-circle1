@@ -581,7 +581,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg" id="ac-tds-fg" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
         <div>
-          <div style="font-size:13px;font-weight:500;color:var(--text)">TDS Applicable</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">TDS Applicable
+            <span id="ac-pan-badge" style="display:none;margin-left:10px;font-size:11px;font-weight:500;background:var(--b-l);color:var(--b);padding:2px 8px;border-radius:999px;letter-spacing:.5px"></span>
+          </div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">Tax Deducted at Source</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -937,6 +939,11 @@ function acOpenExpModal() {
   document.getElementById('ac-payout-fg').style.display='none';
   document.getElementById('ac-tds-fg').style.display='none';
   document.getElementById('ac-recipient-fg').style.display='none';
+  // Reset PAN badge
+  const _panBadge = document.getElementById('ac-pan-badge');
+  if (_panBadge) { _panBadge.textContent=''; _panBadge.style.display='none'; }
+  const _panField = document.getElementById('ac-exp-pan');
+  if (_panField) _panField.value='';
   // Reset TDS
   const _tdsToggle = document.getElementById('ac-tds-toggle');
   if(_tdsToggle){ _tdsToggle.checked=false; }
@@ -1064,18 +1071,32 @@ function acEditExp(e) {
       try {
         let items = [];
         if (e.payout_type === 'Talent') {
-          const d = await acApi('/rest/v1/talents?select=id,name&order=name');
-          items = (d||[]).map(r=>r.name);
+          const d = await acApi('/rest/v1/talents?select=id,name,pan&order=name');
+          items = (d||[]).map(r=>({ label: r.name, pan: r.pan||'' }));
         } else if (e.payout_type === 'Team') {
-          const d = await acApi('/rest/v1/staff?select=id,name&order=name');
-          items = (d||[]).map(r=>r.name);
+          const d = await acApi('/rest/v1/staff?select=id,name,pan&order=name');
+          items = (d||[]).map(r=>({ label: r.name, pan: r.pan||'' }));
         } else if (e.payout_type === 'Landlords') {
-          const d = await acApi('/rest/v1/landlords?select=id,property_name&order=property_name');
-          items = (d||[]).map(r=>r.property_name);
+          const d = await acApi('/rest/v1/landlords?select=id,property_name,pan&order=property_name');
+          items = (d||[]).map(r=>({ label: r.property_name, pan: r.pan||'' }));
         }
         const sel = document.getElementById('ac-exp-recipient');
-        sel.innerHTML = '<option value="">— select —</option>' + items.map(n=>`<option value="${n}"${n===e.recipient?' selected':''}>${n}</option>`).join('');
+        sel.innerHTML = '<option value="" data-pan="">— select —</option>' + items.map(n=>`<option value="${n.label}" data-pan="${n.pan||''}"${n.label===e.recipient?' selected':''}>${n.label}</option>`).join('');
         document.getElementById('ac-recipient-fg').style.display = '';
+        // Restore PAN badge
+        const selectedOpt = sel.options[sel.selectedIndex];
+        const pan = selectedOpt ? selectedOpt.getAttribute('data-pan') : '';
+        const panBadge = document.getElementById('ac-pan-badge');
+        if (pan) { panBadge.textContent = 'PAN: ' + pan; panBadge.style.display = 'inline'; }
+        else { panBadge.textContent = ''; panBadge.style.display = 'none'; }
+        // Restore PAN hidden field
+        let panField = document.getElementById('ac-exp-pan');
+        if (!panField) {
+          panField = document.createElement('input');
+          panField.type = 'hidden'; panField.id = 'ac-exp-pan';
+          sel.parentNode.appendChild(panField);
+        }
+        panField.value = e.pan || pan || '';
       } catch(_) {}
     })();
   }
@@ -1166,6 +1187,10 @@ async function acPickPayout(btn) {
   btn.classList.add('on');
   const type = btn.dataset.val;
   document.getElementById('ac-exp-payout-type').value = type;
+  // Clear PAN badge when payout type changes
+  const panBadge = document.getElementById('ac-pan-badge');
+  panBadge.style.display = 'none';
+  panBadge.textContent = '';
   // Fetch list from appropriate table
   const recipientSel = document.getElementById('ac-exp-recipient');
   recipientSel.innerHTML = '<option value="">Loading…</option>';
@@ -1173,24 +1198,43 @@ async function acPickPayout(btn) {
   try {
     let items = [];
     if (type === 'Talent') {
-      const d = await acApi('/rest/v1/talents?select=id,name&order=name');
-      items = (d||[]).map(r=>({ id: r.id, label: r.name }));
+      const d = await acApi('/rest/v1/talents?select=id,name,pan&order=name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.name, pan: r.pan||'' }));
     } else if (type === 'Team') {
-      const d = await acApi('/rest/v1/staff?select=id,name&order=name');
-      items = (d||[]).map(r=>({ id: r.id, label: r.name }));
+      const d = await acApi('/rest/v1/staff?select=id,name,pan&order=name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.name, pan: r.pan||'' }));
     } else if (type === 'Landlords') {
-      const d = await acApi('/rest/v1/landlords?select=id,property_name&order=property_name');
-      items = (d||[]).map(r=>({ id: r.id, label: r.property_name }));
+      const d = await acApi('/rest/v1/landlords?select=id,property_name,pan&order=property_name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.property_name, pan: r.pan||'' }));
     }
-    recipientSel.innerHTML = '<option value="">— select —</option>' +
-      items.map(i=>`<option value="${i.label}">${i.label}</option>`).join('');
+    recipientSel.innerHTML = '<option value="" data-pan="">— select —</option>' +
+      items.map(i=>`<option value="${i.label}" data-pan="${i.pan}">${i.label}</option>`).join('');
   } catch(e) {
     recipientSel.innerHTML = '<option value="">Could not load</option>';
   }
 }
 
 function acOnRecipientChange() {
-  // Do not auto-fill item — leave blank for user to type
+  const sel = document.getElementById('ac-exp-recipient');
+  const panBadge = document.getElementById('ac-pan-badge');
+  const opt = sel.options[sel.selectedIndex];
+  const pan = opt ? opt.getAttribute('data-pan') : '';
+  if (pan) {
+    panBadge.textContent = 'PAN: ' + pan;
+    panBadge.style.display = 'inline';
+  } else {
+    panBadge.textContent = '';
+    panBadge.style.display = 'none';
+  }
+  // Store PAN in hidden field for saving
+  let panField = document.getElementById('ac-exp-pan');
+  if (!panField) {
+    panField = document.createElement('input');
+    panField.type = 'hidden';
+    panField.id = 'ac-exp-pan';
+    document.getElementById('ac-exp-recipient').parentNode.appendChild(panField);
+  }
+  panField.value = pan || '';
 }
 function acPickSt(btn) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -1280,6 +1324,7 @@ async function acSaveExp() {
   if(category === 'Utility' && !utilityType) { alert('Select a utility type'); return; }
 
   const othersProperty = document.getElementById('ac-exp-others-property') ? document.getElementById('ac-exp-others-property').value : '';
+  const panVal = document.getElementById('ac-exp-pan') ? document.getElementById('ac-exp-pan').value : '';
   const body = {
     item, amount: Number(amount), category, status,
     date:          expDate      || null,
@@ -1287,6 +1332,7 @@ async function acSaveExp() {
     file_url:      fileUrl  || null,
     payout_type:   category === 'Payout'  ? payoutType  : null,
     recipient:     category === 'Payout'  ? recipient   : null,
+    pan:           category === 'Payout'  ? (panVal || null) : null,
     property_name: category === 'Utility' ? utilityProp : (category === 'Others' ? othersProperty||null : null),
     utility_type:  category === 'Utility' ? utilityType : null,
     pretax_amount: category === 'Payout' && pretax ? pretax : null,
@@ -2146,20 +2192,28 @@ function downloadExpensesXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Detail sheet —
-  var detailRows = [['Date','Item','Category','Amount (₹)','Status','Description','Receipt URL']];
+  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','Amount (₹)','Status','Property','Utility Type','Description','Receipt URL']];
   data.forEach(function(e){
     detailRows.push([
       (e.date||e.created_at||'').slice(0,10),
       e.item||'',
       e.category||'',
+      e.payout_type||'',
+      e.recipient||'',
+      e.pan||'',
+      e.pretax_amount!=null ? parseFloat(e.pretax_amount)||0 : '',
+      e.tds_pct!=null       ? parseFloat(e.tds_pct)||0       : '',
+      e.tds_amount!=null    ? parseFloat(e.tds_amount)||0     : '',
       parseFloat(e.amount)||0,
       e.status||'',
+      e.property_name||'',
+      e.utility_type||'',
       e.description||'',
       e.file_url||''
     ]);
   });
   var wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
-  applyColWidths(wsDetail, [14,28,14,16,22,34,40]);
+  applyColWidths(wsDetail, [14,28,12,12,24,14,14,8,16,14,22,24,14,34,40]);
   XLSX.utils.book_append_sheet(wb, wsDetail, 'Expenses');
 
   var today = new Date().toISOString().slice(0,10);
