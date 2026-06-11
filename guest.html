@@ -178,12 +178,11 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <input type="file" id="ci-files" multiple accept="image/*,.pdf" style="display:none" onchange="handleIdUpload(this)"/>
       <div class="file-list" id="ci-file-list"></div>
     </div>
-    <div class="fg"><label class="fl">Organisation &amp; Designation</label><input class="fc" id="ci-org" type="text" placeholder="Company / Job title"/></div>
     <div class="fg"><label class="fl">Permanent address<span>*</span></label><textarea class="fc" id="ci-address" placeholder="Full home address" oninput="onPermAddrInput()"></textarea></div>
 
     <!-- Billing address -->
     <div class="fg" id="billing-section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <label class="fl" style="margin-bottom:0">Billing address<span>*</span></label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);user-select:none">
           <span id="billing-toggle-label">Same as permanent</span>
@@ -192,8 +191,19 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
           </div>
         </label>
       </div>
-      <div id="billing-same-display" style="padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--muted);background:var(--bg);min-height:48px;line-height:1.6;white-space:pre-wrap" id="billing-same-display"></div>
-      <textarea class="fc" id="ci-billing" placeholder="Full billing address&#10;Line 2&#10;City, State, PIN" style="display:none;min-height:96px"></textarea>
+
+      <!-- Billing detail fields (always shown) -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input class="fc" id="ci-bill-company" type="text" placeholder="Company name (optional)"/>
+        <input class="fc" id="ci-bill-designation" type="text" placeholder="Designation (optional)"/>
+        <div id="billing-addr-wrap">
+          <!-- Same-as-permanent: read-only mirror -->
+          <div id="billing-same-display" style="padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--muted);background:var(--bg);min-height:48px;line-height:1.6;white-space:pre-wrap"></div>
+          <!-- Different address: editable textarea -->
+          <textarea class="fc" id="ci-billing" placeholder="Billing address&#10;Line 2&#10;City, State, PIN" style="display:none;min-height:96px"></textarea>
+        </div>
+        <input class="fc" id="ci-bill-gst" type="text" placeholder="GST number (optional)" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+      </div>
     </div>
 
     <div class="fg"><label class="fl">Email ID<span>*</span></label><input class="fc" id="ci-email" type="email" placeholder="your@email.com"/></div>
@@ -741,16 +751,26 @@ function editCheckin(){
   var fd = CI_RECORD.form_data || {};
   document.getElementById('ci-name').value     = CI_RECORD.guest_name || '';
   document.getElementById('ci-address').value  = fd.permanent_address || '';
-  // Restore billing address
+  // Restore billing sub-fields
+  document.getElementById('ci-bill-company').value     = fd.billing_company || '';
+  document.getElementById('ci-bill-designation').value = fd.billing_designation || '';
+  document.getElementById('ci-bill-gst').value         = fd.billing_gst || '';
+  // Restore billing address toggle
   var storedBilling = fd.billing_address || '';
   var permAddr      = fd.permanent_address || '';
-  if (storedBilling && storedBilling !== permAddr) {
-    // Different billing address — flip toggle off
-    billingIsSame = true; // toggleBilling will invert it
+  var wasSame       = fd.billing_same_as_perm !== false && storedBilling === permAddr;
+  if (!wasSame && storedBilling && storedBilling !== permAddr) {
+    billingIsSame = true; // toggleBilling will flip it
     toggleBilling();
-    document.getElementById('ci-billing').value = storedBilling;
+    // Strip company/designation/GST lines to get raw address
+    var rawLines = storedBilling.split('\n').filter(function(l){
+      return l.indexOf('GST:') !== 0 &&
+             l !== (fd.billing_company||'') &&
+             l !== ((fd.billing_company||'') + ', ' + (fd.billing_designation||'')) &&
+             l !== (fd.billing_designation||'');
+    });
+    document.getElementById('ci-billing').value = rawLines.join('\n');
   } else {
-    // Same as permanent
     billingIsSame = true;
     document.getElementById('billing-toggle').style.background = 'var(--br)';
     document.getElementById('billing-toggle-knob').style.left = '21px';
@@ -770,7 +790,6 @@ function editCheckin(){
       if(disp){ disp.textContent=mo[parseInt(dobParts[1])-1].substring(0,3)+' '+parseInt(dobParts[2])+', '+dobParts[0]; disp.style.color='var(--text)'; }
     }
   }
-  document.getElementById('ci-org').value      = fd.organisation || '';
   document.getElementById('ci-from').value     = CI_RECORD.travelled_from || '';
   document.getElementById('ci-to').value       = CI_RECORD.travelling_to || '';
   document.getElementById('ci-arr-date').value = fd.arrival_date || '';
@@ -879,10 +898,23 @@ async function submitCheckin(){
   var decl    = document.getElementById('ci-declaration').checked;
   var isEdit  = !!(CI_RECORD && CI_RECORD.id);
 
-  // Billing address
-  var billing = billingIsSame ? addr : document.getElementById('ci-billing').value.trim();
+  // Billing address — composite from structured fields
+  var billCompany     = document.getElementById('ci-bill-company').value.trim();
+  var billDesignation = document.getElementById('ci-bill-designation').value.trim();
+  var billAddrRaw     = billingIsSame ? addr : document.getElementById('ci-billing').value.trim();
+  var billGst         = document.getElementById('ci-bill-gst').value.trim();
+
+  // Assemble: Company / Designation on line 1 (if provided), then address, then GST
+  var billingParts = [];
+  if (billCompany && billDesignation) billingParts.push(billCompany + ', ' + billDesignation);
+  else if (billCompany)               billingParts.push(billCompany);
+  else if (billDesignation)           billingParts.push(billDesignation);
+  if (billAddrRaw)  billingParts.push(billAddrRaw);
+  if (billGst)      billingParts.push('GST: ' + billGst);
+  var billing = billingParts.join('\n');
+
   if(!name||!addr||!billing||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
-  if(!billingIsSame && !billing){toast('Please enter a billing address');return;}
+  if(!billingIsSame && !billAddrRaw){toast('Please enter a billing address');return;}
   if(mobile.replace(/\D/g,'').length < 10){toast('Mobile number must be at least 10 digits');return;}
   if(depDate <= arrDate){toast('Departure date must be after arrival date');return;}
 
@@ -915,9 +947,12 @@ async function submitCheckin(){
   }
 
   var form_data = {
-    organisation:      document.getElementById('ci-org').value.trim(),
-    permanent_address: addr,
-    billing_address:   billing,
+    permanent_address:    addr,
+    billing_address:      billing,
+    billing_company:      billCompany,
+    billing_designation:  billDesignation,
+    billing_gst:          billGst,
+    billing_same_as_perm: billingIsSame,
     email:             email,
     mobile:            mobile,
     dob:               dob,
