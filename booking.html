@@ -764,7 +764,7 @@ function showBookingDetail(id) {
   html += '<div class="modal-detail-row"><div class="modal-detail-label">Check-in</div><div class="modal-detail-value">' + formatDate(b.start) + '</div></div>';
   html += '<div class="modal-detail-row"><div class="modal-detail-label">Check-out</div><div class="modal-detail-value">' + formatDate(b.end) + '</div></div>';
   if (b.num_guests!=null) html += '<div class="modal-detail-row"><div class="modal-detail-label">Guests</div><div class="modal-detail-value">' + b.num_guests + '</div></div>';
-  if (b.disc_amount!=null) html += '<div class="modal-detail-row"><div class="modal-detail-label">Amount</div><div class="modal-detail-value">EUR ' + Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</div></div>';
+  if (b.disc_amount!=null) html += '<div class="modal-detail-row"><div class="modal-detail-label">Amount</div><div class="modal-detail-value">₹ ' + Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</div></div>';
   if (b.reason) html += '<div class="modal-detail-row"><div class="modal-detail-label">Note</div><div class="modal-detail-value">' + b.reason + '</div></div>';
   document.getElementById('detailBody').innerHTML = html;
   document.getElementById('bookingDetailModal').classList.add('open');
@@ -889,7 +889,7 @@ function renderLogTable() {
       '<td style="padding:9px 12px;">' + formatDate(b.end) + '</td>' +
       '<td style="padding:9px 12px;">' + nights + '</td>' +
       '<td style="padding:9px 12px;">' + (b.num_guests!=null?b.num_guests:'--') + '</td>' +
-      '<td style="padding:9px 12px;">' + (b.disc_amount!=null?'EUR '+Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}):'--') + '</td>' +
+      '<td style="padding:9px 12px;">' + (b.disc_amount!=null?'₹'+Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}):'--') + '</td>' +
       '</tr>';
   }).join('');
   document.getElementById('logCount').textContent = rows.length + ' booking' + (rows.length!==1?'s':'');
