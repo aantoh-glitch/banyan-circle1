@@ -801,6 +801,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="btn-sec" onclick="acCloseExpModal()">Cancel</button>
       <button class="btn-p" onclick="acSaveExp()">Save</button>
     </div>
+    <!-- Always-visible cancel for when no category is selected yet -->
+    <div id="ac-exp-cancel-only" style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-sec" onclick="acCloseExpModal()">Cancel</button>
+    </div>
   </div>
 </div>
 <div class="ac-toast" id="ac-toast"></div>
@@ -1057,9 +1061,11 @@ function acOpenExpModal() {
   document.getElementById('ac-file-input').value='';
   document.getElementById('ac-exp-fields').style.display = 'none';
   document.getElementById('ac-exp-modal-actions').style.display = 'none';
+  document.getElementById('ac-exp-cancel-only').style.display = '';
   document.getElementById('ac-modal-exp').classList.add('on');
 }
-  document.getElementById('ac-exp-id').value=e.id;
+
+function acEditExp(e) {
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
   document.getElementById('ac-exp-utility-bill-date').max = _todayE;
@@ -1195,10 +1201,9 @@ function acOpenExpModal() {
   }
   document.getElementById('ac-exp-fields').style.display = '';
   document.getElementById('ac-exp-modal-actions').style.display = '';
+  document.getElementById('ac-exp-cancel-only').style.display = 'none';
   document.getElementById('ac-modal-exp').classList.add('on');
 }
-
-async function acPickCat(btn) {
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   const val = btn.dataset.val;
@@ -1207,6 +1212,7 @@ async function acPickCat(btn) {
   // Reveal the rest of the form on first category pick
   document.getElementById('ac-exp-fields').style.display = '';
   document.getElementById('ac-exp-modal-actions').style.display = '';
+  document.getElementById('ac-exp-cancel-only').style.display = 'none';
 
   const isPayout  = val === 'Payout';
   const isUtility = val === 'Utility';
