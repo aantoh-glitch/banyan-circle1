@@ -116,8 +116,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <div class="main">
     <div class="main-header">
       <div>
-        <div class="main-title">Availability Calendar</div>
-        <div class="main-subtitle" id="activePropertyLabel">All Properties</div>
+        <div class="main-subtitle" id="activePropertyLabel" style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:0;"></div>
       </div>
     </div>
 
@@ -341,7 +340,7 @@ async function loadPropertiesFromSupabase() {
       const match = properties.find(p => p.name.toLowerCase() === _propertyParam.toLowerCase());
       if (match) { activeProperty = match.id; document.getElementById('activePropertyLabel').textContent = match.name; }
     }
-    if (document.getElementById('activePropertyLabel').textContent === 'All Properties' || !document.getElementById('activePropertyLabel').textContent) {
+    if (!activeProperty || activeProperty === 'all') {
       document.getElementById('activePropertyLabel').textContent = 'All Properties';
     }
     renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
@@ -641,15 +640,21 @@ async function saveBooking() {
     const res = await fetch(SB + '/rest/v1/bookings', {
       method: 'POST',
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ property_id: propObj?.supabaseId || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount })
+      body: JSON.stringify({ property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount })
     });
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error('Supabase error ' + res.status + ':', errBody);
+      throw new Error('Supabase responded with ' + res.status + ': ' + errBody);
+    }
     const saved = await res.json();
     const sbId = Array.isArray(saved) ? saved[0]?.id : null;
     bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount });
     showToast('Booking for ' + guest + ' saved');
   } catch(e) {
-    bookings.push({ id: 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount });
-    showToast('Saved locally - could not reach Supabase', 'error');
+    showToast('Could not save to Supabase: ' + e.message, 'error');
+    console.error('saveBooking error:', e);
+    return; // Don't close modal or add locally — let user retry
   }
   closeModal('addBookingModal');
   document.getElementById('manualGuest').value = '';
