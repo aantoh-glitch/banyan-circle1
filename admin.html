@@ -805,6 +805,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"><label class="fl">Email</label><input class="fc" id="ml-email"/></div>
     <div class="fg"><label class="fl">Mobile <span style="color:var(--r)">*</span></label><input class="fc" id="ml-mobile"/></div>
   </div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="ml-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
+    <div class="fg"></div>
+  </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="ml-notes"></textarea></div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-landlord')">Cancel</button><button class="btn-p" onclick="saveLandlord()">Save</button></div>
 </div></div>
@@ -840,6 +844,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div id="ms-props-pills" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--border);border-radius:8px;min-height:42px;background:var(--white);">
       <span style="font-size:12px;color:var(--muted);align-self:center" id="ms-props-placeholder">Loading properties…</span>
     </div>
+  </div>
+  <div class="row-grid">
+    <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="ms-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
+    <div class="fg"></div>
   </div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-staff')">Cancel</button><button class="btn-p" onclick="saveStaff()">Save</button></div>
 </div></div>
@@ -1018,6 +1026,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">PIN (4 digits) <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-pin" maxlength="4" placeholder="e.g. 4821"/></div>
   <input type="hidden" id="mtal-desc"/>
   <input type="hidden" id="mtal-cat"/>
+  <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="mtal-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
   <div class="fg">
     <label class="fl">Venues</label>
     <div id="mtal-venues-wrap" style="min-height:36px;padding:4px 0">
@@ -1216,9 +1225,9 @@ async function loadLandlords(){
   </tbody></table>`;
 }
 function fillPropSelect(id,current){ document.getElementById(id).innerHTML=PROPS.map(p=>`<option value="${p.name}"${p.name===current?' selected':''}>${p.name}</option>`).join(''); }
-function openLandlordModal(){ document.getElementById('ml-id').value=''; document.getElementById('ml-ttl').textContent='Add landlord'; ['ml-pin','ml-name','ml-prop','ml-email','ml-mobile','ml-notes'].forEach(i=>document.getElementById(i).value=''); openModal('modal-landlord'); setTimeout(()=>document.getElementById('ml-pin').focus(),100); }
-function editLandlord(l){ document.getElementById('ml-id').value=l.id; document.getElementById('ml-ttl').textContent='Edit landlord'; document.getElementById('ml-name').value=l.name||''; document.getElementById('ml-pin').value=l.pin||''; document.getElementById('ml-prop').value=l.property_name||''; document.getElementById('ml-email').value=l.email||''; document.getElementById('ml-mobile').value=l.mobile||''; document.getElementById('ml-notes').value=l.notes||''; openModal('modal-landlord'); }
-async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(id)await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body); else await api('/rest/v1/landlords','POST',body);
+function openLandlordModal(){ document.getElementById('ml-id').value=''; document.getElementById('ml-ttl').textContent='Add landlord'; ['ml-pin','ml-name','ml-prop','ml-email','ml-mobile','ml-notes','ml-pan'].forEach(i=>document.getElementById(i).value=''); openModal('modal-landlord'); setTimeout(()=>document.getElementById('ml-pin').focus(),100); }
+function editLandlord(l){ document.getElementById('ml-id').value=l.id; document.getElementById('ml-ttl').textContent='Edit landlord'; document.getElementById('ml-name').value=l.name||''; document.getElementById('ml-pin').value=l.pin||''; document.getElementById('ml-prop').value=l.property_name||''; document.getElementById('ml-email').value=l.email||''; document.getElementById('ml-mobile').value=l.mobile||''; document.getElementById('ml-notes').value=l.notes||''; document.getElementById('ml-pan').value=l.pan||''; openModal('modal-landlord'); }
+async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null,pan:document.getElementById('ml-pan').value.trim().toUpperCase()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(id)await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body); else await api('/rest/v1/landlords','POST',body);
   // Ensure a matching row exists in properties table so the portal icon appears
   if(!id && body.property_name){
     const existing=await api('/rest/v1/properties?name=eq.'+encodeURIComponent(body.property_name)+'&select=id').catch(()=>null);
@@ -1264,10 +1273,10 @@ async function renderStaffPropPills(selected=[]){
   if(!PROPS.length) container.innerHTML='<span style="font-size:12px;color:var(--muted)">No properties found</span>';
 }
 function getSelectedStaffProps(){ return [...document.querySelectorAll('#ms-props-pills .venue-pill.on')].map(p=>p.dataset.prop); }
-async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email','ms-phone','ms-role'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-staff-role').value=''; await renderStaffPropPills([]); openModal('modal-staff'); }
+async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email','ms-phone','ms-role','ms-pan'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-staff-role').value=''; await renderStaffPropPills([]); openModal('modal-staff'); }
 function selectAllStaffProps(){ document.querySelectorAll('#ms-props-pills .venue-pill').forEach(p=>p.classList.add('on')); }
-async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-phone').value=s.phone||''; document.getElementById('ms-role').value=s.designation||''; document.getElementById('ms-staff-role').value=s.role||''; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
-async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const phone=document.getElementById('ms-phone').value.trim(); const phoneDigits=phone.replace(/\D/g,''); if(!phone||phoneDigits.length<10){alert('Phone number is required and must have at least 10 digits');return;} const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,role:document.getElementById('ms-staff-role').value||null,phone:phone,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id)await api('/rest/v1/staff?id=eq.'+id,'PATCH',body); else await api('/rest/v1/staff','POST',body); closeModal('modal-staff'); toast('Saved'); loadStaff(); }
+async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-phone').value=s.phone||''; document.getElementById('ms-role').value=s.designation||''; document.getElementById('ms-staff-role').value=s.role||''; document.getElementById('ms-pan').value=s.pan||''; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
+async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const phone=document.getElementById('ms-phone').value.trim(); const phoneDigits=phone.replace(/\D/g,''); if(!phone||phoneDigits.length<10){alert('Phone number is required and must have at least 10 digits');return;} const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,role:document.getElementById('ms-staff-role').value||null,phone:phone,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null,pan:document.getElementById('ms-pan').value.trim().toUpperCase()||null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id)await api('/rest/v1/staff?id=eq.'+id,'PATCH',body); else await api('/rest/v1/staff','POST',body); closeModal('modal-staff'); toast('Saved'); loadStaff(); }
 let _pendingRemove = null;
 let _pcPin = '';
 let _pendingAction = null; // generic callback for PIN-gated actions
@@ -1943,7 +1952,7 @@ async function renderVenuePills(talentId) {
 function openTalentModal(){
   document.getElementById('mtal-id').value='';
   document.getElementById('mtal-ttl').textContent='Add talent';
-  ['mtal-name','mtal-pin','mtal-desc'].forEach(i=>document.getElementById(i).value='');
+  ['mtal-name','mtal-pin','mtal-desc','mtal-pan'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-cat').value='Yoga';
   renderVenuePills(null);
   openModal('modal-talent');
@@ -1955,6 +1964,7 @@ function editTalentRow(t){
   document.getElementById('mtal-pin').value=t.pin||'';
   document.getElementById('mtal-desc').value=t.short_desc||'';
   document.getElementById('mtal-cat').value=t.category||'Yoga';
+  document.getElementById('mtal-pan').value=t.pan||'';
   renderVenuePills(t.id);
   openModal('modal-talent');
 }
@@ -1962,7 +1972,7 @@ async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value};
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   try{
