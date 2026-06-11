@@ -96,6 +96,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .toast { position: fixed; bottom: 24px; right: 24px; background: #222; color: #fff; padding: 10px 20px; border-radius: 999px; font-size: 13px; font-weight: 500; z-index: 200; transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(.4,0,.2,1); }
 .toast.show { transform: translateY(0); opacity: 1; }
 .empty-state { padding: 32px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+.toggle-btn { position:relative; width:42px; height:24px; border-radius:999px; border:none; background:#ddd; cursor:pointer; transition:background 0.2s; flex-shrink:0; padding:0; }
+.toggle-btn[aria-pressed="true"] { background:var(--br); }
+.toggle-knob { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.2s; display:block; }
+.toggle-btn[aria-pressed="true"] .toggle-knob { transform:translateX(18px); }
 </style>
 </head>
 <body>
@@ -222,6 +227,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div class="date-row" style="margin-bottom:13px;">
       <div class="form-group" style="margin:0"><label class="form-label">No. of Guests</label><input type="number" class="form-input" id="manualNumGuests" placeholder="e.g. 2" min="1" step="1"></div>
       <div class="form-group" style="margin:0"><label class="form-label">Discussed Amount</label><input type="number" class="form-input" id="manualDiscAmount" placeholder="e.g. 500" min="0" step="0.01"></div>
+    </div>
+    <!-- NOT booking whole property toggle -->
+    <div class="form-group" style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <label class="form-label" style="margin:0;">Not Booking Whole Property</label>
+        <button type="button" class="toggle-btn" id="togglePartial" onclick="togglePartialBooking()" aria-pressed="false"><span class="toggle-knob"></span></button>
+      </div>
+      <div id="numRoomsRow" style="display:none;margin-top:10px;">
+        <label class="form-label">Number of Rooms</label>
+        <input type="number" class="form-input" id="manualNumRooms" placeholder="e.g. 2" min="1" step="1">
+      </div>
+    </div>
+    <!-- Banyan Circle toggle -->
+    <div class="form-group" style="margin-bottom:4px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <label class="form-label" style="margin:0;">Banyan Circle</label>
+        <button type="button" class="toggle-btn" id="toggleBanyan" onclick="toggleBanyanCircle()" aria-pressed="false"><span class="toggle-knob"></span></button>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('addBookingModal')">Cancel</button>
@@ -625,6 +648,21 @@ function saveProperty() {
   showToast('"' + name + '" added');
 }
 
+
+function togglePartialBooking() {
+  const btn = document.getElementById('togglePartial');
+  const active = btn.getAttribute('aria-pressed') === 'true';
+  btn.setAttribute('aria-pressed', String(!active));
+  document.getElementById('numRoomsRow').style.display = !active ? 'block' : 'none';
+  if (active) document.getElementById('manualNumRooms').value = '';
+}
+
+function toggleBanyanCircle() {
+  const btn = document.getElementById('toggleBanyan');
+  const active = btn.getAttribute('aria-pressed') === 'true';
+  btn.setAttribute('aria-pressed', String(!active));
+}
+
 async function saveBooking() {
   const guest = document.getElementById('manualGuest').value.trim();
   const prop = document.getElementById('manualProperty').value;
@@ -633,6 +671,9 @@ async function saveBooking() {
   const end = document.getElementById('manualEnd').value;
   const numGuests = parseInt(document.getElementById('manualNumGuests').value) || null;
   const discAmount = parseFloat(document.getElementById('manualDiscAmount').value) || null;
+  const partialBooking = document.getElementById('togglePartial').getAttribute('aria-pressed') === 'true';
+  const numRooms = partialBooking ? (parseInt(document.getElementById('manualNumRooms').value) || null) : null;
+  const banyanCircle = document.getElementById('toggleBanyan').getAttribute('aria-pressed') === 'true';
   if (!guest||!prop||!start||!end) { showToast('Fill all fields','error'); return; }
   if (end < start) { showToast('End must be after start','error'); return; }
   const propObj = properties.find(p => p.id === prop);
@@ -641,7 +682,7 @@ async function saveBooking() {
     const res = await fetch(SB + '/rest/v1/bookings', {
       method: 'POST',
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount })
+      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null })
     });
     if (!res.ok) {
       const errBody = await res.text();
@@ -661,6 +702,10 @@ async function saveBooking() {
   document.getElementById('manualGuest').value = '';
   document.getElementById('manualNumGuests').value = '';
   document.getElementById('manualDiscAmount').value = '';
+  document.getElementById('manualNumRooms').value = '';
+  document.getElementById('togglePartial').setAttribute('aria-pressed','false');
+  document.getElementById('numRoomsRow').style.display = 'none';
+  document.getElementById('toggleBanyan').setAttribute('aria-pressed','false');
   renderCalendar(); renderBookings(); renderStats();
 }
 
