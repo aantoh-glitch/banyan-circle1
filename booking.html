@@ -156,38 +156,40 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
     </div>
 
-    <div class="calendar-container">
-      <div class="calendar-header">
-        <div class="calendar-header-row1">
-          <div style="display:flex;align-items:center;gap:12px">
-            <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
-            <div class="cal-month-label" id="calMonthLabel"></div>
-            <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+    <div class="bottom-row">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="calendar-container" style="margin-bottom:0;">
+          <div class="calendar-header">
+            <div class="calendar-header-row1">
+              <div style="display:flex;align-items:center;gap:12px">
+                <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+                <div class="cal-month-label" id="calMonthLabel"></div>
+                <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+              </div>
+            </div>
+            <div class="calendar-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
+            </div>
+          </div>
+          <div class="calendar-grid">
+            <div class="weekdays">
+              <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+              <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+            </div>
+            <div class="days-grid" id="daysGrid"></div>
           </div>
         </div>
-        <div class="calendar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
-        </div>
-      </div>
-      <div class="calendar-grid">
-        <div class="weekdays">
-          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
-          <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
-        </div>
-        <div class="days-grid" id="daysGrid"></div>
-      </div>
-    </div>
 
-    <div class="bottom-row">
-      <div class="bookings-list">
-        <div class="panel-header">
-          <div class="panel-title">Upcoming Bookings</div>
-          <div style="font-size:12px;color:var(--muted)" id="bookingCount">0 reservations</div>
+        <div class="bookings-list">
+          <div class="panel-header">
+            <div class="panel-title">Upcoming Bookings</div>
+            <div style="font-size:12px;color:var(--muted)" id="bookingCount">0 reservations</div>
+          </div>
+          <div id="bookingsList"></div>
         </div>
-        <div id="bookingsList"></div>
       </div>
 
       <div class="block-panel">
