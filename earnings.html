@@ -719,7 +719,7 @@ if (isEmbedded) {
 
 /* Show admin controls */
 if (isAdmin) {
-  document.getElementById('add-entry-btn').style.display = 'flex';
+  // add-entry-btn hidden — earnings_log table removed; entries come from expenses only
   document.getElementById('head-filter-row').style.display = 'flex';
 }
 
@@ -955,8 +955,6 @@ function expenseToEarningsEntry(exp) {
 }
 
 async function loadEntries() {
-  let path = '/rest/v1/earnings_log?order=entry_date.desc,created_at.desc';
-
   if (!isAdmin) {
     // Resolve name from viewProp if viewName is empty
     if (!viewName && viewProp) viewName = viewProp;
@@ -967,10 +965,7 @@ async function loadEntries() {
       return;
     }
 
-    // Resolve entity_name from the correct table based on role:
-    //   talent   → talents.name
-    //   staff    → staff.name
-    //   landlord → landlords.property_name
+    // Resolve entity_name from the correct table based on role
     let resolvedName = viewName;
     try {
       if (viewRole === 'talent') {
@@ -990,52 +985,33 @@ async function loadEntries() {
 
     viewName = resolvedName;
     document.getElementById('id-name').textContent = viewName;
-
-    // Map role to entity_type stored in earnings_log
-    const entityTypeMap = { talent: 'talent', staff: 'staff', landlord: 'landlord' };
-    const entityType = entityTypeMap[viewRole] || 'landlord';
-
-    path += '&entity_name=eq.' + encodeURIComponent(viewName);
-    path += '&entity_type=eq.' + entityType;
   }
 
   try {
-    // 1. Load earnings_log entries
-    const logEntries = await api(path);
+    // Load paid payout expenses from expenses table only
+    // - status=Paid with a payout_type (Landlords/Team/Talent)
+    // - OR status='Paid to landlord' where payout_type may be null
+    const [rawPayout, rawPaidLandlord] = await Promise.all([
+      api('/rest/v1/expenses?status=eq.Paid&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*'),
+      api('/rest/v1/expenses?status=eq.Paid%20to%20landlord&order=created_at.desc&select=*')
+    ]);
+    let filtered = [
+      ...(Array.isArray(rawPayout) ? rawPayout : []),
+      ...(Array.isArray(rawPaidLandlord) ? rawPaidLandlord : [])
+    ];
 
-    // 2. Load paid payout expenses from expenses table
-    //    - status=Paid with a payout_type (Landlords/Team/Talent)
-    //    - OR status='Paid to landlord' where payout_type may be null
-    let expEntries = [];
-    try {
-      const [rawPayout, rawPaidLandlord] = await Promise.all([
-        api('/rest/v1/expenses?status=eq.Paid&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*'),
-        api('/rest/v1/expenses?status=eq.Paid%20to%20landlord&order=created_at.desc&select=*')
-      ]);
-      let filtered = [
-        ...(Array.isArray(rawPayout) ? rawPayout : []),
-        ...(Array.isArray(rawPaidLandlord) ? rawPaidLandlord : [])
-      ];
-
-      // For non-admin views, only include expenses matching this user's entity
-      if (!isAdmin && viewName) {
-        const rolePayoutType = viewRole === 'landlord' ? 'Landlords'
-                             : viewRole === 'staff'    ? 'Team'
-                             : 'Talent';
-        filtered = filtered.filter(e =>
-          (e.payout_type === rolePayoutType || e.status === 'Paid to landlord') &&
-          (e.recipient === viewName || e.property_name === viewName)
-        );
-      }
-
-      expEntries = filtered.map(expenseToEarningsEntry);
-    } catch(e) {
-      console.warn('Could not load paid expenses — they will not appear in earnings:', e);
+    // For non-admin views, only include expenses matching this user's entity
+    if (!isAdmin && viewName) {
+      const rolePayoutType = viewRole === 'landlord' ? 'Landlords'
+                           : viewRole === 'staff'    ? 'Team'
+                           : 'Talent';
+      filtered = filtered.filter(e =>
+        (e.payout_type === rolePayoutType || e.status === 'Paid to landlord') &&
+        (e.recipient === viewName || e.property_name === viewName)
+      );
     }
 
-    // 3. Merge: earnings_log entries first, then expense-derived entries
-    //    Sort combined list by entry_date desc
-    allEntries = [...logEntries, ...expEntries].sort((a, b) => {
+    allEntries = filtered.map(expenseToEarningsEntry).sort((a, b) => {
       const da = a.entry_date || '';
       const db = b.entry_date || '';
       return db.localeCompare(da);
@@ -1044,7 +1020,7 @@ async function loadEntries() {
   } catch(e) {
     allEntries = [];
     document.getElementById('log-wrap').innerHTML =
-      '<div class="log-empty">Could not load entries. Run earnings-tables.sql in Supabase first.</div>';
+      '<div class="log-empty">Could not load entries.</div>';
     return;
   }
   renderLog();
@@ -1286,27 +1262,10 @@ async function submitEntry() {
   const btn = document.getElementById('submit-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
 
-  try {
-    await apiPost('/rest/v1/earnings_log', {
-      type:        currentType,
-      head:        head,
-      amount:      amount ? parseFloat(amount) : null,
-      percentage:  pct    ? parseFloat(pct)    : null,
-      notes:       notes || null,
-      entity_type: entity ? currentEntityType  : null,
-      entity_name: entity || null,
-      recorded_by: 'Admin',
-      entry_date:  date
-    });
-    closeSheet();
-    showToast('Entry added');
-    await loadEntries();
-  } catch(e) {
-    showToast('Error saving — check console');
-    console.error(e);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Add Entry';
-  }
+  // earnings_log table has been removed; entries are read from expenses only
+  showToast('Entries are managed via Expenses');
+  btn.disabled = false; btn.textContent = 'Add Entry';
+  closeSheet();
 }
 
 /* ═══════════════════════════════════════════
@@ -1345,13 +1304,9 @@ async function submitAssign() {
   btn.disabled = true; btn.textContent = 'Assigning…';
 
   try {
-    await apiPatch(
-      '/rest/v1/earnings_log?id=eq.' + assigningEntryId,
-      { entity_type: currentAssignType, entity_name: name }
-    );
+    // earnings_log removed — assign is no longer applicable (entries come from expenses)
+    showToast('Assignments are managed via Expenses');
     closeSheet();
-    showToast('Assigned to ' + name);
-    await loadEntries();
   } catch(e) {
     showToast('Error assigning — check console');
     console.error(e);
@@ -1453,19 +1408,9 @@ async function submitEditEntry() {
   const btn = document.getElementById('edit-submit-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
-    await apiPatch('/rest/v1/earnings_log?id=eq.' + editingEntryId, {
-      type:        currentEditType,
-      head:        head,
-      amount:      amount ? parseFloat(amount) : null,
-      percentage:  pct    ? parseFloat(pct)    : null,
-      notes:       notes  || null,
-      entity_type: entity ? currentEditEntityType : null,
-      entity_name: entity || null,
-      entry_date:  date
-    });
+    // earnings_log removed — edits are no longer applicable (entries come from expenses)
+    showToast('Entries are managed via Expenses');
     closeSheet();
-    showToast('Entry updated ✓');
-    await loadEntries();
   } catch(err) {
     showToast('Error saving — check console');
     console.error(err);
@@ -1475,19 +1420,8 @@ async function submitEditEntry() {
 }
 
 async function deleteEntry(id) {
-  if (!confirm('Delete this entry? This cannot be undone.')) return;
-  try {
-    const r = await fetch(SUPA_URL + '/rest/v1/earnings_log?id=eq.' + id, {
-      method: 'DELETE',
-      headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
-    });
-    if (!r.ok) throw new Error(await r.text());
-    showToast('Entry deleted');
-    await loadEntries();
-  } catch(err) {
-    showToast('Error deleting — check console');
-    console.error(err);
-  }
+  // earnings_log removed — all entries are sourced from expenses, managed in Accounts
+  showToast('Manage this entry in Expenses / Accounts');
 }
 
 /* ═══════════════════════════════════════════
