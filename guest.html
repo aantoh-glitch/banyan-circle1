@@ -179,7 +179,23 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       <div class="file-list" id="ci-file-list"></div>
     </div>
     <div class="fg"><label class="fl">Organisation &amp; Designation</label><input class="fc" id="ci-org" type="text" placeholder="Company / Job title"/></div>
-    <div class="fg"><label class="fl">Permanent address<span>*</span></label><textarea class="fc" id="ci-address" placeholder="Full home address"></textarea></div>
+    <div class="fg"><label class="fl">Permanent address<span>*</span></label><textarea class="fc" id="ci-address" placeholder="Full home address" oninput="onPermAddrInput()"></textarea></div>
+
+    <!-- Billing address -->
+    <div class="fg" id="billing-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <label class="fl" style="margin-bottom:0">Billing address<span>*</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--muted);user-select:none">
+          <span id="billing-toggle-label">Same as permanent</span>
+          <div id="billing-toggle" onclick="toggleBilling()" style="width:42px;height:24px;border-radius:999px;background:var(--br);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0">
+            <div id="billing-toggle-knob" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:21px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)"></div>
+          </div>
+        </label>
+      </div>
+      <div id="billing-same-display" style="padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--muted);background:var(--bg);min-height:48px;line-height:1.6;white-space:pre-wrap" id="billing-same-display"></div>
+      <textarea class="fc" id="ci-billing" placeholder="Full billing address&#10;Line 2&#10;City, State, PIN" style="display:none;min-height:96px"></textarea>
+    </div>
+
     <div class="fg"><label class="fl">Email ID<span>*</span></label><input class="fc" id="ci-email" type="email" placeholder="your@email.com"/></div>
     <div class="fg"><label class="fl">Mobile No<span>*</span></label><input class="fc" id="ci-mobile" type="tel" placeholder="+91 XXXXXXXXXX"/></div>
     <div class="fg">
@@ -725,6 +741,24 @@ function editCheckin(){
   var fd = CI_RECORD.form_data || {};
   document.getElementById('ci-name').value     = CI_RECORD.guest_name || '';
   document.getElementById('ci-address').value  = fd.permanent_address || '';
+  // Restore billing address
+  var storedBilling = fd.billing_address || '';
+  var permAddr      = fd.permanent_address || '';
+  if (storedBilling && storedBilling !== permAddr) {
+    // Different billing address — flip toggle off
+    billingIsSame = true; // toggleBilling will invert it
+    toggleBilling();
+    document.getElementById('ci-billing').value = storedBilling;
+  } else {
+    // Same as permanent
+    billingIsSame = true;
+    document.getElementById('billing-toggle').style.background = 'var(--br)';
+    document.getElementById('billing-toggle-knob').style.left = '21px';
+    document.getElementById('billing-toggle-label').textContent = 'Same as permanent';
+    document.getElementById('billing-same-display').style.display = 'block';
+    document.getElementById('ci-billing').style.display = 'none';
+    document.getElementById('billing-same-display').textContent = permAddr || 'Will mirror your permanent address';
+  }
   document.getElementById('ci-email').value    = fd.email || '';
   document.getElementById('ci-mobile').value   = fd.mobile || '';
   document.getElementById('ci-dob').value      = fd.dob || '';
@@ -761,6 +795,51 @@ function editCheckin(){
   document.getElementById('ci-form').style.display = 'block';
   document.getElementById('ci-btn').textContent = 'Update registration';
 }
+
+// ── BILLING ADDRESS TOGGLE ──
+var billingIsSame = true;
+
+function onPermAddrInput() {
+  if (billingIsSame) {
+    var val = document.getElementById('ci-address').value.trim();
+    document.getElementById('billing-same-display').textContent = val || 'Will mirror your permanent address';
+  }
+}
+
+function toggleBilling() {
+  billingIsSame = !billingIsSame;
+  var knob    = document.getElementById('billing-toggle-knob');
+  var toggle  = document.getElementById('billing-toggle');
+  var display = document.getElementById('billing-same-display');
+  var field   = document.getElementById('ci-billing');
+  var lbl     = document.getElementById('billing-toggle-label');
+
+  if (billingIsSame) {
+    // ON = same as permanent
+    toggle.style.background = 'var(--br)';
+    knob.style.left = '21px';
+    lbl.textContent = 'Same as permanent';
+    display.style.display = 'block';
+    field.style.display = 'none';
+    field.value = '';
+    var permVal = document.getElementById('ci-address').value.trim();
+    display.textContent = permVal || 'Will mirror your permanent address';
+  } else {
+    // OFF = different billing address
+    toggle.style.background = 'var(--border)';
+    knob.style.left = '3px';
+    lbl.textContent = 'Different address';
+    display.style.display = 'none';
+    field.style.display = 'block';
+    field.focus();
+  }
+}
+
+// Initialise display on load
+(function initBillingDisplay() {
+  billingIsSame = true;
+  document.getElementById('billing-same-display').textContent = 'Will mirror your permanent address';
+})();
 
 function onNationalityChange(radio) {
   var wrapper = document.getElementById('section-b-wrapper');
@@ -800,7 +879,10 @@ async function submitCheckin(){
   var decl    = document.getElementById('ci-declaration').checked;
   var isEdit  = !!(CI_RECORD && CI_RECORD.id);
 
-  if(!name||!addr||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
+  // Billing address
+  var billing = billingIsSame ? addr : document.getElementById('ci-billing').value.trim();
+  if(!name||!addr||!billing||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
+  if(!billingIsSame && !billing){toast('Please enter a billing address');return;}
   if(mobile.replace(/\D/g,'').length < 10){toast('Mobile number must be at least 10 digits');return;}
   if(depDate <= arrDate){toast('Departure date must be after arrival date');return;}
 
@@ -835,6 +917,7 @@ async function submitCheckin(){
   var form_data = {
     organisation:      document.getElementById('ci-org').value.trim(),
     permanent_address: addr,
+    billing_address:   billing,
     email:             email,
     mobile:            mobile,
     dob:               dob,
@@ -880,6 +963,7 @@ async function submitCheckin(){
     travelled_from:   from,
     travelling_to:    to,
     num_guests:       guests,
+    billing_address:  billing,
     id_proof_urls:    id_proofs.map(function(f){ return f.url || f.name; }),
     form_data:        form_data
   };
