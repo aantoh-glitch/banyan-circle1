@@ -20,7 +20,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .topbar-mark { width: 34px; height: 34px; background: var(--br); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 500; font-size: 14px; flex-shrink: 0; }
 .topbar-name { font-family: 'Playfair Display', serif; font-size: 16px; white-space: nowrap; margin-right: 4px; }
 .topbar-divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
-.pill-bar { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; flex: 1; }
+.pill-bar { display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow-x: auto; }
+.prop-subbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 32px; height: 44px; display: flex; align-items: center; overflow: hidden; }
 .prop-pill { padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--border); font-size: 13px; cursor: pointer; background: var(--white); color: var(--muted); font-family: inherit; transition: all .15s; white-space: nowrap; }
 .prop-pill:hover { border-color: var(--br); color: var(--br); }
 .prop-pill.active { background: var(--br-l); border-color: #D85A30; color: var(--br); font-weight: 500; }
@@ -102,19 +103,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <div class="topbar">
     <div class="topbar-mark">B</div>
     <div class="topbar-name">Booking Manager</div>
-    <div class="topbar-divider"></div>
-    <div class="pill-bar" id="pillBar">
-      <button class="prop-pill active" onclick="setActiveProperty('all')">All Properties</button>
-    </div>
     <div class="topbar-actions">
       <button class="btn btn-ghost" onclick="openBookingsLog()">Bookings Log</button>
       <button class="btn btn-ghost" onclick="triggerSync()">Sync</button>
       <button class="btn btn-primary" onclick="openAddBooking()">+ Manual Booking</button>
     </div>
   </div>
+  <div class="prop-subbar">
+    <div class="pill-bar" id="pillBar"></div>
+  </div>
 
   <div class="main">
-    <div class="main-header">
+    <div class="main-header" style="margin-bottom:12px;">
       <div>
         <div class="main-subtitle" id="activePropertyLabel" style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:0;"></div>
       </div>
@@ -338,11 +338,13 @@ async function loadPropertiesFromSupabase() {
       .map((l, i) => ({ id: 'p_' + i, name: l.property_name, color: COLORS[i % COLORS.length], airbnbUrl: l.airbnb_ical_url || '', bookingUrl: l.bookingcom_ical_url || '' }));
     if (_propertyParam) {
       const match = properties.find(p => p.name.toLowerCase() === _propertyParam.toLowerCase());
-      if (match) { activeProperty = match.id; document.getElementById('activePropertyLabel').textContent = match.name; }
+      if (match) { activeProperty = match.id; }
     }
     if (!activeProperty || activeProperty === 'all') {
-      document.getElementById('activePropertyLabel').textContent = 'All Properties';
+      if (properties.length) activeProperty = properties[0].id;
     }
+    const activeProp = properties.find(p => p.id === activeProperty);
+    document.getElementById('activePropertyLabel').textContent = activeProp?.name || '';
     renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
     loadBlockedDates();
     loadManualBookings();
@@ -419,21 +421,20 @@ function getBookingForDate(dateS) {
 
 function renderPills() {
   const bar = document.getElementById('pillBar');
-  const allBtn = '<button class="prop-pill ' + (activeProperty==='all'?'active':'') + '" onclick="setActiveProperty(\'all\')">All Properties</button>';
   const propPills = properties.map(p =>
     '<span style="display:inline-flex;align-items:center;gap:3px;">' +
     '<button class="prop-pill ' + (activeProperty===p.id?'active':'') + '" onclick="setActiveProperty(\'' + p.id + '\')">' + p.name + '</button>' +
     '<button class="pill-edit-btn" onclick="openEditProperty(\'' + p.id + '\')" title="Edit iCal URLs">&#9998;</button>' +
     '</span>'
   ).join('');
-  bar.innerHTML = allBtn + propPills;
+  bar.innerHTML = propPills;
 }
 
 function setActiveProperty(id) {
   activeProperty = id;
   renderPills();
   document.getElementById('activePropertyLabel').textContent =
-    id === 'all' ? 'All Properties' : (properties.find(p=>p.id===id)?.name || '');
+    properties.find(p=>p.id===id)?.name || '';
   renderCalendar(); renderBookings(); renderStats();
 }
 
