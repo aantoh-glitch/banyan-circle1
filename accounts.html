@@ -307,7 +307,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </button>
       </div>
     </div>
-    <div class="filter-row" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px">
       <div class="pill-group" id="ac-filter-cat">
         <button class="pill-opt on" data-val="all" onclick="acFilterCat(this)">All</button>
         <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
@@ -321,17 +321,23 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" onclick="acFilterSt(this)">To be paid to landlord</button>
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" onclick="acFilterSt(this)">Paid to landlord</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:flex-end;margin-left:auto">
-        <div class="fg" style="margin-bottom:0;min-width:130px">
-          <label class="fl">From</label>
-          <input class="fc" id="ac-filter-from" type="date" onchange="acOnFilterFromChange();acRenderExp()"/>
-        </div>
-        <div class="fg" style="margin-bottom:0;min-width:130px">
-          <label class="fl">To</label>
-          <input class="fc" id="ac-filter-to" type="date" onchange="acOnFilterToChange();acRenderExp()"/>
-        </div>
-        <button class="filter-clear" onclick="acClearDateFilter()">Clear</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:4px">
+      <div class="fg" style="margin-bottom:0;min-width:180px;flex:1.5">
+        <label class="fl">Property</label>
+        <select class="fc" id="ac-filter-property" onchange="acRenderExp()">
+          <option value="">All properties</option>
+        </select>
       </div>
+      <div class="fg" style="margin-bottom:0;min-width:130px">
+        <label class="fl">From</label>
+        <input class="fc" id="ac-filter-from" type="date" onchange="acOnFilterFromChange();acRenderExp()"/>
+      </div>
+      <div class="fg" style="margin-bottom:0;min-width:130px">
+        <label class="fl">To</label>
+        <input class="fc" id="ac-filter-to" type="date" onchange="acOnFilterToChange();acRenderExp()"/>
+      </div>
+      <button class="filter-clear" onclick="acClearDateFilter()">Clear</button>
     </div>
     <table class="tbl">
       <thead><tr>
@@ -703,6 +709,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var et = document.getElementById('ac-filter-to');
   if(ef){ ef.value = monthStart; ef.max = today; }
   if(et){ et.value = today; et.max = today; }
+  // Pre-populate expense property filter from landlords
+  acApi('/rest/v1/landlords?select=property_name&order=property_name').then(function(d){
+    var sel = document.getElementById('ac-filter-property');
+    if (!sel) return;
+    var props = (d||[]).map(function(r){ return r.property_name; });
+    var all = Array.from(new Set(props.concat(['Banyan Circle','Properties By Heritance']))).filter(Boolean).sort();
+    sel.innerHTML = '<option value="">All properties</option>' +
+      all.map(function(p){ return '<option value="'+p+'">'+p+'</option>'; }).join('');
+  }).catch(function(){
+    var sel = document.getElementById('ac-filter-property');
+    if (sel) sel.innerHTML = '<option value="">All properties</option><option value="Banyan Circle">Banyan Circle</option><option value="Properties By Heritance">Properties By Heritance</option>';
+  });
 });
 
 // ── Accounts
@@ -737,7 +755,7 @@ function acTab(id, btn) {
   document.querySelectorAll('.ac-pane').forEach(p=>p.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('ac-pane-'+id).classList.add('on');
-  if(id==='expenses') acLoadExp();
+  if(id==='expenses') { acLoadExp(); }
   if(id==='bills') { if(!window._blReady){ window._blReady=true; init(); } }
 }
 
@@ -746,16 +764,18 @@ async function acLoadExp() {
     const d = await acApi('/rest/v1/expenses?order=created_at.desc&select=*');
     _acExpenses = Array.isArray(d)?d:[];
     acRenderExp();
-    acRenderKPIs();
+    acPopulateExpPropertyFilter();
   } catch(e) {
     document.getElementById('ac-exp-tbody').innerHTML='<tr><td colspan="8" class="empty">'+e.message+'</td></tr>';
   }
 }
 
-function acRenderKPIs() {
-  const tot  = _acExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
-  const paid = _acExpenses.filter(e=>e.status==='Paid').reduce((s,e)=>s+Number(e.amount||0),0);
-  const pend = _acExpenses.filter(e=>e.status==='Pending').reduce((s,e)=>s+Number(e.amount||0),0);
+function acRenderKPIs(filtered) {
+  // If filtered array passed, use it; else fall back to all
+  var d = filtered || _acExpenses;
+  const tot  = d.reduce((s,e)=>s+Number(e.amount||0),0);
+  const paid = d.filter(e=>e.status==='Paid'||e.status==='Paid to landlord').reduce((s,e)=>s+Number(e.amount||0),0);
+  const pend = d.filter(e=>e.status==='Pending'||e.status==='To be paid to landlord').reduce((s,e)=>s+Number(e.amount||0),0);
   document.getElementById('ac-kpi-total').textContent   = acFmt(tot);
   document.getElementById('ac-kpi-paid').textContent    = acFmt(paid);
   document.getElementById('ac-kpi-pending').textContent = acFmt(pend);
@@ -765,12 +785,16 @@ function acRenderExp() {
   let d = [..._acExpenses];
   if(_acCatF!=='all') d=d.filter(e=>e.category===_acCatF);
   if(_acStF!=='all')  d=d.filter(e=>e.status===_acStF);
+  const propEl = document.getElementById('ac-filter-property');
+  const propV  = propEl ? propEl.value : '';
+  if(propV) d = d.filter(e=>(e.property_name||'')=== propV);
   const fromEl = document.getElementById('ac-filter-from');
   const toEl   = document.getElementById('ac-filter-to');
   const fromV  = fromEl ? fromEl.value : '';
   const toV    = toEl   ? toEl.value   : '';
   if(fromV) d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt>=fromV; });
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
+  acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
   if(!d.length){ tb.innerHTML='<tr><td colspan="8" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
@@ -807,6 +831,25 @@ function acFilterCat(btn) {
   btn.classList.add('on'); _acCatF=btn.dataset.val; acRenderExp();
 }
 
+async function acPopulateExpPropertyFilter() {
+  const sel = document.getElementById('ac-filter-property');
+  if (!sel) return;
+  const curVal = sel.value;
+  // collect from current data
+  const fromData = [...new Set(_acExpenses.map(e=>e.property_name||'').filter(Boolean))];
+  try {
+    const d = await acApi('/rest/v1/landlords?select=property_name&order=property_name');
+    const fromDb = (d||[]).map(r=>r.property_name);
+    const all = [...new Set([...fromData, ...fromDb, 'Banyan Circle', 'Properties By Heritance'])].filter(Boolean).sort();
+    sel.innerHTML = '<option value="">All properties</option>' +
+      all.map(p=>`<option value="${p}"${p===curVal?' selected':''}>${p}</option>`).join('');
+  } catch(_) {
+    const all = [...new Set([...fromData, 'Banyan Circle', 'Properties By Heritance'])].filter(Boolean).sort();
+    sel.innerHTML = '<option value="">All properties</option>' +
+      all.map(p=>`<option value="${p}"${p===curVal?' selected':''}>${p}</option>`).join('');
+  }
+}
+
 function acOnFilterFromChange() {
   var today = new Date().toISOString().slice(0,10);
   var fromEl = document.getElementById('ac-filter-from');
@@ -829,8 +872,15 @@ function acClearDateFilter() {
   var monthStart = today.slice(0,7) + '-01';
   var fromEl = document.getElementById('ac-filter-from');
   var toEl   = document.getElementById('ac-filter-to');
+  var propEl = document.getElementById('ac-filter-property');
   if(fromEl){ fromEl.value = monthStart; fromEl.max = today; fromEl.min = ''; }
   if(toEl)  { toEl.value = today; toEl.max = today; toEl.min = ''; }
+  if(propEl){ propEl.value = ''; }
+  // reset cat and status pills too
+  _acCatF = 'all';
+  _acStF  = 'all';
+  document.querySelectorAll('#ac-filter-cat .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val==='all'));
+  document.querySelectorAll('.pill-group .pill-opt.status-paid').forEach(b=>b.classList.toggle('on', b.dataset.val==='all'));
   acRenderExp();
 }
 function acFilterSt(btn) {
@@ -1694,12 +1744,21 @@ async function loadBills() {
     var data = await api('/rest/v1/bills?select=*&order=created_at.desc') || [];
     ALL_BILLS = data;
 
-    // Populate property filter
-    var props = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean))).sort();
+    // Populate property filter (bills data + landlords table + extras)
+    var billProps = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean)));
     var propSel = document.getElementById('filter-property');
     var curProp = propSel.value;
-    propSel.innerHTML = '<option value="">All properties</option>' +
-      props.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
+    // Load from landlords too
+    api('/rest/v1/landlords?select=property_name&order=property_name').then(function(ld){
+      var dbProps = (ld||[]).map(function(r){ return r.property_name; });
+      var all = Array.from(new Set(billProps.concat(dbProps).concat(['Banyan Circle','Properties By Heritance']))).filter(Boolean).sort();
+      propSel.innerHTML = '<option value="">All properties</option>' +
+        all.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
+    }).catch(function(){
+      var all = Array.from(new Set(billProps.concat(['Banyan Circle','Properties By Heritance']))).filter(Boolean).sort();
+      propSel.innerHTML = '<option value="">All properties</option>' +
+        all.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
+    });
 
     renderBills(data);
   } catch(e) {
@@ -1762,11 +1821,10 @@ function calcBillTax(items) {
 function renderBills(data) {
   var el = document.getElementById('bill-log');
 
-  // ── Top KPI row (always reflects ALL bills, not filtered subset) ──
-  var kpiData     = ALL_BILLS.length ? ALL_BILLS : data;
-  var kpiTotal    = kpiData.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var kpiReceived = kpiData.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var kpiPending  = kpiData.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  // ── Top KPI row reflects filtered data ──
+  var kpiTotal    = data.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var kpiReceived = data.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var kpiPending  = data.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
   var kpiTotalEl  = document.getElementById('bl-kpi-total');
   var kpiRcvEl    = document.getElementById('bl-kpi-received');
   var kpiPndEl    = document.getElementById('bl-kpi-receivables');
