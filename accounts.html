@@ -280,12 +280,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="pg-sub">Expenses &amp; Billing</div>
 
 <div class="ac-tabs">
-  <button class="ac-tab on" id="act-expenses" onclick="acTab('expenses',this)">Expenses</button>
-  <button class="ac-tab" id="act-bills" onclick="acTab('bills',this)">Billing</button>
+  <button class="ac-tab on" id="act-bills" onclick="acTab('bills',this)">Billing</button>
+  <button class="ac-tab" id="act-expenses" onclick="acTab('expenses',this)">Expenses</button>
 </div>
 
 <!-- ── EXPENSES PANE ── -->
-<div class="ac-pane on" id="ac-pane-expenses">
+<div class="ac-pane" id="ac-pane-expenses">
 
   <div class="kpi-row" style="margin-bottom:20px">
     <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="ac-kpi-total">₹ —</div></div>
@@ -307,19 +307,30 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </button>
       </div>
     </div>
-    <div class="filter-row">
+    <div class="filter-row" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
       <div class="pill-group" id="ac-filter-cat">
         <button class="pill-opt on" data-val="all" onclick="acFilterCat(this)">All</button>
         <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
         <button class="pill-opt" data-val="Utility" onclick="acFilterCat(this)">Utility</button>
         <button class="pill-opt" data-val="Others" onclick="acFilterCat(this)">Others</button>
       </div>
-      <div class="pill-group" style="margin-left:auto">
+      <div class="pill-group" style="flex-wrap:wrap">
         <button class="pill-opt status-paid on" data-val="all" onclick="acFilterSt(this)">All</button>
         <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterSt(this)">Paid</button>
         <button class="pill-opt status-pending" data-val="Pending" onclick="acFilterSt(this)">Pending</button>
         <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" onclick="acFilterSt(this)">To be paid to landlord</button>
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" onclick="acFilterSt(this)">Paid to landlord</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-left:auto">
+        <div class="fg" style="margin-bottom:0;min-width:130px">
+          <label class="fl">From</label>
+          <input class="fc" id="ac-filter-from" type="date" onchange="acOnFilterFromChange();acRenderExp()"/>
+        </div>
+        <div class="fg" style="margin-bottom:0;min-width:130px">
+          <label class="fl">To</label>
+          <input class="fc" id="ac-filter-to" type="date" onchange="acOnFilterToChange();acRenderExp()"/>
+        </div>
+        <button class="filter-clear" onclick="acClearDateFilter()">Clear</button>
       </div>
     </div>
     <table class="tbl">
@@ -332,10 +343,21 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 </div><!-- /ac-pane-expenses -->
 
 <!-- ── BILLS PANE ── -->
-<div class="ac-pane" id="ac-pane-bills">
+<div class="ac-pane on" id="ac-pane-bills">
+<!-- ─── BILLING KPI ROW ─── -->
+<div class="kpi-row" style="margin-bottom:20px">
+  <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="bl-kpi-total">₹ —</div></div>
+  <div class="kpi"><div class="kpi-label">Received</div><div class="kpi-value" style="color:#27500A" id="bl-kpi-received">₹ —</div></div>
+  <div class="kpi"><div class="kpi-label">Receivables</div><div class="kpi-value" style="color:#854F0B" id="bl-kpi-receivables">₹ —</div></div>
+</div>
+
 <!-- ─── BILL CREATOR ─── -->
-<div class="card">
-  <div class="card-ttl" id="form-ttl">New Bill</div>
+<div class="card" style="padding:0;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;cursor:pointer;user-select:none" id="new-bill-toggle" onclick="toggleNewBill()">
+    <div class="card-ttl" id="form-ttl" style="margin-bottom:0">New Bill</div>
+    <span id="new-bill-chevron" style="font-size:18px;color:var(--muted);transition:transform .2s">▾</span>
+  </div>
+  <div id="new-bill-body" style="display:none;padding:0 22px 22px;border-top:1px solid var(--border)">
   <input type="hidden" id="edit-id"/>
 
   <div class="fg">
@@ -358,6 +380,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <input class="fc" id="other-guest-name" type="text" placeholder="Type guest or company name…"/>
   </div>
 
+  <!-- Other: property picker (shown when Others is selected) -->
+  <div class="fg" id="other-property-fg" style="display:none">
+    <label class="fl">Property</label>
+    <select class="fc" id="other-bill-property" onchange="onOtherPropertyChange()">
+      <option value="">— select property (optional) —</option>
+    </select>
+  </div>
+
   <!-- Guest info — revealed on selection -->
   <div class="guest-info-box" id="guest-info" style="display:none">
     <div class="guest-info-name" id="ginfo-name">—</div>
@@ -372,8 +402,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <table class="items-table" id="items-table">
     <thead>
       <tr>
-        <th style="width:28%">Item / Description</th>
-        <th style="width:12%">Date</th>
+        <th style="width:34%">Item / Description</th>
         <th style="width:9%;text-align:center">Qty</th>
         <th style="width:12%;text-align:right">Rate (₹)</th>
         <th style="width:8%;text-align:center">CGST %</th>
@@ -395,6 +424,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="bill-total-row">
     <span class="bill-total-label">Grand Total</span>
     <span class="bill-total-val" id="grand-total">₹0</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">
+    <label class="fl" style="margin-bottom:0;min-width:90px;font-size:12px">GST Number</label>
+    <input class="fc" id="bill-gst-number" type="text" placeholder="e.g. 27AAPFU0939F1ZV" style="max-width:280px"/>
   </div>
 
   <hr class="bill-divider"/>
@@ -419,14 +452,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="btn-p" id="save-btn" onclick="saveBill()">Create Bill</button>
     <button class="btn-sec" id="cancel-btn" onclick="cancelEdit()" style="display:none">Cancel edit</button>
   </div>
+  </div><!-- /new-bill-body -->
 </div>
 
-<!-- ─── BILLING KPI ROW ─── -->
-<div class="kpi-row" style="margin-bottom:20px">
-  <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="bl-kpi-total">₹ —</div></div>
-  <div class="kpi"><div class="kpi-label">Received</div><div class="kpi-value" style="color:#27500A" id="bl-kpi-received">₹ —</div></div>
-  <div class="kpi"><div class="kpi-label">Receivables</div><div class="kpi-value" style="color:#854F0B" id="bl-kpi-receivables">₹ —</div></div>
-</div>
 
 <!-- ─── BILL LOG ─── -->
 <div style="display:flex;align-items:center;justify-content:space-between;margin:28px 0 12px;padding-bottom:10px;border-bottom:2px solid var(--border)">
@@ -597,6 +625,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
 
+    <!-- Others: property picker -->
+    <div class="fg" id="ac-others-property-fg" style="display:none">
+      <label class="fl">Property (Optional)</label>
+      <select class="fc" id="ac-exp-others-property">
+        <option value="">— select property —</option>
+      </select>
+    </div>
+
     <div class="row-grid">
       <div class="fg">
         <label class="fl">Item <span class="req">*</span></label>
@@ -655,8 +691,19 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <script>
 
-// ── Auto-load expenses on page open
-document.addEventListener('DOMContentLoaded', function() { acLoadExp(); });
+// ── Auto-load billing on page open (billing is default tab)
+document.addEventListener('DOMContentLoaded', function() {
+  // Init billing pane (default)
+  window._blReady = true;
+  init();
+  // Set default date range (current month start → today) for expense filters
+  var today = new Date().toISOString().slice(0,10);
+  var monthStart = today.slice(0,7) + '-01';
+  var ef = document.getElementById('ac-filter-from');
+  var et = document.getElementById('ac-filter-to');
+  if(ef){ ef.value = monthStart; ef.max = today; }
+  if(et){ et.value = today; et.max = today; }
+});
 
 // ── Accounts
 const AC_SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
@@ -718,6 +765,12 @@ function acRenderExp() {
   let d = [..._acExpenses];
   if(_acCatF!=='all') d=d.filter(e=>e.category===_acCatF);
   if(_acStF!=='all')  d=d.filter(e=>e.status===_acStF);
+  const fromEl = document.getElementById('ac-filter-from');
+  const toEl   = document.getElementById('ac-filter-to');
+  const fromV  = fromEl ? fromEl.value : '';
+  const toV    = toEl   ? toEl.value   : '';
+  if(fromV) d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt>=fromV; });
+  if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   const tb = document.getElementById('ac-exp-tbody');
   if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>`
@@ -744,6 +797,33 @@ function acRenderExp() {
 function acFilterCat(btn) {
   document.querySelectorAll('#ac-filter-cat .pill-opt').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on'); _acCatF=btn.dataset.val; acRenderExp();
+}
+
+function acOnFilterFromChange() {
+  var today = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('ac-filter-from');
+  var toEl   = document.getElementById('ac-filter-to');
+  if (fromEl.value > today) fromEl.value = today;
+  if (fromEl.value && toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
+  toEl.min = fromEl.value || '';
+  toEl.max = today;
+}
+function acOnFilterToChange() {
+  var today = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('ac-filter-from');
+  var toEl   = document.getElementById('ac-filter-to');
+  if (toEl.value > today) toEl.value = today;
+  if (toEl.value && fromEl.value && fromEl.value > toEl.value) fromEl.value = toEl.value;
+  fromEl.max = toEl.value || today;
+}
+function acClearDateFilter() {
+  var today = new Date().toISOString().slice(0,10);
+  var monthStart = today.slice(0,7) + '-01';
+  var fromEl = document.getElementById('ac-filter-from');
+  var toEl   = document.getElementById('ac-filter-to');
+  if(fromEl){ fromEl.value = monthStart; fromEl.max = today; fromEl.min = ''; }
+  if(toEl)  { toEl.value = today; toEl.max = today; toEl.min = ''; }
+  acRenderExp();
 }
 function acFilterSt(btn) {
   btn.closest('.pill-group').querySelectorAll('.pill-opt').forEach(b=>b.classList.remove('on'));
@@ -775,6 +855,7 @@ function acOpenExpModal() {
   document.querySelectorAll('#ac-utility-type-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-utility-fg').style.display='none';
   document.getElementById('ac-others-fg').style.display='none';
+  document.getElementById('ac-others-property-fg').style.display='none';
   document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -818,10 +899,22 @@ function acEditExp(e) {
   document.querySelectorAll('#ac-utility-type-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-utility-fg').style.display='none';
   document.getElementById('ac-others-fg').style.display='none';
+  document.getElementById('ac-others-property-fg').style.display='none';
   document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   if (e.category === 'Others') {
     document.getElementById('ac-others-fg').style.display = '';
+    document.getElementById('ac-others-property-fg').style.display = '';
     document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.item));
+    // Populate and restore property picker
+    const otherPropSel = document.getElementById('ac-exp-others-property');
+    if (otherPropSel) {
+      acApi('/rest/v1/landlords?select=property_name&order=property_name').then(d => {
+        const props = (d||[]).map(r=>r.property_name);
+        if (!props.includes('Banyan Circle')) props.push('Banyan Circle');
+        otherPropSel.innerHTML = '<option value="">— select property —</option>' +
+          props.map(r=>`<option value="${r}"${r===e.property_name?' selected':''}>${r}</option>`).join('');
+      }).catch(()=>{});
+    }
   }
   if (e.category === 'Utility') {
     document.getElementById('ac-utility-fg').style.display = '';
@@ -835,8 +928,10 @@ function acEditExp(e) {
       try {
         const d = await acApi('/rest/v1/landlords?select=property_name&order=property_name');
         const propSel = document.getElementById('ac-exp-utility-property');
+        const propNames = (d||[]).map(r=>r.property_name);
+        if (!propNames.includes('Banyan Circle')) propNames.push('Banyan Circle');
         propSel.innerHTML = '<option value="">— select property —</option>' +
-          (d||[]).map(r=>`<option value="${r.property_name}"${r.property_name===e.property_name?' selected':''}>${r.property_name}</option>`).join('');
+          propNames.map(r=>`<option value="${r}"${r===e.property_name?' selected':''}>${r}</option>`).join('');
       } catch(_) {}
     })();
   }
@@ -899,8 +994,21 @@ async function acPickCat(btn) {
   // Others section
   const isOthers = val === 'Others';
   document.getElementById('ac-others-fg').style.display = isOthers ? '' : 'none';
+  document.getElementById('ac-others-property-fg').style.display = isOthers ? '' : 'none';
   if (!isOthers) {
     document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  } else {
+    // Populate property picker
+    const otherPropSel = document.getElementById('ac-exp-others-property');
+    if (otherPropSel && otherPropSel.options.length <= 1) {
+      otherPropSel.innerHTML = '<option value="">Loading…</option>';
+      acApi('/rest/v1/landlords?select=property_name&order=property_name').then(d => {
+        const props = (d||[]).map(r=>r.property_name);
+        if (!props.includes('Banyan Circle')) props.push('Banyan Circle');
+        otherPropSel.innerHTML = '<option value="">— select property —</option>' +
+          props.map(r=>`<option value="${r}">${r}</option>`).join('');
+      }).catch(()=>{ otherPropSel.innerHTML = '<option value="">Could not load</option>'; });
+    }
   }
 
   // Utility section
@@ -912,8 +1020,10 @@ async function acPickCat(btn) {
       sel.innerHTML = '<option value="">Loading…</option>';
       try {
         const d = await acApi('/rest/v1/landlords?select=property_name&order=property_name');
+        const props = (d||[]).map(r=>r.property_name);
+        if (!props.includes('Banyan Circle')) props.push('Banyan Circle');
         sel.innerHTML = '<option value="">— select property —</option>' +
-          (d||[]).map(r=>`<option value="${r.property_name}">${r.property_name}</option>`).join('');
+          props.map(r=>`<option value="${r}">${r}</option>`).join('');
       } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
     }
   } else {
@@ -1010,6 +1120,7 @@ async function acSaveExp() {
   if(category === 'Utility' && !utilityProp) { alert('Select a property'); return; }
   if(category === 'Utility' && !utilityType) { alert('Select a utility type'); return; }
 
+  const othersProperty = document.getElementById('ac-exp-others-property') ? document.getElementById('ac-exp-others-property').value : '';
   const body = {
     item, amount: Number(amount), category, status,
     date:          expDate      || null,
@@ -1017,7 +1128,7 @@ async function acSaveExp() {
     file_url:      fileUrl  || null,
     payout_type:   category === 'Payout'  ? payoutType  : null,
     recipient:     category === 'Payout'  ? recipient   : null,
-    property_name: category === 'Utility' ? utilityProp : null,
+    property_name: category === 'Utility' ? utilityProp : (category === 'Others' ? othersProperty||null : null),
     utility_type:  category === 'Utility' ? utilityType : null
   };
 
@@ -1069,7 +1180,12 @@ async function acDelExp(id) {
   catch(e){ alert('Error: '+e.message); }
 }
 
-function acCloseExpModal() { document.getElementById('ac-modal-exp').classList.remove('on'); }
+function acCloseExpModal() {
+  document.getElementById('ac-modal-exp').classList.remove('on');
+  const op = document.getElementById('ac-exp-others-property');
+  if (op) { op.innerHTML = '<option value="">— select property —</option>'; }
+  document.getElementById('ac-others-property-fg').style.display = 'none';
+}
 document.addEventListener('click', e=>{ if(e.target.id==='ac-modal-exp') acCloseExpModal(); });
 
 async function acHandleUpload(input) {
@@ -1102,6 +1218,32 @@ function acClearUpload() {
 var blInitDone=false;
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+
+function toggleNewBill() {
+  var body = document.getElementById('new-bill-body');
+  var chev = document.getElementById('new-bill-chevron');
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+async function populatePropertyPicker(selId, extraOptions) {
+  var sel = document.getElementById(selId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    var d = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+    var opts = d.map(function(r){ return r.property_name; });
+    if (extraOptions) opts = opts.concat(extraOptions);
+    sel.innerHTML = '<option value="">— select property (optional) —</option>' +
+      opts.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+  } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
+}
+
+function onOtherPropertyChange() {
+  var prop = document.getElementById('other-bill-property').value;
+  // Optionally use to label the bill
+}
 
 var payMethod  = '';
 var GUESTS     = [];
@@ -1190,15 +1332,16 @@ var fmtDate = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{da
 // ── Init ──
 async function init() {
   var today = new Date().toISOString().slice(0,10);
+  var monthStart = today.slice(0,7) + '-01';
   // Default bill date to today, restrict to not future
   var billDateEl = document.getElementById('bill-date');
   billDateEl.value = today;
   billDateEl.max = today;
-  // Log date filters — never allow future
+  // Log date filters — default current month, never allow future
   var ffEl = document.getElementById('filter-from');
   var ftEl = document.getElementById('filter-to');
-  if (ffEl) ffEl.max = today;
-  if (ftEl) ftEl.max = today;
+  if (ffEl) { ffEl.value = monthStart; ffEl.max = today; }
+  if (ftEl) { ftEl.value = today; ftEl.max = today; }
   setPayMethod('pending');
   await loadGuests();
   await loadBills();
@@ -1227,9 +1370,12 @@ async function onGuestSelect() {
   // hide both panels first
   document.getElementById('guest-info').style.display = 'none';
   otherFg.style.display = 'none';
+  document.getElementById('other-property-fg').style.display = 'none';
   if (!gid) return;
   if (gid === '__other__') {
     otherFg.style.display = '';
+    document.getElementById('other-property-fg').style.display = '';
+    populatePropertyPicker('other-bill-property', ['Banyan Circle']);
     // Clear any previously cached guest contact data so it doesn't bleed into the new bill
     document.getElementById('guest-info').setAttribute('data-addr', '');
     document.getElementById('guest-info').setAttribute('data-mobile', '');
@@ -1237,6 +1383,7 @@ async function onGuestSelect() {
     document.getElementById('other-guest-name').focus();
     return;
   }
+  document.getElementById('other-property-fg').style.display = 'none';
   var g = GUESTS.find(function(x){ return x.id === gid; });
   if (!g) return;
 
@@ -1285,12 +1432,11 @@ function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
   var defaultDate = itemDate || document.getElementById('bill-date').value || today;
   tr.innerHTML =
     '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:140px"/></td>' +
-    '<td><input type="date" value="' + defaultDate + '" max="' + today + '" style="width:125px;padding:7px 8px;border:1px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit;color:var(--text);background:var(--white);outline:none"/></td>' +
     '<td style="text-align:center"><input type="text" value="' + (qty||1) + '" oninput="calcRowTotal(this);calcTotal()" style="width:55px;text-align:center"/></td>' +
     '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:80px;text-align:right"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
-    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:90px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:90px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot" /></td>' +
     '<td style="text-align:center"><button class="del-row" onclick="removeRow(\'' + rid + '\')">✕</button></td>';
   document.getElementById('items-body').appendChild(tr);
   calcTotal();
@@ -1299,14 +1445,14 @@ function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
 function calcRowTotal(input) {
   var tr = input.closest('tr');
   var inputs = tr.querySelectorAll('input');
-  // 0=name, 1=date, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
-  var qty  = parseFloat(inputs[2].value) || 0;
-  var rate = parseFloat(inputs[3].value) || 0;
-  var cgst = parseFloat(inputs[4].value) || 0;
-  var sgst = parseFloat(inputs[5].value) || 0;
+  // 0=name, 1=qty, 2=rate, 3=cgst%, 4=sgst%, 5=total
+  var qty  = parseFloat(inputs[1].value) || 0;
+  var rate = parseFloat(inputs[2].value) || 0;
+  var cgst = parseFloat(inputs[3].value) || 0;
+  var sgst = parseFloat(inputs[4].value) || 0;
   var base = qty * rate;
   var taxAmt = base * (cgst + sgst) / 100;
-  inputs[6].value = (base + taxAmt).toFixed(2);
+  inputs[5].value = (base + taxAmt).toFixed(2);
 }
 
 function calcTotal() {
@@ -1328,16 +1474,15 @@ function getItems() {
   var rows = document.querySelectorAll('#items-body tr');
   rows.forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
-    // 0=name, 1=date, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
+    // 0=name, 1=qty, 2=rate, 3=cgst%, 4=sgst%, 5=total
     var name    = inputs[0].value.trim();
-    var date    = inputs[1].value || '';
-    var qty     = parseFloat(inputs[2].value) || 0;
-    var rate    = parseFloat(inputs[3].value) || 0;
-    var cgst_pct = parseFloat(inputs[4].value) || 0;
-    var sgst_pct = parseFloat(inputs[5].value) || 0;
+    var qty     = parseFloat(inputs[1].value) || 0;
+    var rate    = parseFloat(inputs[2].value) || 0;
+    var cgst_pct = parseFloat(inputs[3].value) || 0;
+    var sgst_pct = parseFloat(inputs[4].value) || 0;
     var tax_pct = cgst_pct + sgst_pct;
-    var total   = parseFloat(inputs[6].value) || 0;
-    if (name) items.push({name:name, date:date, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
+    var total   = parseFloat(inputs[5].value) || 0;
+    if (name) items.push({name:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
   });
   return items;
 }
@@ -1396,13 +1541,15 @@ async function saveBill() {
   var g = gid !== '__other__' ? GUESTS.find(function(x){ return x.id === gid; }) : null;
   var infoBox = document.getElementById('guest-info');
   var amount = calcTotal();
+  var otherPropertySel = document.getElementById('other-bill-property');
+  var otherPropertyVal = otherPropertySel ? otherPropertySel.value : '';
 
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
 
   var body = {
     guest_profile_id : gid !== '__other__' ? gid : null,
     guest_name       : gid === '__other__' ? otherName : (g ? g.name : ''),
-    property_name    : g ? (g.property_name||'') : '',
+    property_name    : gid === '__other__' ? otherPropertyVal : (g ? (g.property_name||'') : ''),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
     guest_email      : infoBox.getAttribute('data-email')||'',
@@ -1449,6 +1596,9 @@ function cancelEdit() {
   document.getElementById('guest-info').style.display = 'none';
   document.getElementById('other-name-fg').style.display = 'none';
   document.getElementById('other-guest-name').value = '';
+  document.getElementById('other-property-fg').style.display = 'none';
+  var otherPS = document.getElementById('other-bill-property');
+  if (otherPS) otherPS.value = '';
   document.getElementById('items-body').innerHTML = '';
   rowCount = 0;
   document.getElementById('grand-total').textContent = '₹0';
@@ -1502,6 +1652,12 @@ function editBill(bill) {
       document.getElementById('other-name-fg').style.display = '';
       document.getElementById('other-guest-name').value = bill.guest_name || '';
       document.getElementById('guest-info').style.display = 'none';
+      // Show property picker
+      document.getElementById('other-property-fg').style.display = '';
+      populatePropertyPicker('other-bill-property', ['Banyan Circle']).then(function(){
+        var sel = document.getElementById('other-bill-property');
+        if (sel && bill.property_name) sel.value = bill.property_name;
+      });
     } else {
       document.getElementById('bill-guest-select').value = bill.guest_profile_id;
       onGuestSelect();
@@ -1571,17 +1727,19 @@ function filterBills() {
 }
 
 function clearFilters() {
+  var today = new Date().toISOString().slice(0,10);
+  var monthStart = today.slice(0,7) + '-01';
   document.getElementById('filter-guest').value    = '';
   document.getElementById('filter-property').value = '';
   var fromEl = document.getElementById('filter-from');
   var toEl   = document.getElementById('filter-to');
-  fromEl.value = ''; fromEl.max = '';
-  toEl.value   = ''; toEl.min  = '';
+  fromEl.value = monthStart; fromEl.max = today; fromEl.min = '';
+  toEl.value   = today; toEl.max = today; toEl.min  = '';
   // Reset status pills to All
   document.querySelectorAll('#filter-status-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
   var allPill = document.querySelector('#filter-status-pills .pill-opt[data-val=""]');
   if (allPill) allPill.classList.add('on');
-  renderBills(ALL_BILLS);
+  filterBills();
 }
 
 function calcBillTax(items) {
@@ -1611,29 +1769,7 @@ function renderBills(data) {
 
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
 
-  // ── Totals bar ──
-  var totalAmt    = data.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var receivedAmt = data.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var receivables = data.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var totalsBar = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">' +
-    '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px">' +
-      '<div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Billed</div>' +
-      '<div style="font-size:22px;font-weight:600;font-family:\'Playfair Display\',serif">' + fmtF(totalAmt) + '</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px">' + data.length + ' bill' + (data.length!==1?'s':'') + '</div>' +
-    '</div>' +
-    '<div style="background:var(--g-l);border:1px solid rgba(59,109,17,.15);border-radius:10px;padding:14px 18px">' +
-      '<div style="font-size:11px;font-weight:500;color:#27500A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Received</div>' +
-      '<div style="font-size:22px;font-weight:600;font-family:\'Playfair Display\',serif;color:#27500A">' + fmtF(receivedAmt) + '</div>' +
-      '<div style="font-size:11px;color:#27500A;opacity:.7;margin-top:3px">' + data.filter(function(b){return b.payment_status==='paid';}).length + ' paid</div>' +
-    '</div>' +
-    '<div style="background:var(--a-l);border:1px solid rgba(133,79,11,.15);border-radius:10px;padding:14px 18px">' +
-      '<div style="font-size:11px;font-weight:500;color:#633806;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Receivables</div>' +
-      '<div style="font-size:22px;font-weight:600;font-family:\'Playfair Display\',serif;color:#633806">' + fmtF(receivables) + '</div>' +
-      '<div style="font-size:11px;color:#633806;opacity:.7;margin-top:3px">' + data.filter(function(b){return b.payment_status!=='paid';}).length + ' pending</div>' +
-    '</div>' +
-  '</div>';
-
-  el.innerHTML = totalsBar + '<table class="tbl"><thead><tr>' +
+  el.innerHTML = '<table class="tbl"><thead><tr>' +
     '<th>Guest</th><th>Property</th><th>Date</th>' +
     '<th style="text-align:right">Taxable</th>' +
     '<th style="text-align:right">CGST</th>' +
