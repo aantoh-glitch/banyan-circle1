@@ -327,7 +327,7 @@ let bookings   = [];
 async function loadPropertiesFromSupabase() {
   try {
     const res = await fetch(
-      SB + '/rest/v1/landlords?select=property_name,airbnb_ical_url,bookingcom_ical_url&order=property_name',
+      SB + '/rest/v1/landlords?select=id,property_name,airbnb_ical_url,bookingcom_ical_url&order=property_name',
       { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
     );
     const data = await res.json();
@@ -335,7 +335,7 @@ async function loadPropertiesFromSupabase() {
     const seen = new Set();
     properties = data
       .filter(l => { if (!l.property_name || seen.has(l.property_name)) return false; seen.add(l.property_name); return true; })
-      .map((l, i) => ({ id: 'p_' + i, name: l.property_name, color: COLORS[i % COLORS.length], airbnbUrl: l.airbnb_ical_url || '', bookingUrl: l.bookingcom_ical_url || '' }));
+      .map((l, i) => ({ id: 'p_' + i, supabase_id: l.id, name: l.property_name, color: COLORS[i % COLORS.length], airbnbUrl: l.airbnb_ical_url || '', bookingUrl: l.bookingcom_ical_url || '' }));
     if (_propertyParam) {
       const match = properties.find(p => p.name.toLowerCase() === _propertyParam.toLowerCase());
       if (match) { activeProperty = match.id; }
@@ -641,7 +641,7 @@ async function saveBooking() {
     const res = await fetch(SB + '/rest/v1/bookings', {
       method: 'POST',
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount })
+      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount })
     });
     if (!res.ok) {
       const errBody = await res.text();
