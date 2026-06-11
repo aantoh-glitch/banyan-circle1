@@ -1011,10 +1011,23 @@ function renderDrp() {
       if (e && ds === (s < (e||'') ? e : s)) cls += ' drp-day-end';
       if (lo && hi && ds > lo && ds < hi) cls += ' drp-day-range';
     }
-    cells += '<div class="' + cls + '" onclick="drpClickDay(\'' + ds + '\')" onmouseenter="drpHover(\'' + ds + '\')">' + d + '</div>';
+    cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
   document.getElementById('drpMonthLabel').textContent = months[drpState.month] + ' ' + drpState.year;
-  document.getElementById('drpDays').innerHTML = cells;
+  const drpDaysEl = document.getElementById('drpDays');
+  drpDaysEl.innerHTML = cells;
+  // Use delegated mousedown (fires before DOM can be replaced by hover re-render)
+  drpDaysEl.onmousedown = function(e) {
+    const cell = e.target.closest('[data-ds]');
+    if (!cell) return;
+    e.preventDefault();
+    drpClickDay(cell.dataset.ds);
+  };
+  drpDaysEl.onmouseover = function(e) {
+    const cell = e.target.closest('[data-ds]');
+    if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty')) return;
+    drpHover(cell.dataset.ds);
+  };
   document.getElementById('drpHint').textContent = !drpState.start ? 'Click to select check-in' : !drpState.end ? 'Now select check-out' : '';
 }
 
