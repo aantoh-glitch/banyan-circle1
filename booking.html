@@ -106,8 +106,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 /* ── Date Range Picker ── */
 .drp-wrap { position: relative; }
 .drp-display { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); font-size:13px; color:var(--muted); cursor:pointer; transition:border-color .15s; user-select:none; }
+.drp-display * { pointer-events:none; }
 .drp-display:hover { border-color:var(--br); color:var(--text); }
-.drp-popup { display:none; position:fixed; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:16px; min-width:300px; }
+.drp-popup { display:none; position:fixed; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:20px; width:360px; }
+.drp-days { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.drp-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:all .1s; }
 .drp-popup.open { display:block; }
 .drp-popup-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 .drp-popup-month { font-family:'Playfair Display',serif; font-size:15px; color:var(--text); }
@@ -115,8 +118,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .drp-popup-nav:hover { border-color:var(--br); color:var(--br); }
 .drp-wdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
 .drp-wday { text-align:center; font-size:10px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:var(--muted); padding:4px 0; }
-.drp-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-.drp-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; transition:all .1s; }
 .drp-day:hover:not(.drp-day-empty):not(.drp-day-past) { background:var(--br-l); color:var(--br); }
 .drp-day-empty, .drp-day-past { cursor:default; pointer-events:none; color:#ccc; }
 .drp-day-start, .drp-day-end { background:var(--br) !important; color:#fff !important; border-radius:6px; }
@@ -931,7 +932,7 @@ function openDrp(ctx) {
   const popup = document.getElementById('drpPopup');
   popup.classList.add('open');
   // position below the trigger
-  const popW = 300;
+  const popW = 360;
   let left = rect.left;
   if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
   popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
