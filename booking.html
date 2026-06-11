@@ -194,7 +194,7 @@
             <label class="form-label">Date Range</label>
             <div class="date-row">
               <input type="date" class="form-input" id="blockStart" onchange="const e=document.getElementById('blockEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
-              <input type="date" class="form-input" id="blockEnd" onfocus="const s=document.getElementById('blockStart').value;if(s)this.min=s;">
+              <input type="date" class="form-input" id="blockEnd" onfocus="const s=document.getElementById('blockStart').value;if(s)this.min=s;else this.min=new Date().toISOString().split('T')[0];">
             </div>
           </div>
           <div class="form-group">
@@ -241,7 +241,7 @@
     <div class="form-group"><label class="form-label">Dates</label>
       <div class="date-row">
         <input type="date" class="form-input" id="manualStart" onchange="const e=document.getElementById('manualEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
-        <input type="date" class="form-input" id="manualEnd" onfocus="const s=document.getElementById('manualStart').value;if(s)this.min=s;">
+        <input type="date" class="form-input" id="manualEnd" onfocus="const s=document.getElementById('manualStart').value;if(s)this.min=s;else this.min=new Date().toISOString().split('T')[0];">
       </div>
     </div>
     <div class="date-row" style="margin-bottom:14px;">
@@ -399,6 +399,7 @@ async function loadPropertiesFromSupabase() {
     }
     renderSidebar(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
     loadBlockedDates(); // Load persisted blocked dates now that properties are mapped
+    loadManualBookings(); // Load persisted manual bookings
   } catch(e) {
     showToast('Could not load properties from Supabase', 'error');
   }
@@ -422,6 +423,38 @@ async function loadBlockedDates() {
     renderCalendar(); renderBookings(); renderStats();
   } catch(e) {
     showToast('Could not load blocked dates', 'error');
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── LOAD MANUAL BOOKINGS FROM SUPABASE ──────────────────────────────────────
+async function loadManualBookings() {
+  try {
+    const res = await fetch(
+      SB + '/rest/v1/bookings?select=id,property_id,property_name,guest_name,check_in,check_out,num_guests,source,disc-amount&order=check_in',
+      { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
+    );
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+    data.forEach(row => {
+      // Match on property_name (text fallback) first, then property_id UUID
+      const prop = properties.find(p => p.name === row.property_name) || properties.find(p => p.id === row.property_id);
+      if (!prop) return;
+      if (bookings.find(b => b.id === row.id)) return; // avoid duplicates
+      bookings.push({
+        id: row.id,
+        guest: row.guest_name,
+        property: prop.id,
+        source: row.source || 'manual',
+        start: row.check_in,
+        end: row.check_out,
+        num_guests: row.num_guests ?? null,
+        disc_amount: row['disc-amount'] ?? null
+      });
+    });
+    renderCalendar(); renderBookings(); renderStats();
+  } catch(e) {
+    // silently fail — manual bookings just won't load
   }
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -542,7 +575,7 @@ function renderStats() {
     totalC++;
     let d = new Date(b.start + 'T00:00:00');
     const end = new Date(b.end + 'T00:00:00');
-    while (d <= end) {
+    while (d < end) {
       if (d.getMonth() === month && d.getFullYear() === year) bookedDays.add(d.getDate());
       d.setDate(d.getDate()+1);
     }
@@ -596,6 +629,11 @@ function clearBlockForm() {
 }
 
 function populatePropertySelects() {
+  const today = new Date().toISOString().split('T')[0];
+  const blockStartEl = document.getElementById('blockStart');
+  const blockEndEl = document.getElementById('blockEnd');
+  if (blockStartEl) blockStartEl.min = today;
+  if (blockEndEl) blockEndEl.min = today;
   const opts = properties.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
   // When embedded in landlord view, block dropdown shows only the landlord's property
   const blockOpts = _propertyParam
@@ -643,6 +681,8 @@ async function saveEditProperty() {
 function openAddBooking() {
   populatePropertySelects();
   const today = new Date().toISOString().split('T')[0];
+  document.getElementById('manualStart').min = today;
+  document.getElementById('manualEnd').min = today;
   document.getElementById('manualStart').value = today;
   document.getElementById('manualEnd').value = today;
   document.getElementById('addBookingModal').classList.add('open');
@@ -661,7 +701,7 @@ function saveProperty() {
   showToast(`"${name}" added`);
 }
 
-function saveBooking() {
+async function saveBooking() {
   const guest = document.getElementById('manualGuest').value.trim();
   const prop = document.getElementById('manualProperty').value;
   const source = document.getElementById('manualSource').value;
@@ -671,13 +711,37 @@ function saveBooking() {
   const discAmount = parseFloat(document.getElementById('manualDiscAmount').value) || null;
   if (!guest||!prop||!start||!end) { showToast('Fill all fields','error'); return; }
   if (end < start) { showToast('End must be after start','error'); return; }
-  bookings.push({ id:'b'+Date.now(), guest, property:prop, source, start, end, num_guests: numGuests, disc_amount: discAmount });
+  const propObj = properties.find(p => p.id === prop);
+  const propName = propObj?.name;
+  // Save to Supabase bookings table
+  try {
+    const res = await fetch(SB + '/rest/v1/bookings', {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({
+        property_id: propObj?.supabaseId || null,
+        property_name: propName,
+        guest_name: guest,
+        source,
+        check_in: start,
+        check_out: end,
+        num_guests: numGuests,
+        'disc-amount': discAmount
+      })
+    });
+    const saved = await res.json();
+    const sbId = Array.isArray(saved) ? saved[0]?.id : null;
+    bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, source, start, end, num_guests: numGuests, disc_amount: discAmount });
+    showToast(`Booking for ${guest} saved`);
+  } catch(e) {
+    bookings.push({ id: 'b'+Date.now(), guest, property: prop, source, start, end, num_guests: numGuests, disc_amount: discAmount });
+    showToast('Saved locally — could not reach Supabase', 'error');
+  }
   closeModal('addBookingModal');
-  // Clear new fields
+  document.getElementById('manualGuest').value = '';
   document.getElementById('manualNumGuests').value = '';
   document.getElementById('manualDiscAmount').value = '';
   renderCalendar(); renderBookings(); renderStats();
-  showToast(`Booking for ${guest} saved`);
 }
 
 function showBookingDetail(id) {
@@ -704,7 +768,7 @@ async function deleteCurrentBooking() {
 
   // Attempt Supabase delete for any blocked date that has a non-local ID
   const isLocalId = String(b.id).startsWith('b') && !isNaN(String(b.id).slice(1));
-if (b && b.source === 'blocked' && !isLocalId) {
+  if (b && b.source === 'blocked' && !isLocalId) {
     const deleteUrl = SB + '/rest/v1/blocked_dates?id=eq.' + b.id;
     console.log('[delete] DELETE URL:', deleteUrl);
     try {
@@ -720,6 +784,17 @@ if (b && b.source === 'blocked' && !isLocalId) {
       }
     } catch(e) {
       console.error('[delete] caught error:', e);
+      showToast('Could not delete from Supabase', 'error');
+      return;
+    }
+  } else if (b && b.source !== 'blocked' && !isLocalId) {
+    try {
+      const res = await fetch(SB + '/rest/v1/bookings?id=eq.' + b.id, {
+        method: 'DELETE',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Prefer: 'return=minimal' }
+      });
+      if (!res.ok) throw new Error('Delete failed: ' + res.status);
+    } catch(e) {
       showToast('Could not delete from Supabase', 'error');
       return;
     }
