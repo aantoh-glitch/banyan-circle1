@@ -958,7 +958,8 @@ function openDrp(evtOrCtx, ctx) {
 
 function closeDrp() {
   document.getElementById('drpPopup').classList.remove('open');
-  drpState.ctx = null;
+  // defer ctx null so any in-flight commit can still reference it
+  setTimeout(function() { drpState.ctx = null; }, 0);
 }
 
 function drpNav(dir) {
@@ -973,14 +974,19 @@ function drpClickDay(ds) {
     drpState.start = ds; drpState.end = null; drpState.hovered = null;
   } else {
     if (ds < drpState.start) { drpState.end = drpState.start; drpState.start = ds; }
+    else if (ds === drpState.start) { drpState.start = ds; drpState.end = null; drpState.hovered = null; renderDrp(); return; }
     else { drpState.end = ds; }
-    // commit
+    // commit — ensure ctx is still valid before writing
     const ctx = drpState.ctx;
-    document.getElementById(ctx + 'Start').value = drpState.start;
-    document.getElementById(ctx + 'End').value = drpState.end;
-    const label = formatDate(drpState.start) + ' → ' + formatDate(drpState.end);
-    document.getElementById(ctx + 'DrpText').textContent = label;
-    document.getElementById(ctx + 'DrpDisplay').style.color = 'var(--text)';
+    if (!ctx) { renderDrp(); return; }
+    const startEl = document.getElementById(ctx + 'Start');
+    const endEl   = document.getElementById(ctx + 'End');
+    const textEl  = document.getElementById(ctx + 'DrpText');
+    const dispEl  = document.getElementById(ctx + 'DrpDisplay');
+    if (startEl) startEl.value = drpState.start;
+    if (endEl)   endEl.value   = drpState.end;
+    if (textEl)  textEl.textContent = formatDate(drpState.start) + ' → ' + formatDate(drpState.end);
+    if (dispEl)  dispEl.style.color = 'var(--text)';
     closeDrp();
     return;
   }
