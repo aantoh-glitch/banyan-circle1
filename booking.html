@@ -907,8 +907,10 @@ function downloadLogExcel() {
   showToast('Downloading...');
 }
 
-renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
-loadPropertiesFromSupabase();
+// Always render calendar immediately on load (no Supabase dependency)
+try { renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects(); } catch(e) { console.error('Init render error:', e); }
+// Then load live data from Supabase (non-blocking)
+loadPropertiesFromSupabase().catch(e => console.error('Supabase load error:', e));
 
 /* ── Date Range Picker JS ── */
 let drpState = { ctx: null, start: null, end: null, hovered: null, month: null, year: null };
@@ -993,7 +995,7 @@ function renderDrp() {
       if (e && ds === (s < (e||'') ? e : s)) cls += ' drp-day-end';
       if (lo && hi && ds > lo && ds < hi) cls += ' drp-day-range';
     }
-    cells += '<div class="' + cls + '" onclick="drpClickDay(\'' + ds + '\')" onmouseenter="drpHover(\'' + ds + '\')">' + d + '</div>';
+    cells += '<div class="' + cls + '" onclick="drpClickDay('' + ds + '')" onmouseenter="drpHover('' + ds + '')">' + d + '</div>';
   }
   document.getElementById('drpMonthLabel').textContent = months[drpState.month] + ' ' + drpState.year;
   document.getElementById('drpDays').innerHTML = cells;
