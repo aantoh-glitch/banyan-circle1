@@ -288,6 +288,9 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .desc-divider{width:40px;height:2px;background:var(--br-mid);margin:0 auto 14px}
 .desc-text{font-size:14px;line-height:1.8;color:var(--text);text-align:left}
 
+/* ─── SKELETON PULSE ─── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
 /* ─── SCROLLBAR ─── */
 .content::-webkit-scrollbar{width:3px}
 .content::-webkit-scrollbar-track{background:transparent}
@@ -777,11 +780,14 @@ async function confirmRemoveAsset() {
 
 // ── DESCRIPTION ──
 async function loadDescription() {
-  // Fetch from landlords table; property name comes from header (PROP) — not editable
-  // Try landlord name first, then property_name column as fallback
-  let p = (await api('/rest/v1/landlords?name=eq.'+encodeURIComponent((me.name||'').trim())+'&select=*'))?.[0];
-  if (!p) p = (await api('/rest/v1/landlords?property_name=eq.'+encodeURIComponent((PROP||'').trim())+'&select=*'))?.[0];
+  // Fetch from landlords table; fire both lookups in parallel for faster load
   const el = document.getElementById('desc-hero');
+  el.innerHTML = '<div class="card" style="padding:24px 18px"><div style="background:var(--bg);border-radius:8px;height:20px;width:60%;margin-bottom:12px;animation:pulse 1.2s ease infinite"></div><div style="background:var(--bg);border-radius:8px;height:14px;width:80%;margin-bottom:8px;animation:pulse 1.2s ease infinite"></div><div style="background:var(--bg);border-radius:8px;height:14px;width:70%;animation:pulse 1.2s ease infinite"></div></div>';
+  const [byName, byProp] = await Promise.all([
+    api('/rest/v1/landlords?name=eq.'+encodeURIComponent((me.name||'').trim())+'&select=*'),
+    api('/rest/v1/landlords?property_name=eq.'+encodeURIComponent((PROP||'').trim())+'&select=*'),
+  ]);
+  let p = byName?.[0] || byProp?.[0];
   if (!p) {
     el.innerHTML = '<div class="card"><div class="empty"><div class="empty-icon">🏡</div>Property details not found.</div></div>';
     return;
