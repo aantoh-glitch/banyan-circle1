@@ -1895,6 +1895,7 @@ function downloadBillPdf(b) {
   var dt    = new Date(b.bill_date || b.created_at || Date.now());
   var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
 
+  // ── Item rows: Description | Date | Qty | Rate | CGST % | CGST ₹ | SGST % | SGST ₹ | Amount ──
   var itemRows = items.map(function(i){
     var iDate   = i.date ? new Date(i.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
     var baseAmt = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
@@ -1903,31 +1904,32 @@ function downloadBillPdf(b) {
     var cgstAmt = baseAmt * cgstPct / 100;
     var sgstAmt = baseAmt * sgstPct / 100;
     var total   = parseFloat(i.total) || (baseAmt + cgstAmt + sgstAmt);
-    var taxStr  = '';
-    if (cgstPct > 0) taxStr += '<span style="color:#888;font-size:11px"> CGST ' + cgstPct + '% ₹' + cgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>';
-    if (sgstPct > 0) taxStr += '<span style="color:#888;font-size:11px"> SGST ' + sgstPct + '% ₹' + sgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>';
+    var cgstCell = cgstPct > 0
+      ? cgstPct + '%<br/><span style="color:#555">₹' + cgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>'
+      : '<span style="color:#ccc">—</span>';
+    var sgstCell = sgstPct > 0
+      ? sgstPct + '%<br/><span style="color:#555">₹' + sgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>'
+      : '<span style="color:#ccc">—</span>';
     return '<tr>' +
       '<td>' + esc(i.name||'Item') + '</td>' +
-      '<td style="color:#888;font-size:12px">' + iDate + '</td>' +
+      '<td style="color:#888;font-size:12px;white-space:nowrap">' + iDate + '</td>' +
       '<td style="text-align:center">' + (i.qty||1) + '</td>' +
-      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + taxStr + '</td>' +
+      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+      '<td style="text-align:right;font-size:12px">' + cgstCell + '</td>' +
+      '<td style="text-align:right;font-size:12px">' + sgstCell + '</td>' +
       '<td style="text-align:right;font-weight:600">₹' + total.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
       '</tr>';
   }).join('');
 
   var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
-  var statusStr = b.payment_status==='paid'
-    ? 'Paid' + methodStr
-    : 'Pending Payment';
-  var statusColor = b.payment_status==='paid' ? '#27500A' : '#633806';
-  var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
-
+  // Only show status pill when paid
+  var showPaidPill = b.payment_status === 'paid';
+  var statusColor = '#27500A';
+  var statusBg    = '#EAF3DE';
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
     'body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}' +
-    'h1{font-size:22px;color:#993C1D;margin-bottom:2px}' +
-    '.sub{font-size:11px;color:#888;margin-bottom:24px}' +
     '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
     '.hdr-spacer{min-width:140px}' +
     '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7;min-width:140px}' +
@@ -1937,11 +1939,11 @@ function downloadBillPdf(b) {
     'hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}' +
     'table{width:100%;border-collapse:collapse}' +
     'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
-    'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px}' +
+    'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px;vertical-align:middle}' +
     '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}' +
-    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:' + statusBg + ';color:' + statusColor + ';margin-top:16px}' +
+    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:' + statusBg + ';color:' + statusColor + ';margin-top:14px}' +
     '.remarks{font-size:12px;color:#888;margin-top:8px}' +
-    '.footer{margin-top:32px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}' +
+    '.footer{margin-top:28px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}' +
     '@media print{body{padding:18px 24px}}' +
     '</style></head><body>' +
     '<div class="hdr">' +
@@ -1955,21 +1957,30 @@ function downloadBillPdf(b) {
       (b.guest_mobile||b.guest_email ? '<div class="guest-detail" style="margin-top:4px">' + [b.guest_mobile, b.guest_email].filter(Boolean).map(esc).join(' &nbsp;·&nbsp; ') + '</div>' : '') +
     '</div>' +
     '<hr/>' +
-    '<table><thead><tr><th>Description</th><th>Date</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+    '<table><thead><tr>' +
+      '<th>Description</th>' +
+      '<th>Date</th>' +
+      '<th style="text-align:center">Qty</th>' +
+      '<th style="text-align:right">Rate (₹)</th>' +
+      '<th style="text-align:right">CGST</th>' +
+      '<th style="text-align:right">SGST</th>' +
+      '<th style="text-align:right">Amount (₹)</th>' +
+    '</tr></thead><tbody>' +
     itemRows +
     (function(){
       var tax = calcBillTax(items);
       var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
       var rows = '';
-      rows += '<tr><td colspan="4" style="color:#888;font-size:12px;border-top:1px dashed #ddd">Taxable Amount</td><td style="text-align:right;color:#888;font-size:12px;border-top:1px dashed #ddd">₹' + taxable.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
-      if (tax.cgst > 0) rows += '<tr><td colspan="4" style="color:#888;font-size:12px">CGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.cgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
-      if (tax.sgst > 0) rows += '<tr><td colspan="4" style="color:#888;font-size:12px">SGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.sgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+      rows += '<tr><td colspan="6" style="color:#888;font-size:12px;border-top:1px dashed #ddd">Taxable Amount</td><td style="text-align:right;color:#888;font-size:12px;border-top:1px dashed #ddd">₹' + taxable.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+      if (tax.cgst > 0) rows += '<tr><td colspan="6" style="color:#888;font-size:12px">CGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.cgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
+      if (tax.sgst > 0) rows += '<tr><td colspan="6" style="color:#888;font-size:12px">SGST</td><td style="text-align:right;color:#888;font-size:12px">₹' + tax.sgst.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>';
       return rows;
     })() +
-    '<tr class="total-row"><td colspan="4">Grand Total</td><td style="text-align:right">₹' + Number(b.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
+    '<tr class="total-row"><td colspan="6">Grand Total</td><td style="text-align:right">₹' + Number(b.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
     '</tbody></table>' +
-    '<div style="margin-top:12px;font-size:11px;color:#888">GST No: <strong style="color:#2C2C2A">ABSPW9671N1ZG</strong></div>' +
-    '<div class="status-pill">' + statusStr + '</div>' +
+    '<hr/>' +
+    '<div style="font-size:11px;color:#888;margin-top:4px">GST No: <strong style="color:#2C2C2A">ABSPW9671N1ZG</strong></div>' +
+    (showPaidPill ? '<div class="status-pill">Paid' + methodStr + '</div>' : '') +
     (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
     '<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div>' +
     '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
