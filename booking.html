@@ -1027,6 +1027,7 @@ function renderDrp() {
     const cell = e.target.closest('[data-ds]');
     if (!cell) return;
     e.preventDefault();
+    e.stopPropagation();
     drpClickDay(cell.dataset.ds);
   };
   drpDaysEl.onmouseover = function(e) {
