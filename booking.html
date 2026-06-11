@@ -63,7 +63,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .day-cell.booked { background: #fff0e0; color: #d97706; font-weight: 600; }
 .day-cell.blocked { background: var(--blocked); color: var(--blocked-text); font-weight: 500; }
 .day-cell.manual-booked { background: #e6f7ef; color: #2d9e6b; font-weight: 600; }
-.bottom-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+.top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0; align-items: start; }
+.top-row .calendar-container { height: 100%; }
+.top-row .bookings-list { height: 100%; overflow-y: auto; max-height: 520px; }
+.bottom-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.block-panel { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 0; }
+.block-panel .panel-header { width: 100%; }
+.block-panel .block-form { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; align-items: end; padding: 16px 20px 0; }
+.block-panel .block-form .form-group { margin-bottom: 0; }
+.block-panel .block-actions { width: 100%; }
 .bookings-list { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
 .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .panel-title { font-weight: 500; font-size: 14px; color: var(--text); }
@@ -156,32 +164,32 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
     </div>
 
-    <div class="calendar-container">
-      <div class="calendar-header">
-        <div class="calendar-header-row1">
-          <div style="display:flex;align-items:center;gap:12px">
-            <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
-            <div class="cal-month-label" id="calMonthLabel"></div>
-            <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+    <div class="top-row">
+      <div class="calendar-container" style="margin-bottom:0;">
+        <div class="calendar-header">
+          <div class="calendar-header-row1">
+            <div style="display:flex;align-items:center;gap:12px">
+              <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+              <div class="cal-month-label" id="calMonthLabel"></div>
+              <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+            </div>
+          </div>
+          <div class="calendar-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
           </div>
         </div>
-        <div class="calendar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
+        <div class="calendar-grid">
+          <div class="weekdays">
+            <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+            <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+          </div>
+          <div class="days-grid" id="daysGrid"></div>
         </div>
       </div>
-      <div class="calendar-grid">
-        <div class="weekdays">
-          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
-          <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
-        </div>
-        <div class="days-grid" id="daysGrid"></div>
-      </div>
-    </div>
 
-    <div class="bottom-row">
       <div class="bookings-list">
         <div class="panel-header">
           <div class="panel-title">Upcoming Bookings</div>
@@ -189,7 +197,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         </div>
         <div id="bookingsList"></div>
       </div>
+    </div>
 
+    <div class="bottom-row" style="margin-top:16px;">
       <div class="block-panel">
         <div class="panel-header"><div class="panel-title">Block Dates</div></div>
         <div class="block-form">
@@ -200,7 +210,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <div class="form-group">
             <label class="form-label">Date Range</label>
             <div class="drp-wrap" id="blockDrpWrap">
-              <div class="drp-display" id="blockDrpDisplay" onclick="openDrp('block')">
+              <div class="drp-display" id="blockDrpDisplay" onclick="openDrp(event,'block')">
                 <span id="blockDrpText">Select dates</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </div>
@@ -251,7 +261,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div class="form-group"><label class="form-label">Dates</label>
       <div class="drp-wrap" id="manualDrpWrap">
-        <div class="drp-display" id="manualDrpDisplay" onclick="openDrp('manual')">
+        <div class="drp-display" id="manualDrpDisplay" onclick="openDrp(event,'manual')">
           <span id="manualDrpText">Select dates</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
@@ -914,7 +924,9 @@ loadPropertiesFromSupabase();
 /* ── Date Range Picker JS ── */
 let drpState = { ctx: null, start: null, end: null, hovered: null, month: null, year: null };
 
-function openDrp(ctx) {
+function openDrp(evtOrCtx, ctx) {
+  // support both openDrp(event, 'ctx') and legacy openDrp('ctx')
+  if (typeof evtOrCtx === 'string') { ctx = evtOrCtx; } else { evtOrCtx.stopPropagation(); }
   drpState.ctx = ctx;
   const today = new Date();
   drpState.month = today.getMonth();
@@ -1030,7 +1042,7 @@ function resetDrp(ctx) {
 </script>
 
 <!-- DATE RANGE PICKER POPUP -->
-<div class="drp-popup" id="drpPopup">
+<div class="drp-popup" id="drpPopup" onclick="event.stopPropagation()">
   <div class="drp-popup-header">
     <button class="drp-popup-nav" onclick="drpNav(-1)">&#8249;</button>
     <div class="drp-popup-month" id="drpMonthLabel"></div>
