@@ -993,7 +993,7 @@ function drpHover(ds) {
 
 function renderDrp() {
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const today = new Date().toISOString().split('T')[0];
+  const _td = new Date(); const today = _td.getFullYear() + '-' + String(_td.getMonth()+1).padStart(2,'0') + '-' + String(_td.getDate()).padStart(2,'0');
   const firstDay = new Date(drpState.year, drpState.month, 1).getDay();
   const daysInMonth = new Date(drpState.year, drpState.month + 1, 0).getDate();
   const s = drpState.start, e = drpState.end || drpState.hovered;
