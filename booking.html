@@ -62,6 +62,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .day-cell.today-cell { background: var(--br); color: #fff; font-weight: 600; }
 .day-cell.booked { background: #fff0e0; color: #d97706; font-weight: 600; }
 .day-cell.blocked { background: var(--blocked); color: var(--blocked-text); font-weight: 500; }
+.day-cell.manual-booked { background: #e6f7ef; color: #2d9e6b; font-weight: 600; }
 .bottom-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
 .bookings-list { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
 .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
@@ -101,6 +102,30 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .toggle-btn[aria-pressed="true"] { background:var(--br); }
 .toggle-knob { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.2s; display:block; }
 .toggle-btn[aria-pressed="true"] .toggle-knob { transform:translateX(18px); }
+
+/* ── Date Range Picker ── */
+.drp-wrap { position: relative; }
+.drp-display { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); font-size:13px; color:var(--muted); cursor:pointer; transition:border-color .15s; user-select:none; }
+.drp-display:hover { border-color:var(--br); color:var(--text); }
+.drp-popup { display:none; position:fixed; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:16px; min-width:300px; }
+.drp-popup.open { display:block; }
+.drp-popup-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.drp-popup-month { font-family:'Playfair Display',serif; font-size:15px; color:var(--text); }
+.drp-popup-nav { width:28px; height:28px; border-radius:6px; border:1px solid var(--border); background:transparent; cursor:pointer; font-size:14px; color:var(--muted); display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.drp-popup-nav:hover { border-color:var(--br); color:var(--br); }
+.drp-wdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.drp-wday { text-align:center; font-size:10px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:var(--muted); padding:4px 0; }
+.drp-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.drp-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; transition:all .1s; }
+.drp-day:hover:not(.drp-day-empty):not(.drp-day-past) { background:var(--br-l); color:var(--br); }
+.drp-day-empty, .drp-day-past { cursor:default; pointer-events:none; color:#ccc; }
+.drp-day-start, .drp-day-end { background:var(--br) !important; color:#fff !important; border-radius:6px; }
+.drp-day-range { background:var(--br-l); color:var(--br); border-radius:0; }
+.drp-day-start { border-radius:6px 0 0 6px !important; }
+.drp-day-end { border-radius:0 6px 6px 0 !important; }
+.drp-day-start.drp-day-end { border-radius:6px !important; }
+.drp-hint { font-size:11px; color:var(--muted); margin-top:10px; text-align:center; }
+.drp-footer { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
 </style>
 </head>
 <body>
@@ -142,6 +167,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <div class="calendar-legend">
           <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
         </div>
       </div>
@@ -172,9 +198,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           </div>
           <div class="form-group">
             <label class="form-label">Date Range</label>
-            <div class="date-row">
-              <input type="date" class="form-input" id="blockStart" onchange="const e=document.getElementById('blockEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
-              <input type="date" class="form-input" id="blockEnd" onfocus="const s=document.getElementById('blockStart').value;if(s)this.min=s;else this.min=new Date().toISOString().split('T')[0];">
+            <div class="drp-wrap" id="blockDrpWrap">
+              <div class="drp-display" id="blockDrpDisplay" onclick="openDrp('block')">
+                <span id="blockDrpText">Select dates</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <input type="hidden" id="blockStart">
+              <input type="hidden" id="blockEnd">
             </div>
           </div>
           <div class="form-group">
@@ -219,9 +249,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </select>
     </div>
     <div class="form-group"><label class="form-label">Dates</label>
-      <div class="date-row">
-        <input type="date" class="form-input" id="manualStart" onchange="const e=document.getElementById('manualEnd');e.min=this.value;if(e.value&&e.value<this.value)e.value=this.value;">
-        <input type="date" class="form-input" id="manualEnd" onfocus="const s=document.getElementById('manualStart').value;if(s)this.min=s;else this.min=new Date().toISOString().split('T')[0];">
+      <div class="drp-wrap" id="manualDrpWrap">
+        <div class="drp-display" id="manualDrpDisplay" onclick="openDrp('manual')">
+          <span id="manualDrpText">Select dates</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <input type="hidden" id="manualStart">
+        <input type="hidden" id="manualEnd">
       </div>
     </div>
     <div class="date-row" style="margin-bottom:13px;">
@@ -475,7 +509,7 @@ function renderCalendar() {
     const b = getBookingForDate(ds);
     let cls = 'day-cell';
     if (isToday) cls += ' today-cell';
-    else if (b) { if (b.source === 'blocked') cls += ' blocked'; else cls += ' booked'; }
+    else if (b) { if (b.source === 'blocked') cls += ' blocked'; else if (b.source === 'manual') cls += ' manual-booked'; else cls += ' booked'; }
     cells += '<div class="' + cls + '" onclick="handleDayClick(\'' + ds + '\')">' + d + '</div>';
   }
   document.getElementById('daysGrid').innerHTML = cells;
@@ -576,6 +610,7 @@ async function blockDates() {
 
 function clearBlockForm() {
   ['blockStart','blockEnd','blockReason'].forEach(id => document.getElementById(id).value = '');
+  resetDrp('block');
 }
 
 function populatePropertySelects() {
@@ -627,10 +662,7 @@ async function saveEditProperty() {
 function openAddBooking() {
   populatePropertySelects();
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('manualStart').min = today;
-  document.getElementById('manualEnd').min = today;
-  document.getElementById('manualStart').value = today;
-  document.getElementById('manualEnd').value = today;
+  resetDrp('manual');
   document.getElementById('addBookingModal').classList.add('open');
 }
 
@@ -700,6 +732,7 @@ async function saveBooking() {
   }
   closeModal('addBookingModal');
   document.getElementById('manualGuest').value = '';
+  resetDrp('manual');
   document.getElementById('manualNumGuests').value = '';
   document.getElementById('manualDiscAmount').value = '';
   document.getElementById('manualNumRooms').value = '';
@@ -876,6 +909,134 @@ function downloadLogExcel() {
 
 renderPills(); renderCalendar(); renderBookings(); renderStats(); populatePropertySelects();
 loadPropertiesFromSupabase();
+
+/* ── Date Range Picker JS ── */
+let drpState = { ctx: null, start: null, end: null, hovered: null, month: null, year: null };
+
+function openDrp(ctx) {
+  drpState.ctx = ctx;
+  const today = new Date();
+  drpState.month = today.getMonth();
+  drpState.year = today.getFullYear();
+  // pre-fill if values exist
+  const sv = document.getElementById(ctx + 'Start').value;
+  const ev = document.getElementById(ctx + 'End').value;
+  drpState.start = sv || null;
+  drpState.end = ev || null;
+  drpState.hovered = null;
+  renderDrp();
+  // position popup near the display
+  const display = document.getElementById(ctx + 'DrpDisplay');
+  const rect = display.getBoundingClientRect();
+  const popup = document.getElementById('drpPopup');
+  popup.classList.add('open');
+  // position below the trigger
+  const popW = 300;
+  let left = rect.left;
+  if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
+  popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  popup.style.left = left + 'px';
+}
+
+function closeDrp() {
+  document.getElementById('drpPopup').classList.remove('open');
+  drpState.ctx = null;
+}
+
+function drpNav(dir) {
+  drpState.month += dir;
+  if (drpState.month > 11) { drpState.month = 0; drpState.year++; }
+  if (drpState.month < 0) { drpState.month = 11; drpState.year--; }
+  renderDrp();
+}
+
+function drpClickDay(ds) {
+  if (!drpState.start || (drpState.start && drpState.end)) {
+    drpState.start = ds; drpState.end = null; drpState.hovered = null;
+  } else {
+    if (ds < drpState.start) { drpState.end = drpState.start; drpState.start = ds; }
+    else { drpState.end = ds; }
+    // commit
+    const ctx = drpState.ctx;
+    document.getElementById(ctx + 'Start').value = drpState.start;
+    document.getElementById(ctx + 'End').value = drpState.end;
+    const label = formatDate(drpState.start) + ' → ' + formatDate(drpState.end);
+    document.getElementById(ctx + 'DrpText').textContent = label;
+    document.getElementById(ctx + 'DrpDisplay').style.color = 'var(--text)';
+    closeDrp();
+    return;
+  }
+  renderDrp();
+}
+
+function drpHover(ds) {
+  if (drpState.start && !drpState.end) { drpState.hovered = ds; renderDrp(); }
+}
+
+function renderDrp() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const today = new Date().toISOString().split('T')[0];
+  const firstDay = new Date(drpState.year, drpState.month, 1).getDay();
+  const daysInMonth = new Date(drpState.year, drpState.month + 1, 0).getDate();
+  const s = drpState.start, e = drpState.end || drpState.hovered;
+  let cells = '';
+  for (let i = 0; i < firstDay; i++) cells += '<div class="drp-day drp-day-empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = drpState.year + '-' + String(drpState.month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const isPast = ds < today;
+    let cls = 'drp-day';
+    if (isPast) { cls += ' drp-day-past'; }
+    else {
+      const lo = s && e ? (s < e ? s : e) : s;
+      const hi = s && e ? (s < e ? e : s) : null;
+      if (s && ds === s) cls += ' drp-day-start';
+      if (e && ds === (s < (e||'') ? e : s)) cls += ' drp-day-end';
+      if (lo && hi && ds > lo && ds < hi) cls += ' drp-day-range';
+    }
+    cells += '<div class="' + cls + '" onclick="drpClickDay('' + ds + '')" onmouseenter="drpHover('' + ds + '')">' + d + '</div>';
+  }
+  document.getElementById('drpMonthLabel').textContent = months[drpState.month] + ' ' + drpState.year;
+  document.getElementById('drpDays').innerHTML = cells;
+  document.getElementById('drpHint').textContent = !drpState.start ? 'Click to select check-in' : !drpState.end ? 'Now select check-out' : '';
+}
+
+// close on outside click
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('drpPopup');
+  if (!popup.classList.contains('open')) return;
+  if (popup.contains(e.target)) return;
+  const ctx = drpState.ctx;
+  if (ctx) {
+    const display = document.getElementById(ctx + 'DrpDisplay');
+    if (display && display.contains(e.target)) return;
+  }
+  closeDrp();
+});
+
+// reset helpers used by openAddBooking / clearBlockForm
+function resetDrp(ctx) {
+  document.getElementById(ctx + 'Start').value = '';
+  document.getElementById(ctx + 'End').value = '';
+  document.getElementById(ctx + 'DrpText').textContent = 'Select dates';
+  document.getElementById(ctx + 'DrpDisplay').style.color = '';
+}
+
 </script>
+
+<!-- DATE RANGE PICKER POPUP -->
+<div class="drp-popup" id="drpPopup">
+  <div class="drp-popup-header">
+    <button class="drp-popup-nav" onclick="drpNav(-1)">&#8249;</button>
+    <div class="drp-popup-month" id="drpMonthLabel"></div>
+    <button class="drp-popup-nav" onclick="drpNav(1)">&#8250;</button>
+  </div>
+  <div class="drp-wdays">
+    <div class="drp-wday">Su</div><div class="drp-wday">Mo</div><div class="drp-wday">Tu</div>
+    <div class="drp-wday">We</div><div class="drp-wday">Th</div><div class="drp-wday">Fr</div><div class="drp-wday">Sa</div>
+  </div>
+  <div class="drp-days" id="drpDays"></div>
+  <div class="drp-hint" id="drpHint"></div>
+</div>
+
 </body>
 </html>
