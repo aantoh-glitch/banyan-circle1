@@ -686,7 +686,7 @@ function goPageFromTray(id, btn) {
   var validPages = ['description','earnings','messages','payments','assets','documents','pne','exp','bookings','vendors'];
   if (hash && validPages.indexOf(hash) !== -1) {
     var pgEl = document.getElementById('pg-'+hash);
-    if (!pgEl) return; // page may be hidden/removed for this role
+    if (!pgEl) { goPage('description', document.getElementById('nb-description')); return; }
     if (TRAY_PAGES.has(hash)) {
       // Tray page — activate via tray button if visible
       var trayBtn = document.getElementById('nb-'+hash);
@@ -696,6 +696,9 @@ function goPageFromTray(id, btn) {
       var navBtn = document.getElementById('nb-'+hash);
       goPage(hash, navBtn || null);
     }
+  } else {
+    // No hash or invalid hash — default to Home/Description and load its data
+    goPage('description', document.getElementById('nb-description'));
   }
 })();
 
