@@ -108,7 +108,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .drp-display { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); font-size:13px; color:var(--muted); cursor:pointer; transition:border-color .15s; user-select:none; }
 .drp-display * { pointer-events:none; }
 .drp-display:hover { border-color:var(--br); color:var(--text); }
-.drp-popup { display:none; position:fixed; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:20px; width:360px; }
+.drp-popup { display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:500; background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.18); padding:20px; min-width:260px; }
 .drp-days { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 .drp-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:all .1s; }
 .drp-popup.open { display:block; }
@@ -156,38 +156,40 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
     </div>
 
-    <div class="calendar-container">
-      <div class="calendar-header">
-        <div class="calendar-header-row1">
-          <div style="display:flex;align-items:center;gap:12px">
-            <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
-            <div class="cal-month-label" id="calMonthLabel"></div>
-            <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+    <div class="bottom-row">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="calendar-container" style="margin-bottom:0;">
+          <div class="calendar-header">
+            <div class="calendar-header-row1">
+              <div style="display:flex;align-items:center;gap:12px">
+                <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+                <div class="cal-month-label" id="calMonthLabel"></div>
+                <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+              </div>
+            </div>
+            <div class="calendar-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
+            </div>
+          </div>
+          <div class="calendar-grid">
+            <div class="weekdays">
+              <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+              <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+            </div>
+            <div class="days-grid" id="daysGrid"></div>
           </div>
         </div>
-        <div class="calendar-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#fff0e0;border:1px solid #d97706"></div>Booked</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Manual</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
-        </div>
-      </div>
-      <div class="calendar-grid">
-        <div class="weekdays">
-          <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
-          <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
-        </div>
-        <div class="days-grid" id="daysGrid"></div>
-      </div>
-    </div>
 
-    <div class="bottom-row">
-      <div class="bookings-list">
-        <div class="panel-header">
-          <div class="panel-title">Upcoming Bookings</div>
-          <div style="font-size:12px;color:var(--muted)" id="bookingCount">0 reservations</div>
+        <div class="bookings-list">
+          <div class="panel-header">
+            <div class="panel-title">Upcoming Bookings</div>
+            <div style="font-size:12px;color:var(--muted)" id="bookingCount">0 reservations</div>
+          </div>
+          <div id="bookingsList"></div>
         </div>
-        <div id="bookingsList"></div>
       </div>
 
       <div class="block-panel">
@@ -926,22 +928,11 @@ function openDrp(ctx) {
   drpState.end = ev || null;
   drpState.hovered = null;
   renderDrp();
-  // position popup near the display
-  const display = document.getElementById(ctx + 'DrpDisplay');
-  const rect = display.getBoundingClientRect();
+  // move popup into the active drp-wrap so absolute positioning works inside iframe
+  const wrap = document.getElementById(ctx + 'DrpWrap');
   const popup = document.getElementById('drpPopup');
+  wrap.appendChild(popup);
   popup.classList.add('open');
-  // position below the trigger
-  const popW = 360;
-  let left = rect.left;
-  if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
-  popup.style.top = (rect.bottom + 6) + 'px';
-  popup.style.left = left + 'px';
-  // ensure popup fits vertically in viewport
-  const popupH = 320;
-  if (rect.bottom + 6 + popupH > window.innerHeight) {
-    popup.style.top = (rect.top - popupH - 6) + 'px';
-  }
 }
 
 function closeDrp() {
