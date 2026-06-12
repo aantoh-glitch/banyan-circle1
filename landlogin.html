@@ -166,7 +166,7 @@ async function checkPin() {
 
   // Silently sign into Supabase Auth so RLS JWT is set
   try {
-    const email = (match.mobile || match.id) + '@banyan.com';
+    const email = (match.mobile || match.id) + '.landlord@banyan.com';
     await supabase.auth.signInWithPassword({ email, password: pin });
   } catch(e) {
     console.warn('Supabase Auth sign-in failed for landlord', match.property_name, e.message);
