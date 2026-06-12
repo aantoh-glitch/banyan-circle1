@@ -793,7 +793,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="pill-group" id="ac-st-pills">
         <button class="pill-opt status-paid" data-val="Paid" id="ac-st-paid" onclick="acPickSt(this)">Paid</button>
         <button class="pill-opt status-pending" data-val="Pending" id="ac-st-pending" onclick="acPickSt(this)">Pending</button>
-        <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" id="ac-st-tobepaid" onclick="acPickSt(this)">To be paid to landlord</button>
+        <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" id="ac-st-tobepaid" onclick="acPickSt(this)" style="display:none">To be paid to landlord</button>
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" id="ac-st-paidlandlord" onclick="acPickSt(this)" style="display:none">Paid to landlord</button>
       </div>
       <input type="hidden" id="ac-exp-status"/>
@@ -1092,6 +1092,7 @@ function acOpenExpModal() {
   document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-st-paid').style.display = '';
+  document.getElementById('ac-st-tobepaid').style.display = 'none';
   document.getElementById('ac-st-paidlandlord').style.display = 'none';
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
@@ -1131,10 +1132,11 @@ function acEditExp(e) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.getElementById('ac-exp-status').value=e.status||'';
 
-  // If editing a landlord-related status: hide Paid, show Paid to landlord pill
+  // Show/hide status pills based on category
   var isTobePaid    = e.status === 'To be paid to landlord';
   var isPaidLandlord = e.status === 'Paid to landlord';
   document.getElementById('ac-st-paid').style.display        = (isTobePaid || isPaidLandlord) ? 'none' : '';
+  document.getElementById('ac-st-tobepaid').style.display    = (e.category === 'Utility') ? '' : 'none';
   document.getElementById('ac-st-paidlandlord').style.display = (isTobePaid || isPaidLandlord) ? '' : 'none';
   // Now highlight the matching pill
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.status));
@@ -1278,6 +1280,15 @@ async function acPickCat(btn) {
 
   const isPayout  = val === 'Payout';
   const isUtility = val === 'Utility';
+  document.getElementById('ac-st-tobepaid').style.display = isUtility ? '' : 'none';
+  // Clear tobepaid selection if switching away from Utility
+  if (!isUtility) {
+    var tobePaidPill = document.getElementById('ac-st-tobepaid');
+    if (tobePaidPill && tobePaidPill.classList.contains('on')) {
+      tobePaidPill.classList.remove('on');
+      document.getElementById('ac-exp-status').value = '';
+    }
+  }
 
   // Payout section
   document.getElementById('ac-payout-fg').style.display    = isPayout ? '' : 'none';
