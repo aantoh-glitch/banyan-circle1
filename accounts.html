@@ -801,10 +801,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="kpi-value" style="color:var(--g)" id="bc-kpi-in">&#8377; —</div>
       <div style="font-size:11px;color:var(--muted);margin-top:4px">Paid bills</div>
     </div>
-    <div class="kpi" style="border-top:3px solid var(--a)">
-      <div class="kpi-label">Receivable</div>
-      <div class="kpi-value" style="color:var(--a)" id="bc-kpi-out">&#8377; —</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Pending bills</div>
+    <div class="kpi" style="border-top:3px solid var(--r)">
+      <div class="kpi-label">Talent Payouts</div>
+      <div class="kpi-value" style="color:var(--r)" id="bc-kpi-out">&#8377; —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">From expenses (pre-tax)</div>
     </div>
   </div>
 
@@ -3279,8 +3279,17 @@ async function bcPaneInit() {
     var toEl   = document.getElementById('bc-to');
     if (fromEl) { fromEl.value = monthStart; fromEl.max = today; }
     if (toEl)   { toEl.value   = today;      toEl.max   = today; }
+    // Ensure expenses are loaded (needed for outgoing KPI)
+    if (!_acExpenses || !_acExpenses.length) {
+      try { await acLoadExp(); } catch(e) {}
+    }
     // Load filter pill data
     await bcPaneLoadFilters();
+  } else {
+    // Re-check expenses in case they weren't loaded yet on first visit
+    if (!_acExpenses || !_acExpenses.length) {
+      try { await acLoadExp(); } catch(e) {}
+    }
   }
   bcPaneRender();
 }
@@ -3382,10 +3391,29 @@ function bcPaneRender() {
     return true;
   });
 
-  // KPIs
+  // KPIs — incoming from bills, outgoing from expenses (payout_type = Talent)
   var total    = filtered.reduce(function(s,b){ return s + (parseFloat(b.bc_amount)||0); }, 0);
   var incoming = filtered.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); }, 0);
-  var outgoing = filtered.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); }, 0);
+
+  // Outgoing = talent payouts from expenses table, filtered by date + property
+  var expenses = _acExpenses || [];
+  var filteredExp = expenses.filter(function(e) {
+    if (e.payout_type !== 'Talent') return false;
+    var dt = (e.date || e.created_at || '').slice(0,10);
+    if (fromV && dt < fromV) return false;
+    if (toV   && dt > toV)   return false;
+    // Property filter — match if active
+    if (_bcPropertyFilters.length > 0) {
+      if (_bcPropertyFilters.indexOf(e.property_name||'')=== -1) return false;
+    }
+    // Talent filter — match recipient name against active talent filters
+    if (_bcTalentFilters.length > 0) {
+      if (_bcTalentFilters.indexOf(e.recipient||'')=== -1) return false;
+    }
+    return true;
+  });
+  var outgoing = filteredExp.reduce(function(s,e){ return s + (parseFloat(e.pretax_amount)||parseFloat(e.amount)||0); }, 0);
+
   var kpiTotal = document.getElementById('bc-kpi-total');
   var kpiIn    = document.getElementById('bc-kpi-in');
   var kpiOut   = document.getElementById('bc-kpi-out');
