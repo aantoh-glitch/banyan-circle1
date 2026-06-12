@@ -628,7 +628,8 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 const TRAY_PAGES = new Set(['assets','documents','pne','exp','bookings','vendors']);
 
 function goPage(id, btn) {
-  if(document.getElementById('msg-sheet-overlay').style.display==='block') closeMsgSheet();
+  var _overlay = document.getElementById('msg-sheet-overlay');
+  if(_overlay && _overlay.style.display==='block') closeMsgSheet();
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.tray-btn').forEach(b=>b.classList.remove('on'));
@@ -1157,11 +1158,11 @@ function closeMsgSheet() {
   // Hide FAB when embedded in admin iframe
   if(window!==window.top){var f=document.getElementById("msg-fab");if(f)f.style.display="none";return;}
   // Fetch unread message count for badge
-  var prop=encodeURIComponent(me.prop||me.property_name||"");
-  fetch(S+"/rest/v1/guest_complaints?property_name=eq."+prop+"&status=eq.open&select=id",{
+  var _n=encodeURIComponent(me.name||""),_r=encodeURIComponent(me.role||"");
+  fetch(S+"/rest/v1/messages?recipient_name=eq."+_n+"&recipient_role=eq."+_r+"&read_by_recipient=eq.false&select=id",{
     headers:{apikey:K,"Authorization":"Bearer "+K}
   }).then(function(r){return r.json();}).then(function(d){
-    if(!d||!d.length)return;
+    if(!Array.isArray(d)||!d.length)return;
     var b=document.getElementById("msg-fab-badge");
     if(b){b.textContent=d.length;b.style.display="block";}
   }).catch(function(){});
