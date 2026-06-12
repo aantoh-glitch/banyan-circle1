@@ -657,6 +657,20 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </select>
     </div>
 
+    <!-- Talent: optional property picker -->
+    <div class="fg" id="ac-talent-property-fg" style="display:none">
+      <label class="fl">Property <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <select class="fc" id="ac-talent-property">
+        <option value="">— select property —</option>
+      </select>
+    </div>
+
+    <!-- Team: read-only assigned properties -->
+    <div class="fg" id="ac-team-properties-fg" style="display:none">
+      <label class="fl">Assigned Properties</label>
+      <div id="ac-team-properties-display" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);min-height:38px">—</div>
+    </div>
+
     <!-- TDS — shown only when Payout is selected -->
     <div class="fg" id="ac-tds-fg" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
@@ -918,6 +932,7 @@ function acRenderExp() {
       ? `<span class="bdg bdg-b" style="font-size:10px">${e.utility_type}</span>${e.property_name ? '<br/><span style="font-size:11px;color:var(--muted)">'+e.property_name+'</span>' : ''}`
       : (e.category==='Payout' && e.recipient
         ? `<span style="font-size:12px;color:var(--muted)">${e.recipient}</span>`
+          + (e.property_name ? `<br/><span style="font-size:11px;color:var(--muted)">${e.property_name}</span>` : '')
         : '<span style="color:var(--border)">—</span>');
     return `
     <tr>
@@ -1024,6 +1039,10 @@ function acOpenExpModal() {
   document.getElementById('ac-payout-fg').style.display='none';
   document.getElementById('ac-tds-fg').style.display='none';
   document.getElementById('ac-recipient-fg').style.display='none';
+  document.getElementById('ac-talent-property-fg').style.display='none';
+  document.getElementById('ac-talent-property').innerHTML='<option value="">— select property —</option>';
+  document.getElementById('ac-team-properties-fg').style.display='none';
+  document.getElementById('ac-team-properties-display').textContent='—';
   // Reset PAN badge
   const _panBadge = document.getElementById('ac-pan-badge');
   if (_panBadge) { _panBadge.textContent=''; _panBadge.style.display='none'; }
@@ -1169,7 +1188,9 @@ function acEditExp(e) {
           items = (d||[]).map(r=>({ label: r.property_name, pan: r.pan||'' }));
         }
         const sel = document.getElementById('ac-exp-recipient');
-        sel.innerHTML = '<option value="" data-pan="">— select —</option>' + items.map(n=>`<option value="${n.label}" data-pan="${n.pan||''}"${n.label===e.recipient?' selected':''}>${n.label}</option>`).join('');
+        sel.innerHTML = '<option value="" data-pan="">— select —</option>' + items.map(n=>`<option value="${n.label}" data-pan="${n.pan||''}" data-assigned="${
+          n.assigned_properties ? (Array.isArray(n.assigned_properties) ? n.assigned_properties.join(', ') : String(n.assigned_properties)) : ''
+        }"${n.label===e.recipient?' selected':''}>${n.label}</option>`).join('');
         document.getElementById('ac-recipient-fg').style.display = '';
         // Restore PAN badge
         const selectedOpt = sel.options[sel.selectedIndex];
@@ -1185,6 +1206,25 @@ function acEditExp(e) {
           sel.parentNode.appendChild(panField);
         }
         panField.value = e.pan || pan || '';
+
+        // Restore Talent property picker
+        if (e.payout_type === 'Talent') {
+          document.getElementById('ac-talent-property-fg').style.display = '';
+          try {
+            const propData = await acApi('/rest/v1/landlords?select=property_name&order=property_name');
+            const propOpts = (propData||[]).map(r=>r.property_name);
+            document.getElementById('ac-talent-property').innerHTML =
+              '<option value="">— select property (optional) —</option>' +
+              propOpts.map(p=>`<option value="${p}"${p===e.property_name?' selected':''}>${p}</option>`).join('');
+          } catch(_) {}
+        }
+        // Restore Team assigned properties display
+        if (e.payout_type === 'Team') {
+          document.getElementById('ac-team-properties-fg').style.display = '';
+          const assigned = selectedOpt ? (selectedOpt.getAttribute('data-assigned') || '') : '';
+          const display = document.getElementById('ac-team-properties-display');
+          if (display) display.textContent = assigned || 'No properties assigned';
+        }
       } catch(_) {}
     })();
   }
@@ -1227,6 +1267,10 @@ async function acPickCat(btn) {
     document.querySelectorAll('#ac-payout-pills .pill-opt').forEach(b=>b.classList.remove('on'));
     document.getElementById('ac-exp-payout-type').value = '';
     document.getElementById('ac-exp-recipient').innerHTML = '<option value="">— select —</option>';
+    document.getElementById('ac-talent-property-fg').style.display = 'none';
+    document.getElementById('ac-talent-property').innerHTML = '<option value="">— select property —</option>';
+    document.getElementById('ac-team-properties-fg').style.display = 'none';
+    document.getElementById('ac-team-properties-display').textContent = '—';
     // Reset TDS
     const tdsToggle = document.getElementById('ac-tds-toggle');
     if (tdsToggle && tdsToggle.checked) { tdsToggle.checked = false; acToggleTds(); }
@@ -1292,20 +1336,38 @@ async function acPickPayout(btn) {
   const recipientSel = document.getElementById('ac-exp-recipient');
   recipientSel.innerHTML = '<option value="">Loading…</option>';
   document.getElementById('ac-recipient-fg').style.display = '';
+  // Show/hide Talent property picker and Team assigned properties
+  document.getElementById('ac-talent-property-fg').style.display = 'none';
+  document.getElementById('ac-team-properties-fg').style.display = 'none';
+  document.getElementById('ac-team-properties-display').textContent = '—';
+  document.getElementById('ac-talent-property').innerHTML = '<option value="">— select property —</option>';
+
   try {
     let items = [];
     if (type === 'Talent') {
-      const d = await acApi('/rest/v1/talents?select=id,name,pan&order=name');
-      items = (d||[]).map(r=>({ id: r.id, label: r.name, pan: r.pan||'' }));
+      const [talentData, propData] = await Promise.all([
+        acApi('/rest/v1/talents?select=id,name,pan&order=name'),
+        acApi('/rest/v1/landlords?select=property_name&order=property_name')
+      ]);
+      items = (talentData||[]).map(r=>({ id: r.id, label: r.name, pan: r.pan||'' }));
+      // Populate property picker (exclude Banyan/Heritance as they're in billing dropdown, not needed here)
+      const propOpts = (propData||[]).map(r=>r.property_name);
+      document.getElementById('ac-talent-property').innerHTML =
+        '<option value="">— select property (optional) —</option>' +
+        propOpts.map(p=>`<option value="${p}">${p}</option>`).join('');
+      document.getElementById('ac-talent-property-fg').style.display = '';
     } else if (type === 'Team') {
-      const d = await acApi('/rest/v1/staff?select=id,name,pan&order=name');
-      items = (d||[]).map(r=>({ id: r.id, label: r.name, pan: r.pan||'' }));
+      const d = await acApi('/rest/v1/staff?select=id,name,pan,assigned_properties&order=name');
+      items = (d||[]).map(r=>({ id: r.id, label: r.name, pan: r.pan||'', assigned_properties: r.assigned_properties||null }));
+      document.getElementById('ac-team-properties-fg').style.display = '';
     } else if (type === 'Landlords') {
       const d = await acApi('/rest/v1/landlords?select=id,property_name,pan&order=property_name');
       items = (d||[]).map(r=>({ id: r.id, label: r.property_name, pan: r.pan||'' }));
     }
     recipientSel.innerHTML = '<option value="" data-pan="">— select —</option>' +
-      items.map(i=>`<option value="${i.label}" data-pan="${i.pan}">${i.label}</option>`).join('');
+      items.map(i=>`<option value="${i.label}" data-pan="${i.pan||''}" data-assigned="${
+        i.assigned_properties ? (Array.isArray(i.assigned_properties) ? i.assigned_properties.join(', ') : String(i.assigned_properties)) : ''
+      }">${i.label}</option>`).join('');
   } catch(e) {
     recipientSel.innerHTML = '<option value="">Could not load</option>';
   }
@@ -1332,6 +1394,14 @@ function acOnRecipientChange() {
     document.getElementById('ac-exp-recipient').parentNode.appendChild(panField);
   }
   panField.value = pan || '';
+
+  // Team: show assigned properties read-only
+  const payoutType = document.getElementById('ac-exp-payout-type').value;
+  if (payoutType === 'Team') {
+    const assigned = opt ? (opt.getAttribute('data-assigned') || '') : '';
+    const display = document.getElementById('ac-team-properties-display');
+    if (display) display.textContent = assigned || 'No properties assigned';
+  }
 }
 function acPickSt(btn) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -1506,6 +1576,25 @@ async function acSaveExp() {
 
   const othersProperty = document.getElementById('ac-exp-others-property') ? document.getElementById('ac-exp-others-property').value : '';
   const panVal = document.getElementById('ac-exp-pan') ? document.getElementById('ac-exp-pan').value : '';
+  // Talent: optional property selection
+  const talentProperty = (category === 'Payout' && payoutType === 'Talent')
+    ? (document.getElementById('ac-talent-property') ? document.getElementById('ac-talent-property').value : '')
+    : '';
+  // Team: read assigned_properties from the selected option's data attribute
+  const teamAssigned = (category === 'Payout' && payoutType === 'Team')
+    ? (() => {
+        const recipSel = document.getElementById('ac-exp-recipient');
+        const opt = recipSel ? recipSel.options[recipSel.selectedIndex] : null;
+        return opt ? (opt.getAttribute('data-assigned') || '') : '';
+      })()
+    : '';
+  // Determine property_name to save
+  let propertyToSave = null;
+  if (category === 'Utility') propertyToSave = utilityProp || null;
+  else if (category === 'Others') propertyToSave = othersProperty || null;
+  else if (category === 'Payout' && payoutType === 'Talent') propertyToSave = talentProperty || null;
+  else if (category === 'Payout' && payoutType === 'Team') propertyToSave = teamAssigned || null;
+
   const body = {
     item, amount: Number(amount), category, status,
     date:          expDate      || null,
@@ -1514,7 +1603,7 @@ async function acSaveExp() {
     payout_type:   category === 'Payout'  ? payoutType  : null,
     recipient:     category === 'Payout'  ? recipient   : null,
     pan:           category === 'Payout'  ? (panVal || null) : null,
-    property_name: category === 'Utility' ? utilityProp : (category === 'Others' ? othersProperty||null : null),
+    property_name: propertyToSave,
     utility_type:  category === 'Utility' ? utilityType : null,
     pretax_amount: category === 'Payout' && pretax ? pretax : null,
     tds_pct:       category === 'Payout' && tdsOn ? tdsPct : null,
@@ -2060,9 +2149,11 @@ function editBill(bill) {
       document.getElementById('other-name-fg').style.display = '';
       document.getElementById('other-guest-name').value = bill.guest_name || '';
       document.getElementById('guest-info').style.display = 'none';
-      // Show property picker (exclude Banyan/Heritance since they appear in the dropdown itself)
+      // Show property picker
       document.getElementById('other-property-fg').style.display = '';
-      populatePropertyPicker('other-bill-property', []).then(function(){
+      // For Banyan/Heritance: include that property as an extra option so it can be restored
+      var extraPropForRestore = (selectVal === '__banyan__' || selectVal === '__heritance__') ? [bill.property_name] : [];
+      populatePropertyPicker('other-bill-property', extraPropForRestore).then(function(){
         var sel = document.getElementById('other-bill-property');
         if (sel && bill.property_name) sel.value = bill.property_name;
       });
@@ -2206,8 +2297,16 @@ function renderBills(data) {
         var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
         var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
         var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
+        // Derive the "select" label for the log
+        var selectLabel = '';
+        if (!b.guest_profile_id) {
+          var PROP_LABEL_MAP = {'Banyan Circle':'Banyan Circle','Properties By Heritance':'Properties By Heritance'};
+          selectLabel = (b.property_name && PROP_LABEL_MAP[b.property_name]) ? PROP_LABEL_MAP[b.property_name] : 'Others';
+        }
         return '<tr>' +
-          '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
+          '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div>' +
+          (selectLabel ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + esc(selectLabel) + '</div>' : '') +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
           '<td>' + esc(b.property_name||'—') + '</td>' +
           '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
