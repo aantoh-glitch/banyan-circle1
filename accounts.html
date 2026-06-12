@@ -356,6 +356,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <button class="ac-tab on" id="act-bills" onclick="acTab('bills',this)">Billing</button>
   <button class="ac-tab" id="act-expenses" onclick="acTab('expenses',this)">Expenses</button>
   <button class="ac-tab" id="act-summary" onclick="acTab('summary',this)">Summary</button>
+  <button class="ac-tab" id="act-bc" onclick="acTab('bc',this)">Banyan Circle</button>
 </div>
 
 <!-- ── EXPENSES PANE ── -->
@@ -770,6 +771,69 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 </div><!-- /ac-pane-summary -->
 
+<!-- ── BANYAN CIRCLE PANE ── -->
+<div class="ac-pane" id="ac-pane-bc">
+
+  <!-- Date Range -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header" style="margin-bottom:12px"><span class="card-ttl">Date Range</span></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div class="fg" style="margin-bottom:0;min-width:140px">
+        <label class="fl">From</label>
+        <input class="fc" id="bc-from" type="date" onchange="bcPaneRender()"/>
+      </div>
+      <div class="fg" style="margin-bottom:0;min-width:140px">
+        <label class="fl">To</label>
+        <input class="fc" id="bc-to" type="date" onchange="bcPaneRender()"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+    <div class="kpi" style="border-top:3px solid var(--text)">
+      <div class="kpi-label">Total Billed</div>
+      <div class="kpi-value" id="bc-kpi-total">&#8377; —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Banyan Circle bills</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid var(--g)">
+      <div class="kpi-label">Received</div>
+      <div class="kpi-value" style="color:var(--g)" id="bc-kpi-in">&#8377; —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Paid bills</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid var(--a)">
+      <div class="kpi-label">Receivable</div>
+      <div class="kpi-value" style="color:var(--a)" id="bc-kpi-out">&#8377; —</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Pending bills</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-ttl" style="margin-bottom:14px">Filters</div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Talent</div>
+      <div class="pill-group" id="bc-talent-pills" style="flex-wrap:wrap;gap:6px">
+        <div style="font-size:12px;color:var(--muted)">Loading&hellip;</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Property</div>
+      <div class="pill-group" id="bc-property-pills" style="flex-wrap:wrap;gap:6px">
+        <div style="font-size:12px;color:var(--muted)">Loading&hellip;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bill list -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="bc-bill-list" style="padding:16px 22px">
+      <div class="empty">Select the tab to load data</div>
+    </div>
+  </div>
+
+</div><!-- /ac-pane-bc -->
+
 <!-- ── EXPENSE MODAL ── -->
 <div class="modal" id="ac-modal-exp">
   <div class="modal-card">
@@ -1043,6 +1107,7 @@ function acTab(id, btn) {
   if(id==='expenses') { acLoadExp(); }
   if(id==='bills') { if(!window._blReady){ window._blReady=true; init(); } }
   if(id==='summary') { smInit(); }
+  if(id==='bc') { bcPaneInit(); }
 }
 
 async function acLoadExp() {
@@ -2420,6 +2485,18 @@ async function saveBill() {
   });
   var subItemVal = bcTalents.length ? bcTalents.join(', ') : null;
 
+  // Compute per-section amounts
+  var bcAmount = 0;
+  document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
+    var nums = tr.querySelectorAll('input.bc-num');
+    bcAmount += parseFloat(nums[4] ? nums[4].value : 0) || 0;
+  });
+  var accAmount = 0;
+  document.querySelectorAll('#acc-items-body tr').forEach(function(tr){
+    var inputs = tr.querySelectorAll('input');
+    accAmount += parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
+  });
+
   var body = {
     guest_profile_id : !IS_NAMED ? gid : null,
     guest_name       : IS_NAMED ? otherName : (g ? g.name : ''),
@@ -2435,6 +2512,8 @@ async function saveBill() {
     payment_method   : payMethod !== 'pending' ? payMethod : null,
     remarks          : document.getElementById('bill-remarks').value.trim()||null,
     bill_date        : billDate,
+    bc_amount        : bcAmount || null,
+    acc_amount       : accAmount || null,
     updated_at       : new Date().toISOString()
   };
 
@@ -2737,6 +2816,8 @@ function renderBills(data) {
     '<th style="text-align:right">Taxable</th>' +
     '<th style="text-align:right">CGST</th>' +
     '<th style="text-align:right">SGST</th>' +
+    '<th style="text-align:right">BC Amt</th>' +
+    '<th style="text-align:right">Acc Amt</th>' +
     '<th style="text-align:right">Total</th>' +
     '<th>Status</th><th></th>' +
     '</tr></thead><tbody>' +
@@ -2771,6 +2852,8 @@ function renderBills(data) {
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + cgstStr + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + sgstStr + '</td>' +
+          '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.bc_amount ? fmtF(b.bc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
+          '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.acc_amount ? fmtF(b.acc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;font-size:15px">' + fmtF(b.amount) + '</td>' +
           '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap">' +
@@ -3177,6 +3260,169 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
 });
+
+
+// ══════════════════════════════════════════════════
+// ── BANYAN CIRCLE PANE ──
+// ══════════════════════════════════════════════════
+var _bcPaneReady = false;
+var _bcTalentFilters  = [];   // currently active talent name filters (multi-select, up to 2)
+var _bcPropertyFilters = [];  // currently active property filters (multi-select, up to 2)
+
+async function bcPaneInit() {
+  if (!_bcPaneReady) {
+    _bcPaneReady = true;
+    // Set default date range — current month
+    var today = new Date().toISOString().slice(0,10);
+    var monthStart = today.slice(0,7) + '-01';
+    var fromEl = document.getElementById('bc-from');
+    var toEl   = document.getElementById('bc-to');
+    if (fromEl) { fromEl.value = monthStart; fromEl.max = today; }
+    if (toEl)   { toEl.value   = today;      toEl.max   = today; }
+    // Load filter pill data
+    await bcPaneLoadFilters();
+  }
+  bcPaneRender();
+}
+
+async function bcPaneLoadFilters() {
+  // Talent pills — from talents table
+  try {
+    var talents = await api('/rest/v1/talents?select=id,name&order=name') || [];
+    var tContainer = document.getElementById('bc-talent-pills');
+    if (tContainer) {
+      tContainer.innerHTML = talents.map(function(t) {
+        return '<button class="pill-opt" data-val="' + esc(t.name) + '" onclick="bcTogglePill(this,\'talent\')">' + esc(t.name) + '</button>';
+      }).join('') || '<span style="font-size:12px;color:var(--muted)">No talents found</span>';
+    }
+  } catch(e) {
+    var tc = document.getElementById('bc-talent-pills');
+    if (tc) tc.innerHTML = '<span style="font-size:12px;color:var(--muted)">Could not load</span>';
+  }
+
+  // Property pills — from bills that have Banyan Circle items
+  try {
+    var bills = ALL_BILLS.length ? ALL_BILLS : (await api('/rest/v1/bills?select=property_name,items&order=created_at.desc') || []);
+    var props = Array.from(new Set(
+      bills
+        .filter(function(b){ return (b.items||[]).some(function(i){ return i.type === 'banyan'; }); })
+        .map(function(b){ return b.property_name || ''; })
+        .filter(Boolean)
+    )).sort();
+    // Also add from landlords table
+    try {
+      var ld = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+      ld.forEach(function(r){ if (r.property_name && props.indexOf(r.property_name) === -1) props.push(r.property_name); });
+      props.sort();
+    } catch(e2) {}
+    var pContainer = document.getElementById('bc-property-pills');
+    if (pContainer) {
+      pContainer.innerHTML = props.map(function(p) {
+        return '<button class="pill-opt" data-val="' + esc(p) + '" onclick="bcTogglePill(this,\'property\')">' + esc(p) + '</button>';
+      }).join('') || '<span style="font-size:12px;color:var(--muted)">No properties found</span>';
+    }
+  } catch(e) {
+    var pc = document.getElementById('bc-property-pills');
+    if (pc) pc.innerHTML = '<span style="font-size:12px;color:var(--muted)">Could not load</span>';
+  }
+}
+
+function bcTogglePill(btn, type) {
+  var arr = type === 'talent' ? _bcTalentFilters : _bcPropertyFilters;
+  var val = btn.dataset.val;
+  var idx = arr.indexOf(val);
+  if (idx > -1) {
+    // deselect
+    arr.splice(idx, 1);
+    btn.classList.remove('on');
+  } else {
+    // select — max 2
+    if (arr.length >= 2) {
+      // deselect oldest
+      var oldest = arr.shift();
+      var oldBtn = type === 'talent'
+        ? document.querySelector('#bc-talent-pills .pill-opt[data-val="' + oldest + '"]')
+        : document.querySelector('#bc-property-pills .pill-opt[data-val="' + oldest + '"]');
+      if (oldBtn) oldBtn.classList.remove('on');
+    }
+    arr.push(val);
+    btn.classList.add('on');
+  }
+  if (type === 'talent') _bcTalentFilters = arr;
+  else _bcPropertyFilters = arr;
+  bcPaneRender();
+}
+
+function bcPaneRender() {
+  var fromV = (document.getElementById('bc-from')||{}).value || '';
+  var toV   = (document.getElementById('bc-to')||{}).value   || '';
+  var listEl = document.getElementById('bc-bill-list');
+
+  var bills = ALL_BILLS || [];
+
+  // Filter to bills that have at least one banyan item
+  var filtered = bills.filter(function(b) {
+    var hasBc = (b.items||[]).some(function(i){ return i.type === 'banyan'; });
+    if (!hasBc) return false;
+    // Date range
+    var dt = (b.bill_date || b.created_at || '').slice(0,10);
+    if (fromV && dt < fromV) return false;
+    if (toV   && dt > toV)   return false;
+    // Talent filter — any of the active talents must appear in items
+    if (_bcTalentFilters.length > 0) {
+      var talentMatch = (b.items||[]).some(function(i){
+        return i.type === 'banyan' && _bcTalentFilters.indexOf(i.sub_item) > -1;
+      });
+      if (!talentMatch) return false;
+    }
+    // Property filter
+    if (_bcPropertyFilters.length > 0) {
+      if (_bcPropertyFilters.indexOf(b.property_name||'') === -1) return false;
+    }
+    return true;
+  });
+
+  // KPIs
+  var total    = filtered.reduce(function(s,b){ return s + (parseFloat(b.bc_amount)||0); }, 0);
+  var incoming = filtered.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); }, 0);
+  var outgoing = filtered.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); }, 0);
+  var kpiTotal = document.getElementById('bc-kpi-total');
+  var kpiIn    = document.getElementById('bc-kpi-in');
+  var kpiOut   = document.getElementById('bc-kpi-out');
+  if (kpiTotal) kpiTotal.textContent = fmt(total);
+  if (kpiIn)    kpiIn.textContent    = fmt(incoming);
+  if (kpiOut)   kpiOut.textContent   = fmt(outgoing);
+
+  if (!filtered.length) {
+    if (listEl) listEl.innerHTML = '<div class="empty">No Banyan Circle bills in this range</div>';
+    return;
+  }
+
+  // Bill list table
+  var rows = filtered.map(function(b) {
+    var bcItems = (b.items||[]).filter(function(i){ return i.type==='banyan'; });
+    var talentNames = bcItems.map(function(i){ return i.sub_item||'—'; }).join(', ');
+    var bcAmt = b.bc_amount ? fmtF(b.bc_amount) : bcItems.reduce(function(s,i){ return s+(parseFloat(i.total)||0); },0).toFixed(2);
+    var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
+    var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
+    var statusLbl = b.payment_status==='paid' ? 'Received' : 'Receivable';
+    return '<tr>' +
+      '<td style="font-weight:500">' + esc(b.guest_name||'—') + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + esc(talentNames) + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + esc(b.property_name||'—') + '</td>' +
+      '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
+      '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif">' + (b.bc_amount ? fmtF(b.bc_amount) : '—') + '</td>' +
+      '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
+      '</tr>';
+  }).join('');
+
+  if (listEl) listEl.innerHTML =
+    '<table class="tbl"><thead><tr>' +
+    '<th>Guest / Source</th><th>Talent(s)</th><th>Property</th><th>Date</th>' +
+    '<th style="text-align:right">BC Amount</th><th>Status</th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
 
 
 </script>
