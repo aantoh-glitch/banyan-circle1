@@ -131,7 +131,7 @@ history.pushState(null, '', location.href);
 window.addEventListener('popstate', () => history.pushState(null, '', location.href));
 
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'YOUR_NEW_ANON_KEY'; // ← paste your new anon key here
+const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
 // Supabase JS client for Auth
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -303,15 +303,25 @@ async function savePinStaff(staff, newPin) {
   document.getElementById('cp-err').textContent = '';
   document.getElementById('cp-sub').textContent = 'Saving…';
   try {
+    // 1. Update PIN in staff table
     const res = await fetch(SB + '/rest/v1/staff?id=eq.' + encodeURIComponent(staff.id), {
       method: 'PATCH',
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify({ pin: newPin })
     });
     if (!res.ok) throw new Error('Server error');
-    // Update local list too
+
+    // 2. Update Supabase Auth password so login stays in sync
+    try {
+      await supabase.auth.updateUser({ password: newPin });
+    } catch(e) {
+      console.warn('Auth password update failed:', e.message);
+    }
+
+    // 3. Update local list
     const s = staffList.find(x => x.id === staff.id);
     if (s) s.pin = newPin;
+
     document.getElementById('cp-sub').textContent = '✓ PIN updated successfully!';
     document.getElementById('cp-title').textContent = 'All done';
     setTimeout(closeChangePin, 1600);
