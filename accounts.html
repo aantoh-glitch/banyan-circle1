@@ -1645,23 +1645,7 @@ async function acSaveExp() {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', body);
     else   await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
 
-    // If Payout + Paid + Landlords → mirror to earnings_log
-    if (category === 'Payout' && status === 'Paid' && payoutType === 'Landlords' && recipient) {
-      const PAYOUT_ENTITY_MAP = { Landlords: 'landlord', Team: 'staff', Talent: 'talent' };
-      const elBody = {
-        type:        'positive',
-        head:        'Pay',
-        amount:      Number(amount),
-        percentage:  null,
-        notes:       item || null,
-        entity_type: PAYOUT_ENTITY_MAP[payoutType],
-        entity_name: recipient,
-        recorded_by: 'Admin',
-        entry_date:  new Date().toISOString().slice(0, 10),
-        created_at:  new Date().toISOString()
-      };
-      await acApi('/rest/v1/earnings_log', 'POST', elBody);
-    }
+
 
     // If Utility + Paid → also write to utility_payments
     if (category === 'Utility' && status === 'Paid') {
