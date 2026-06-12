@@ -111,7 +111,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .toggle-knob { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform 0.2s; display:block; }
 .toggle-btn[aria-pressed="true"] .toggle-knob { transform:translateX(18px); }
 
-/* ── Date Range Picker ── */
+/* ── Landlord mobile view ── */
+body.landlord-view { background: var(--bg); }
+body.landlord-view .prop-subbar { display: none; }
+body.landlord-view .stats-row { display: none; }
+body.landlord-view .main { padding: 16px; }
+body.landlord-view .top-row { display: block; }
+body.landlord-view .top-row .calendar-container { margin-bottom: 14px; height: auto; }
+body.landlord-view .top-row .bookings-list { height: auto; max-height: none; overflow-y: visible; margin-bottom: 14px; }
+body.landlord-view .bottom-row { margin-top: 0 !important; }
+body.landlord-view .block-panel .block-form { display: block; padding: 14px 16px 0; }
+body.landlord-view .block-panel .block-form .form-group { margin-bottom: 12px; }
+body.landlord-view .day-cell { font-size: 12px; }
+body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
+
 .drp-wrap { position: relative; }
 .drp-display { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); font-size:13px; color:var(--muted); cursor:pointer; transition:border-color .15s; user-select:none; }
 .drp-display * { pointer-events:none; }
@@ -395,6 +408,26 @@ if (_viewerParam === 'landlord') {
   document.addEventListener('DOMContentLoaded', function() {
     const tb = document.querySelector('.topbar');
     if (tb) tb.style.display = 'none';
+    document.body.classList.add('landlord-view');
+    // Reorder: calendar → bookings → block dates (all stacked vertically)
+    const mainEl = document.querySelector('.main');
+    const topRow = document.querySelector('.top-row');
+    const bottomRow = document.querySelector('.bottom-row');
+    const calContainer = topRow ? topRow.querySelector('.calendar-container') : null;
+    const bookingsList = topRow ? topRow.querySelector('.bookings-list') : null;
+    const blockPanel = bottomRow ? bottomRow.querySelector('.block-panel') : null;
+    if (mainEl && calContainer && bookingsList && blockPanel) {
+      // Remove from current positions
+      topRow.remove();
+      bottomRow.remove();
+      // Append in desired order
+      mainEl.appendChild(calContainer);
+      mainEl.appendChild(bookingsList);
+      const blockWrapper = document.createElement('div');
+      blockWrapper.style.marginTop = '0';
+      blockWrapper.appendChild(blockPanel);
+      mainEl.appendChild(blockWrapper);
+    }
   });
 }
 if (_urlParams.get('readonly') === 'true') {
@@ -825,9 +858,10 @@ function openBookingsLog() {
     properties.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
   const now = new Date();
   const firstOfMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
-  const today = now.toISOString().split('T')[0];
+  const lastOfMonth = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  const lastOfMonthStr = lastOfMonth.getFullYear() + '-' + String(lastOfMonth.getMonth()+1).padStart(2,'0') + '-' + String(lastOfMonth.getDate()).padStart(2,'0');
   document.getElementById('logFrom').value = firstOfMonth;
-  document.getElementById('logTo').value = today;
+  document.getElementById('logTo').value = lastOfMonthStr;
   renderLogTable();
   document.getElementById('bookingsLogModal').classList.add('open');
 }
