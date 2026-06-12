@@ -2151,7 +2151,9 @@ function editBill(bill) {
       // "Others / Banyan / Heritance" bill — restore name field directly, skip onGuestSelect
       // Use bill_source to identify the dropdown choice; fall back to Others
       var SOURCE_MAP = {'Banyan Circle':'__banyan__','Properties By Heritance':'__heritance__'};
-      var selectVal = (bill.bill_source && SOURCE_MAP[bill.bill_source]) ? SOURCE_MAP[bill.bill_source] : '__other__';
+      var legacySource = ['Banyan Circle','Properties By Heritance'].indexOf(bill.property_name) !== -1 ? bill.property_name : null;
+      var resolvedSource = bill.bill_source || legacySource;
+      var selectVal = (resolvedSource && SOURCE_MAP[resolvedSource]) ? SOURCE_MAP[resolvedSource] : '__other__';
       document.getElementById('bill-guest-select').value = selectVal;
       document.getElementById('other-name-fg').style.display = '';
       document.getElementById('other-guest-name').value = bill.guest_name || '';
@@ -2282,7 +2284,7 @@ function renderBills(data) {
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
 
   el.innerHTML = '<table class="tbl"><thead><tr>' +
-    '<th>Guest</th><th>Property</th><th>Date</th>' +
+    '<th>Bill Source</th><th>Name</th><th>Property</th><th>Date</th>' +
     '<th style="text-align:right">Taxable</th>' +
     '<th style="text-align:right">CGST</th>' +
     '<th style="text-align:right">SGST</th>' +
@@ -2302,21 +2304,16 @@ function renderBills(data) {
         var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
         var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
         var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
-        // Build guest column: select label → name → property, then item summary
         var isNamed = !b.guest_profile_id;
-        var selectLabel = isNamed
-          ? (b.bill_source || 'Others')
+        var billSource = isNamed
+          ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others'))
           : (b.guest_name || '—');
-        var showName = isNamed && b.guest_name ? b.guest_name : '';
-        var showProp = b.property_name || '';
-        var guestCell =
-          '<div style="font-weight:500">' + esc(selectLabel) + '</div>' +
-          (showName ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + esc(showName) + '</div>' : '') +
-          (showProp ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + esc(showProp) + '</div>' : '') +
-          '<div style="font-size:11px;color:var(--border);margin-top:2px">' + esc(itemSummary) + '</div>';
+        var billName = isNamed ? (b.guest_name || '') : '';
+        var billProp = b.property_name || '';
         return '<tr>' +
-          '<td>' + guestCell + '</td>' +
-          '<td>' + esc(b.property_name||'—') + '</td>' +
+          '<td style="font-weight:500">' + esc(billSource) + '<div style="font-size:11px;color:var(--border);margin-top:2px;font-weight:400">' + esc(itemSummary) + '</div></td>' +
+          '<td style="color:var(--muted);font-size:13px">' + (billName ? esc(billName) : '<span style="color:var(--border)">—</span>') + '</td>' +
+          '<td style="color:var(--muted);font-size:13px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + cgstStr + '</td>' +
@@ -2559,7 +2556,7 @@ function downloadBillsXlsx() {
     var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
     var itemStr = items.map(function(i){ return i.name+(i.qty&&i.qty!=1?' x'+i.qty:''); }).join('; ');
     var isNamed = !b.guest_profile_id;
-    var selectCol = isNamed ? (b.bill_source||'Others') : (b.guest_name||'');
+    var selectCol = isNamed ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others')) : (b.guest_name||'');
     var nameCol   = isNamed ? (b.guest_name||'') : '';
     var propCol   = b.property_name||'';
     billRows.push([
@@ -2585,7 +2582,7 @@ function downloadBillsXlsx() {
   var itemRows = [['Bill Date','Select','Name','Property','Item','Qty','Rate (₹)','CGST %','SGST %','Total (₹)']];
   data.forEach(function(b){
     var isNamedI = !b.guest_profile_id;
-    var selectColI = isNamedI ? (b.bill_source||'Others') : (b.guest_name||'');
+    var selectColI = isNamedI ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others')) : (b.guest_name||'');
     var nameColI   = isNamedI ? (b.guest_name||'') : '';
     var propColI   = b.property_name||'';
     (b.items||[]).forEach(function(i){
