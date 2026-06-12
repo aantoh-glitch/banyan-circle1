@@ -2198,7 +2198,7 @@ function addAccRow(name, qty, rate, cgstPct, sgstPct) {
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="0" oninput="calcAccRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="0" oninput="calcAccRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
     '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:80px;text-align:right;background:var(--bg);font-weight:500" id="' + rid + '-tot"/></td>' +
-    '<td style="text-align:center"><button class="del-row" onclick="removeAccRow('' + rid + '')">✕</button></td>';
+    '<td style="text-align:center"><button class="del-row" onclick="removeAccRow(\'' + rid + '\')">✕</button></td>';
   document.getElementById('acc-items-body').appendChild(tr);
   calcTotal();
 }
