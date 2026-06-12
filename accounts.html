@@ -2097,6 +2097,31 @@ function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct, subItem) {
 
 // ── Banyan Circle toggle ──
 var BC_TALENTS = [];
+var BC_TALENTS_LOADING = false;
+
+function bcLoadTalents() {
+  if (BC_TALENTS.length > 0) return Promise.resolve(BC_TALENTS);
+  if (BC_TALENTS_LOADING) {
+    return new Promise(function(resolve) {
+      var interval = setInterval(function() {
+        if (!BC_TALENTS_LOADING) { clearInterval(interval); resolve(BC_TALENTS); }
+      }, 80);
+    });
+  }
+  BC_TALENTS_LOADING = true;
+  return api('/rest/v1/talents?select=id,name&order=name')
+    .then(function(d) {
+      BC_TALENTS = d || [];
+      BC_TALENTS_LOADING = false;
+      return BC_TALENTS;
+    })
+    .catch(function() {
+      BC_TALENTS = []; BC_TALENTS_LOADING = false;
+      BC_TALENTS_LOADING = false;
+      return [];
+    });
+}
+
 function bcToggle() {
   var cb = document.getElementById('bc-toggle');
   var track = document.getElementById('bc-track');
@@ -2108,15 +2133,23 @@ function bcToggle() {
   thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
   lbl.textContent = on ? 'On' : 'Off';
   sec.style.display = on ? '' : 'none';
-  if (on && BC_TALENTS.length === 0) {
-    api('/rest/v1/talents?select=id,name,sub_item&order=name').then(function(d){
-      BC_TALENTS = d || [];
+  if (on) {
+    bcLoadTalents().then(function() {
       if (document.querySelectorAll('#bc-items-body tr').length === 0) addBcRow();
-    }).catch(function(){ BC_TALENTS = []; addBcRow(); });
-  } else if (on && document.querySelectorAll('#bc-items-body tr').length === 0) {
-    addBcRow();
+      // Refresh dropdowns in existing rows with loaded talents
+      document.querySelectorAll('.bc-talent-sel').forEach(function(sel) {
+        var current = sel.value;
+        var opts = BC_TALENTS.map(function(t) {
+          return '<option value="' + t.name.replace(/"/g,'&quot;') + '"' + (t.name === current ? ' selected' : '') + '>' + t.name.replace(/</g,'&lt;') + '</option>';
+        }).join('');
+        sel.innerHTML = '<option value="">— select talent —</option>' + opts;
+        if (current) sel.value = current;
+      });
+      calcTotal();
+    });
+  } else {
+    calcTotal();
   }
-  calcTotal();
 }
 
 var bcRowCount = 0;
@@ -2235,7 +2268,7 @@ function resetToggles() {
   });
   document.getElementById('bc-items-body').innerHTML = '';
   document.getElementById('acc-items-body').innerHTML = '';
-  BC_TALENTS = [];
+  BC_TALENTS = []; BC_TALENTS_LOADING = false;
   bcRowCount = 0;
   accRowCount = 0;
 }
@@ -2519,8 +2552,7 @@ function editBill(bill) {
     var hasBc = (bill.items||[]).some(function(i){ return i.type === 'banyan'; });
     var hasAcc = (bill.items||[]).some(function(i){ return i.type === 'accommodation'; });
     if (hasBc) {
-      api('/rest/v1/talents?select=id,name,sub_item&order=name').then(function(d){
-        BC_TALENTS = d || [];
+      bcLoadTalents().then(function() {
         var bcCb = document.getElementById('bc-toggle');
         var bcSec = document.getElementById('bc-rows-section');
         if (bcCb) bcCb.checked = true;
@@ -2531,7 +2563,7 @@ function editBill(bill) {
         (bill.items||[]).filter(function(i){ return i.type==='banyan'; }).forEach(function(i){
           addBcRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
         });
-      }).catch(function(){});
+      });
     }
     if (hasAcc) {
       var accCb = document.getElementById('acc-toggle');
