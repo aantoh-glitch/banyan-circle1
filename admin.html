@@ -1040,6 +1040,20 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
+// Supabase JS client — used to get session JWT for RLS
+let _supabase = null;
+async function getSupabase() {
+  if (_supabase) return _supabase;
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+  _supabase = createClient(SB, KEY);
+  return _supabase;
+}
+async function getAuthToken() {
+  const sb = await getSupabase();
+  const { data } = await sb.auth.getSession();
+  return data?.session?.access_token || KEY;
+}
+
 // Creates/updates a Supabase Auth account via Edge Function
 async function createAuthUser(email, password, role, extra={}) {
   try {
@@ -1059,8 +1073,19 @@ async function createAuthUser(email, password, role, extra={}) {
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if (!me || me.role !== 'office') { location.href='/offlogin.html'; throw new Error('No auth'); }
 
+// Verify Supabase Auth session is still valid — redirect to login if expired
+(async () => {
+  const sb = await getSupabase();
+  const { data } = await sb.auth.getSession();
+  if (!data?.session) {
+    localStorage.removeItem('bc_me');
+    location.href = '/offlogin.html';
+  }
+})();
+
 async function api(path, method, body) {
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const token = await getAuthToken();
+  const h={apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204) return null;
   const json=await r.json().catch(()=>null);
@@ -2479,7 +2504,7 @@ async function saveTalentDoc(){
 // ── Leave Calendar Module ──
 (function(){
   const SB_LC  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-  const KEY_LC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+  const KEY_LC = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
   let lcYear = new Date().getFullYear();
   let lcMonth = new Date().getMonth();
@@ -2773,7 +2798,7 @@ async function saveTalentDoc(){
 </button>
 <script>
 (function(){
-  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
+  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX";
  // --- FAB unread badge ---
   async function updateFabBadge(){
     try{
@@ -2801,7 +2826,7 @@ async function saveTalentDoc(){
 
 // ── Accounts
 const AC_SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const AC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const AC_KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 const AC_BUCKET = 'utility-uploads';
 
 async function acApi(path, method, body) {
