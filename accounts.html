@@ -766,7 +766,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <input class="fc" id="ac-exp-item" placeholder="e.g. Electrician payout"/>
       </div>
       <div class="fg" id="ac-pretax-fg">
-        <label class="fl" id="ac-pretax-lbl">Pre-tax Amount <span class="req">*</span></label>
+        <label class="fl" id="ac-pretax-lbl">Amount <span class="req">*</span></label>
         <input class="fc" id="ac-exp-pretax" type="number" min="0" placeholder="0.00" oninput="acCalcPostTax()"/>
       </div>
     </div>
@@ -1320,7 +1320,7 @@ async function acPickCat(btn) {
 
   // Utility section — update Item label
   var itemLbl = document.getElementById('ac-item-lbl');
-  if (itemLbl) itemLbl.innerHTML = isUtility ? 'Item / Bill Month <span class="req">*</span>' : 'Item <span class="req">*</span>';
+  if (itemLbl) itemLbl.innerHTML = isUtility ? 'Item / Bill Month <span style="color:var(--muted);font-weight:400">(optional)</span>' : 'Item <span class="req">*</span>';
   document.getElementById('ac-utility-payment-fg') && (document.getElementById('ac-utility-payment-fg').style.display = 'none');
   if (isUtility) {
     document.getElementById('ac-utility-fg').style.display = '';
@@ -1586,7 +1586,7 @@ async function acSaveExp() {
   // amount = post-tax (what gets saved to supabase 'amount' column)
   const amount     = document.getElementById('ac-exp-amount').value || (pretax ? pretax.toFixed(2) : '');
 
-  if(!item)    { alert('Item is required'); return; }
+  if(!item && category !== 'Utility') { alert('Item is required'); return; }
   if(!pretax)  { alert('Amount is required'); return; }
   if(!category){ alert('Select a category'); return; }
   if(!status)  { alert('Select a status'); return; }
