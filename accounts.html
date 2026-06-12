@@ -3421,16 +3421,10 @@ function bcPaneRender() {
   if (kpiIn)    kpiIn.textContent    = fmt(incoming);
   if (kpiOut)   kpiOut.textContent   = fmt(outgoing);
 
-  if (!filtered.length) {
-    if (listEl) listEl.innerHTML = '<div class="empty">No Banyan Circle bills in this range</div>';
-    return;
-  }
-
-  // Bill list table
-  var rows = filtered.map(function(b) {
+  // ── Incoming bills table ──
+  var billRows = filtered.map(function(b) {
     var bcItems = (b.items||[]).filter(function(i){ return i.type==='banyan'; });
     var talentNames = bcItems.map(function(i){ return i.sub_item||'—'; }).join(', ');
-    var bcAmt = b.bc_amount ? fmtF(b.bc_amount) : bcItems.reduce(function(s,i){ return s+(parseFloat(i.total)||0); },0).toFixed(2);
     var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
     var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
     var statusLbl = b.payment_status==='paid' ? 'Received' : 'Receivable';
@@ -3439,16 +3433,49 @@ function bcPaneRender() {
       '<td style="font-size:12px;color:var(--muted)">' + esc(talentNames) + '</td>' +
       '<td style="font-size:12px;color:var(--muted)">' + esc(b.property_name||'—') + '</td>' +
       '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
-      '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif">' + (b.bc_amount ? fmtF(b.bc_amount) : '—') + '</td>' +
+      '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;color:var(--g)">' + (b.bc_amount ? fmtF(b.bc_amount) : '—') + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">Billing</td>' +
       '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
       '</tr>';
   }).join('');
 
-  if (listEl) listEl.innerHTML =
-    '<table class="tbl"><thead><tr>' +
-    '<th>Guest / Source</th><th>Talent(s)</th><th>Property</th><th>Date</th>' +
-    '<th style="text-align:right">BC Amount</th><th>Status</th>' +
-    '</tr></thead><tbody>' + rows + '</tbody></table>';
+  // ── Outgoing expenses table (Talent payouts) ──
+  var expRows = filteredExp.map(function(e) {
+    var displayDate = fmtDate(e.date || e.created_at);
+    var amt = parseFloat(e.pretax_amount)||parseFloat(e.amount)||0;
+    var statusCls = (e.status==='Paid' || e.status==='Paid to landlord') ? 'bdg-g' : 'bdg-a';
+    var statusLbl = (e.status==='Paid' || e.status==='Paid to landlord') ? 'Paid' : 'Pending';
+    return '<tr style="background:var(--r-l)">' +
+      '<td style="font-weight:500;color:var(--r)">' + esc(e.recipient||'—') + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + esc(e.recipient||'—') + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + esc(e.property_name||'—') + '</td>' +
+      '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
+      '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;color:var(--r)">−' + fmtF(amt) + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">Payout</td>' +
+      '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
+      '</tr>';
+  }).join('');
+
+  var hasBills = billRows.length > 0;
+  var hasExp   = expRows.length > 0;
+
+  var billSection = hasBills
+    ? '<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:16px 22px 8px">Incoming — Bills</div>' +
+      '<table class="tbl"><thead><tr>' +
+      '<th>Guest / Source</th><th>Talent(s)</th><th>Property</th><th>Date</th>' +
+      '<th style="text-align:right">BC Amount</th><th>Type</th><th>Status</th>' +
+      '</tr></thead><tbody>' + billRows + '</tbody></table>'
+    : '<div style="padding:16px 22px;font-size:13px;color:var(--muted)">No Banyan Circle bills in this range</div>';
+
+  var expSection = hasExp
+    ? '<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:16px 22px 8px;margin-top:4px">Outgoing — Talent Payouts</div>' +
+      '<table class="tbl"><thead><tr>' +
+      '<th>Talent</th><th>Recipient</th><th>Property</th><th>Date</th>' +
+      '<th style="text-align:right">Pre-tax Amount</th><th>Type</th><th>Status</th>' +
+      '</tr></thead><tbody>' + expRows + '</tbody></table>'
+    : '<div style="padding:16px 22px;font-size:13px;color:var(--muted)">No talent payout expenses in this range</div>';
+
+  if (listEl) listEl.innerHTML = billSection + expSection;
 }
 
 
