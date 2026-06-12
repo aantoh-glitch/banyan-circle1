@@ -1622,11 +1622,14 @@ async function populatePropertyPicker(selId, extraOptions) {
   sel.innerHTML = '<option value="">Loading…</option>';
   try {
     var d = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
-    var opts = d.map(function(r){ return r.property_name; });
+    var EXCLUDE = ['Banyan Circle', 'Properties By Heritance'];
+    var opts = d.map(function(r){ return r.property_name; })
+                .filter(function(n){ return !EXCLUDE.includes(n); });
     if (extraOptions) opts = opts.concat(extraOptions);
     sel.innerHTML = '<option value="">— select property (optional) —</option>' +
       opts.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
   } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
+  return sel;
 }
 
 function onOtherPropertyChange() {
@@ -1747,6 +1750,8 @@ async function loadGuests() {
           (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
         return '<option value="' + g.id + '">' + label + '</option>';
       }).join('') +
+      '<option value="__banyan__">Banyan Circle</option>' +
+      '<option value="__heritance__">Properties By Heritance</option>' +
       '<option value="__other__">Others</option>';
   } catch(e) {
     document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
@@ -1761,10 +1766,19 @@ async function onGuestSelect() {
   otherFg.style.display = 'none';
   document.getElementById('other-property-fg').style.display = 'none';
   if (!gid) return;
-  if (gid === '__other__') {
+  if (gid === '__other__' || gid === '__banyan__' || gid === '__heritance__') {
     otherFg.style.display = '';
     document.getElementById('other-property-fg').style.display = '';
-    populatePropertyPicker('other-bill-property', ['Banyan Circle', 'Properties By Heritance']);
+    populatePropertyPicker('other-bill-property', []).then(function() {
+      var propSel = document.getElementById('other-bill-property');
+      if (gid === '__banyan__') {
+        var bOpt = Array.from(propSel.options).find(function(o){ return o.value === 'Banyan Circle'; });
+        if (bOpt) propSel.value = 'Banyan Circle';
+      } else if (gid === '__heritance__') {
+        var hOpt = Array.from(propSel.options).find(function(o){ return o.value === 'Properties By Heritance'; });
+        if (hOpt) propSel.value = 'Properties By Heritance';
+      }
+    });
     // Clear any previously cached guest contact data so it doesn't bleed into the new bill
     document.getElementById('guest-info').setAttribute('data-addr', '');
     document.getElementById('guest-info').setAttribute('data-mobile', '');
@@ -1918,7 +1932,8 @@ async function saveBill() {
   var gid = document.getElementById('bill-guest-select').value;
   if (!gid) { toast('Please select a guest'); return; }
   var otherName = '';
-  if (gid === '__other__') {
+  var IS_NAMED = (gid === '__other__' || gid === '__banyan__' || gid === '__heritance__');
+  if (IS_NAMED) {
     otherName = document.getElementById('other-guest-name').value.trim();
     if (!otherName) { toast('Please enter a name'); document.getElementById('other-guest-name').focus(); return; }
   }
@@ -1929,7 +1944,7 @@ async function saveBill() {
   var billDate = document.getElementById('bill-date').value;
   if (!billDate) { toast('Please select a bill date'); return; }
 
-  var g = gid !== '__other__' ? GUESTS.find(function(x){ return x.id === gid; }) : null;
+  var g = !IS_NAMED ? GUESTS.find(function(x){ return x.id === gid; }) : null;
   var infoBox = document.getElementById('guest-info');
   var amount = calcTotal();
   var otherPropertySel = document.getElementById('other-bill-property');
@@ -1938,9 +1953,9 @@ async function saveBill() {
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
 
   var body = {
-    guest_profile_id : gid !== '__other__' ? gid : null,
-    guest_name       : gid === '__other__' ? otherName : (g ? g.name : ''),
-    property_name    : gid === '__other__' ? otherPropertyVal : (g ? (g.property_name||'') : ''),
+    guest_profile_id : !IS_NAMED ? gid : null,
+    guest_name       : IS_NAMED ? otherName : (g ? g.name : ''),
+    property_name    : IS_NAMED ? otherPropertyVal : (g ? (g.property_name||'') : ''),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
     guest_email      : infoBox.getAttribute('data-email')||'',
@@ -2038,14 +2053,16 @@ function editBill(bill) {
 
     // Set guest
     if (!bill.guest_profile_id) {
-      // "Others" bill — restore name field directly, skip onGuestSelect
-      document.getElementById('bill-guest-select').value = '__other__';
+      // "Others / Banyan / Heritance" bill — restore name field directly, skip onGuestSelect
+      var NAMED_PROPS = {'Banyan Circle':'__banyan__','Properties By Heritance':'__heritance__'};
+      var selectVal = (bill.property_name && NAMED_PROPS[bill.property_name]) ? NAMED_PROPS[bill.property_name] : '__other__';
+      document.getElementById('bill-guest-select').value = selectVal;
       document.getElementById('other-name-fg').style.display = '';
       document.getElementById('other-guest-name').value = bill.guest_name || '';
       document.getElementById('guest-info').style.display = 'none';
-      // Show property picker
+      // Show property picker (exclude Banyan/Heritance since they appear in the dropdown itself)
       document.getElementById('other-property-fg').style.display = '';
-      populatePropertyPicker('other-bill-property', ['Banyan Circle', 'Properties By Heritance']).then(function(){
+      populatePropertyPicker('other-bill-property', []).then(function(){
         var sel = document.getElementById('other-bill-property');
         if (sel && bill.property_name) sel.value = bill.property_name;
       });
