@@ -1038,7 +1038,24 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 </div></div>
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
+
+// Creates/updates a Supabase Auth account via Edge Function
+async function createAuthUser(email, password, role, extra={}) {
+  try {
+    const res = await fetch(SB + '/functions/v1/create-auth-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY },
+      body: JSON.stringify({ email, password, role, ...extra })
+    });
+    const data = await res.json();
+    if (!res.ok) console.warn('Auth user creation failed:', data.error);
+    else console.log('Auth user:', data.created ? 'created' : 'updated', email);
+  } catch(e) {
+    console.warn('createAuthUser error:', e.message);
+  }
+}
+
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if (!me || me.role !== 'office') { location.href='/offlogin.html'; throw new Error('No auth'); }
 
@@ -1237,7 +1254,13 @@ async function loadLandlords(){
 function fillPropSelect(id,current){ document.getElementById(id).innerHTML=PROPS.map(p=>`<option value="${p.name}"${p.name===current?' selected':''}>${p.name}</option>`).join(''); }
 function openLandlordModal(){ document.getElementById('ml-id').value=''; document.getElementById('ml-ttl').textContent='Add landlord'; ['ml-pin','ml-name','ml-prop','ml-email','ml-mobile','ml-notes','ml-pan'].forEach(i=>document.getElementById(i).value=''); openModal('modal-landlord'); setTimeout(()=>document.getElementById('ml-pin').focus(),100); }
 function editLandlord(l){ document.getElementById('ml-id').value=l.id; document.getElementById('ml-ttl').textContent='Edit landlord'; document.getElementById('ml-name').value=l.name||''; document.getElementById('ml-pin').value=l.pin||''; document.getElementById('ml-prop').value=l.property_name||''; document.getElementById('ml-email').value=l.email||''; document.getElementById('ml-mobile').value=l.mobile||''; document.getElementById('ml-notes').value=l.notes||''; document.getElementById('ml-pan').value=l.pan||''; openModal('modal-landlord'); }
-async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null,pan:document.getElementById('ml-pan').value.trim().toUpperCase()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(id)await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body); else await api('/rest/v1/landlords','POST',body);
+async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null,pan:document.getElementById('ml-pan').value.trim().toUpperCase()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(id){
+    await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body);
+    await createAuthUser(body.mobile+'.landlord@banyan.com', body.pin, 'landlord', {property_name: body.property_name});
+  } else {
+    await api('/rest/v1/landlords','POST',body);
+    await createAuthUser(body.mobile+'.landlord@banyan.com', body.pin, 'landlord', {property_name: body.property_name});
+  }
   // Ensure a matching row exists in properties table so the portal icon appears
   if(!id && body.property_name){
     const existing=await api('/rest/v1/properties?name=eq.'+encodeURIComponent(body.property_name)+'&select=id').catch(()=>null);
@@ -1286,7 +1309,16 @@ function getSelectedStaffProps(){ return [...document.querySelectorAll('#ms-prop
 async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email','ms-phone','ms-role','ms-pan'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-staff-role').value=''; await renderStaffPropPills([]); openModal('modal-staff'); }
 function selectAllStaffProps(){ document.querySelectorAll('#ms-props-pills .venue-pill').forEach(p=>p.classList.add('on')); }
 async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-phone').value=s.phone||''; document.getElementById('ms-role').value=s.designation||''; document.getElementById('ms-staff-role').value=s.role||''; document.getElementById('ms-pan').value=s.pan||''; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
-async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const phone=document.getElementById('ms-phone').value.trim(); const phoneDigits=phone.replace(/\D/g,''); if(!phone||phoneDigits.length<10){alert('Phone number is required and must have at least 10 digits');return;} const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,role:document.getElementById('ms-staff-role').value||null,phone:phone,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null,pan:document.getElementById('ms-pan').value.trim().toUpperCase()||null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id)await api('/rest/v1/staff?id=eq.'+id,'PATCH',body); else await api('/rest/v1/staff','POST',body); closeModal('modal-staff'); toast('Saved'); loadStaff(); }
+async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const phone=document.getElementById('ms-phone').value.trim(); const phoneDigits=phone.replace(/\D/g,''); if(!phone||phoneDigits.length<10){alert('Phone number is required and must have at least 10 digits');return;} const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,role:document.getElementById('ms-staff-role').value||null,phone:phone,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null,pan:document.getElementById('ms-pan').value.trim().toUpperCase()||null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id){
+    await api('/rest/v1/staff?id=eq.'+id,'PATCH',body);
+    // Update Auth password if PIN changed
+    await createAuthUser(body.phone+'@banyan.com', body.pin, 'staff', {assigned_properties: assigned_properties});
+  } else {
+    await api('/rest/v1/staff','POST',body);
+    // Auto-create Supabase Auth account
+    await createAuthUser(body.phone+'@banyan.com', body.pin, 'staff', {assigned_properties: assigned_properties});
+  }
+  closeModal('modal-staff'); toast('Saved'); loadStaff(); }
 let _pendingRemove = null;
 let _pcPin = '';
 let _pendingAction = null; // generic callback for PIN-gated actions
@@ -1987,8 +2019,13 @@ async function saveTalent(){
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   try{
-    if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
-    else await api('/rest/v1/talents','POST',body);
+    if(id){
+      await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
+      if(body.phone) await createAuthUser(body.phone+'.talent@banyan.com', pin, 'talent');
+    } else {
+      await api('/rest/v1/talents','POST',body);
+      if(body.phone) await createAuthUser(body.phone+'.talent@banyan.com', pin, 'talent');
+    }
 
     closeModal('modal-talent'); toast('Saved'); await loadTalentsPage();
   }catch(e){ alert('Save failed: '+e.message); loadTalentsPage(); }
