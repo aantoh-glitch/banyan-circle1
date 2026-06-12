@@ -1043,7 +1043,7 @@ const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 // Creates/updates a Supabase Auth account via Edge Function
 async function createAuthUser(email, password, role, extra={}) {
   try {
-    const res = await fetch(SB + '/functions/v1/create-auth-user', {
+    const res = await fetch(SB + '/functions/v1/dynamic-responder', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY },
       body: JSON.stringify({ email, password, role, ...extra })
