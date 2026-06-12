@@ -199,20 +199,17 @@ async function checkPin() {
     return;
   }
 
-  // Save to localStorage (existing behaviour — unchanged)
-  localStorage.setItem('bc_me', JSON.stringify({ id: match.id, name: match.name, role: 'staff', staffRole: match.staffRole || 'Operations' }));
-
-  // Silently sign into Supabase Auth so RLS JWT is set
-  // Email format: phone@banyan.com, password = their PIN
-  try {
-    const email = (match.phone || match.id) + '@banyan.com';
-    await supabase.auth.signInWithPassword({ email, password: pin });
-  } catch(e) {
-    // Auth sign-in failed silently — app still works via localStorage
-    // Fix: ensure this staff member has a Supabase Auth account
-    console.warn('Supabase Auth sign-in failed for', match.name, e.message);
+  // Sign into Supabase Auth — block if account not set up
+  const email = (match.phone || match.id) + '@banyan.com';
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pin });
+  if (error) {
+    dots('err');
+    document.getElementById('pin-err').textContent = 'Access not set up — contact admin.';
+    setTimeout(() => { pin = ''; dots(); document.getElementById('pin-err').textContent = ''; }, 2500);
+    return;
   }
 
+  localStorage.setItem('bc_me', JSON.stringify({ id: match.id, name: match.name, role: 'staff', staffRole: match.staffRole || 'Operations' }));
   location.href = '/ops.html';
 }
 

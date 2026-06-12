@@ -173,16 +173,15 @@ async function checkPin() {
   if (!res.length) { showErr('Wrong PIN — try again'); return; }
 
   const t = res[0];
-  localStorage.setItem('bc_me', JSON.stringify({ id: t.id, name: t.name, role: 'talent', category: t.category }));
-
-  // Silently sign into Supabase Auth so RLS JWT is set
-  try {
-    const email = (t.phone || t.id) + '.talent@banyan.com';
-    await supabase.auth.signInWithPassword({ email, password: pin });
-  } catch(e) {
-    console.warn('Supabase Auth sign-in failed for talent', t.name, e.message);
+  // Sign into Supabase Auth — block if account not set up
+  const authEmail = (t.phone || t.id) + '.talent@banyan.com';
+  const { error: authErr } = await supabase.auth.signInWithPassword({ email: authEmail, password: pin });
+  if (authErr) {
+    showErr('Access not set up — contact admin.');
+    return;
   }
 
+  localStorage.setItem('bc_me', JSON.stringify({ id: t.id, name: t.name, role: 'talent', category: t.category }));
   location.replace('talent.html?id=' + encodeURIComponent(t.id) + '&name=' + encodeURIComponent(t.name));
 }
 
