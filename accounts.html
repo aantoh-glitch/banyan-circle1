@@ -2041,10 +2041,14 @@ async function saveBill() {
 
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
 
+  // For Banyan/Heritance: property_name IS the entity name (not the sub-picker value)
+  var namedEntityProp = gid === '__banyan__' ? 'Banyan Circle'
+                      : gid === '__heritance__' ? 'Properties By Heritance'
+                      : null;
   var body = {
     guest_profile_id : !IS_NAMED ? gid : null,
     guest_name       : IS_NAMED ? otherName : (g ? g.name : ''),
-    property_name    : IS_NAMED ? otherPropertyVal : (g ? (g.property_name||'') : ''),
+    property_name    : namedEntityProp ? namedEntityProp : (gid === '__other__' ? otherPropertyVal||null : (g ? (g.property_name||'') : '')),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
     guest_email      : infoBox.getAttribute('data-email')||'',
