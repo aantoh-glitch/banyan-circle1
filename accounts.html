@@ -501,7 +501,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div id="bc-rows-section" style="display:none;margin-bottom:12px">
     <table class="items-table" id="bc-items-table">
       <thead><tr>
-        <th style="width:40%">Talent</th>
+        <th style="width:40%">Sub-item (Talent)</th>
         <th style="width:9%;text-align:center">Qty</th>
         <th style="width:16%;text-align:right">Rate (₹)</th>
         <th style="width:8%;text-align:center">CGST%</th>
@@ -535,7 +535,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div id="acc-rows-section" style="display:none;margin-bottom:12px">
     <table class="items-table" id="acc-items-table">
       <thead><tr>
-        <th style="width:34%">Item / Description</th>
+        <th style="width:34%">Sub-item / Description</th>
         <th style="width:9%;text-align:center">Qty</th>
         <th style="width:12%;text-align:right">Rate (₹)</th>
         <th style="width:8%;text-align:center">CGST%</th>
@@ -555,8 +555,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <table class="items-table" id="items-table" style="margin-top:4px">
     <thead>
       <tr>
-        <th style="width:34%">Item / Description</th>
-        <th style="width:9%;text-align:center">Qty</th>
+        <th style="width:22%">Item</th>
+        <th style="width:18%">Sub-item</th>
+        <th style="width:7%;text-align:center">Qty</th>
         <th style="width:12%;text-align:right">Rate (₹)</th>
         <th style="width:8%;text-align:center">CGST %</th>
         <th style="width:8%;text-align:center">SGST %</th>
@@ -2001,6 +2002,7 @@ async function loadGuests() {
       }).join('') +
       '<option value="__heritance__">Properties By Heritance</option>' +
       '<option value="__other__">Others</option>';
+      // Note: Banyan Circle is handled via the Banyan Circle toggle in itemized billing, not as a Select option
   } catch(e) {
     document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
   }
@@ -2068,7 +2070,7 @@ async function onGuestSelect() {
 
 // ── Items ──
 var rowCount = 0;
-function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
+function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct, subItem) {
   rowCount++;
   var rid = 'row-' + rowCount;
   var tr = document.createElement('tr');
@@ -2081,8 +2083,9 @@ function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
   var today = new Date().toISOString().slice(0,10);
   var defaultDate = itemDate || document.getElementById('bill-date').value || today;
   tr.innerHTML =
-    '<td><input type="text" placeholder="e.g. Accommodation, Meals, Extra bed…" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:140px"/></td>' +
-    '<td style="text-align:center"><input type="text" value="' + (qty||'') + '" oninput="calcRowTotal(this);calcTotal()" style="width:55px;text-align:center"/></td>' +
+    '<td><input type="text" placeholder="Item" value="' + esc(name||'') + '" oninput="calcTotal()" style="min-width:100px"/></td>' +
+    '<td style="width:18%;"><input type="text" placeholder="Sub-item (optional)" value="' + esc(subItem||'') + '" style="min-width:90px"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + (qty||'') + '" oninput="calcRowTotal(this);calcTotal()" style="width:55px;text-align:center" placeholder=""/></td>' +
     '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:80px;text-align:right"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" oninput="calcRowTotal(this);calcTotal()" placeholder="0" style="width:55px;text-align:center"/></td>' +
@@ -2122,7 +2125,7 @@ function addBcRow(talentName, qty, rate, cgstPct, sgstPct) {
   var rid = 'bc-row-' + bcRowCount;
   var tr = document.createElement('tr');
   tr.id = rid;
-  var q = parseFloat(qty) || 0;
+  var q = (qty !== undefined && qty !== null && qty !== '') ? parseFloat(qty) : 1; // default qty = 1
   var r = parseFloat(rate) || 0;
   var cg = parseFloat(cgstPct) || 0;
   var sg = parseFloat(sgstPct) || 0;
@@ -2130,7 +2133,7 @@ function addBcRow(talentName, qty, rate, cgstPct, sgstPct) {
   var tot = base + base * (cg + sg) / 100;
 
   var talentOpts = BC_TALENTS.map(function(t){
-    var sel = t.name === talentName ? ' selected' : '';
+    var sel = (t.name === talentName) ? ' selected' : '';
     return '<option value="' + esc(t.name) + '"' + sel + '>' + esc(t.name) + '</option>';
   }).join('');
 
@@ -2138,7 +2141,7 @@ function addBcRow(talentName, qty, rate, cgstPct, sgstPct) {
     '<td><select class="fc bc-talent-sel" style="font-size:12px;padding:6px 8px" onchange="calcBcRowTotal(this);calcTotal()">' +
       '<option value="">— select talent —</option>' + talentOpts +
     '</select></td>' +
-    '<td style="text-align:center"><input type="text" class="bc-num" value="' + (q||'') + '" readonly tabindex="-1" placeholder="0" style="width:50px;text-align:center;background:var(--bg);color:var(--muted)"/></td>' +
+    '<td style="text-align:center"><input type="text" class="bc-num" value="' + q + '" readonly tabindex="-1" style="width:50px;text-align:center;background:var(--bg);color:var(--muted)"/></td>' +
     '<td style="text-align:right"><input type="text" class="bc-num" value="' + (r||'') + '" placeholder="0" oninput="calcBcRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
     '<td style="text-align:center"><input type="number" class="bc-num" min="0" max="100" step="0.1" value="' + (cg||'') + '" placeholder="0" oninput="calcBcRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
     '<td style="text-align:center"><input type="number" class="bc-num" min="0" max="100" step="0.1" value="' + (sg||'') + '" placeholder="0" oninput="calcBcRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
@@ -2240,14 +2243,14 @@ function resetToggles() {
 function calcRowTotal(input) {
   var tr = input.closest('tr');
   var inputs = tr.querySelectorAll('input');
-  // 0=name, 1=qty, 2=rate, 3=cgst%, 4=sgst%, 5=total
-  var qty  = parseFloat(inputs[1].value) || 0;
-  var rate = parseFloat(inputs[2].value) || 0;
-  var cgst = parseFloat(inputs[3].value) || 0;
-  var sgst = parseFloat(inputs[4].value) || 0;
+  // 0=name, 1=sub-item, 2=qty, 3=rate, 4=cgst%, 5=sgst%, 6=total
+  var qty  = parseFloat(inputs[2].value) || 0;
+  var rate = parseFloat(inputs[3].value) || 0;
+  var cgst = parseFloat(inputs[4].value) || 0;
+  var sgst = parseFloat(inputs[5].value) || 0;
   var base = qty * rate;
   var taxAmt = base * (cgst + sgst) / 100;
-  inputs[5].value = (base + taxAmt).toFixed(2);
+  inputs[6].value = (base + taxAmt).toFixed(2);
 }
 
 function calcTotal() {
@@ -2298,14 +2301,15 @@ function getItems() {
   // ── Free-type rows ──
   document.querySelectorAll('#items-body tr').forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
-    var name    = inputs[0] ? inputs[0].value.trim() : '';
-    var qty     = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
-    var rate    = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
-    var cgst_pct = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
-    var sgst_pct = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
-    var tax_pct = cgst_pct + sgst_pct;
-    var total   = parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
-    if (name) items.push({name:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
+    var name     = inputs[0] ? inputs[0].value.trim() : '';
+    var sub_item = inputs[1] ? inputs[1].value.trim() : '';
+    var qty      = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
+    var rate     = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
+    var cgst_pct = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
+    var sgst_pct = parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
+    var tax_pct  = cgst_pct + sgst_pct;
+    var total    = parseFloat(inputs[6] ? inputs[6].value : 0) || 0;
+    if (name) items.push({name:name, sub_item:sub_item||null, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
   });
 
   return items;
@@ -2542,7 +2546,7 @@ function editBill(bill) {
       });
     }
     (bill.items||[]).filter(function(i){ return !i.type; }).forEach(function(i){
-      addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0);
+      addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0, i.sub_item||'');
     });
 
     // Payment method
