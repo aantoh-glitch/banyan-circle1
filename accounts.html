@@ -308,13 +308,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </button>
       </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
       <div class="pill-group" id="ac-filter-cat">
         <button class="pill-opt on" data-val="all" onclick="acFilterCat(this)">All</button>
         <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
         <button class="pill-opt" data-val="Utility" onclick="acFilterCat(this)">Utility</button>
         <button class="pill-opt" data-val="Others" onclick="acFilterCat(this)">Others</button>
       </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px">
       <div class="pill-group" style="flex-wrap:wrap">
         <button class="pill-opt status-paid on" data-val="all" onclick="acFilterSt(this)">All</button>
         <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterSt(this)">Paid</button>
@@ -342,9 +344,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <table class="tbl">
       <thead><tr>
-        <th>Item</th><th>Category</th><th>Utility / Type</th><th>Pre-tax</th><th>TDS</th><th>Amount</th><th>Status</th><th>Date</th><th>Receipt</th><th></th>
+        <th>Item</th><th>Category</th><th>Payout Type</th><th>Recipient</th><th>Property</th><th>Description</th><th>Pre-tax</th><th>TDS</th><th>Amount</th><th>Status</th><th>Date</th><th>Receipt</th><th></th>
       </tr></thead>
-      <tbody id="ac-exp-tbody"><tr><td colspan="10" class="empty">Loading…</td></tr></tbody>
+      <tbody id="ac-exp-tbody"><tr><td colspan="14" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </div><!-- /ac-pane-expenses -->
@@ -669,10 +671,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </select>
     </div>
 
-    <!-- Team: read-only assigned properties -->
+    <!-- Team: property pill picker (Banyan Circle / Properties By Heritance) -->
     <div class="fg" id="ac-team-properties-fg" style="display:none">
-      <label class="fl">Assigned Properties</label>
-      <div id="ac-team-properties-display" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);min-height:38px">—</div>
+      <label class="fl">Property <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <div class="pill-group" id="ac-team-property-pills" style="flex-wrap:wrap;gap:6px;margin-top:2px">
+        <button class="pill-opt" data-val="Banyan Circle" onclick="acPickTeamProperty(this)">Banyan Circle</button>
+        <button class="pill-opt" data-val="Properties By Heritance" onclick="acPickTeamProperty(this)">Properties By Heritance</button>
+      </div>
+      <input type="hidden" id="ac-team-property-val"/>
     </div>
 
     <!-- TDS — shown only when Payout is selected -->
@@ -756,7 +762,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
     <div class="row-grid">
       <div class="fg">
-        <label class="fl">Item <span class="req">*</span></label>
+        <label class="fl" id="ac-item-lbl">Item <span class="req">*</span></label>
         <input class="fc" id="ac-exp-item" placeholder="e.g. Electrician payout"/>
       </div>
       <div class="fg" id="ac-pretax-fg">
@@ -930,21 +936,27 @@ function acRenderExp() {
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
-  if(!d.length){ tb.innerHTML='<tr><td colspan="10" class="empty">No expenses found.</td></tr>'; return; }
+  if(!d.length){ tb.innerHTML='<tr><td colspan="14" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
-    const utilityLabel = e.category==='Utility' && e.utility_type
-      ? `<span class="bdg bdg-b" style="font-size:10px">${e.utility_type}</span>${e.property_name ? '<br/><span style="font-size:11px;color:var(--muted)">'+e.property_name+'</span>' : ''}`
-      : (e.category==='Payout' && e.recipient
-        ? `<span style="font-size:12px;color:var(--muted)">${e.recipient}</span>`
-          + (e.property_name ? `<br/><span style="font-size:11px;color:var(--muted)">${e.property_name}</span>` : '')
-        : '<span style="color:var(--border)">—</span>');
+    const dash = '<span style="color:var(--border)">—</span>';
+    const payoutTypeLbl = e.payout_type || dash;
+    const recipientLbl  = e.recipient   || dash;
+    const propertyLbl   = e.property_name || dash;
+    const descLbl       = e.description ? `<span style="font-size:12px;color:var(--muted)">${e.description}</span>` : dash;
+    // Utility type badge shown in Payout Type column for Utility rows
+    const payoutTypeCell = e.category==='Utility' && e.utility_type
+      ? `<span class="bdg bdg-b" style="font-size:10px">${e.utility_type}</span>`
+      : (e.payout_type ? `<span style="font-size:12px">${e.payout_type}</span>` : dash);
     return `
     <tr>
       <td style="font-weight:500">${e.item||'—'}</td>
       <td><span class="bdg bdg-b">${e.category||'—'}</span></td>
-      <td>${utilityLabel}</td>
-      <td style="color:var(--muted);font-size:12px">${e.pretax_amount ? acFmt(e.pretax_amount) : '<span style="color:var(--border)">—</span>'}</td>
-      <td style="font-size:12px">${e.tds_amount ? '<span style="color:#A32D2D">-'+acFmt(e.tds_amount)+'</span>'+(e.tds_pct?'<br/><span style="font-size:10px;color:var(--muted)">'+e.tds_pct+'%</span>':'') : '<span style="color:var(--border)">—</span>'}</td>
+      <td>${payoutTypeCell}</td>
+      <td style="font-size:12px;color:var(--muted)">${recipientLbl}</td>
+      <td style="font-size:12px;color:var(--muted)">${propertyLbl}</td>
+      <td>${descLbl}</td>
+      <td style="color:var(--muted);font-size:12px">${e.pretax_amount ? acFmt(e.pretax_amount) : dash}</td>
+      <td style="font-size:12px">${e.tds_amount ? '<span style="color:#A32D2D">-'+acFmt(e.tds_amount)+'</span>'+(e.tds_pct?'<br/><span style="font-size:10px;color:var(--muted)">'+e.tds_pct+'%</span>':'') : dash}</td>
       <td style="font-weight:500">${acFmt(e.amount)}</td>
       <td>${
         e.status==='Paid'             ? '<span class="bdg bdg-g">Paid</span>' :
@@ -1046,7 +1058,8 @@ function acOpenExpModal() {
   document.getElementById('ac-talent-property-fg').style.display='none';
   document.getElementById('ac-talent-property').innerHTML='<option value="">— select property —</option>';
   document.getElementById('ac-team-properties-fg').style.display='none';
-  document.getElementById('ac-team-properties-display').textContent='—';
+  document.querySelectorAll('#ac-team-property-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('ac-team-property-val').value='';
   // Reset PAN badge
   const _panBadge = document.getElementById('ac-pan-badge');
   if (_panBadge) { _panBadge.textContent=''; _panBadge.style.display='none'; }
@@ -1222,12 +1235,14 @@ function acEditExp(e) {
               propOpts.map(p=>`<option value="${p}"${p===e.property_name?' selected':''}>${p}</option>`).join('');
           } catch(_) {}
         }
-        // Restore Team assigned properties display
+        // Restore Team property pill selection
         if (e.payout_type === 'Team') {
           document.getElementById('ac-team-properties-fg').style.display = '';
-          const assigned = selectedOpt ? (selectedOpt.getAttribute('data-assigned') || '') : '';
-          const display = document.getElementById('ac-team-properties-display');
-          if (display) display.textContent = assigned || 'No properties assigned';
+          if (e.property_name) {
+            const teamPills = document.querySelectorAll('#ac-team-property-pills .pill-opt');
+            teamPills.forEach(function(b){ b.classList.toggle('on', b.dataset.val === e.property_name); });
+            document.getElementById('ac-team-property-val').value = e.property_name;
+          }
         }
       } catch(_) {}
     })();
@@ -1274,7 +1289,8 @@ async function acPickCat(btn) {
     document.getElementById('ac-talent-property-fg').style.display = 'none';
     document.getElementById('ac-talent-property').innerHTML = '<option value="">— select property —</option>';
     document.getElementById('ac-team-properties-fg').style.display = 'none';
-    document.getElementById('ac-team-properties-display').textContent = '—';
+    document.querySelectorAll('#ac-team-property-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+    if(document.getElementById('ac-team-property-val')) document.getElementById('ac-team-property-val').value='';
     // Reset TDS
     const tdsToggle = document.getElementById('ac-tds-toggle');
     if (tdsToggle && tdsToggle.checked) { tdsToggle.checked = false; acToggleTds(); }
@@ -1302,7 +1318,9 @@ async function acPickCat(btn) {
     }
   }
 
-  // Utility section
+  // Utility section — update Item label
+  var itemLbl = document.getElementById('ac-item-lbl');
+  if (itemLbl) itemLbl.innerHTML = isUtility ? 'Item / Bill Month <span class="req">*</span>' : 'Item <span class="req">*</span>';
   document.getElementById('ac-utility-payment-fg') && (document.getElementById('ac-utility-payment-fg').style.display = 'none');
   if (isUtility) {
     document.getElementById('ac-utility-fg').style.display = '';
@@ -1377,6 +1395,14 @@ async function acPickPayout(btn) {
   }
 }
 
+function acPickTeamProperty(btn) {
+  var pills = document.querySelectorAll('#ac-team-property-pills .pill-opt');
+  var wasOn = btn.classList.contains('on');
+  pills.forEach(function(b){ b.classList.remove('on'); });
+  if (!wasOn) { btn.classList.add('on'); document.getElementById('ac-team-property-val').value = btn.dataset.val; }
+  else { document.getElementById('ac-team-property-val').value = ''; }
+}
+
 function acOnRecipientChange() {
   const sel = document.getElementById('ac-exp-recipient');
   const panBadge = document.getElementById('ac-pan-badge');
@@ -1399,13 +1425,7 @@ function acOnRecipientChange() {
   }
   panField.value = pan || '';
 
-  // Team: show assigned properties read-only
-  const payoutType = document.getElementById('ac-exp-payout-type').value;
-  if (payoutType === 'Team') {
-    const assigned = opt ? (opt.getAttribute('data-assigned') || '') : '';
-    const display = document.getElementById('ac-team-properties-display');
-    if (display) display.textContent = assigned || 'No properties assigned';
-  }
+  // Team property is chosen via pill picker — no auto-action on recipient change
 }
 function acPickSt(btn) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -1542,9 +1562,7 @@ function acAddCustomItem() {
 }
 
 function acOnUtilityPropertyChange() {
-  const prop = document.getElementById('ac-exp-utility-property').value;
-  // Auto-fill Item with property name
-  if (prop) document.getElementById('ac-exp-item').value = prop;
+  // Property selection — item field stays blank for user to fill (bill month etc.)
 }
 
 async function acSaveExp() {
@@ -1584,13 +1602,9 @@ async function acSaveExp() {
   const talentProperty = (category === 'Payout' && payoutType === 'Talent')
     ? (document.getElementById('ac-talent-property') ? document.getElementById('ac-talent-property').value : '')
     : '';
-  // Team: read assigned_properties from the selected option's data attribute
+  // Team: property comes from pill picker
   const teamAssigned = (category === 'Payout' && payoutType === 'Team')
-    ? (() => {
-        const recipSel = document.getElementById('ac-exp-recipient');
-        const opt = recipSel ? recipSel.options[recipSel.selectedIndex] : null;
-        return opt ? (opt.getAttribute('data-assigned') || '') : '';
-      })()
+    ? (document.getElementById('ac-team-property-val') ? document.getElementById('ac-team-property-val').value : '')
     : '';
   // Determine property_name to save
   let propertyToSave = null;
