@@ -793,6 +793,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="pill-group" id="ac-st-pills">
         <button class="pill-opt status-paid" data-val="Paid" id="ac-st-paid" onclick="acPickSt(this)">Paid</button>
         <button class="pill-opt status-pending" data-val="Pending" id="ac-st-pending" onclick="acPickSt(this)">Pending</button>
+        <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" id="ac-st-tobepaid" onclick="acPickSt(this)">To be paid to landlord</button>
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" id="ac-st-paidlandlord" onclick="acPickSt(this)" style="display:none">Paid to landlord</button>
       </div>
       <input type="hidden" id="ac-exp-status"/>
@@ -1358,10 +1359,11 @@ async function acPickPayout(btn) {
   const recipientSel = document.getElementById('ac-exp-recipient');
   recipientSel.innerHTML = '<option value="">Loading…</option>';
   document.getElementById('ac-recipient-fg').style.display = '';
-  // Show/hide Talent property picker and Team assigned properties
+  // Show/hide Talent property picker and Team properties
   document.getElementById('ac-talent-property-fg').style.display = 'none';
   document.getElementById('ac-team-properties-fg').style.display = 'none';
-  document.getElementById('ac-team-properties-display').textContent = '—';
+  var _tpd = document.getElementById('ac-team-properties-display');
+  if (_tpd) _tpd.textContent = '—';
   document.getElementById('ac-talent-property').innerHTML = '<option value="">— select property —</option>';
 
   try {
