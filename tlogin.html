@@ -119,9 +119,11 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
   <div class="pin-err" id="pin-err"></div>
 </div>
 
-<script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
+const supabase = createClient(SB, KEY);
 
 // If already logged in as talent, skip to portal
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
@@ -159,7 +161,7 @@ function showErr(msg) {
 }
 
 async function checkPin() {
-  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,category', {
+  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,category,phone', {
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
   }).then(async r => {
     const text = await r.text();
@@ -172,6 +174,15 @@ async function checkPin() {
 
   const t = res[0];
   localStorage.setItem('bc_me', JSON.stringify({ id: t.id, name: t.name, role: 'talent', category: t.category }));
+
+  // Silently sign into Supabase Auth so RLS JWT is set
+  try {
+    const email = (t.phone || t.id) + '.talent@banyan.com';
+    await supabase.auth.signInWithPassword({ email, password: pin });
+  } catch(e) {
+    console.warn('Supabase Auth sign-in failed for talent', t.name, e.message);
+  }
+
   location.replace('talent.html?id=' + encodeURIComponent(t.id) + '&name=' + encodeURIComponent(t.name));
 }
 
@@ -180,13 +191,13 @@ let cpStep = 'verify';
 let cpPin = '';
 let cpNewPin = '';
 
-function openChangePin() {
+window.openChangePin = function() {
   if (!sel) { alert('No talent selected.'); return; }
   cpStep = 'verify'; cpPin = ''; cpNewPin = '';
   setCpUI('Verify Current PIN', 'Enter your existing 4-digit PIN', 'verify');
   document.getElementById('cp-overlay').classList.add('open');
 }
-function closeChangePin() {
+window.closeChangePin = function() {
   document.getElementById('cp-overlay').classList.remove('open');
   cpPin = ''; cpNewPin = '';
   setCpDots('');
@@ -267,6 +278,14 @@ async function savePinTalent(newPin) {
       body: JSON.stringify({ pin: newPin })
     });
     if (!res.ok) throw new Error();
+
+    // Update Supabase Auth password so login stays in sync
+    try {
+      await supabase.auth.updateUser({ password: newPin });
+    } catch(e) {
+      console.warn('Auth password update failed:', e.message);
+    }
+
     sel.pin = newPin;
     document.getElementById('cp-sub').textContent = '✓ PIN updated successfully!';
     document.getElementById('cp-title').textContent = 'All done';

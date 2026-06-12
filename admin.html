@@ -1990,8 +1990,8 @@ async function saveTalent(){
     if(id) await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
     else await api('/rest/v1/talents','POST',body);
 
-    closeModal('modal-talent'); toast('Saved'); loadTalentsPage();
-  }catch(e){ alert('Save failed: '+e.message); }
+    closeModal('modal-talent'); toast('Saved'); await loadTalentsPage();
+  }catch(e){ alert('Save failed: '+e.message); loadTalentsPage(); }
 }
 async function deleteTalent(id,name){
   if(!confirm('Remove talent '+name+'?'))return;
