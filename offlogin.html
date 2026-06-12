@@ -279,9 +279,11 @@ body{
 }
 </style>
 
-<script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
+const supabase = createClient(SB, KEY);
 
 /* ── Main login ── */
 let pin = '';
@@ -316,6 +318,14 @@ async function checkPin() {
     }
     const user = res[0];
     localStorage.setItem('bc_me', JSON.stringify({ id: user.id, name: user.name, role: 'office' }));
+
+    // Silently sign into Supabase Auth so RLS JWT is set
+    try {
+      await supabase.auth.signInWithPassword({ email: 'office@banyan.com', password: pin });
+    } catch(e) {
+      console.warn('Supabase Auth sign-in failed:', e.message);
+    }
+
     location.href = '/admin.html';
   } catch (e) {
     dots('err'); err.textContent = 'Connection error';
@@ -345,13 +355,13 @@ function setStep(step) {
   modalDots();
 }
 
-function openChangePinModal() {
+window.openChangePinModal = function() {
   cpUserId = null; cpCurrent = ''; cpNew = '';
   setStep('current');
   document.getElementById('modal-overlay').classList.add('open');
 }
 
-function closeChangePinModal() {
+window.closeChangePinModal = function() {
   document.getElementById('modal-overlay').classList.remove('open');
 }
 
@@ -426,6 +436,14 @@ async function handleModalStep() {
       if (!Array.isArray(body) || !body.length) {
         throw new Error('No rows updated — check RLS policy in Supabase');
       }
+
+      // Update Supabase Auth password so login stays in sync
+      try {
+        await supabase.auth.updateUser({ password: cpNew });
+      } catch(e) {
+        console.warn('Auth password update failed:', e.message);
+      }
+
       modalDots('ok');
       err.style.color = '#2a7a4b';
       err.textContent = 'PIN updated ✓';
