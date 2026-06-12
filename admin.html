@@ -1026,6 +1026,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">PIN (4 digits) <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-pin" maxlength="4" placeholder="e.g. 4821"/></div>
   <input type="hidden" id="mtal-desc"/>
   <input type="hidden" id="mtal-cat"/>
+  <div class="fg"><label class="fl">Phone Number</label><input class="fc" id="mtal-phone" placeholder="e.g. +91 98765 43210" type="tel"/></div>
   <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="mtal-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
   <div class="fg">
     <label class="fl">Venues</label>
@@ -1961,7 +1962,7 @@ async function renderVenuePills(talentId) {
 function openTalentModal(){
   document.getElementById('mtal-id').value='';
   document.getElementById('mtal-ttl').textContent='Add talent';
-  ['mtal-name','mtal-pin','mtal-desc','mtal-pan'].forEach(i=>document.getElementById(i).value='');
+  ['mtal-name','mtal-pin','mtal-desc','mtal-pan','mtal-phone'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-cat').value='Yoga';
   renderVenuePills(null);
   openModal('modal-talent');
@@ -1974,6 +1975,7 @@ function editTalentRow(t){
   document.getElementById('mtal-desc').value=t.short_desc||'';
   document.getElementById('mtal-cat').value=t.category||'Yoga';
   document.getElementById('mtal-pan').value=t.pan||'';
+  document.getElementById('mtal-phone').value=t.phone||'';
   renderVenuePills(t.id);
   openModal('modal-talent');
 }
@@ -1981,7 +1983,7 @@ async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null};
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:document.getElementById('mtal-phone').value.trim()||null};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   try{
@@ -1993,8 +1995,13 @@ async function saveTalent(){
 }
 async function deleteTalent(id,name){
   if(!confirm('Remove talent '+name+'?'))return;
-  await api('/rest/v1/talents?id=eq.'+id,'DELETE');
-  toast(name+' removed'); loadTalentsPage();
+  const enteredPin = prompt('Enter admin PIN to confirm deletion:');
+  if(enteredPin === null) return;
+  if(enteredPin !== '0000'){ alert('Incorrect PIN. Deletion cancelled.'); return; }
+  try{
+    await api('/rest/v1/talents?id=eq.'+id,'DELETE');
+    toast(name+' removed'); loadTalentsPage();
+  }catch(e){ alert('Delete failed: '+e.message); }
 }
 function openTalentPortal(id,name,pin){
   // Admin goes directly to talent schedule — no PIN prompt
