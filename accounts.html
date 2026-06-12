@@ -2552,16 +2552,21 @@ function downloadBillsXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Bills detail sheet —
-  var billRows = [['Date','Guest','Property','Items','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Method','Remarks']];
+  var billRows = [['Date','Select','Name','Property','Items','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Method','Remarks']];
   data.forEach(function(b){
     var items = b.items||[];
     var tax   = calcBillTax(items);
     var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
     var itemStr = items.map(function(i){ return i.name+(i.qty&&i.qty!=1?' x'+i.qty:''); }).join('; ');
+    var isNamed = !b.guest_profile_id;
+    var selectCol = isNamed ? (b.bill_source||'Others') : (b.guest_name||'');
+    var nameCol   = isNamed ? (b.guest_name||'') : '';
+    var propCol   = b.property_name||'';
     billRows.push([
       (b.bill_date||b.created_at||'').slice(0,10),
-      b.guest_name||'',
-      b.property_name||'',
+      selectCol,
+      nameCol,
+      propCol,
       itemStr,
       Math.round(taxable*100)/100,
       Math.round(tax.cgst*100)/100,
@@ -2573,20 +2578,25 @@ function downloadBillsXlsx() {
     ]);
   });
   var wsBills = XLSX.utils.aoa_to_sheet(billRows);
-  applyColWidths(wsBills, [14,24,20,40,14,12,12,14,12,14,30]);
+  applyColWidths(wsBills, [14,22,22,20,36,14,12,12,14,12,14,30]);
   XLSX.utils.book_append_sheet(wb, wsBills, 'Bills');
 
   // — Items detail sheet —
-  var itemRows = [['Bill Date','Guest','Property','Item','Qty','Rate (₹)','CGST %','SGST %','Total (₹)']];
+  var itemRows = [['Bill Date','Select','Name','Property','Item','Qty','Rate (₹)','CGST %','SGST %','Total (₹)']];
   data.forEach(function(b){
+    var isNamedI = !b.guest_profile_id;
+    var selectColI = isNamedI ? (b.bill_source||'Others') : (b.guest_name||'');
+    var nameColI   = isNamedI ? (b.guest_name||'') : '';
+    var propColI   = b.property_name||'';
     (b.items||[]).forEach(function(i){
       var base  = (parseFloat(i.qty)||1)*(parseFloat(i.rate)||0);
       var cgstA = base*(parseFloat(i.cgst_pct)||0)/100;
       var sgstA = base*(parseFloat(i.sgst_pct)||0)/100;
       itemRows.push([
         (b.bill_date||b.created_at||'').slice(0,10),
-        b.guest_name||'',
-        b.property_name||'',
+        selectColI,
+        nameColI,
+        propColI,
         i.name||'',
         parseFloat(i.qty)||1,
         parseFloat(i.rate)||0,
@@ -2597,7 +2607,7 @@ function downloadBillsXlsx() {
     });
   });
   var wsItems = XLSX.utils.aoa_to_sheet(itemRows);
-  applyColWidths(wsItems, [14,24,20,32,8,14,10,10,14]);
+  applyColWidths(wsItems, [14,22,22,20,32,8,14,10,10,14]);
   XLSX.utils.book_append_sheet(wb, wsItems, 'Line Items');
 
   var today = new Date().toISOString().slice(0,10);
