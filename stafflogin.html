@@ -222,12 +222,12 @@ let cpPin = '';
 let cpNewPin = '';
 let cpVerifiedStaff = null;
 
-function openChangePin() {
+window.openChangePin = function() {
   cpStep = 'verify'; cpPin = ''; cpNewPin = ''; cpVerifiedStaff = null;
   setCpUI('Verify Current PIN', 'Enter your existing 4-digit PIN', 'verify');
   document.getElementById('cp-overlay').classList.add('open');
 }
-function closeChangePin() {
+window.closeChangePin = function() {
   document.getElementById('cp-overlay').classList.remove('open');
   cpPin = ''; cpNewPin = '';
   setCpDots('');
