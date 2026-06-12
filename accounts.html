@@ -2041,14 +2041,16 @@ async function saveBill() {
 
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
 
-  // For Banyan/Heritance: property_name IS the entity name (not the sub-picker value)
-  var namedEntityProp = gid === '__banyan__' ? 'Banyan Circle'
-                      : gid === '__heritance__' ? 'Properties By Heritance'
-                      : null;
+  // bill_source records the dropdown selection for display in the log
+  var billSource = gid === '__banyan__'    ? 'Banyan Circle'
+                 : gid === '__heritance__' ? 'Properties By Heritance'
+                 : gid === '__other__'     ? 'Others'
+                 : null; // guest profile — no source label needed
   var body = {
     guest_profile_id : !IS_NAMED ? gid : null,
     guest_name       : IS_NAMED ? otherName : (g ? g.name : ''),
-    property_name    : namedEntityProp ? namedEntityProp : (gid === '__other__' ? otherPropertyVal||null : (g ? (g.property_name||'') : '')),
+    bill_source      : billSource,
+    property_name    : IS_NAMED ? (otherPropertyVal||null) : (g ? (g.property_name||'') : ''),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
     guest_email      : infoBox.getAttribute('data-email')||'',
@@ -2147,17 +2149,16 @@ function editBill(bill) {
     // Set guest
     if (!bill.guest_profile_id) {
       // "Others / Banyan / Heritance" bill — restore name field directly, skip onGuestSelect
-      var NAMED_PROPS = {'Banyan Circle':'__banyan__','Properties By Heritance':'__heritance__'};
-      var selectVal = (bill.property_name && NAMED_PROPS[bill.property_name]) ? NAMED_PROPS[bill.property_name] : '__other__';
+      // Use bill_source to identify the dropdown choice; fall back to Others
+      var SOURCE_MAP = {'Banyan Circle':'__banyan__','Properties By Heritance':'__heritance__'};
+      var selectVal = (bill.bill_source && SOURCE_MAP[bill.bill_source]) ? SOURCE_MAP[bill.bill_source] : '__other__';
       document.getElementById('bill-guest-select').value = selectVal;
       document.getElementById('other-name-fg').style.display = '';
       document.getElementById('other-guest-name').value = bill.guest_name || '';
       document.getElementById('guest-info').style.display = 'none';
-      // Show property picker
+      // Show property picker and restore sub-property value
       document.getElementById('other-property-fg').style.display = '';
-      // For Banyan/Heritance: include that property as an extra option so it can be restored
-      var extraPropForRestore = (selectVal === '__banyan__' || selectVal === '__heritance__') ? [bill.property_name] : [];
-      populatePropertyPicker('other-bill-property', extraPropForRestore).then(function(){
+      populatePropertyPicker('other-bill-property', []).then(function(){
         var sel = document.getElementById('other-bill-property');
         if (sel && bill.property_name) sel.value = bill.property_name;
       });
@@ -2301,16 +2302,20 @@ function renderBills(data) {
         var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
         var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
         var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
-        // Derive the "select" label for the log
-        var selectLabel = '';
-        if (!b.guest_profile_id) {
-          var PROP_LABEL_MAP = {'Banyan Circle':'Banyan Circle','Properties By Heritance':'Properties By Heritance'};
-          selectLabel = (b.property_name && PROP_LABEL_MAP[b.property_name]) ? PROP_LABEL_MAP[b.property_name] : 'Others';
-        }
+        // Build guest column: select label → name → property, then item summary
+        var isNamed = !b.guest_profile_id;
+        var selectLabel = isNamed
+          ? (b.bill_source || 'Others')
+          : (b.guest_name || '—');
+        var showName = isNamed && b.guest_name ? b.guest_name : '';
+        var showProp = b.property_name || '';
+        var guestCell =
+          '<div style="font-weight:500">' + esc(selectLabel) + '</div>' +
+          (showName ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + esc(showName) + '</div>' : '') +
+          (showProp ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + esc(showProp) + '</div>' : '') +
+          '<div style="font-size:11px;color:var(--border);margin-top:2px">' + esc(itemSummary) + '</div>';
         return '<tr>' +
-          '<td><div style="font-weight:500">' + esc(b.guest_name||'—') + '</div>' +
-          (selectLabel ? '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + esc(selectLabel) + '</div>' : '') +
-          '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + esc(itemSummary) + '</div></td>' +
+          '<td>' + guestCell + '</td>' +
           '<td>' + esc(b.property_name||'—') + '</td>' +
           '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
