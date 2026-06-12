@@ -407,8 +407,79 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <hr class="bill-divider"/>
 
   <!-- Items table -->
-  <div class="card-ttl" style="margin-bottom:10px">Itemized Charges</div>
-  <table class="items-table" id="items-table">
+  <div class="card-ttl" style="margin-bottom:12px">Itemized Charges</div>
+
+  <!-- ── Banyan Circle toggle ── -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+    <div>
+      <div style="font-size:13px;font-weight:500;color:var(--text)">Banyan Circle</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Talent payout line item</div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <span style="font-size:12px;color:var(--muted)" id="bc-toggle-lbl">Off</span>
+      <div style="position:relative;width:40px;height:22px" onclick="bcToggle()">
+        <input type="checkbox" id="bc-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
+        <div id="bc-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
+        <div id="bc-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
+      </div>
+    </label>
+  </div>
+  <!-- Banyan Circle rows -->
+  <div id="bc-rows-section" style="display:none;margin-bottom:12px">
+    <table class="items-table" id="bc-items-table">
+      <thead><tr>
+        <th style="width:40%">Talent</th>
+        <th style="width:9%;text-align:center">Qty</th>
+        <th style="width:16%;text-align:right">Rate (₹)</th>
+        <th style="width:8%;text-align:center">CGST%</th>
+        <th style="width:8%;text-align:center">SGST%</th>
+        <th style="width:13%;text-align:right">Total (₹)</th>
+      </tr></thead>
+      <tbody id="bc-items-body"></tbody>
+    </table>
+    <button class="btn-sec" onclick="addBcRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-top:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add talent row
+    </button>
+  </div>
+
+  <!-- ── Accommodation toggle ── -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+    <div>
+      <div style="font-size:13px;font-weight:500;color:var(--text)">Accommodation</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Room, meals, extras</div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <span style="font-size:12px;color:var(--muted)" id="acc-toggle-lbl">Off</span>
+      <div style="position:relative;width:40px;height:22px" onclick="accToggle()">
+        <input type="checkbox" id="acc-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
+        <div id="acc-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
+        <div id="acc-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
+      </div>
+    </label>
+  </div>
+  <!-- Accommodation rows -->
+  <div id="acc-rows-section" style="display:none;margin-bottom:12px">
+    <table class="items-table" id="acc-items-table">
+      <thead><tr>
+        <th style="width:34%">Item / Description</th>
+        <th style="width:9%;text-align:center">Qty</th>
+        <th style="width:12%;text-align:right">Rate (₹)</th>
+        <th style="width:8%;text-align:center">CGST%</th>
+        <th style="width:8%;text-align:center">SGST%</th>
+        <th style="width:13%;text-align:right">Total (₹)</th>
+        <th style="width:10%"></th>
+      </tr></thead>
+      <tbody id="acc-items-body"></tbody>
+    </table>
+    <button class="btn-sec" onclick="addAccRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-top:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add accommodation row
+    </button>
+  </div>
+
+  <!-- ── Free-type rows (always visible) ── -->
+  <table class="items-table" id="items-table" style="margin-top:4px">
     <thead>
       <tr>
         <th style="width:34%">Item / Description</th>
@@ -1855,7 +1926,6 @@ async function loadGuests() {
           (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
         return '<option value="' + g.id + '">' + label + '</option>';
       }).join('') +
-      '<option value="__banyan__">Banyan Circle</option>' +
       '<option value="__heritance__">Properties By Heritance</option>' +
       '<option value="__other__">Others</option>';
   } catch(e) {
@@ -1871,15 +1941,12 @@ async function onGuestSelect() {
   otherFg.style.display = 'none';
   document.getElementById('other-property-fg').style.display = 'none';
   if (!gid) return;
-  if (gid === '__other__' || gid === '__banyan__' || gid === '__heritance__') {
+  if (gid === '__other__' || gid === '__heritance__') {
     otherFg.style.display = '';
     document.getElementById('other-property-fg').style.display = '';
     populatePropertyPicker('other-bill-property', []).then(function() {
       var propSel = document.getElementById('other-bill-property');
-      if (gid === '__banyan__') {
-        var bOpt = Array.from(propSel.options).find(function(o){ return o.value === 'Banyan Circle'; });
-        if (bOpt) propSel.value = 'Banyan Circle';
-      } else if (gid === '__heritance__') {
+      if (gid === '__heritance__') {
         var hOpt = Array.from(propSel.options).find(function(o){ return o.value === 'Properties By Heritance'; });
         if (hOpt) propSel.value = 'Properties By Heritance';
       }
@@ -1952,6 +2019,151 @@ function addItemRow(name, qty, rate, itemDate, cgstPct, sgstPct) {
   calcTotal();
 }
 
+// ── Banyan Circle toggle ──
+var BC_TALENTS = [];
+function bcToggle() {
+  var cb = document.getElementById('bc-toggle');
+  var track = document.getElementById('bc-track');
+  var thumb = document.getElementById('bc-thumb');
+  var lbl   = document.getElementById('bc-toggle-lbl');
+  var sec   = document.getElementById('bc-rows-section');
+  var on = cb.checked;
+  track.style.background = on ? 'var(--br)' : '#ccc';
+  thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  lbl.textContent = on ? 'On' : 'Off';
+  sec.style.display = on ? '' : 'none';
+  if (on && BC_TALENTS.length === 0) {
+    api('/rest/v1/talents?select=id,name,sub_item&order=name').then(function(d){
+      BC_TALENTS = d || [];
+      if (document.querySelectorAll('#bc-items-body tr').length === 0) addBcRow();
+    }).catch(function(){ BC_TALENTS = []; addBcRow(); });
+  } else if (on && document.querySelectorAll('#bc-items-body tr').length === 0) {
+    addBcRow();
+  }
+  calcTotal();
+}
+
+var bcRowCount = 0;
+function addBcRow(talentName, qty, rate, cgstPct, sgstPct) {
+  bcRowCount++;
+  var rid = 'bc-row-' + bcRowCount;
+  var tr = document.createElement('tr');
+  tr.id = rid;
+  var q = parseFloat(qty) || 0;
+  var r = parseFloat(rate) || 0;
+  var cg = parseFloat(cgstPct) || 0;
+  var sg = parseFloat(sgstPct) || 0;
+  var base = q * r;
+  var tot = base + base * (cg + sg) / 100;
+
+  var talentOpts = BC_TALENTS.map(function(t){
+    var sel = t.name === talentName ? ' selected' : '';
+    return '<option value="' + esc(t.name) + '"' + sel + '>' + esc(t.name) + '</option>';
+  }).join('');
+
+  tr.innerHTML =
+    '<td><select class="fc bc-talent-sel" style="font-size:12px;padding:6px 8px" onchange="calcBcRowTotal(this);calcTotal()">' +
+      '<option value="">— select talent —</option>' + talentOpts +
+    '</select></td>' +
+    '<td style="text-align:center"><input type="text" class="bc-num" value="' + (q||'') + '" readonly tabindex="-1" placeholder="0" style="width:50px;text-align:center;background:var(--bg);color:var(--muted)"/></td>' +
+    '<td style="text-align:right"><input type="text" class="bc-num" value="' + (r||'') + '" placeholder="0" oninput="calcBcRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
+    '<td style="text-align:center"><input type="number" class="bc-num" min="0" max="100" step="0.1" value="' + (cg||'') + '" placeholder="0" oninput="calcBcRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="number" class="bc-num" min="0" max="100" step="0.1" value="' + (sg||'') + '" placeholder="0" oninput="calcBcRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" class="bc-num" readonly value="' + tot.toFixed(2) + '" style="width:80px;text-align:right;background:var(--bg);color:var(--text);font-weight:500" id="' + rid + '-tot"/></td>';
+
+  document.getElementById('bc-items-body').appendChild(tr);
+  calcTotal();
+}
+
+function calcBcRowTotal(input) {
+  var tr = input.closest('tr');
+  var nums = tr.querySelectorAll('input.bc-num');
+  // 0=qty, 1=rate, 2=cgst, 3=sgst, 4=total
+  var qty  = parseFloat(nums[0] ? nums[0].value : 0) || 0;
+  var rate = parseFloat(nums[1] ? nums[1].value : 0) || 0;
+  var cgst = parseFloat(nums[2] ? nums[2].value : 0) || 0;
+  var sgst = parseFloat(nums[3] ? nums[3].value : 0) || 0;
+  var base = qty * rate;
+  if (nums[4]) nums[4].value = (base + base * (cgst + sgst) / 100).toFixed(2);
+}
+
+// ── Accommodation toggle ──
+function accToggle() {
+  var cb = document.getElementById('acc-toggle');
+  var track = document.getElementById('acc-track');
+  var thumb = document.getElementById('acc-thumb');
+  var lbl   = document.getElementById('acc-toggle-lbl');
+  var sec   = document.getElementById('acc-rows-section');
+  var on = cb.checked;
+  track.style.background = on ? 'var(--br)' : '#ccc';
+  thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  lbl.textContent = on ? 'On' : 'Off';
+  sec.style.display = on ? '' : 'none';
+  if (on && document.querySelectorAll('#acc-items-body tr').length === 0) addAccRow();
+  calcTotal();
+}
+
+var accRowCount = 0;
+function addAccRow(name, qty, rate, cgstPct, sgstPct) {
+  accRowCount++;
+  var rid = 'acc-row-' + accRowCount;
+  var tr = document.createElement('tr');
+  tr.id = rid;
+  var q = parseFloat(qty) || 0;
+  var r = parseFloat(rate) || 0;
+  var cg = parseFloat(cgstPct) || 0;
+  var sg = parseFloat(sgstPct) || 0;
+  var base = q * r;
+  var tot = base + base * (cg + sg) / 100;
+  tr.innerHTML =
+    '<td><input type="text" placeholder="e.g. Accommodation, Meals…" value="' + esc(name||'') + '" oninput="calcAccRowTotal(this);calcTotal()" style="min-width:120px"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + (qty||'') + '" placeholder="1" oninput="calcAccRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" placeholder="0" oninput="calcAccRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="0" oninput="calcAccRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="0" oninput="calcAccRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:80px;text-align:right;background:var(--bg);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td style="text-align:center"><button class="del-row" onclick="removeAccRow('' + rid + '')">✕</button></td>';
+  document.getElementById('acc-items-body').appendChild(tr);
+  calcTotal();
+}
+
+function calcAccRowTotal(input) {
+  var tr = input.closest('tr');
+  var inputs = tr.querySelectorAll('input');
+  var qty  = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
+  var rate = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
+  var cgst = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
+  var sgst = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
+  var base = qty * rate;
+  if (inputs[5]) inputs[5].value = (base + base * (cgst + sgst) / 100).toFixed(2);
+}
+
+function removeAccRow(rid) {
+  var tr = document.getElementById(rid);
+  if (tr) tr.remove();
+  calcTotal();
+}
+
+function resetToggles() {
+  ['bc','acc'].forEach(function(p){
+    var cb = document.getElementById(p+'-toggle');
+    var track = document.getElementById(p+'-track');
+    var thumb = document.getElementById(p+'-thumb');
+    var lbl   = document.getElementById(p+'-toggle-lbl');
+    var sec   = document.getElementById(p+'-rows-section');
+    if (cb) cb.checked = false;
+    if (track) track.style.background = '#ccc';
+    if (thumb) thumb.style.transform = 'translateX(0)';
+    if (lbl)   lbl.textContent = 'Off';
+    if (sec)   sec.style.display = 'none';
+  });
+  document.getElementById('bc-items-body').innerHTML = '';
+  document.getElementById('acc-items-body').innerHTML = '';
+  BC_TALENTS = [];
+  bcRowCount = 0;
+  accRowCount = 0;
+}
+
 function calcRowTotal(input) {
   var tr = input.closest('tr');
   var inputs = tr.querySelectorAll('input');
@@ -1981,19 +2193,48 @@ function removeRow(rid) {
 
 function getItems() {
   var items = [];
-  var rows = document.querySelectorAll('#items-body tr');
-  rows.forEach(function(tr){
+
+  // ── Banyan Circle rows ── name = "Banyan Circle", talent name = sub_item
+  document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
+    var sel = tr.querySelector('select.bc-talent-sel');
+    var inputs = tr.querySelectorAll('input.bc-num');
+    // inputs: 0=qty(readonly), 1=rate, 2=cgst, 3=sgst, 4=total
+    var talentName = sel && sel.value ? sel.options[sel.selectedIndex].text : '';
+    var qty      = parseFloat(inputs[0] ? inputs[0].value : 0) || 0;
+    var rate     = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
+    var cgst_pct = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
+    var sgst_pct = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
+    var tax_pct  = cgst_pct + sgst_pct;
+    var total    = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
+    if (talentName) items.push({name:'Banyan Circle', sub_item:talentName, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'banyan'});
+  });
+
+  // ── Accommodation rows ──
+  document.querySelectorAll('#acc-items-body tr').forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
-    // 0=name, 1=qty, 2=rate, 3=cgst%, 4=sgst%, 5=total
-    var name    = inputs[0].value.trim();
-    var qty     = parseFloat(inputs[1].value) || 0;
-    var rate    = parseFloat(inputs[2].value) || 0;
-    var cgst_pct = parseFloat(inputs[3].value) || 0;
-    var sgst_pct = parseFloat(inputs[4].value) || 0;
+    var name    = inputs[0] ? inputs[0].value.trim() : '';
+    var qty     = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
+    var rate    = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
+    var cgst_pct = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
+    var sgst_pct = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
     var tax_pct = cgst_pct + sgst_pct;
-    var total   = parseFloat(inputs[5].value) || 0;
+    var total   = parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
+    if (name) items.push({name:'Accommodation', sub_item:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'accommodation'});
+  });
+
+  // ── Free-type rows ──
+  document.querySelectorAll('#items-body tr').forEach(function(tr){
+    var inputs = tr.querySelectorAll('input');
+    var name    = inputs[0] ? inputs[0].value.trim() : '';
+    var qty     = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
+    var rate    = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
+    var cgst_pct = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
+    var sgst_pct = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
+    var tax_pct = cgst_pct + sgst_pct;
+    var total   = parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
     if (name) items.push({name:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total});
   });
+
   return items;
 }
 
@@ -2037,7 +2278,7 @@ async function saveBill() {
   var gid = document.getElementById('bill-guest-select').value;
   if (!gid) { toast('Please select a guest'); return; }
   var otherName = '';
-  var IS_NAMED = (gid === '__other__' || gid === '__banyan__' || gid === '__heritance__');
+  var IS_NAMED = (gid === '__other__' || gid === '__heritance__');
   if (IS_NAMED) {
     otherName = document.getElementById('other-guest-name').value.trim();
     if (!otherName) { toast('Please enter a name'); document.getElementById('other-guest-name').focus(); return; }
@@ -2058,14 +2299,22 @@ async function saveBill() {
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
 
   // bill_source records the dropdown selection for display in the log
-  var billSource = gid === '__banyan__'    ? 'Banyan Circle'
-                 : gid === '__heritance__' ? 'Properties By Heritance'
+  var billSource = gid === '__heritance__' ? 'Properties By Heritance'
                  : gid === '__other__'     ? 'Others'
                  : null; // guest profile — no source label needed
+  // Collect sub_item: talent names from BC rows (comma-separated if multiple)
+  var bcTalents = [];
+  document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
+    var sel = tr.querySelector('select.bc-talent-sel');
+    if (sel && sel.value) bcTalents.push(sel.options[sel.selectedIndex].text);
+  });
+  var subItemVal = bcTalents.length ? bcTalents.join(', ') : null;
+
   var body = {
     guest_profile_id : !IS_NAMED ? gid : null,
     guest_name       : IS_NAMED ? otherName : (g ? g.name : ''),
     bill_source      : billSource,
+    sub_item         : subItemVal,
     property_name    : IS_NAMED ? (otherPropertyVal||null) : (g ? (g.property_name||'') : ''),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
@@ -2118,6 +2367,7 @@ function cancelEdit() {
   if (otherPS) otherPS.value = '';
   document.getElementById('items-body').innerHTML = '';
   rowCount = 0;
+  resetToggles();
   document.getElementById('grand-total').textContent = '₹0';
   payMethod = '';
   document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
@@ -2166,8 +2416,8 @@ function editBill(bill) {
     if (!bill.guest_profile_id) {
       // "Others / Banyan / Heritance" bill — restore name field directly, skip onGuestSelect
       // Use bill_source to identify the dropdown choice; fall back to Others
-      var SOURCE_MAP = {'Banyan Circle':'__banyan__','Properties By Heritance':'__heritance__'};
-      var legacySource = ['Banyan Circle','Properties By Heritance'].indexOf(bill.property_name) !== -1 ? bill.property_name : null;
+      var SOURCE_MAP = {'Properties By Heritance':'__heritance__'};
+      var legacySource = bill.property_name === 'Properties By Heritance' ? 'Properties By Heritance' : null;
       var resolvedSource = bill.bill_source || legacySource;
       var selectVal = (resolvedSource && SOURCE_MAP[resolvedSource]) ? SOURCE_MAP[resolvedSource] : '__other__';
       document.getElementById('bill-guest-select').value = selectVal;
@@ -2185,10 +2435,42 @@ function editBill(bill) {
       onGuestSelect();
     }
 
-    // Items
+    // Items — restore into correct section by type
+    resetToggles();
     document.getElementById('items-body').innerHTML = '';
     rowCount = 0;
-    (bill.items || []).forEach(function(i){ addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0); });
+    var hasBc = (bill.items||[]).some(function(i){ return i.type === 'banyan'; });
+    var hasAcc = (bill.items||[]).some(function(i){ return i.type === 'accommodation'; });
+    if (hasBc) {
+      api('/rest/v1/talents?select=id,name,sub_item&order=name').then(function(d){
+        BC_TALENTS = d || [];
+        var bcCb = document.getElementById('bc-toggle');
+        var bcSec = document.getElementById('bc-rows-section');
+        if (bcCb) bcCb.checked = true;
+        if (document.getElementById('bc-track')) document.getElementById('bc-track').style.background = 'var(--br)';
+        if (document.getElementById('bc-thumb')) document.getElementById('bc-thumb').style.transform = 'translateX(18px)';
+        if (document.getElementById('bc-toggle-lbl')) document.getElementById('bc-toggle-lbl').textContent = 'On';
+        if (bcSec) bcSec.style.display = '';
+        (bill.items||[]).filter(function(i){ return i.type==='banyan'; }).forEach(function(i){
+          addBcRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+        });
+      }).catch(function(){});
+    }
+    if (hasAcc) {
+      var accCb = document.getElementById('acc-toggle');
+      var accSec = document.getElementById('acc-rows-section');
+      if (accCb) accCb.checked = true;
+      if (document.getElementById('acc-track')) document.getElementById('acc-track').style.background = 'var(--br)';
+      if (document.getElementById('acc-thumb')) document.getElementById('acc-thumb').style.transform = 'translateX(18px)';
+      if (document.getElementById('acc-toggle-lbl')) document.getElementById('acc-toggle-lbl').textContent = 'On';
+      if (accSec) accSec.style.display = '';
+      (bill.items||[]).filter(function(i){ return i.type==='accommodation'; }).forEach(function(i){
+        addAccRow(i.name, i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+      });
+    }
+    (bill.items||[]).filter(function(i){ return !i.type; }).forEach(function(i){
+      addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0);
+    });
 
     // Payment method
     if (bill.payment_method) setPayMethod(bill.payment_method);
@@ -2342,7 +2624,7 @@ function renderBills(data) {
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
 
   el.innerHTML = '<table class="tbl"><thead><tr>' +
-    '<th>Bill Source</th><th>Name</th><th>Property</th><th>Date</th>' +
+    '<th>Source</th><th>Item</th><th>Sub Item</th><th>Property</th><th>Date</th>' +
     '<th style="text-align:right">Taxable</th>' +
     '<th style="text-align:right">CGST</th>' +
     '<th style="text-align:right">SGST</th>' +
@@ -2363,14 +2645,18 @@ function renderBills(data) {
         var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
         var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
         var isNamed = !b.guest_profile_id;
-        var billSource = isNamed
+        var sourceCol = isNamed
           ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others'))
           : (b.guest_name || '—');
-        var billName = isNamed ? (b.guest_name || '') : '';
+        // Item = first distinct item name across all rows
+        var itemNames = [...new Set((b.items||[]).map(function(i){ return i.name||''; }).filter(Boolean))];
+        var itemCol = itemNames.length ? itemNames.join(', ') : (isNamed ? (b.guest_name||'') : '—');
+        var subItemCol = b.sub_item || '';
         var billProp = b.property_name || '';
         return '<tr>' +
-          '<td style="font-weight:500">' + esc(billSource) + '<div style="font-size:11px;color:var(--border);margin-top:2px;font-weight:400">' + esc(itemSummary) + '</div></td>' +
-          '<td style="color:var(--muted);font-size:13px">' + (billName ? esc(billName) : '<span style="color:var(--border)">—</span>') + '</td>' +
+          '<td style="font-weight:500">' + esc(sourceCol) + '<div style="font-size:11px;color:var(--border);margin-top:2px;font-weight:400">' + esc(itemSummary) + '</div></td>' +
+          '<td style="color:var(--muted);font-size:13px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
+          '<td style="color:var(--muted);font-size:13px">' + (subItemCol ? esc(subItemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
@@ -2607,22 +2893,22 @@ function downloadBillsXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Bills detail sheet —
-  var billRows = [['Date','Select','Name','Property','Items','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Method','Remarks']];
+  var billRows = [['Date','Source','Item','Sub Item','Property','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Method','Remarks']];
   data.forEach(function(b){
     var items = b.items||[];
     var tax   = calcBillTax(items);
     var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
-    var itemStr = items.map(function(i){ return i.name+(i.qty&&i.qty!=1?' x'+i.qty:''); }).join('; ');
     var isNamed = !b.guest_profile_id;
-    var selectCol = isNamed ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others')) : (b.guest_name||'');
-    var nameCol   = isNamed ? (b.guest_name||'') : '';
+    var sourceCol = isNamed ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others')) : (b.guest_name||'');
+    var itemNames = [...new Set(items.map(function(i){ return i.name||''; }).filter(Boolean))].join(', ');
+    var subItemCol = b.sub_item || '';
     var propCol   = b.property_name||'';
     billRows.push([
       (b.bill_date||b.created_at||'').slice(0,10),
-      selectCol,
-      nameCol,
+      sourceCol,
+      itemNames,
+      subItemCol,
       propCol,
-      itemStr,
       Math.round(taxable*100)/100,
       Math.round(tax.cgst*100)/100,
       Math.round(tax.sgst*100)/100,
@@ -2633,15 +2919,15 @@ function downloadBillsXlsx() {
     ]);
   });
   var wsBills = XLSX.utils.aoa_to_sheet(billRows);
-  applyColWidths(wsBills, [14,22,22,20,36,14,12,12,14,12,14,30]);
+  applyColWidths(wsBills, [14,22,22,22,20,14,12,12,14,12,14,30]);
   XLSX.utils.book_append_sheet(wb, wsBills, 'Bills');
 
   // — Items detail sheet —
-  var itemRows = [['Bill Date','Select','Name','Property','Item','Qty','Rate (₹)','CGST %','SGST %','Total (₹)']];
+  var itemRows = [['Bill Date','Source','Sub Item','Property','Item','Qty','Rate (₹)','CGST %','SGST %','Total (₹)']];
   data.forEach(function(b){
     var isNamedI = !b.guest_profile_id;
     var selectColI = isNamedI ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others')) : (b.guest_name||'');
-    var nameColI   = isNamedI ? (b.guest_name||'') : '';
+    var subItemI   = b.sub_item||'';
     var propColI   = b.property_name||'';
     (b.items||[]).forEach(function(i){
       var base  = (parseFloat(i.qty)||1)*(parseFloat(i.rate)||0);
@@ -2650,7 +2936,7 @@ function downloadBillsXlsx() {
       itemRows.push([
         (b.bill_date||b.created_at||'').slice(0,10),
         selectColI,
-        nameColI,
+        subItemI,
         propColI,
         i.name||'',
         parseFloat(i.qty)||1,
