@@ -478,6 +478,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <option value="">All properties</option>
       </select>
     </div>
+    <div class="fg" style="min-width:180px" id="filter-source-fg" style="display:none">
+      <label class="fl">Bill Source</label>
+      <div class="pill-group" id="filter-source-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px"></div>
+    </div>
     <div class="fg" style="min-width:180px">
       <label class="fl">Status</label>
       <div class="pill-group" id="filter-status-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
@@ -2193,26 +2197,58 @@ async function loadBills() {
     var data = await api('/rest/v1/bills?select=*&order=created_at.desc') || [];
     ALL_BILLS = data;
 
-    // Populate property filter (bills data + landlords table + extras)
-    var billProps = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean)));
+    // Populate property filter (exclude Banyan/Heritance — they're in the source pills)
+    var NAMED_SOURCES = ['Banyan Circle', 'Properties By Heritance'];
+    var billProps = Array.from(new Set(data.map(function(b){ return b.property_name||''; }).filter(Boolean)))
+                       .filter(function(p){ return NAMED_SOURCES.indexOf(p) === -1; });
     var propSel = document.getElementById('filter-property');
     var curProp = propSel.value;
-    // Load from landlords too
     api('/rest/v1/landlords?select=property_name&order=property_name').then(function(ld){
-      var dbProps = (ld||[]).map(function(r){ return r.property_name; });
-      var all = Array.from(new Set(billProps.concat(dbProps).concat(['Banyan Circle','Properties By Heritance']))).filter(Boolean).sort();
+      var dbProps = (ld||[]).map(function(r){ return r.property_name; })
+                            .filter(function(p){ return NAMED_SOURCES.indexOf(p) === -1; });
+      var all = Array.from(new Set(billProps.concat(dbProps))).filter(Boolean).sort();
       propSel.innerHTML = '<option value="">All properties</option>' +
         all.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
     }).catch(function(){
-      var all = Array.from(new Set(billProps.concat(['Banyan Circle','Properties By Heritance']))).filter(Boolean).sort();
+      var all = Array.from(new Set(billProps)).filter(Boolean).sort();
       propSel.innerHTML = '<option value="">All properties</option>' +
         all.map(function(p){ return '<option value="' + esc(p) + '"' + (p===curProp?' selected':'') + '>' + esc(p) + '</option>'; }).join('');
     });
+
+    // Populate Bill Source pills from bill_source values in loaded data
+    populateBillSourcePills(data);
 
     renderBills(data);
   } catch(e) {
     document.getElementById('bill-log').innerHTML = '<div class="empty">Could not load bills — ensure billing-tables.sql has been run in Supabase.</div>';
   }
+}
+
+function populateBillSourcePills(data) {
+  var container = document.getElementById('filter-source-pills');
+  var fg = document.getElementById('filter-source-fg');
+  if (!container) return;
+  // Collect unique bill_source values (with legacy fallback)
+  var NAMED = ['Banyan Circle', 'Properties By Heritance'];
+  var sources = Array.from(new Set(
+    data.map(function(b){
+      if (b.guest_profile_id) return null;
+      return b.bill_source || (NAMED.indexOf(b.property_name) !== -1 ? b.property_name : null);
+    }).filter(Boolean)
+  )).sort();
+  if (!sources.length) { if (fg) fg.style.display = 'none'; return; }
+  if (fg) fg.style.display = '';
+  container.innerHTML = sources.map(function(s){
+    return '<button class="pill-opt" data-val="' + esc(s) + '" onclick="filterBillSource(this)">' + esc(s) + '</button>';
+  }).join('');
+}
+
+function filterBillSource(btn) {
+  var pills = document.querySelectorAll('#filter-source-pills .pill-opt');
+  var wasOn = btn.classList.contains('on');
+  pills.forEach(function(b){ b.classList.remove('on'); });
+  if (!wasOn) btn.classList.add('on');
+  filterBills();
 }
 
 function filterBillStatus(btn) {
@@ -2226,13 +2262,21 @@ function filterBills() {
   var propQ   = document.getElementById('filter-property').value;
   var fromQ   = document.getElementById('filter-from').value;
   var toQ     = document.getElementById('filter-to').value;
-  var statusQ = (document.querySelector('#filter-status-pills .pill-opt.on')||{}).dataset&&
+  var statusQ = (document.querySelector('#filter-status-pills .pill-opt.on')||{}).dataset &&
                 document.querySelector('#filter-status-pills .pill-opt.on').dataset.val || '';
+  var sourceEl = document.querySelector('#filter-source-pills .pill-opt.on');
+  var sourceQ  = sourceEl ? sourceEl.dataset.val : '';
+  var NAMED    = ['Banyan Circle', 'Properties By Heritance'];
 
   var filtered = ALL_BILLS.filter(function(b){
-    if (guestQ  && !(b.guest_name||'').toLowerCase().includes(guestQ)) return false;
-    if (propQ   && (b.property_name||'') !== propQ) return false;
+    if (guestQ && !(b.guest_name||'').toLowerCase().includes(guestQ) &&
+                  !(b.bill_source||'').toLowerCase().includes(guestQ)) return false;
+    if (propQ  && (b.property_name||'') !== propQ) return false;
     if (statusQ && (b.payment_status||'') !== statusQ) return false;
+    if (sourceQ) {
+      var bSource = b.bill_source || (NAMED.indexOf(b.property_name) !== -1 ? b.property_name : null);
+      if (bSource !== sourceQ) return false;
+    }
     var billD = (b.bill_date || b.created_at || '').slice(0,10);
     if (fromQ && billD < fromQ) return false;
     if (toQ   && billD > toQ)   return false;
@@ -2254,6 +2298,8 @@ function clearFilters() {
   document.querySelectorAll('#filter-status-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
   var allPill = document.querySelector('#filter-status-pills .pill-opt[data-val=""]');
   if (allPill) allPill.classList.add('on');
+  // Reset source pills
+  document.querySelectorAll('#filter-source-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
   filterBills();
 }
 
