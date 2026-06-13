@@ -2501,11 +2501,11 @@ function addBcGeneralRow(name, qty, rate, cgstPct, sgstPct) {
   var base = q * r;
   var tot = base + base * (cg + sg) / 100;
   tr.innerHTML =
-    '<td><input type="text" placeholder="Description" value="' + esc(name||'') + '" oninput="calcBcGenRowTotal(this);calcTotal()" style="min-width:120px"/></td>' +
-    '<td style="text-align:center"><input type="text" value="' + q + '" placeholder="1" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
-    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
-    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
-    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td><input type="text" placeholder="" value="' + esc(name||'') + '" oninput="calcBcGenRowTotal(this);calcTotal()" style="min-width:120px"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + q + '" placeholder="" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" placeholder="" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
     '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:80px;text-align:right;background:var(--bg);font-weight:500" id="' + rid + '-tot"/></td>' +
     '<td style="text-align:center"><button class="del-row" onclick="removeBcGenRow(\'' + rid + '\')">✕</button></td>';
   document.getElementById('bc-items-body').appendChild(tr);
