@@ -2941,7 +2941,7 @@ function renderBills(data) {
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
 
   el.innerHTML = '<table class="tbl"><thead><tr>' +
-    '<th>Source</th><th>Item</th><th>Sub Item</th><th>Property</th><th>Date</th>' +
+    '<th>Billed To</th><th>Item</th><th>Sub Item</th><th>Property</th><th>Date</th>' +
     '<th style="text-align:right">Taxable</th>' +
     '<th style="text-align:right">CGST</th>' +
     '<th style="text-align:right">SGST</th>' +
@@ -2973,7 +2973,7 @@ function renderBills(data) {
         var subItemCol = b.sub_item || '';
         var billProp = b.property_name || '';
         return '<tr>' +
-          '<td style="font-weight:500">' + esc(sourceCol) + '<div style="font-size:11px;color:var(--border);margin-top:2px;font-weight:400">' + esc(itemSummary) + '</div></td>' +
+          '<td style="font-weight:500">' + esc(sourceCol) + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (subItemCol ? esc(subItemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
