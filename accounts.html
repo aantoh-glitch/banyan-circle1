@@ -66,7 +66,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
 .kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
 .kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.kpi-value{font-size:24px;font-family:'Cormorant Garamond',serif;font-style:normal;font-weight:400}
+.kpi-value{font-size:20px;font-family:'DM Sans',sans-serif;font-weight:400}
 
 .venue-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;margin:3px 4px 3px 0;user-select:none}
 .venue-pill.on{background:var(--br-l);border-color:#D85A30;color:var(--br)}
@@ -106,7 +106,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .icon-billing{background:#f3eeff;color:#7c3aed}
 .icon-utility{background:#e0f7fa;color:#0891b2}
 .dash-tile-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.dash-tile-value{font-family:'Cormorant Garamond',serif;font-style:normal;font-weight:400;font-size:40px;line-height:1;color:var(--text)}
+.dash-tile-value{font-family:'DM Sans',sans-serif;font-weight:400;font-size:32px;line-height:1;color:var(--text)}
 .dash-tile-value.loading{font-size:20px;color:var(--muted)}
 .dash-tile-sub{font-size:12px;color:var(--muted);margin-top:5px}
 .dash-tile-nav{position:absolute;bottom:18px;right:18px;font-size:18px;color:var(--border)}
@@ -197,10 +197,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .del-row:hover{background:var(--r);color:#fff}
 .bill-total-row{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:12px 8px 0;margin-top:2px;border-top:2px solid var(--text)}
 .bill-total-label{font-size:14px;color:var(--muted);font-weight:500}
-.bill-total-val{font-size:22px;font-family:'Cormorant Garamond',serif;font-style:normal;font-weight:400;color:var(--text)}
+.bill-total-val{font-size:18px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--text)}
 .bill-deduct-row{border-top:1px dashed var(--border);padding-top:10px;margin-top:6px}
 .bill-deduct-row .bill-total-label{color:var(--muted);font-weight:400}
-.bill-deduct-input{width:100px;text-align:right;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:15px;font-family:'Cormorant Garamond',serif;font-style:normal;font-weight:400;color:var(--g);background:var(--white);outline:none}
+.bill-deduct-input{width:100px;text-align:right;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:400;color:var(--g);background:var(--white);outline:none}
 .bill-deduct-input:focus{border-color:var(--g)}
 .bill-pending-row{border-top:2px solid var(--text);padding-top:12px;margin-top:8px}
 .bill-pending-row .bill-total-label{color:var(--text);font-weight:700;font-size:15px}
@@ -2983,7 +2983,7 @@ function renderBills(data) {
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + sgstStr + '</td>' +
           '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.bc_amount ? fmtF(b.bc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.acc_amount ? fmtF(b.acc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
-          '<td style="text-align:right;font-family:\'Cormorant Garamond\',serif;font-size:15px">' + fmtF(b.amount) + '</td>' +
+          '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:13px">' + fmtF(b.amount) + '</td>' +
           '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap">' +
             '<button class="btn-edit" onclick=\'editBill(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' style="margin-right:4px">Edit</button>' +
@@ -3589,7 +3589,7 @@ function bcPaneRender() {
       '<td style="font-size:12px;color:var(--muted)">' + esc(talentNames) + '</td>' +
       '<td style="font-size:12px;color:var(--muted)">' + esc(b.property_name||'—') + '</td>' +
       '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
-      '<td style="text-align:right;font-family:\'Cormorant Garamond\',serif;color:var(--g)">' + (b.bc_amount ? fmtF(b.bc_amount) : '—') + '</td>' +
+      '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;color:var(--g)">' + (b.bc_amount ? fmtF(b.bc_amount) : '—') + '</td>' +
       '<td style="font-size:11px;color:var(--muted)">Billing</td>' +
       '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
       '</tr>';
@@ -3609,7 +3609,7 @@ function bcPaneRender() {
       '<td style="font-size:12px;color:var(--muted)">' + (isBcCat ? '—' : esc(e.recipient||'—')) + '</td>' +
       '<td style="font-size:12px;color:var(--muted)">Banyan Circle</td>' +
       '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
-      '<td style="text-align:right;font-family:\'Cormorant Garamond\',serif;color:var(--r)">−' + fmtF(amt) + '</td>' +
+      '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;color:var(--r)">−' + fmtF(amt) + '</td>' +
       '<td style="font-size:11px;color:var(--muted)">' + typeLabel + '</td>' +
       '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
       '</tr>';
