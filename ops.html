@@ -282,7 +282,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
     </a>
 
-    <a class="dash-btn" href="/messaging.html" id="messages-btn">
+    <a class="dash-btn" href="#" id="messages-btn" onclick="openMsgSheet();return false;">
       <div class="db-icon-wrap">
         <div class="db-icon">
           <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -708,6 +708,41 @@ async function openReviewsModal() {
     listEl.innerHTML = '<div class="rev-empty">Could not load reviews</div>';
   }
 }
+</script>
+<!-- MESSAGING SHEET -->
+<div id="msg-sheet-overlay" onclick="closeMsgSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
+<div id="msg-sheet" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:75dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;">
+  <iframe id="msg-sheet-iframe" src="" style="width:100%;height:100%;border:none;display:block;"></iframe>
+</div>
+
+<script>
+function openMsgSheet() {
+  const staffName = (me && me.name) ? encodeURIComponent(me.name) : '';
+  document.getElementById('msg-sheet-iframe').src = 'messaging.html?staff=' + staffName + '&embedded=1';
+  document.getElementById('msg-sheet-overlay').style.display = 'block';
+  requestAnimationFrame(function() {
+    document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(0)';
+  });
+}
+function closeMsgSheet() {
+  document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(110%)';
+  setTimeout(function() {
+    document.getElementById('msg-sheet-overlay').style.display = 'none';
+    document.getElementById('msg-sheet-iframe').src = '';
+  }, 320);
+}
+// Pass me object to messaging iframe when it requests it
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'bc_request_me') {
+    var iframe = document.getElementById('msg-sheet-iframe');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
+    }
+  }
+  if (e.data && e.data.type === 'bc_close_sheet') {
+    closeMsgSheet();
+  }
+});
 </script>
 </body>
 </html>
