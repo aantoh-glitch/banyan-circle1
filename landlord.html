@@ -1213,14 +1213,10 @@ async function refreshUtilityLog() {
         +'<td style="font-size:11px;color:var(--muted)">'+(u.paid_by||'—')+'</td>'
         +'<td style="text-align:right;white-space:nowrap">'
           +proofBtn
-          +'<button onclick="openEditUtility(\''+u.id+'\',\''+encodeURIComponent(u.utility_type||'')+'\','+u.amount+',\''+u.status+'\',\''+paid_on+'\',\''+encodeURIComponent(u.proof_url||'')+'\',\''+encodeURIComponent(u.paid_by||'')+'\'" '
-            +'style="padding:4px 10px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>'
-          +'<button onclick="deleteUtility(\''+u.id+'\')" '
-            +'style="padding:4px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Delete</button>'
         +'</td>'
       +'</tr>';
     }).join('');
-    ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th>Paid By</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+    ftEl.innerHTML = '<table class="tbl"><thead><tr><th>Month</th><th>Type</th><th>Amount</th><th>Status</th><th>Paid on</th><th>Paid By</th><th>Receipt</th></tr></thead><tbody>'+rows+'</tbody></table>';
   } catch(e) {
     ftEl.innerHTML = '<div class="empty">Could not load payments</div>';
     console.error('refreshUtilityLog error:', e);
