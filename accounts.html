@@ -2029,7 +2029,13 @@ async function acSaveExp() {
 
   try {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', body);
-    else   await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
+    else {
+      await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
+      // Auto-create TDS expense when a new Payout with tds_amount is saved
+      if (category === 'Payout' && body.tds_amount && body.tds_amount > 0) {
+        await syncTdsExpense(body);
+      }
+    }
 
 
 
@@ -2051,6 +2057,26 @@ async function acSaveExp() {
 
     acCloseExpModal(); acToast('Saved ✓'); await acLoadExp();
   } catch(e) { alert('Error: '+e.message); }
+}
+
+// ── Auto-create TDS expense when a Payout with TDS is saved ──
+async function syncTdsExpense(expBody) {
+  try {
+    var tdsBody = {
+      item:          'TDS',
+      amount:        expBody.tds_amount,
+      category:      'Tax',
+      status:        'Pending',
+      recipient:     expBody.pan || expBody.recipient || null,
+      property_name: expBody.property_name || null,
+      date:          expBody.date || new Date().toISOString().slice(0,10),
+      description:   'Auto — TDS on payout to ' + (expBody.recipient || expBody.pan || ''),
+      created_at:    new Date().toISOString()
+    };
+    await acApi('/rest/v1/expenses', 'POST', tdsBody);
+  } catch(e) {
+    console.warn('TDS expense sync failed:', e.message);
+  }
 }
 
 async function acDelExp(id) {
@@ -2809,6 +2835,7 @@ async function saveBill() {
       body.bill_id = newBillId;
       var created = await api('/rest/v1/bills', 'POST', body);
       await syncToRevenue(body, newBillId);
+      await syncGstExpense(body);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -2846,7 +2873,29 @@ function cancelEdit() {
   document.getElementById('bill-remarks').value = '';
 }
 
-// ── Sync to property_revenues (always, not just on paid) ──
+// ── Auto-create GST expense when a new bill is generated ──
+async function syncGstExpense(billBody) {
+  try {
+    var items = billBody.items || [];
+    var tax = calcBillTax(items);
+    var gstTotal = (tax.cgst || 0) + (tax.sgst || 0);
+    if (gstTotal <= 0) return; // no tax on this bill, skip
+    var expBody = {
+      item:          'GST',
+      amount:        gstTotal,
+      category:      'Tax',
+      status:        'Pending',
+      recipient:     billBody.guest_name || null,
+      property_name: billBody.property_name || null,
+      date:          billBody.bill_date || new Date().toISOString().slice(0,10),
+      description:   'Auto — GST from bill ' + (billBody.bill_id || ''),
+      created_at:    new Date().toISOString()
+    };
+    await api('/rest/v1/expenses', 'POST', expBody);
+  } catch(e) {
+    console.warn('GST expense sync failed:', e.message);
+  }
+}
 async function syncToRevenue(billBody, billId) {
   if (!billId) return;
   try {
