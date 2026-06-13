@@ -126,16 +126,15 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
 </div>
 
 <script type="module">
-// Block browser back navigation — stay on this page
-history.pushState(null, '', location.href);
-window.addEventListener('popstate', () => history.pushState(null, '', location.href));
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
-
-// Supabase JS client for Auth
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const supabase = createClient(SB, KEY);
+
+// Block browser back navigation — stay on this page
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', () => history.pushState(null, '', location.href));
 
 // Already logged in?
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
