@@ -161,7 +161,7 @@ function showErr(msg) {
 }
 
 async function checkPin() {
-  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,category,phone', {
+  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,category,phone,login_email', {
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
   }).then(async r => {
     const text = await r.text();
@@ -174,7 +174,7 @@ async function checkPin() {
 
   const t = res[0];
   // Sign into Supabase Auth — block if account not set up
-  const authEmail = (t.phone || t.id) + '.talent@banyan.com';
+  const authEmail = t.login_email || (t.phone + '.talent@banyan.com');
   const { error: authErr } = await supabase.auth.signInWithPassword({ email: authEmail, password: pin });
   if (authErr) {
     showErr('Access not set up — contact admin.');

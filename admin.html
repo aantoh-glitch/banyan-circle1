@@ -1027,6 +1027,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <input type="hidden" id="mtal-desc"/>
   <input type="hidden" id="mtal-cat"/>
   <div class="fg"><label class="fl">Phone Number</label><input class="fc" id="mtal-phone" placeholder="e.g. +91 98765 43210" type="tel"/></div>
+  <div class="fg"><label class="fl">Login Email <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-login-email" placeholder="e.g. 9876543210.talent@banyan.com" type="email"/><div style="font-size:11px;color:var(--muted);margin-top:3px">Format: phone.talent@banyan.com — must match Supabase Auth account</div></div>
   <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="mtal-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
   <div class="fg">
     <label class="fl">Venues</label>
@@ -2019,7 +2020,7 @@ async function renderVenuePills(talentId) {
 function openTalentModal(){
   document.getElementById('mtal-id').value='';
   document.getElementById('mtal-ttl').textContent='Add talent';
-  ['mtal-name','mtal-pin','mtal-desc','mtal-pan','mtal-phone'].forEach(i=>document.getElementById(i).value='');
+  ['mtal-name','mtal-pin','mtal-desc','mtal-pan','mtal-phone','mtal-login-email'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-cat').value='Yoga';
   renderVenuePills(null);
   openModal('modal-talent');
@@ -2033,6 +2034,7 @@ function editTalentRow(t){
   document.getElementById('mtal-cat').value=t.category||'Yoga';
   document.getElementById('mtal-pan').value=t.pan||'';
   document.getElementById('mtal-phone').value=t.phone||'';
+  document.getElementById('mtal-login-email').value=t.login_email||'';
   renderVenuePills(t.id);
   openModal('modal-talent');
 }
@@ -2040,16 +2042,18 @@ async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:document.getElementById('mtal-phone').value.trim()||null};
+  const login_email=document.getElementById('mtal-login-email').value.trim()||null;
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:document.getElementById('mtal-phone').value.trim()||null,login_email};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
+  if(!login_email){alert('Login email is required');return;}
   try{
     if(id){
       await api('/rest/v1/talents?id=eq.'+id,'PATCH',body);
-      if(body.phone) await createAuthUser(body.phone+'.talent@banyan.com', pin, 'talent');
+      await createAuthUser(login_email, pin, 'talent');
     } else {
       await api('/rest/v1/talents','POST',body);
-      if(body.phone) await createAuthUser(body.phone+'.talent@banyan.com', pin, 'talent');
+      await createAuthUser(login_email, pin, 'talent');
     }
 
     closeModal('modal-talent'); toast('Saved'); await loadTalentsPage();
