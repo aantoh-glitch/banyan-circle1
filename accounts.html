@@ -498,7 +498,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
     <div>
       <div style="font-size:13px;font-weight:500;color:var(--text)">Banyan Circle</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">Talent payout line item</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Banyan Circle line items</div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
       <span style="font-size:12px;color:var(--muted)" id="bc-toggle-lbl">Off</span>
@@ -513,7 +513,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div id="bc-rows-section" style="display:none;margin-bottom:12px">
     <table class="items-table" id="bc-items-table">
       <thead><tr>
-        <th style="width:34%">Sub-item (Talent / Description)</th>
+        <th style="width:34%">Description</th>
         <th style="width:9%;text-align:center">Qty</th>
         <th style="width:16%;text-align:right">Rate (₹)</th>
         <th style="width:8%;text-align:center">CGST%</th>
@@ -1040,6 +1040,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
 
+    <!-- Banyan Circle: property picker -->
+    <div class="fg" id="ac-bc-property-fg" style="display:none">
+      <label class="fl">Property <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <select class="fc" id="ac-exp-bc-property">
+        <option value="">— select property —</option>
+      </select>
+    </div>
+
     <div class="row-grid">
       <div class="fg">
         <label class="fl" id="ac-item-lbl">Item <span class="req">*</span></label>
@@ -1434,6 +1442,9 @@ function acEditExp(e) {
   document.getElementById('ac-utility-fg').style.display='none';
   document.getElementById('ac-others-fg').style.display='none';
   document.getElementById('ac-others-property-fg').style.display='none';
+  document.getElementById('ac-bc-property-fg').style.display='none';
+  const bcPropSelEdit = document.getElementById('ac-exp-bc-property');
+  if (bcPropSelEdit) { bcPropSelEdit.innerHTML='<option value="">— select property —</option>'; bcPropSelEdit.value=''; }
   document.getElementById('ac-bc-cat-fg').style.display='none';
   document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
@@ -1456,7 +1467,17 @@ function acEditExp(e) {
   if (e.category === 'Banyan Circle') {
     acRenderBcItemPills();
     document.getElementById('ac-bc-cat-fg').style.display = '';
+    document.getElementById('ac-bc-property-fg').style.display = '';
     document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.item));
+    const bcPropSel = document.getElementById('ac-exp-bc-property');
+    if (bcPropSel) {
+      acApi('/rest/v1/landlords?select=property_name&order=property_name').then(d => {
+        const props = (d||[]).map(r=>r.property_name).filter(p=>p !== 'Banyan Circle');
+        if (!props.includes('Properties By Heritance')) props.push('Properties By Heritance');
+        bcPropSel.innerHTML = '<option value="">— select property —</option>' +
+          props.map(r=>`<option value="${r}"${r===e.property_name?' selected':''}>${r}</option>`).join('');
+      }).catch(()=>{});
+    }
   }
   if (e.category === 'Utility') {
     document.getElementById('ac-utility-fg').style.display = '';
@@ -1619,10 +1640,23 @@ async function acPickCat(btn) {
       }).catch(()=>{ otherPropSel.innerHTML = '<option value="">Could not load</option>'; });
     }
   }
+  document.getElementById('ac-bc-property-fg').style.display = isBanyanCat ? '' : 'none';
   if (!isBanyanCat) {
     document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+    const bcPropSel = document.getElementById('ac-exp-bc-property');
+    if (bcPropSel) { bcPropSel.value = ''; }
   } else {
     acRenderBcItemPills();
+    const bcPropSel = document.getElementById('ac-exp-bc-property');
+    if (bcPropSel && bcPropSel.options.length <= 1) {
+      bcPropSel.innerHTML = '<option value="">Loading…</option>';
+      acApi('/rest/v1/landlords?select=property_name&order=property_name').then(d => {
+        const props = (d||[]).map(r=>r.property_name).filter(p=>p !== 'Banyan Circle');
+        if (!props.includes('Properties By Heritance')) props.push('Properties By Heritance');
+        bcPropSel.innerHTML = '<option value="">— select property —</option>' +
+          props.map(r=>`<option value="${r}">${r}</option>`).join('');
+      }).catch(()=>{ bcPropSel.innerHTML = '<option value="">Could not load</option>'; });
+    }
   }
 
   // Utility section — update Item label
@@ -2004,11 +2038,12 @@ async function acSaveExp() {
   const teamAssigned = (category === 'Payout' && payoutType === 'Team')
     ? (document.getElementById('ac-team-property-val') ? document.getElementById('ac-team-property-val').value : '')
     : '';
+  const bcProperty = document.getElementById('ac-exp-bc-property') ? document.getElementById('ac-exp-bc-property').value : '';
   // Determine property_name to save
   let propertyToSave = null;
   if (category === 'Utility') propertyToSave = utilityProp || null;
   else if (category === 'Others') propertyToSave = othersProperty || null;
-  else if (category === 'Banyan Circle') propertyToSave = 'Banyan Circle';
+  else if (category === 'Banyan Circle') propertyToSave = bcProperty || 'Banyan Circle';
   else if (category === 'Payout' && payoutType === 'Talent') propertyToSave = talentProperty || null;
   else if (category === 'Payout' && payoutType === 'Team') propertyToSave = teamAssigned || null;
 
@@ -2091,6 +2126,9 @@ function acCloseExpModal() {
   if (op) { op.innerHTML = '<option value="">— select property —</option>'; }
   document.getElementById('ac-others-property-fg').style.display = 'none';
   document.getElementById('ac-bc-cat-fg').style.display = 'none';
+  document.getElementById('ac-bc-property-fg').style.display = 'none';
+  const bcPropClose = document.getElementById('ac-exp-bc-property');
+  if (bcPropClose) { bcPropClose.innerHTML = '<option value="">— select property —</option>'; }
   document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
 }
 document.addEventListener('click', e=>{ if(e.target.id==='ac-modal-exp') acCloseExpModal(); });
@@ -2398,19 +2436,8 @@ function bcToggle() {
   lbl.textContent = on ? 'On' : 'Off';
   sec.style.display = on ? '' : 'none';
   if (on) {
-    bcLoadTalents().then(function() {
-      if (document.querySelectorAll('#bc-items-body tr').length === 0) addBcRow();
-      // Refresh dropdowns in existing rows with loaded talents
-      document.querySelectorAll('.bc-talent-sel').forEach(function(sel) {
-        var current = sel.value;
-        var opts = BC_TALENTS.map(function(t) {
-          return '<option value="' + t.name.replace(/"/g,'&quot;') + '"' + (t.name === current ? ' selected' : '') + '>' + t.name.replace(/</g,'&lt;') + '</option>';
-        }).join('');
-        sel.innerHTML = '<option value="">— select talent —</option>' + opts;
-        if (current) sel.value = current;
-      });
-      calcTotal();
-    });
+    if (document.querySelectorAll('#bc-items-body tr').length === 0) addBcGeneralRow();
+    calcTotal();
   } else {
     calcTotal();
   }
@@ -2468,13 +2495,14 @@ function addBcGeneralRow(name, qty, rate, cgstPct, sgstPct) {
   var tr = document.createElement('tr');
   tr.id = rid;
   tr.dataset.rowtype = 'bcgeneral';
-  var q = parseFloat(qty)||0, r = parseFloat(rate)||0;
+  var q = (qty !== undefined && qty !== null && qty !== '') ? parseFloat(qty) : 1;
+  var r = parseFloat(rate)||0;
   var cg = parseFloat(cgstPct)||0, sg = parseFloat(sgstPct)||0;
   var base = q * r;
   var tot = base + base * (cg + sg) / 100;
   tr.innerHTML =
     '<td><input type="text" placeholder="Description" value="' + esc(name||'') + '" oninput="calcBcGenRowTotal(this);calcTotal()" style="min-width:120px"/></td>' +
-    '<td style="text-align:center"><input type="text" value="' + (qty||'') + '" placeholder="1" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + q + '" placeholder="1" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
     '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
     '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
@@ -2486,7 +2514,7 @@ function addBcGeneralRow(name, qty, rate, cgstPct, sgstPct) {
 function calcBcGenRowTotal(input) {
   var tr = input.closest('tr');
   var inputs = tr.querySelectorAll('input');
-  var qty = parseFloat(inputs[1]?inputs[1].value:0)||0;
+  var qty  = (inputs[1] && inputs[1].value !== '') ? parseFloat(inputs[1].value) : 1;
   var rate = parseFloat(inputs[2]?inputs[2].value:0)||0;
   var cgst = parseFloat(inputs[3]?inputs[3].value:0)||0;
   var sgst = parseFloat(inputs[4]?inputs[4].value:0)||0;
@@ -2957,17 +2985,15 @@ function editBill(bill) {
     var hasBc = (bill.items||[]).some(function(i){ return i.type === 'banyan'; });
     var hasAcc = (bill.items||[]).some(function(i){ return i.type === 'accommodation'; });
     if (hasBc) {
-      bcLoadTalents().then(function() {
-        var bcCb = document.getElementById('bc-toggle');
-        var bcSec = document.getElementById('bc-rows-section');
-        if (bcCb) bcCb.checked = true;
-        if (document.getElementById('bc-track')) document.getElementById('bc-track').style.background = 'var(--br)';
-        if (document.getElementById('bc-thumb')) document.getElementById('bc-thumb').style.transform = 'translateX(18px)';
-        if (document.getElementById('bc-toggle-lbl')) document.getElementById('bc-toggle-lbl').textContent = 'On';
-        if (bcSec) bcSec.style.display = '';
-        (bill.items||[]).filter(function(i){ return i.type==='banyan'; }).forEach(function(i){
-          addBcRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
-        });
+      var bcCb = document.getElementById('bc-toggle');
+      var bcSec = document.getElementById('bc-rows-section');
+      if (bcCb) bcCb.checked = true;
+      if (document.getElementById('bc-track')) document.getElementById('bc-track').style.background = 'var(--br)';
+      if (document.getElementById('bc-thumb')) document.getElementById('bc-thumb').style.transform = 'translateX(18px)';
+      if (document.getElementById('bc-toggle-lbl')) document.getElementById('bc-toggle-lbl').textContent = 'On';
+      if (bcSec) bcSec.style.display = '';
+      (bill.items||[]).filter(function(i){ return i.type==='banyan'; }).forEach(function(i){
+        addBcGeneralRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
     if (hasAcc) {
@@ -2995,16 +3021,13 @@ function editBill(bill) {
         addAddonRow(i.sub_item||i.name, i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
-    // BC general rows (restore under BC section)
     var hasBcGen = (bill.items||[]).some(function(i){ return i.type === 'banyan_general'; });
     if (hasBcGen) {
-      bcLoadTalents().then(function() {
-        var bcCb = document.getElementById('bc-toggle');
-        var bcSec = document.getElementById('bc-rows-section');
-        if (bcCb && !bcCb.checked) { bcCb.checked = true; if(document.getElementById('bc-track'))document.getElementById('bc-track').style.background='var(--br)'; if(document.getElementById('bc-thumb'))document.getElementById('bc-thumb').style.transform='translateX(18px)'; if(document.getElementById('bc-toggle-lbl'))document.getElementById('bc-toggle-lbl').textContent='On'; if(bcSec)bcSec.style.display=''; }
-        (bill.items||[]).filter(function(i){ return i.type==='banyan_general'; }).forEach(function(i){
-          addBcGeneralRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
-        });
+      var bcCb2 = document.getElementById('bc-toggle');
+      var bcSec2 = document.getElementById('bc-rows-section');
+      if (bcCb2 && !bcCb2.checked) { bcCb2.checked = true; if(document.getElementById('bc-track'))document.getElementById('bc-track').style.background='var(--br)'; if(document.getElementById('bc-thumb'))document.getElementById('bc-thumb').style.transform='translateX(18px)'; if(document.getElementById('bc-toggle-lbl'))document.getElementById('bc-toggle-lbl').textContent='On'; if(bcSec2)bcSec2.style.display=''; }
+      (bill.items||[]).filter(function(i){ return i.type==='banyan_general'; }).forEach(function(i){
+        addBcGeneralRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
     (bill.items||[]).filter(function(i){ return !i.type; }).forEach(function(i){
