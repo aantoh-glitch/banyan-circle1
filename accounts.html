@@ -1315,6 +1315,7 @@ function acOpenExpModal() {
 }
 
 function acEditExp(e) {
+  document.getElementById('ac-exp-id').value = e.id || '';
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
   document.getElementById('ac-exp-utility-bill-date').max = _todayE;
@@ -1348,7 +1349,7 @@ function acEditExp(e) {
   var isPaidLandlord = e.status === 'Paid to landlord';
   document.getElementById('ac-st-paid').style.display        = (isTobePaid || isPaidLandlord) ? 'none' : '';
   var _tbp = document.getElementById('ac-st-tobepaid');
-  if (_tbp) _tbp.style.display = (e.category === 'Utility') ? '' : 'none';
+  if (_tbp) _tbp.style.display = (isTobePaid || e.category === 'Utility') ? '' : 'none';
   document.getElementById('ac-st-paidlandlord').style.display = (isTobePaid || isPaidLandlord) ? '' : 'none';
   // Now highlight the matching pill
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.status));
