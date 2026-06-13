@@ -850,6 +850,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="ms-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
     <div class="fg"></div>
   </div>
+  <div class="fg"><label class="fl">Login Email</label><input class="fc" id="ms-login-email" placeholder="e.g. 9876543210@banyan.com" type="email"/><div style="font-size:11px;color:var(--muted);margin-top:3px">Auto-filled from phone. Change only if different.</div></div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-staff')">Cancel</button><button class="btn-p" onclick="saveStaff()">Save</button></div>
 </div></div>
 
@@ -1333,17 +1334,15 @@ async function renderStaffPropPills(selected=[]){
   if(!PROPS.length) container.innerHTML='<span style="font-size:12px;color:var(--muted)">No properties found</span>';
 }
 function getSelectedStaffProps(){ return [...document.querySelectorAll('#ms-props-pills .venue-pill.on')].map(p=>p.dataset.prop); }
-async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email','ms-phone','ms-role','ms-pan'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-staff-role').value=''; await renderStaffPropPills([]); openModal('modal-staff'); }
+async function openStaffModal(){ document.getElementById('ms-id').value=''; document.getElementById('ms-ttl').textContent='Add team member'; ['ms-name','ms-pin','ms-email','ms-phone','ms-role','ms-pan','ms-login-email'].forEach(i=>document.getElementById(i).value=''); document.getElementById('ms-staff-role').value=''; await renderStaffPropPills([]); openModal('modal-staff'); }
 function selectAllStaffProps(){ document.querySelectorAll('#ms-props-pills .venue-pill').forEach(p=>p.classList.add('on')); }
-async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-phone').value=s.phone||''; document.getElementById('ms-role').value=s.designation||''; document.getElementById('ms-staff-role').value=s.role||''; document.getElementById('ms-pan').value=s.pan||''; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
-async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const phone=document.getElementById('ms-phone').value.trim(); const phoneDigits=phone.replace(/\D/g,''); if(!phone||phoneDigits.length<10){alert('Phone number is required and must have at least 10 digits');return;} const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,role:document.getElementById('ms-staff-role').value||null,phone:phone,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null,pan:document.getElementById('ms-pan').value.trim().toUpperCase()||null}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id){
+async function editStaff(s){ document.getElementById('ms-id').value=s.id; document.getElementById('ms-ttl').textContent='Edit team member'; document.getElementById('ms-name').value=s.name||''; document.getElementById('ms-pin').value=s.pin||''; document.getElementById('ms-email').value=s.email||''; document.getElementById('ms-phone').value=s.phone||''; document.getElementById('ms-role').value=s.designation||''; document.getElementById('ms-staff-role').value=s.role||''; document.getElementById('ms-pan').value=s.pan||''; document.getElementById('ms-login-email').value=s.login_email||s.phone+'@banyan.com'; const assigned=Array.isArray(s.assigned_properties)?s.assigned_properties:(s.assigned_properties?JSON.parse(s.assigned_properties):[]);  await renderStaffPropPills(assigned); openModal('modal-staff'); }
+async function saveStaff(){ const id=document.getElementById('ms-id').value; const assigned_properties=getSelectedStaffProps(); const phone=document.getElementById('ms-phone').value.trim(); const phoneDigits=phone.replace(/\D/g,''); if(!phone||phoneDigits.length<10){alert('Phone number is required and must have at least 10 digits');return;} const login_email=document.getElementById('ms-login-email').value.trim()||phone+'@banyan.com'; const body={name:document.getElementById('ms-name').value.trim(),pin:document.getElementById('ms-pin').value.trim(),designation:document.getElementById('ms-role').value.trim()||null,role:document.getElementById('ms-staff-role').value||null,phone:phone,email:document.getElementById('ms-email').value.trim()||null,assigned_properties:assigned_properties.length?assigned_properties:null,pan:document.getElementById('ms-pan').value.trim().toUpperCase()||null,login_email}; if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need name and 4-digit PIN');return;} if(id){
     await api('/rest/v1/staff?id=eq.'+id,'PATCH',body);
-    // Update Auth password if PIN changed
-    await createAuthUser(body.phone+'@banyan.com', body.pin, 'staff', {assigned_properties: assigned_properties});
+    await createAuthUser(login_email, body.pin, 'staff', {assigned_properties: assigned_properties});
   } else {
     await api('/rest/v1/staff','POST',body);
-    // Auto-create Supabase Auth account
-    await createAuthUser(body.phone+'@banyan.com', body.pin, 'staff', {assigned_properties: assigned_properties});
+    await createAuthUser(login_email, body.pin, 'staff', {assigned_properties: assigned_properties});
   }
   closeModal('modal-staff'); toast('Saved'); loadStaff(); }
 let _pendingRemove = null;
