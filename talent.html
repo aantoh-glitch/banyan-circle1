@@ -855,14 +855,7 @@ showPanel('profile');
     var iframe=document.getElementById('msg-iframe');
     if(!iframeReady){
       iframeReady=true;
-      iframe.src='messaging.html';
-      iframe.onload=function(){
-        var me=JSON.parse(localStorage.getItem('bc_me')||'null');
-        if(me) try{ iframe.contentWindow.initMessagingPanel(me); }catch(e){}
-      };
-    } else {
-      var me=JSON.parse(localStorage.getItem('bc_me')||'null');
-      if(me) try{ iframe.contentWindow.initMessagingPanel(me); }catch(e){}
+      iframe.src='messaging.html?embedded=1';
     }
     /* Show overlay first */
     overlay.style.display='block';
@@ -890,6 +883,13 @@ showPanel('profile');
   window.addEventListener('message',function(e){
     if(!e.data||typeof e.data!=='object') return;
     if(e.data.type==='bc_close_panel') closeMessagingPanel();
+    if(e.data.type==='bc_request_me'){
+      var stored=JSON.parse(localStorage.getItem('bc_me')||'null');
+      var iframe=document.getElementById('msg-iframe');
+      if(stored && iframe && iframe.contentWindow){
+        iframe.contentWindow.postMessage({type:'bc_init_me',me:stored},'*');
+      }
+    }
     if(e.data.type==='bc_unread_count'){
       var badge=document.getElementById('msg-fab-badge');
       var n=e.data.count||0;
