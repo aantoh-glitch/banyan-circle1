@@ -455,13 +455,23 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <label class="fl">Select <span style="color:var(--r)">*</span></label>
     <select class="fc" id="bill-guest-select" onchange="onGuestSelect()">
       <option value="">— select —</option>
+      <option value="__guests__">Guests</option>
+      <option value="__other__">Others</option>
+    </select>
+  </div>
+
+  <!-- Guest picker — shown when Guests is selected -->
+  <div class="fg" id="guest-picker-fg" style="display:none">
+    <label class="fl">Guest Name <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="guest-name-select" onchange="onGuestNameSelect()">
+      <option value="">— select guest —</option>
     </select>
   </div>
 
   <!-- Other: free-text name -->
   <div class="fg" id="other-name-fg" style="display:none">
-    <label class="fl">Name <span style="color:var(--r)">*</span></label>
-    <input class="fc" id="other-guest-name" type="text" placeholder="Type guest or company name…"/>
+    <label class="fl">Billed To <span style="color:var(--r)">*</span></label>
+    <input class="fc" id="other-guest-name" type="text" placeholder="Name to bill to…"/>
   </div>
 
   <!-- Other: property picker (shown when Others is selected) -->
@@ -514,13 +524,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <tbody id="bc-items-body"></tbody>
     </table>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn-sec" onclick="addBcRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add talent row
-      </button>
       <button class="btn-sec" onclick="addBcGeneralRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add general row
+        Add row
       </button>
     </div>
   </div>
@@ -2229,61 +2235,59 @@ async function loadGuests() {
   try {
     var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
     GUESTS = data;
-    var sel = document.getElementById('bill-guest-select');
-    sel.innerHTML = '<option value="">— select —</option>' +
-      data.map(function(g){
-        var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
-          (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
-        return '<option value="' + g.id + '">' + label + '</option>';
-      }).join('') +
-      '<option value="__heritance__">Properties By Heritance</option>' +
-      '<option value="__other__">Others</option>';
-      // Note: Banyan Circle is handled via the Banyan Circle toggle in itemized billing, not as a Select option
+    // Populate the guest name sub-select
+    var nameSel = document.getElementById('guest-name-select');
+    if (nameSel) {
+      nameSel.innerHTML = '<option value="">— select guest —</option>' +
+        data.map(function(g){
+          var label = g.name + (g.property_name ? ' · ' + g.property_name : '') +
+            (g.check_in ? ' (' + fmtDate(g.check_in) + ')' : '');
+          return '<option value="' + g.id + '">' + label + '</option>';
+        }).join('');
+    }
   } catch(e) {
-    document.getElementById('bill-guest-select').innerHTML = '<option value="">Could not load guests</option>';
+    var nameSel = document.getElementById('guest-name-select');
+    if (nameSel) nameSel.innerHTML = '<option value="">Could not load guests</option>';
   }
 }
 
 async function onGuestSelect() {
-  var gid = document.getElementById('bill-guest-select').value;
-  var otherFg = document.getElementById('other-name-fg');
-  // hide both panels first
+  var val = document.getElementById('bill-guest-select').value;
+  // Reset all sub-panels
+  document.getElementById('guest-picker-fg').style.display = 'none';
+  document.getElementById('guest-name-select').value = '';
   document.getElementById('guest-info').style.display = 'none';
-  otherFg.style.display = 'none';
+  document.getElementById('other-name-fg').style.display = 'none';
   document.getElementById('other-property-fg').style.display = 'none';
-  if (!gid) return;
-  if (gid === '__other__' || gid === '__heritance__') {
-    otherFg.style.display = '';
+  document.getElementById('guest-info').setAttribute('data-addr', '');
+  document.getElementById('guest-info').setAttribute('data-mobile', '');
+  document.getElementById('guest-info').setAttribute('data-email', '');
+
+  if (val === '__guests__') {
+    document.getElementById('guest-picker-fg').style.display = '';
+    document.getElementById('guest-name-select').focus();
+  } else if (val === '__other__') {
+    document.getElementById('other-name-fg').style.display = '';
     document.getElementById('other-property-fg').style.display = '';
-    populatePropertyPicker('other-bill-property', []).then(function() {
-      var propSel = document.getElementById('other-bill-property');
-      if (gid === '__heritance__') {
-        var hOpt = Array.from(propSel.options).find(function(o){ return o.value === 'Properties By Heritance'; });
-        if (hOpt) propSel.value = 'Properties By Heritance';
-      }
-    });
-    // Clear any previously cached guest contact data so it doesn't bleed into the new bill
-    document.getElementById('guest-info').setAttribute('data-addr', '');
-    document.getElementById('guest-info').setAttribute('data-mobile', '');
-    document.getElementById('guest-info').setAttribute('data-email', '');
+    populatePropertyPicker('other-bill-property', []);
+    document.getElementById('other-guest-name').value = '';
     document.getElementById('other-guest-name').focus();
-    return;
   }
-  document.getElementById('other-property-fg').style.display = 'none';
+}
+
+async function onGuestNameSelect() {
+  var gid = document.getElementById('guest-name-select').value;
+  document.getElementById('guest-info').style.display = 'none';
+  if (!gid) return;
   var g = GUESTS.find(function(x){ return x.id === gid; });
   if (!g) return;
 
-  // Fetch latest check-in for billing_address column + mobile/email from form_data
   var addr = '', mobile = '', email = '';
   try {
     var ci = await api('/rest/v1/guest_checkins?guest_profile_id=eq.' + gid + '&select=billing_address,form_data&order=checked_in_at.desc&limit=1');
     if (ci && ci.length) {
       addr = ci[0].billing_address || '';
-      if (ci[0].form_data) {
-        var fd = ci[0].form_data;
-        mobile = fd.mobile || '';
-        email  = fd.email  || '';
-      }
+      if (ci[0].form_data) { mobile = ci[0].form_data.mobile||''; email = ci[0].form_data.email||''; }
     }
   } catch(e) {}
 
@@ -2293,12 +2297,10 @@ async function onGuestSelect() {
   if (g.property_name) meta += '<span><strong>' + esc(g.property_name) + '</strong></span>';
   if (g.check_in)  meta += '<span>Check-in: <strong>' + fmtDate(g.check_in) + '</strong></span>';
   if (g.check_out) meta += '<span>Check-out: <strong>' + fmtDate(g.check_out) + '</strong></span>';
-  if (mobile)      meta += '<span>📱 ' + esc(mobile) + '</span>';
-  if (email)       meta += '<span>✉ ' + esc(email) + '</span>';
+  if (mobile) meta += '<span>📱 ' + esc(mobile) + '</span>';
+  if (email)  meta += '<span>✉ ' + esc(email) + '</span>';
   document.getElementById('ginfo-meta').innerHTML = meta;
   document.getElementById('guest-info').style.display = 'block';
-
-  // Pre-fill guest details for when saving
   document.getElementById('guest-info').setAttribute('data-addr', addr);
   document.getElementById('guest-info').setAttribute('data-mobile', mobile);
   document.getElementById('guest-info').setAttribute('data-email', email);
@@ -2726,13 +2728,16 @@ function setPayMethod(m) {
 
 // ── Save ──
 async function saveBill() {
-  var gid = document.getElementById('bill-guest-select').value;
-  if (!gid) { toast('Please select a guest'); return; }
+  var topSel = document.getElementById('bill-guest-select').value;
+  if (!topSel) { toast('Please select Guests or Others'); return; }
+  var IS_NAMED = (topSel === '__other__');
+  var gid = IS_NAMED ? null : document.getElementById('guest-name-select').value;
   var otherName = '';
-  var IS_NAMED = (gid === '__other__' || gid === '__heritance__');
   if (IS_NAMED) {
     otherName = document.getElementById('other-guest-name').value.trim();
-    if (!otherName) { toast('Please enter a name'); document.getElementById('other-guest-name').focus(); return; }
+    if (!otherName) { toast('Please enter a name to bill to'); document.getElementById('other-guest-name').focus(); return; }
+  } else {
+    if (!gid) { toast('Please select a guest'); document.getElementById('guest-name-select').focus(); return; }
   }
   var items = getItems();
   if (!items.length) { toast('Add at least one item'); return; }
@@ -2748,11 +2753,7 @@ async function saveBill() {
   var otherPropertyVal = otherPropertySel ? otherPropertySel.value : '';
 
   var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
-
-  // bill_source records the dropdown selection for display in the log
-  var billSource = gid === '__heritance__' ? 'Properties By Heritance'
-                 : gid === '__other__'     ? 'Others'
-                 : null; // guest profile — no source label needed
+  var billSource = IS_NAMED ? 'Others' : null;
   // Collect sub_item: talent names from BC rows (comma-separated if multiple)
   var bcTalents = [];
   document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
@@ -2824,6 +2825,8 @@ function cancelEdit() {
   document.getElementById('save-btn').textContent = 'Create Bill';
   document.getElementById('cancel-btn').style.display = 'none';
   document.getElementById('bill-guest-select').value = '';
+  document.getElementById('guest-picker-fg').style.display = 'none';
+  document.getElementById('guest-name-select').value = '';
   document.getElementById('guest-info').style.display = 'none';
   document.getElementById('other-name-fg').style.display = 'none';
   document.getElementById('other-guest-name').value = '';
@@ -2879,25 +2882,21 @@ function editBill(bill) {
 
     // Set guest
     if (!bill.guest_profile_id) {
-      // "Others / Banyan / Heritance" bill — restore name field directly, skip onGuestSelect
-      // Use bill_source to identify the dropdown choice; fall back to Others
-      var SOURCE_MAP = {'Properties By Heritance':'__heritance__'};
-      var legacySource = bill.property_name === 'Properties By Heritance' ? 'Properties By Heritance' : null;
-      var resolvedSource = bill.bill_source || legacySource;
-      var selectVal = (resolvedSource && SOURCE_MAP[resolvedSource]) ? SOURCE_MAP[resolvedSource] : '__other__';
-      document.getElementById('bill-guest-select').value = selectVal;
+      // Others bill
+      document.getElementById('bill-guest-select').value = '__other__';
       document.getElementById('other-name-fg').style.display = '';
       document.getElementById('other-guest-name').value = bill.guest_name || '';
       document.getElementById('guest-info').style.display = 'none';
-      // Show property picker and restore sub-property value
       document.getElementById('other-property-fg').style.display = '';
       populatePropertyPicker('other-bill-property', []).then(function(){
         var sel = document.getElementById('other-bill-property');
         if (sel && bill.property_name) sel.value = bill.property_name;
       });
     } else {
-      document.getElementById('bill-guest-select').value = bill.guest_profile_id;
-      onGuestSelect();
+      document.getElementById('bill-guest-select').value = '__guests__';
+      document.getElementById('guest-picker-fg').style.display = '';
+      document.getElementById('guest-name-select').value = bill.guest_profile_id;
+      onGuestNameSelect();
     }
 
     // Items — restore into correct section by type
@@ -3135,17 +3134,14 @@ function renderBills(data) {
         var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
         var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
         var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
-        var isNamed = !b.guest_profile_id;
-        var sourceCol = isNamed
-          ? (b.bill_source || (['Banyan Circle','Properties By Heritance'].indexOf(b.property_name) !== -1 ? b.property_name : 'Others'))
-          : (b.guest_name || '—');
+        var billedTo = b.guest_name || '—';
         // Item = first distinct item name across all rows
         var itemNames = [...new Set((b.items||[]).map(function(i){ return i.name||''; }).filter(Boolean))];
-        var itemCol = itemNames.length ? itemNames.join(', ') : (isNamed ? (b.guest_name||'') : '—');
+        var itemCol = itemNames.length ? itemNames.join(', ') : '—';
         var subItemCol = b.sub_item || '';
         var billProp = b.property_name || '';
         return '<tr>' +
-          '<td style="font-weight:500">' + esc(sourceCol) + '</td>' +
+          '<td style="font-weight:500">' + esc(billedTo) + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (subItemCol ? esc(subItemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
