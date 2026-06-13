@@ -137,7 +137,7 @@ window.addEventListener('popstate', () => history.pushState(null, '', location.h
 
 // Already logged in?
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (me && me.role === 'staff') { location.replace('/ops.html'); }
+if (me && me.role === 'staff') { location.replace('ops.html'); }
 
 const DEFAULTS = [
   { id: 'sherry',  name: 'Sherry',  pin: '2222', role: 'staff', staffRole: 'operations' },
@@ -208,7 +208,7 @@ async function checkPin() {
   }
 
   localStorage.setItem('bc_me', JSON.stringify({ id: match.id, name: match.name, role: 'staff', staffRole: match.staffRole || 'Operations' }));
-  location.href = '/ops.html';
+  location.href = 'ops.html';
 }
 
 // ── Change PIN ────────────────────────────────────────────────
