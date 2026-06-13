@@ -3190,6 +3190,7 @@ function renderBills(data) {
     '<th style="text-align:right">BC Amt</th>' +
     '<th style="text-align:right">Acc Amt</th>' +
     '<th style="text-align:right">Total</th>' +
+    '<th>Description</th>' +
     '<th>Status</th><th></th>' +
     '</tr></thead><tbody>' +
     data.map(function(b){
@@ -3223,6 +3224,7 @@ function renderBills(data) {
           '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.bc_amount ? fmtF(b.bc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.acc_amount ? fmtF(b.acc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:13px">' + fmtF(b.amount) + '</td>' +
+          '<td style="font-size:12px;color:var(--muted);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (b.remarks ? esc(b.remarks) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap">' +
             '<button class="btn-edit" onclick=\'editBill(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' style="margin-right:4px">Edit</button>' +
