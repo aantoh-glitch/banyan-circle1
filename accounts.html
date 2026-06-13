@@ -503,19 +503,26 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div id="bc-rows-section" style="display:none;margin-bottom:12px">
     <table class="items-table" id="bc-items-table">
       <thead><tr>
-        <th style="width:40%">Sub-item (Talent)</th>
+        <th style="width:34%">Sub-item (Talent / Description)</th>
         <th style="width:9%;text-align:center">Qty</th>
         <th style="width:16%;text-align:right">Rate (₹)</th>
         <th style="width:8%;text-align:center">CGST%</th>
         <th style="width:8%;text-align:center">SGST%</th>
         <th style="width:13%;text-align:right">Total (₹)</th>
+        <th style="width:8%"></th>
       </tr></thead>
       <tbody id="bc-items-body"></tbody>
     </table>
-    <button class="btn-sec" onclick="addBcRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-top:8px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add talent row
-    </button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-sec" onclick="addBcRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add talent row
+      </button>
+      <button class="btn-sec" onclick="addBcGeneralRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add general row
+      </button>
+    </div>
   </div>
 
   <!-- ── Accommodation toggle ── -->
@@ -550,6 +557,41 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <button class="btn-sec" onclick="addAccRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-top:8px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add rent row
+    </button>
+  </div>
+
+  <!-- ── Add-ons toggle ── -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+    <div>
+      <div style="font-size:13px;font-weight:500;color:var(--text)">Add-ons</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Extra charges, services</div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+      <span style="font-size:12px;color:var(--muted)" id="addon-toggle-lbl">Off</span>
+      <div style="position:relative;width:40px;height:22px" onclick="addonToggle()">
+        <input type="checkbox" id="addon-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
+        <div id="addon-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
+        <div id="addon-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
+      </div>
+    </label>
+  </div>
+  <!-- Add-ons rows -->
+  <div id="addon-rows-section" style="display:none;margin-bottom:12px">
+    <table class="items-table" id="addon-items-table">
+      <thead><tr>
+        <th style="width:34%">Item / Description</th>
+        <th style="width:9%;text-align:center">Qty</th>
+        <th style="width:12%;text-align:right">Rate (₹)</th>
+        <th style="width:8%;text-align:center">CGST%</th>
+        <th style="width:8%;text-align:center">SGST%</th>
+        <th style="width:13%;text-align:right">Total (₹)</th>
+        <th style="width:10%"></th>
+      </tr></thead>
+      <tbody id="addon-items-body"></tbody>
+    </table>
+    <button class="btn-sec" onclick="addAddonRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-top:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add row
     </button>
   </div>
 
@@ -2390,7 +2432,88 @@ function calcBcRowTotal(input) {
   if (nums[4]) nums[4].value = (base + base * (cgst + sgst) / 100).toFixed(2);
 }
 
-// ── Accommodation toggle ──
+// ── BC General rows (free-text under Banyan Circle) ──
+var bcGenRowCount = 0;
+function addBcGeneralRow(name, qty, rate, cgstPct, sgstPct) {
+  bcGenRowCount++;
+  var rid = 'bcgen-row-' + bcGenRowCount;
+  var tr = document.createElement('tr');
+  tr.id = rid;
+  tr.dataset.rowtype = 'bcgeneral';
+  var q = parseFloat(qty)||0, r = parseFloat(rate)||0;
+  var cg = parseFloat(cgstPct)||0, sg = parseFloat(sgstPct)||0;
+  var base = q * r;
+  var tot = base + base * (cg + sg) / 100;
+  tr.innerHTML =
+    '<td><input type="text" placeholder="Description" value="' + esc(name||'') + '" oninput="calcBcGenRowTotal(this);calcTotal()" style="min-width:120px"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + (qty||'') + '" placeholder="1" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="0" oninput="calcBcGenRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:80px;text-align:right;background:var(--bg);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td style="text-align:center"><button class="del-row" onclick="removeBcGenRow(\'' + rid + '\')">✕</button></td>';
+  document.getElementById('bc-items-body').appendChild(tr);
+  calcTotal();
+}
+function calcBcGenRowTotal(input) {
+  var tr = input.closest('tr');
+  var inputs = tr.querySelectorAll('input');
+  var qty = parseFloat(inputs[1]?inputs[1].value:0)||0;
+  var rate = parseFloat(inputs[2]?inputs[2].value:0)||0;
+  var cgst = parseFloat(inputs[3]?inputs[3].value:0)||0;
+  var sgst = parseFloat(inputs[4]?inputs[4].value:0)||0;
+  var base = qty * rate;
+  if (inputs[5]) inputs[5].value = (base + base*(cgst+sgst)/100).toFixed(2);
+}
+function removeBcGenRow(rid) { var tr=document.getElementById(rid); if(tr)tr.remove(); calcTotal(); }
+
+// ── Add-ons toggle ──
+function addonToggle() {
+  var cb = document.getElementById('addon-toggle');
+  var track = document.getElementById('addon-track');
+  var thumb = document.getElementById('addon-thumb');
+  var lbl   = document.getElementById('addon-toggle-lbl');
+  var sec   = document.getElementById('addon-rows-section');
+  var on = cb.checked;
+  track.style.background = on ? 'var(--br)' : '#ccc';
+  thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  lbl.textContent = on ? 'On' : 'Off';
+  sec.style.display = on ? '' : 'none';
+  if (on && document.querySelectorAll('#addon-items-body tr').length === 0) addAddonRow();
+  calcTotal();
+}
+var addonRowCount = 0;
+function addAddonRow(name, qty, rate, cgstPct, sgstPct) {
+  addonRowCount++;
+  var rid = 'addon-row-' + addonRowCount;
+  var tr = document.createElement('tr');
+  tr.id = rid;
+  var q = parseFloat(qty)||0, r = parseFloat(rate)||0;
+  var cg = parseFloat(cgstPct)||0, sg = parseFloat(sgstPct)||0;
+  var base = q * r;
+  var tot = base + base * (cg + sg) / 100;
+  tr.innerHTML =
+    '<td><input type="text" placeholder="Item / description" value="' + esc(name||'') + '" oninput="calcAddonRowTotal(this);calcTotal()" style="min-width:120px"/></td>' +
+    '<td style="text-align:center"><input type="text" value="' + (qty||'') + '" placeholder="1" oninput="calcAddonRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="text" value="' + (rate||'') + '" placeholder="0" oninput="calcAddonRowTotal(this);calcTotal()" style="width:75px;text-align:right"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (cgstPct||'') + '" placeholder="0" oninput="calcAddonRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:center"><input type="number" min="0" max="100" step="0.1" value="' + (sgstPct||'') + '" placeholder="0" oninput="calcAddonRowTotal(this);calcTotal()" style="width:50px;text-align:center"/></td>' +
+    '<td style="text-align:right"><input type="number" readonly value="' + tot.toFixed(2) + '" style="width:80px;text-align:right;background:var(--bg);font-weight:500" id="' + rid + '-tot"/></td>' +
+    '<td style="text-align:center"><button class="del-row" onclick="removeAddonRow(\'' + rid + '\')">✕</button></td>';
+  document.getElementById('addon-items-body').appendChild(tr);
+  calcTotal();
+}
+function calcAddonRowTotal(input) {
+  var tr = input.closest('tr');
+  var inputs = tr.querySelectorAll('input');
+  var qty = parseFloat(inputs[1]?inputs[1].value:0)||0;
+  var rate = parseFloat(inputs[2]?inputs[2].value:0)||0;
+  var cgst = parseFloat(inputs[3]?inputs[3].value:0)||0;
+  var sgst = parseFloat(inputs[4]?inputs[4].value:0)||0;
+  var base = qty * rate;
+  if (inputs[5]) inputs[5].value = (base + base*(cgst+sgst)/100).toFixed(2);
+}
+function removeAddonRow(rid) { var tr=document.getElementById(rid); if(tr)tr.remove(); calcTotal(); }
 function accToggle() {
   var cb = document.getElementById('acc-toggle');
   var track = document.getElementById('acc-track');
@@ -2448,7 +2571,7 @@ function removeAccRow(rid) {
 }
 
 function resetToggles() {
-  ['bc','acc'].forEach(function(p){
+  ['bc','acc','addon'].forEach(function(p){
     var cb = document.getElementById(p+'-toggle');
     var track = document.getElementById(p+'-track');
     var thumb = document.getElementById(p+'-thumb');
@@ -2462,9 +2585,10 @@ function resetToggles() {
   });
   document.getElementById('bc-items-body').innerHTML = '';
   document.getElementById('acc-items-body').innerHTML = '';
+  document.getElementById('addon-items-body').innerHTML = '';
   BC_TALENTS = []; BC_TALENTS_LOADING = false;
-  bcRowCount = 0;
-  accRowCount = 0;
+  bcRowCount = 0; bcGenRowCount = 0;
+  accRowCount = 0; addonRowCount = 0;
 }
 
 function calcRowTotal(input) {
@@ -2499,17 +2623,28 @@ function getItems() {
 
   // ── Banyan Circle rows ── name = "Banyan Circle", talent name = sub_item
   document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
-    var sel = tr.querySelector('select.bc-talent-sel');
-    var inputs = tr.querySelectorAll('input.bc-num');
-    // inputs: 0=qty(readonly), 1=rate, 2=cgst, 3=sgst, 4=total
-    var talentName = sel && sel.value ? sel.options[sel.selectedIndex].text : '';
-    var qty      = parseFloat(inputs[0] ? inputs[0].value : 0) || 0;
-    var rate     = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
-    var cgst_pct = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
-    var sgst_pct = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
-    var tax_pct  = cgst_pct + sgst_pct;
-    var total    = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
-    if (talentName) items.push({name:'Banyan Circle', sub_item:talentName, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'banyan'});
+    if (tr.dataset.rowtype === 'bcgeneral') {
+      // General row under BC
+      var inputs = tr.querySelectorAll('input');
+      var name    = inputs[0] ? inputs[0].value.trim() : '';
+      var qty     = parseFloat(inputs[1]?inputs[1].value:0)||0;
+      var rate    = parseFloat(inputs[2]?inputs[2].value:0)||0;
+      var cgst_pct = parseFloat(inputs[3]?inputs[3].value:0)||0;
+      var sgst_pct = parseFloat(inputs[4]?inputs[4].value:0)||0;
+      var total   = parseFloat(inputs[5]?inputs[5].value:0)||0;
+      if (name) items.push({name:'Banyan Circle', sub_item:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:cgst_pct+sgst_pct, total:total, type:'banyan_general'});
+    } else {
+      var sel = tr.querySelector('select.bc-talent-sel');
+      var nums = tr.querySelectorAll('input.bc-num');
+      var talentName = sel && sel.value ? sel.options[sel.selectedIndex].text : '';
+      var qty      = parseFloat(nums[0] ? nums[0].value : 0) || 0;
+      var rate     = parseFloat(nums[1] ? nums[1].value : 0) || 0;
+      var cgst_pct = parseFloat(nums[2] ? nums[2].value : 0) || 0;
+      var sgst_pct = parseFloat(nums[3] ? nums[3].value : 0) || 0;
+      var tax_pct  = cgst_pct + sgst_pct;
+      var total    = parseFloat(nums[4] ? nums[4].value : 0) || 0;
+      if (talentName) items.push({name:'Banyan Circle', sub_item:talentName, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'banyan'});
+    }
   });
 
   // ── Accommodation rows ──
@@ -2523,6 +2658,18 @@ function getItems() {
     var tax_pct = cgst_pct + sgst_pct;
     var total   = parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
     if (name) items.push({name:'Rent', sub_item:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'accommodation'});
+  });
+
+  // ── Add-ons rows ──
+  document.querySelectorAll('#addon-items-body tr').forEach(function(tr){
+    var inputs = tr.querySelectorAll('input');
+    var name    = inputs[0] ? inputs[0].value.trim() : '';
+    var qty     = parseFloat(inputs[1]?inputs[1].value:0)||0;
+    var rate    = parseFloat(inputs[2]?inputs[2].value:0)||0;
+    var cgst_pct = parseFloat(inputs[3]?inputs[3].value:0)||0;
+    var sgst_pct = parseFloat(inputs[4]?inputs[4].value:0)||0;
+    var total   = parseFloat(inputs[5]?inputs[5].value:0)||0;
+    if (name) items.push({name:'Add-on', sub_item:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:cgst_pct+sgst_pct, total:total, type:'addon'});
   });
 
   // ── Free-type rows ──
@@ -2785,6 +2932,31 @@ function editBill(bill) {
         addAccRow(i.name, i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
+    var hasAddon = (bill.items||[]).some(function(i){ return i.type === 'addon'; });
+    if (hasAddon) {
+      var addonCb = document.getElementById('addon-toggle');
+      var addonSec = document.getElementById('addon-rows-section');
+      if (addonCb) addonCb.checked = true;
+      if (document.getElementById('addon-track')) document.getElementById('addon-track').style.background = 'var(--br)';
+      if (document.getElementById('addon-thumb')) document.getElementById('addon-thumb').style.transform = 'translateX(18px)';
+      if (document.getElementById('addon-toggle-lbl')) document.getElementById('addon-toggle-lbl').textContent = 'On';
+      if (addonSec) addonSec.style.display = '';
+      (bill.items||[]).filter(function(i){ return i.type==='addon'; }).forEach(function(i){
+        addAddonRow(i.sub_item||i.name, i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+      });
+    }
+    // BC general rows (restore under BC section)
+    var hasBcGen = (bill.items||[]).some(function(i){ return i.type === 'banyan_general'; });
+    if (hasBcGen) {
+      bcLoadTalents().then(function() {
+        var bcCb = document.getElementById('bc-toggle');
+        var bcSec = document.getElementById('bc-rows-section');
+        if (bcCb && !bcCb.checked) { bcCb.checked = true; if(document.getElementById('bc-track'))document.getElementById('bc-track').style.background='var(--br)'; if(document.getElementById('bc-thumb'))document.getElementById('bc-thumb').style.transform='translateX(18px)'; if(document.getElementById('bc-toggle-lbl'))document.getElementById('bc-toggle-lbl').textContent='On'; if(bcSec)bcSec.style.display=''; }
+        (bill.items||[]).filter(function(i){ return i.type==='banyan_general'; }).forEach(function(i){
+          addBcGeneralRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+        });
+      });
+    }
     (bill.items||[]).filter(function(i){ return !i.type; }).forEach(function(i){
       addItemRow(i.name, i.qty, i.rate, i.date||'', i.cgst_pct||0, i.sgst_pct||0, i.sub_item||'');
     });
@@ -3016,30 +3188,38 @@ function downloadBillPdf(b) {
   var dt    = new Date(b.bill_date || b.created_at || Date.now());
   var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
 
-  // ── Item rows: Description | Date | Qty | Rate | CGST % | CGST ₹ | SGST % | SGST ₹ | Amount ──
-  var itemRows = items.map(function(i){
-    var iDate   = i.date ? new Date(i.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    var baseAmt = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
-    var cgstPct = parseFloat(i.cgst_pct) || 0;
-    var sgstPct = parseFloat(i.sgst_pct) || 0;
-    var cgstAmt = baseAmt * cgstPct / 100;
-    var sgstAmt = baseAmt * sgstPct / 100;
-    var total   = parseFloat(i.total) || (baseAmt + cgstAmt + sgstAmt);
-    var cgstCell = cgstPct > 0
-      ? cgstPct + '%<br/><span style="color:#555">₹' + cgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>'
-      : '<span style="color:#ccc">—</span>';
-    var sgstCell = sgstPct > 0
-      ? sgstPct + '%<br/><span style="color:#555">₹' + sgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>'
-      : '<span style="color:#ccc">—</span>';
-    return '<tr>' +
-      '<td>' + esc(i.name||'Item') + '</td>' +
-      '<td style="text-align:center">' + (i.qty||1) + '</td>' +
-      '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
-      '<td style="text-align:right;font-size:12px">' + cgstCell + '</td>' +
-      '<td style="text-align:right;font-size:12px">' + sgstCell + '</td>' +
-      '<td style="text-align:right;font-weight:600">₹' + total.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
-      '</tr>';
-  }).join('');
+  // ── Item rows grouped by type with section labels ──
+  var typeOrder = ['banyan','banyan_general','accommodation','addon',''];
+  var typeLabels = {banyan:'Banyan Circle — Talent', banyan_general:'Banyan Circle — General', accommodation:'Rent', addon:'Add-ons', '':'Other Charges'};
+  var grouped = {};
+  typeOrder.forEach(function(t){ grouped[t] = []; });
+  items.forEach(function(i){ var t = i.type||''; if(!(t in grouped)) grouped[t]=[]; grouped[t].push(i); });
+
+  var itemRows = '';
+  typeOrder.forEach(function(t){
+    var grp = grouped[t];
+    if (!grp || !grp.length) return;
+    itemRows += '<tr><td colspan="6" style="background:#f9f8f6;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:6px 10px;border-bottom:1px solid #eee">' + (typeLabels[t]||t) + '</td></tr>';
+    grp.forEach(function(i){
+      var baseAmt = (parseFloat(i.qty)||1) * (parseFloat(i.rate)||0);
+      var cgstPct = parseFloat(i.cgst_pct) || 0;
+      var sgstPct = parseFloat(i.sgst_pct) || 0;
+      var cgstAmt = baseAmt * cgstPct / 100;
+      var sgstAmt = baseAmt * sgstPct / 100;
+      var total   = parseFloat(i.total) || (baseAmt + cgstAmt + sgstAmt);
+      var cgstCell = cgstPct > 0 ? cgstPct + '%<br/><span style="color:#555">₹' + cgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>' : '<span style="color:#ccc">—</span>';
+      var sgstCell = sgstPct > 0 ? sgstPct + '%<br/><span style="color:#555">₹' + sgstAmt.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</span>' : '<span style="color:#ccc">—</span>';
+      var desc = i.sub_item ? esc(i.sub_item) : esc(i.name||'Item');
+      itemRows += '<tr>' +
+        '<td>' + desc + '</td>' +
+        '<td style="text-align:center">' + (i.qty||1) + '</td>' +
+        '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+        '<td style="text-align:right;font-size:12px">' + cgstCell + '</td>' +
+        '<td style="text-align:right;font-size:12px">' + sgstCell + '</td>' +
+        '<td style="text-align:right">₹' + total.toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
+        '</tr>';
+    });
+  });
 
   var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
   // Only show status pill when paid
@@ -3047,21 +3227,23 @@ function downloadBillPdf(b) {
   var statusColor = '#27500A';
   var statusBg    = '#EAF3DE';
 
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>' +
+    '<style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
-    'body{font-family:Georgia,serif;color:#2C2C2A;padding:40px 48px;font-size:13px}' +
+    'body{font-family:\'DM Sans\',Arial,sans-serif;color:#2C2C2A;padding:40px 48px;font-size:13px;font-weight:400}' +
     '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
     '.hdr-spacer{min-width:140px}' +
     '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7;min-width:140px}' +
     '.guest-card{background:#F9F8F6;border-radius:8px;padding:14px 18px;margin-bottom:20px;border:1px solid #e5e5e5}' +
-    '.guest-name{font-size:16px;font-weight:700;margin-bottom:4px}' +
+    '.guest-name{font-size:16px;font-weight:400;margin-bottom:4px}' +
     '.guest-detail{font-size:12px;color:#666;line-height:1.6}' +
     'hr{border:none;border-top:1.5px solid #e5e5e5;margin:18px 0}' +
     'table{width:100%;border-collapse:collapse}' +
-    'th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
+    'th{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#888;padding:7px 10px;border-bottom:2px solid #e5e5e5;background:#f9f8f6;text-align:left}' +
     'td{padding:9px 10px;border-bottom:1px solid #f0f0ee;font-size:13px;vertical-align:middle}' +
-    '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:700;font-size:15px;padding-top:12px}' +
-    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:' + statusBg + ';color:' + statusColor + ';margin-top:14px}' +
+    '.total-row td{border-top:2px solid #2C2C2A;border-bottom:none;font-weight:500;font-size:14px;padding-top:12px}' +
+    '.status-pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:400;background:' + statusBg + ';color:' + statusColor + ';margin-top:14px}' +
     '.remarks{font-size:12px;color:#888;margin-top:8px}' +
     '.footer{margin-top:28px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:14px}' +
     '@media print{body{padding:18px 24px}}' +
@@ -3069,7 +3251,7 @@ function downloadBillPdf(b) {
     '<div class="hdr">' +
       '<div class="hdr-spacer"></div>' +
       '<div style="flex:1;text-align:center">' + (logoSrc ? '<img src="' + logoSrc + '" alt="" style="max-height:72px;max-width:180px;object-fit:contain"/>' : '') + '</div>' +
-      '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.bill_date||b.created_at) + '</div></div>' +
+      '<div class="prop"><div>Ref: ' + ref + '</div><div>' + (b.property_name||'') + '</div><div>' + fmtDate(b.bill_date||b.created_at) + '</div></div>' +
     '</div>' +
     '<div class="guest-card">' +
       '<div class="guest-name">' + esc(b.guest_name||'Guest') + '</div>' +
@@ -3098,7 +3280,7 @@ function downloadBillPdf(b) {
     '<tr class="total-row"><td colspan="6">Grand Total</td><td style="text-align:right">₹' + Number(b.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
     '</tbody></table>' +
     '<hr/>' +
-    '<div style="font-size:11px;color:#888;margin-top:4px">GST No: <strong style="color:#2C2C2A">ABSPW9671N1ZG</strong></div>' +
+    '<div style="font-size:11px;color:#888;margin-top:4px">GST No: <span style="color:#2C2C2A">ABSPW9671N1ZG</span></div>' +
     (showPaidPill ? '<div class="status-pill">Paid' + methodStr + '</div>' : '') +
     (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
     '<div class="footer">Thank you for staying with Properties By Heritance · For queries contact the front desk</div>' +
