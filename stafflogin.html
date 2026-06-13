@@ -155,7 +155,7 @@ async function loadStaff() {
     if (data && data.length) {
       const filtered = data
         .filter(s => s.designation !== 'Owner' && s.designation !== 'Manager')
-        .map(s => ({ id: s.id, name: s.name, pin: s.pin || '2222', role: 'staff', staffRole: s.role || 'operations' }));
+        .map(s => ({ id: s.id, name: s.name, pin: s.pin || '2222', role: 'staff', staffRole: s.role || 'operations', phone: s.phone, login_email: s.login_email }));
       if (filtered.length) staffList = filtered;
     }
   } catch(e) {}
