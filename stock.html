@@ -717,7 +717,7 @@ async function loadProps(){
 
     // Auto-select warehouse first
     wBtn.click();
-  } catch(e){ console.error('loadProps',e); }
+  } catch(e){ console.error('loadProps error:', e); document.getElementById('d-stock-title').textContent='Error loading properties: '+e.message; }
 }
 
 // ── Load Items catalogue ──
@@ -725,7 +725,7 @@ async function loadItems(){
   try{
     ALL_ITEMS = await api('/rest/v1/stock-item-list?select=*&order=name') || [];
     populateItemSelects();
-  } catch(e){ console.error('loadItems',e); }
+  } catch(e){ console.error('loadItems error:', e); document.getElementById('d-empty-state').textContent='Failed to load items: '+e.message; }
 }
 
 function populateItemSelects(){
@@ -780,7 +780,7 @@ async function loadWarehouseView(){
       </tr>`;
     }).join('');
     empty.style.display='none'; tbl.style.display='table';
-  } catch(e){ empty.textContent='Error: '+e.message; console.error(e); }
+  } catch(e){ empty.textContent='Stock error: '+e.message+' (check console)'; console.error('loadWarehouseView error:', e); }
 }
 
 // ════════════════════════════════
