@@ -521,7 +521,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <!-- ── Accommodation toggle ── -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
     <div>
-      <div style="font-size:13px;font-weight:500;color:var(--text)">Accommodation</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text)">Rent</div>
       <div style="font-size:11px;color:var(--muted);margin-top:2px">Room, meals, extras</div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -549,7 +549,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </table>
     <button class="btn-sec" onclick="addAccRow()" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-top:8px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add accommodation row
+      Add rent row
     </button>
   </div>
 
@@ -2522,7 +2522,7 @@ function getItems() {
     var sgst_pct = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
     var tax_pct = cgst_pct + sgst_pct;
     var total   = parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
-    if (name) items.push({name:'Accommodation', sub_item:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'accommodation'});
+    if (name) items.push({name:'Rent', sub_item:name, qty:qty, rate:rate, cgst_pct:cgst_pct, sgst_pct:sgst_pct, tax_pct:tax_pct, total:total, type:'accommodation'});
   });
 
   // ── Free-type rows ──
@@ -3033,7 +3033,6 @@ function downloadBillPdf(b) {
       : '<span style="color:#ccc">—</span>';
     return '<tr>' +
       '<td>' + esc(i.name||'Item') + '</td>' +
-      '<td style="color:#888;font-size:12px;white-space:nowrap">' + iDate + '</td>' +
       '<td style="text-align:center">' + (i.qty||1) + '</td>' +
       '<td style="text-align:right">₹' + Number(i.rate||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td>' +
       '<td style="text-align:right;font-size:12px">' + cgstCell + '</td>' +
@@ -3080,7 +3079,6 @@ function downloadBillPdf(b) {
     '<hr/>' +
     '<table><thead><tr>' +
       '<th>Description</th>' +
-      '<th>Date</th>' +
       '<th style="text-align:center">Qty</th>' +
       '<th style="text-align:right">Rate (₹)</th>' +
       '<th style="text-align:right">CGST</th>' +
