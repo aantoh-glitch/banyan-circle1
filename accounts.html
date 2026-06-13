@@ -2791,6 +2791,8 @@ async function saveBill() {
     bill_date        : billDate,
     bc_amount        : bcAmount || null,
     acc_amount       : accAmount || null,
+    cgst_amount      : parseFloat(items.reduce(function(s,i){ return s + (i.rate * i.qty * (i.cgst_pct||0) / 100); }, 0).toFixed(2)),
+    sgst_amount      : parseFloat(items.reduce(function(s,i){ return s + (i.rate * i.qty * (i.sgst_pct||0) / 100); }, 0).toFixed(2)),
     updated_at       : new Date().toISOString()
   };
 
