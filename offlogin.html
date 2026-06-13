@@ -306,7 +306,7 @@ window.pdel = () => { pin = pin.slice(0, -1); dots(); };
 async function checkPin() {
   const err = document.getElementById('pin-err');
   try {
-    // Step 1: Sign into Supabase Auth first (no anon key needed)
+    // Step 1: Auth first — no anon key needed
     const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
       email: 'office@banyan.com',
       password: pin
@@ -317,7 +317,7 @@ async function checkPin() {
       return;
     }
 
-    // Step 2: Fetch office user using the authenticated JWT
+    // Step 2: Fetch office user with the real JWT
     const token = authData.session.access_token;
     const res = await fetch(
       SB + '/rest/v1/office_users?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin',
@@ -325,7 +325,6 @@ async function checkPin() {
     ).then(r => r.json());
 
     if (!Array.isArray(res) || !res.length) {
-      // Auth passed but no matching office user record — sign out and reject
       await supabase.auth.signOut();
       dots('err'); err.textContent = 'Wrong PIN';
       setTimeout(() => { pin = ''; dots(); err.textContent = ''; }, 1200);

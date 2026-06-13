@@ -1043,18 +1043,22 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
-// Supabase JS client — used to get session JWT for RLS
+// Read JWT directly from localStorage — avoids creating a second GoTrueClient
+// (the offlogin page's SDK instance already wrote the session there)
+function getAuthToken() {
+  try {
+    const raw = localStorage.getItem('sb-wwdnuajhqfajvsexszpy-auth-token');
+    if (raw) { const p = JSON.parse(raw); if (p?.access_token) return p.access_token; }
+  } catch(e) {}
+  return KEY; // anon fallback
+}
+// Keep getSupabase for session validity check below
 let _supabase = null;
 async function getSupabase() {
   if (_supabase) return _supabase;
   const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
   _supabase = createClient(SB, KEY);
   return _supabase;
-}
-async function getAuthToken() {
-  const sb = await getSupabase();
-  const { data } = await sb.auth.getSession();
-  return data?.session?.access_token || KEY;
 }
 
 // Creates/updates a Supabase Auth account via Edge Function
@@ -1088,7 +1092,7 @@ setTimeout(async () => {
 }, 500);
 
 async function api(path, method, body) {
-  const token = await getAuthToken();
+  const token = getAuthToken();
   const h={apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204) return null;
@@ -1167,7 +1171,7 @@ function goPage(id,btn){
   if(id==='loans'){var lnf=document.getElementById('loans-frame');if(!lnf.src||lnf.src==='about:blank'||lnf.src.indexOf('loans.html')===-1)lnf.src='loans.html';}
   if(id==='lostfound'){document.getElementById('lostfound-frame').src='lost-and-found.html';}
   if(id==='leave'){ lcInit(); }
-  if(id==='accounts'){ acLoadExp(); }
+  if(id==='accounts'){ /* accounts.html iframe manages itself */ }
 }
 function openModal(id){ document.getElementById(id).classList.add('on'); }
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
@@ -2833,9 +2837,10 @@ const AC_KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 const AC_BUCKET = 'utility-uploads';
 
 async function acApi(path, method, body) {
+  const token = getAuthToken(); // use session JWT, not anon key
   const r = await fetch(AC_SB + path, {
     method: method||'GET',
-    headers: { apikey: AC_KEY, Authorization: 'Bearer '+AC_KEY, 'Content-Type':'application/json', Prefer:'return=representation' },
+    headers: { apikey: AC_KEY, Authorization: 'Bearer '+token, 'Content-Type':'application/json', Prefer:'return=representation' },
     body: body ? JSON.stringify(body) : undefined
   });
   if(r.status===204) return null;
