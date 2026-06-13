@@ -2816,13 +2816,18 @@ async function saveBill() {
   // Compute per-section amounts
   var bcAmount = 0;
   document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
-    var nums = tr.querySelectorAll('input.bc-num');
-    bcAmount += parseFloat(nums[4] ? nums[4].value : 0) || 0;
+    var inputs = tr.querySelectorAll('input');
+    bcAmount += parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
   });
   var accAmount = 0;
   document.querySelectorAll('#acc-items-body tr').forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
     accAmount += parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
+  });
+  var addonAmount = 0;
+  document.querySelectorAll('#addon-items-body tr').forEach(function(tr){
+    var inputs = tr.querySelectorAll('input');
+    addonAmount += parseFloat(inputs[5] ? inputs[5].value : 0) || 0;
   });
 
   var body = {
@@ -2842,6 +2847,7 @@ async function saveBill() {
     bill_date        : billDate,
     bc_amount        : bcAmount || null,
     acc_amount       : accAmount || null,
+    addon_amount     : addonAmount || null,
     cgst_amount      : parseFloat(items.reduce(function(s,i){ return s + (i.rate * i.qty * (i.cgst_pct||0) / 100); }, 0).toFixed(2)),
     sgst_amount      : parseFloat(items.reduce(function(s,i){ return s + (i.rate * i.qty * (i.sgst_pct||0) / 100); }, 0).toFixed(2)),
     updated_at       : new Date().toISOString()
@@ -3189,6 +3195,7 @@ function renderBills(data) {
     '<th style="text-align:right">SGST</th>' +
     '<th style="text-align:right">BC Amt</th>' +
     '<th style="text-align:right">Acc Amt</th>' +
+    '<th style="text-align:right">Add-ons Amt</th>' +
     '<th style="text-align:right">Total</th>' +
     '<th>Description</th>' +
     '<th>Status</th><th></th>' +
@@ -3223,6 +3230,7 @@ function renderBills(data) {
           '<td style="text-align:right;font-size:13px;color:var(--muted)">' + sgstStr + '</td>' +
           '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.bc_amount ? fmtF(b.bc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.acc_amount ? fmtF(b.acc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
+          '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.addon_amount ? fmtF(b.addon_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:13px">' + fmtF(b.amount) + '</td>' +
           '<td style="font-size:12px;color:var(--muted);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (b.remarks ? esc(b.remarks) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
