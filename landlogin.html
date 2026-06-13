@@ -116,7 +116,7 @@ let landlords = [];
 // Pre-load landlord list silently
 (async () => {
   try {
-    const res = await fetch(SB + '/rest/v1/landlords?select=*', {
+    const res = await fetch(SB + '/rest/v1/landlords?select=id,property_name,pin,mobile,login_email', {
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
     });
     const data = await res.json();
@@ -141,7 +141,7 @@ function dots(state) {
 async function checkPin() {
   if (!landlords.length) {
     try {
-      const res = await fetch(SB + '/rest/v1/landlords?select=*', {
+      const res = await fetch(SB + '/rest/v1/landlords?select=id,property_name,pin,mobile,login_email', {
         headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
       });
       const data = await res.json();
@@ -158,7 +158,7 @@ async function checkPin() {
   }
 
   // Sign into Supabase Auth — block if account not set up
-  const email = (match.mobile || match.id) + '.landlord@banyan.com';
+  const email = match.login_email || (match.mobile + '.landlord@banyan.com');
   const { error } = await supabase.auth.signInWithPassword({ email, password: pin });
   if (error) {
     dots('err');

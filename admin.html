@@ -810,6 +810,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"></div>
   </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="ml-notes"></textarea></div>
+  <div class="fg"><label class="fl">Login Email <span style="color:var(--r)">*</span></label><input class="fc" id="ml-login-email" placeholder="e.g. 9876543210.landlord@banyan.com" type="email"/><div style="font-size:11px;color:var(--muted);margin-top:3px">Format: mobile.landlord@banyan.com</div></div>
   <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-landlord')">Cancel</button><button class="btn-p" onclick="saveLandlord()">Save</button></div>
 </div></div>
 
@@ -1279,13 +1280,13 @@ async function loadLandlords(){
 }
 function fillPropSelect(id,current){ document.getElementById(id).innerHTML=PROPS.map(p=>`<option value="${p.name}"${p.name===current?' selected':''}>${p.name}</option>`).join(''); }
 function openLandlordModal(){ document.getElementById('ml-id').value=''; document.getElementById('ml-ttl').textContent='Add landlord'; ['ml-pin','ml-name','ml-prop','ml-email','ml-mobile','ml-notes','ml-pan'].forEach(i=>document.getElementById(i).value=''); openModal('modal-landlord'); setTimeout(()=>document.getElementById('ml-pin').focus(),100); }
-function editLandlord(l){ document.getElementById('ml-id').value=l.id; document.getElementById('ml-ttl').textContent='Edit landlord'; document.getElementById('ml-name').value=l.name||''; document.getElementById('ml-pin').value=l.pin||''; document.getElementById('ml-prop').value=l.property_name||''; document.getElementById('ml-email').value=l.email||''; document.getElementById('ml-mobile').value=l.mobile||''; document.getElementById('ml-notes').value=l.notes||''; document.getElementById('ml-pan').value=l.pan||''; openModal('modal-landlord'); }
-async function saveLandlord(){ const id=document.getElementById('ml-id').value; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null,pan:document.getElementById('ml-pan').value.trim().toUpperCase()||null}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(id){
+function editLandlord(l){ document.getElementById('ml-id').value=l.id; document.getElementById('ml-ttl').textContent='Edit landlord'; document.getElementById('ml-name').value=l.name||''; document.getElementById('ml-pin').value=l.pin||''; document.getElementById('ml-prop').value=l.property_name||''; document.getElementById('ml-email').value=l.email||''; document.getElementById('ml-mobile').value=l.mobile||''; document.getElementById('ml-notes').value=l.notes||''; document.getElementById('ml-pan').value=l.pan||''; document.getElementById('ml-login-email').value=l.login_email||''; openModal('modal-landlord'); }
+async function saveLandlord(){ const id=document.getElementById('ml-id').value; const login_email=document.getElementById('ml-login-email').value.trim()||null; const body={name:document.getElementById('ml-name').value.trim(),pin:document.getElementById('ml-pin').value.trim(),property_name:document.getElementById('ml-prop').value,email:document.getElementById('ml-email').value.trim()||null,mobile:document.getElementById('ml-mobile').value.trim()||null,notes:document.getElementById('ml-notes').value.trim()||null,pan:document.getElementById('ml-pan').value.trim().toUpperCase()||null,login_email}; if(!body.property_name){alert('Please enter a property name');return;} if(!body.name||!/^\d{4}$/.test(body.pin)){alert('Need landlord name and a 4-digit PIN');return;} if(!body.mobile){alert('Please enter a mobile number');return;} if(!login_email){alert('Login email is required');return;} if(id){
     await api('/rest/v1/landlords?id=eq.'+id,'PATCH',body);
-    await createAuthUser(body.mobile+'.landlord@banyan.com', body.pin, 'landlord', {property_name: body.property_name});
+    await createAuthUser(login_email, body.pin, 'landlord', {property_name: body.property_name});
   } else {
     await api('/rest/v1/landlords','POST',body);
-    await createAuthUser(body.mobile+'.landlord@banyan.com', body.pin, 'landlord', {property_name: body.property_name});
+    await createAuthUser(login_email, body.pin, 'landlord', {property_name: body.property_name});
   }
   // Ensure a matching row exists in properties table so the portal icon appears
   if(!id && body.property_name){
