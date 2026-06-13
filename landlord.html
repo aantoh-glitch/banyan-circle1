@@ -560,7 +560,20 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
+let _supabase = null;
+async function getSupabase() {
+  if (_supabase) return _supabase;
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+  _supabase = createClient(SB, KEY);
+  return _supabase;
+}
+async function getAuthToken() {
+  const sb = await getSupabase();
+  const { data } = await sb.auth.getSession();
+  return data?.session?.access_token || KEY;
+}
+
 
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 const IS_ADMIN_VIEW = new URLSearchParams(location.search).get('viewer') === 'admin';
@@ -603,7 +616,7 @@ if (document.getElementById('cred-phone2')) document.getElementById('cred-phone2
 
 async function api(path, method, body) {
   const isDel = (method||'GET') === 'DELETE';
-  const h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json'};
+  const h = {apikey:KEY, Authorization:'Bearer '+(await getAuthToken()), 'Content-Type':'application/json', Accept:'application/json'};
   if (!isDel) h['Prefer'] = 'return=representation';
   const r = await fetch(SB+path, {method:method||'GET', headers:h, body:body?JSON.stringify(body):undefined});
   if (!r.ok) { const err = await r.text(); console.error('API error', r.status, err); return null; }
@@ -742,7 +755,7 @@ async function saveAssetAdmin() {
     const fname = (PROP||'prop').replace(/\s+/g,'_')+'_'+Date.now()+'.jpg';
     try {
       const up = await fetch(SB+'/storage/v1/object/asset-photos/'+fname, {
-        method:'POST', headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':_assetPhotoFile.type||'image/jpeg','x-upsert':'true'}, body:_assetPhotoFile
+        method:'POST', headers:{apikey:KEY,Authorization:'Bearer '+(await getAuthToken()),'Content-Type':_assetPhotoFile.type||'image/jpeg','x-upsert':'true'}, body:_assetPhotoFile
       });
       if (up.ok) photoUrl = SB+'/storage/v1/object/public/asset-photos/'+fname;
     } catch(e) {}
@@ -1152,7 +1165,7 @@ function closeMsgSheet() {
 </script>
 <script>
 (function(){
-  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
+  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX";
   var me=JSON.parse(localStorage.getItem("bc_me")||"null");
   if(!me)return;
   // Hide FAB when embedded in admin iframe
@@ -1160,7 +1173,7 @@ function closeMsgSheet() {
   // Fetch unread message count for badge
   var _n=encodeURIComponent(me.name||""),_r=encodeURIComponent(me.role||"");
   fetch(S+"/rest/v1/messages?recipient_name=eq."+_n+"&recipient_role=eq."+_r+"&read_by_recipient=eq.false&select=id",{
-    headers:{apikey:K,"Authorization":"Bearer "+K}
+    headers:{apikey:K,"Authorization":"Bearer "+(await getAuthToken())}
   }).then(function(r){return r.json();}).then(function(d){
     if(!Array.isArray(d)||!d.length)return;
     var b=document.getElementById("msg-fab-badge");
@@ -1176,7 +1189,7 @@ async function refreshUtilityLog() {
   ftEl.innerHTML = '<div class="empty">Loading…</div>';
   try {
     var r = await fetch(SB+'/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(PROP)+'&order=created_at.desc', {
-      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Accept':'application/json'}
+      headers:{apikey:KEY,'Authorization':'Bearer '+(await getAuthToken()),'Accept':'application/json'}
     });
     if (!r.ok) { ftEl.innerHTML = '<div class="empty">Could not load payments ('+r.status+')</div>'; return; }
     var data = await r.json();
@@ -1288,7 +1301,7 @@ async function saveEditUtility() {
     var path = encodeURIComponent(PROP).replace(/%20/g,'_') + '/' + Date.now() + '_' + file.name;
     var up = await fetch(SB+'/storage/v1/object/utility-uploads/'+path, {
       method:'POST',
-      headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+      headers:{apikey:KEY,'Authorization':'Bearer '+(await getAuthToken()),'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
       body:file
     });
     if (up.ok) {
@@ -1308,7 +1321,7 @@ async function saveEditUtility() {
 
   var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
     method:'PATCH',
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    headers:{apikey:KEY,'Authorization':'Bearer '+(await getAuthToken()),'Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify(body)
   });
   btn.disabled=false; btn.textContent='Save Changes';
@@ -1320,7 +1333,7 @@ async function deleteUtility(id) {
   if (!confirm('Delete this utility bill?')) return;
   var r = await fetch(SB+'/rest/v1/utility_payments?id=eq.'+id, {
     method:'DELETE',
-    headers:{apikey:KEY,'Authorization':'Bearer '+KEY}
+    headers:{apikey:KEY,'Authorization':'Bearer '+(await getAuthToken())}
   });
   if (r && r.ok) { toast('Deleted'); refreshUtilityLog(); }
   else { toast('Delete failed', true); }

@@ -358,10 +358,24 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4';
+const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
+
+let _supabase = null;
+async function getSupabase() {
+  if (_supabase) return _supabase;
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+  _supabase = createClient(SB, KEY);
+  return _supabase;
+}
+async function getAuthToken() {
+  const sb = await getSupabase();
+  const { data } = await sb.auth.getSession();
+  return data?.session?.access_token || KEY;
+}
 
 async function api(path, method, body){
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  const token = await getAuthToken();
+  const h={apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
   const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
   if(r.status===204) return null;
   const json=await r.json().catch(()=>null);
@@ -524,7 +538,7 @@ async function saveProfile(){
   if(!name){alert('Name is required');return;}
   const body={talent_id:talentId,name:name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,category:document.getElementById('p-cat').value||null,category_other:document.getElementById('p-cat').value==='Others'?document.getElementById('p-cat-other').value.trim()||null:null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
   const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving…';
-  async function uploadToStorage(bucket,file,folder){const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_');const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file});if(!res.ok){const e=await res.json().catch(function(){});throw new Error((e&&(e.message||e.error))||'Upload failed: '+res.status);}return SB+'/storage/v1/object/public/'+bucket+'/'+path;}
+  async function uploadToStorage(bucket,file,folder){const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_');const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+(await getAuthToken()),'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file});if(!res.ok){const e=await res.json().catch(function(){});throw new Error((e&&(e.message||e.error))||'Upload failed: '+res.status);}return SB+'/storage/v1/object/public/'+bucket+'/'+path;}
   try{
     const pf=document.getElementById('p-photo').files[0],bf=document.getElementById('p-bio').files[0];
     if(pf){if(pf.size>5*1024*1024){alert('Photo must be under 5 MB');btn.disabled=false;btn.textContent='Save profile';return;}btn.textContent='Uploading photo…';body.photo_url=await uploadToStorage('talent-photos',pf,talentId);body.photo_name=pf.name;}
@@ -625,7 +639,8 @@ async function saveDaySlot(){
   closeDayModal();await renderSchedule();toast('Saved ✓');
 }
 async function apiUpsert(payload){
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json'};
+  const token = await getAuthToken();
+  const h={apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json'};
   const exists=scheduleData[payload.date];
   let r;
   if(exists){
@@ -695,7 +710,7 @@ async function openDocsPanel(){
   try {
     const res = await fetch(SB+'/storage/v1/object/list/talent-doc', {
       method: 'POST',
-      headers: { apikey: KEY, Authorization: 'Bearer '+KEY, 'Content-Type': 'application/json' },
+      headers: { apikey: KEY, Authorization: 'Bearer '+(await getAuthToken()), 'Content-Type': 'application/json' },
       body: JSON.stringify({ prefix: talentId+'/', limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } })
     });
     const files = await res.json();
@@ -887,10 +902,10 @@ showPanel('profile');
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&panelOpen) closeMessagingPanel(); });
 
   /* Initial unread badge on page load */
-  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3ZG51YWpocWZhanZzZXhzenB5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzM3NjgsImV4cCI6MjA5NDUwOTc2OH0.gtPmoxyBgk6feOghdouE4BW1TQwLQjeJ2C0ZXSaZYU4";
+  var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX";
   var me=JSON.parse(localStorage.getItem("bc_me")||"null");
   if(me){
-    fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
+    fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+(await getAuthToken())}})
       .then(function(r){return r.json();})
       .then(function(d){
         if(d&&d.length){
