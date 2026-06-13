@@ -792,19 +792,19 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <!-- KPI row -->
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
     <div class="kpi" style="border-top:3px solid var(--text)">
-      <div class="kpi-label">Total Billed</div>
+      <div class="kpi-label">Profit</div>
       <div class="kpi-value" id="bc-kpi-total">&#8377; —</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Banyan Circle bills</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Received &amp; Receivable − Paid &amp; Pending</div>
     </div>
     <div class="kpi" style="border-top:3px solid var(--g)">
-      <div class="kpi-label">Received</div>
+      <div class="kpi-label">Total Received + Receivable</div>
       <div class="kpi-value" style="color:var(--g)" id="bc-kpi-in">&#8377; —</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Paid bills</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="bc-kpi-in-sub">All Banyan Circle bills</div>
     </div>
     <div class="kpi" style="border-top:3px solid var(--r)">
-      <div class="kpi-label">Talent Payouts</div>
+      <div class="kpi-label">Total Paid + Pending</div>
       <div class="kpi-value" style="color:var(--r)" id="bc-kpi-out">&#8377; —</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">From expenses (pre-tax)</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="bc-kpi-out-sub">Talent payouts (pre-tax)</div>
     </div>
   </div>
 
@@ -3414,12 +3414,36 @@ function bcPaneRender() {
   });
   var outgoing = filteredExp.reduce(function(s,e){ return s + (parseFloat(e.pretax_amount)||parseFloat(e.amount)||0); }, 0);
 
+  // KPI tile values:
+  // Tile 1 — Profit = total receivable − total paid out
+  var profit = total - outgoing;
+  // Tile 2 — Total Received + Receivable = sum of all BC bill amounts
+  // (total already computed above)
+  // Tile 3 — Total Paid + Pending = all talent payout expenses
+  // (outgoing already computed above)
+
   var kpiTotal = document.getElementById('bc-kpi-total');
   var kpiIn    = document.getElementById('bc-kpi-in');
   var kpiOut   = document.getElementById('bc-kpi-out');
-  if (kpiTotal) kpiTotal.textContent = fmt(total);
-  if (kpiIn)    kpiIn.textContent    = fmt(incoming);
-  if (kpiOut)   kpiOut.textContent   = fmt(outgoing);
+  var kpiInSub = document.getElementById('bc-kpi-in-sub');
+  var kpiOutSub = document.getElementById('bc-kpi-out-sub');
+
+  if (kpiTotal) {
+    kpiTotal.textContent = fmt(profit);
+    kpiTotal.style.color = profit >= 0 ? 'var(--g)' : 'var(--r)';
+  }
+  if (kpiIn) kpiIn.textContent = fmt(total);
+  if (kpiInSub) {
+    var receivedAmt = incoming;
+    var receivableAmt = total - incoming;
+    kpiInSub.textContent = 'Received: ' + fmt(receivedAmt) + '  ·  Receivable: ' + fmt(receivableAmt);
+  }
+  if (kpiOut) kpiOut.textContent = fmt(outgoing);
+  if (kpiOutSub) {
+    var paidOut = filteredExp.filter(function(e){ return e.status==='Paid'||e.status==='Paid to landlord'; }).reduce(function(s,e){ return s+(parseFloat(e.pretax_amount)||parseFloat(e.amount)||0); }, 0);
+    var pendingOut = outgoing - paidOut;
+    kpiOutSub.textContent = 'Paid: ' + fmt(paidOut) + '  ·  Pending: ' + fmt(pendingOut);
+  }
 
   // ── Incoming bills table ──
   var billRows = filtered.map(function(b) {
