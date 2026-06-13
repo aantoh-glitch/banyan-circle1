@@ -577,10 +577,28 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
    ═══════════════════════════════════════════════ */
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
-const HDR = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
+
+// Resolve best available auth token for RLS-protected tables.
+// Priority: Supabase SDK session → bc_me.sb_token → anon key (blocked by RLS)
+function getAuthToken(){
+  const PROJECT_REF = 'wwdnuajhqfajvsexszpy';
+  try {
+    const raw = localStorage.getItem('sb-'+PROJECT_REF+'-auth-token');
+    if(raw){ const p=JSON.parse(raw); if(p?.access_token) return p.access_token; }
+  } catch(e){}
+  try {
+    const me = JSON.parse(localStorage.getItem('bc_me')||'null');
+    if(me?.sb_token) return me.sb_token;
+  } catch(e){}
+  return KEY; // anon fallback
+}
+
+function getHdr(){
+  return {apikey:KEY, Authorization:'Bearer '+getAuthToken(), 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
+}
 
 async function api(path, method, body){
-  const r = await fetch(SB+path,{method:method||'GET',headers:HDR,body:body?JSON.stringify(body):undefined});
+  const r = await fetch(SB+path,{method:method||'GET',headers:getHdr(),body:body?JSON.stringify(body):undefined});
   if(!r.ok && r.status!==204){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.status);}
   if(r.status===204) return null;
   return r.json();
@@ -1341,7 +1359,13 @@ async function loadStockLog(){
     const rows = await api('/rest/v1/stock-log?select=*&order=date.desc,created_at.desc&limit=500') || [];
     LOG_CACHE = rows;
     renderLog(rows);
-  } catch(e){ container.innerHTML='<div class="empty">Error: '+e.message+'</div>'; }
+  } catch(e){
+    const isAuth = e.message.includes('401') || e.message.includes('403') || e.message.toLowerCase().includes('jwt') || e.message.toLowerCase().includes('permission');
+    const msg = isAuth
+      ? 'Access denied — not signed in to Supabase. Please sign in and reload.'
+      : 'Error loading log: '+e.message;
+    container.innerHTML='<div class="empty">'+msg+'</div>';
+  }
 }
 
 function renderLog(rows){
