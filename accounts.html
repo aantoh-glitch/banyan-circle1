@@ -388,6 +388,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt" data-val="Payout" onclick="acFilterCat(this)">Payout</button>
         <button class="pill-opt" data-val="Utility" onclick="acFilterCat(this)">Utility</button>
         <button class="pill-opt" data-val="Others" onclick="acFilterCat(this)">Others</button>
+        <button class="pill-opt" data-val="Banyan Circle" onclick="acFilterCat(this)">Banyan Circle</button>
       </div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px">
@@ -804,7 +805,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="kpi" style="border-top:3px solid var(--r)">
       <div class="kpi-label">Total Paid + Pending</div>
       <div class="kpi-value" style="color:var(--r)" id="bc-kpi-out">&#8377; —</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="bc-kpi-out-sub">Talent payouts (pre-tax)</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="bc-kpi-out-sub">Talent payouts + BC expenses</div>
     </div>
   </div>
 
@@ -846,6 +847,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt" data-val="Payout" onclick="acPickCat(this)">Payout</button>
         <button class="pill-opt" data-val="Utility" onclick="acPickCat(this)">Utility</button>
         <button class="pill-opt" data-val="Others" onclick="acPickCat(this)">Others</button>
+        <button class="pill-opt" data-val="Banyan Circle" onclick="acPickCat(this)">Banyan Circle</button>
       </div>
       <input type="hidden" id="ac-exp-cat"/>
     </div>
@@ -967,6 +969,27 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <select class="fc" id="ac-exp-others-property">
         <option value="">— select property —</option>
       </select>
+    </div>
+
+    <!-- Banyan Circle items list — shown only when Banyan Circle is selected -->
+    <div class="fg" id="ac-bc-cat-fg" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <span class="fl" style="margin-bottom:0">Select Item <span class="req">*</span></span>
+        <button onclick="acToggleBcManageItems()" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:all .15s" onmouseover="this.style.color='var(--br)';this.style.borderColor='var(--br)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'" id="ac-bc-manage-items-btn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Manage
+        </button>
+      </div>
+      <div class="pill-group" id="ac-bc-cat-pills" style="flex-wrap:wrap;gap:6px"></div>
+      <!-- Manage Items Panel -->
+      <div id="ac-bc-manage-items-panel" style="display:none;margin-top:10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Manage Preset Items</div>
+        <div id="ac-bc-manage-items-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="ac-bc-new-item-input" type="text" placeholder="New item name…" style="flex:1;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none" onkeydown="if(event.key==='Enter'){acAddBcCustomItem();}" onfocus="this.style.borderColor='var(--br)'" onblur="this.style.borderColor='var(--border)'"/>
+          <button onclick="acAddBcCustomItem()" style="padding:8px 14px;background:var(--br);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap">+ Add</button>
+        </div>
+      </div>
     </div>
 
     <div class="row-grid">
@@ -1363,23 +1386,29 @@ function acEditExp(e) {
   document.getElementById('ac-utility-fg').style.display='none';
   document.getElementById('ac-others-fg').style.display='none';
   document.getElementById('ac-others-property-fg').style.display='none';
+  document.getElementById('ac-bc-cat-fg').style.display='none';
   document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   if (e.category === 'Others') {
     acRenderItemPills();
     document.getElementById('ac-others-fg').style.display = '';
     document.getElementById('ac-others-property-fg').style.display = '';
     document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.item));
-    // Populate and restore property picker
+    // Populate and restore property picker — exclude Banyan Circle
     const otherPropSel = document.getElementById('ac-exp-others-property');
     if (otherPropSel) {
       acApi('/rest/v1/landlords?select=property_name&order=property_name').then(d => {
-        const props = (d||[]).map(r=>r.property_name);
-        if (!props.includes('Banyan Circle')) props.push('Banyan Circle');
+        const props = (d||[]).map(r=>r.property_name).filter(p=>p !== 'Banyan Circle');
         if (!props.includes('Properties By Heritance')) props.push('Properties By Heritance');
         otherPropSel.innerHTML = '<option value="">— select property —</option>' +
           props.map(r=>`<option value="${r}"${r===e.property_name?' selected':''}>${r}</option>`).join('');
       }).catch(()=>{});
     }
+  }
+  if (e.category === 'Banyan Circle') {
+    acRenderBcItemPills();
+    document.getElementById('ac-bc-cat-fg').style.display = '';
+    document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.item));
   }
   if (e.category === 'Utility') {
     document.getElementById('ac-utility-fg').style.display = '';
@@ -1522,24 +1551,30 @@ async function acPickCat(btn) {
 
   // Others section
   const isOthers = val === 'Others';
+  const isBanyanCat = val === 'Banyan Circle';
   document.getElementById('ac-others-fg').style.display = isOthers ? '' : 'none';
   document.getElementById('ac-others-property-fg').style.display = isOthers ? '' : 'none';
+  document.getElementById('ac-bc-cat-fg').style.display = isBanyanCat ? '' : 'none';
   if (!isOthers) {
     document.querySelectorAll('#ac-others-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   } else {
     acRenderItemPills();
-    // Populate property picker
+    // Populate property picker — exclude Banyan Circle (has its own category)
     const otherPropSel = document.getElementById('ac-exp-others-property');
-    if (otherPropSel && otherPropSel.options.length <= 1) {
+    if (otherPropSel) {
       otherPropSel.innerHTML = '<option value="">Loading…</option>';
       acApi('/rest/v1/landlords?select=property_name&order=property_name').then(d => {
-        const props = (d||[]).map(r=>r.property_name);
-        if (!props.includes('Banyan Circle')) props.push('Banyan Circle');
+        const props = (d||[]).map(r=>r.property_name).filter(p=>p !== 'Banyan Circle');
         if (!props.includes('Properties By Heritance')) props.push('Properties By Heritance');
         otherPropSel.innerHTML = '<option value="">— select property —</option>' +
           props.map(r=>`<option value="${r}">${r}</option>`).join('');
       }).catch(()=>{ otherPropSel.innerHTML = '<option value="">Could not load</option>'; });
     }
+  }
+  if (!isBanyanCat) {
+    document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  } else {
+    acRenderBcItemPills();
   }
 
   // Utility section — update Item label
@@ -1790,6 +1825,96 @@ function acOnUtilityPropertyChange() {
   // Property selection — item field stays blank for user to fill (bill month etc.)
 }
 
+/* ── Banyan Circle category preset items (mirrors Others) ── */
+var AC_BC_DEFAULT_ITEMS = ['Print & Stationary','Telephone','Assets','Travel','Miscellaneous','Documentation','Aact & Co','Software','Purchase','Airbnb','Renewal','Commission','Salary','Loan','Designing','Marketing','Vehicle'];
+
+function acGetBcItems() {
+  try {
+    var stored = localStorage.getItem('ac_bc_cat_items');
+    return stored ? JSON.parse(stored) : AC_BC_DEFAULT_ITEMS.slice();
+  } catch(e) { return AC_BC_DEFAULT_ITEMS.slice(); }
+}
+
+function acSaveBcItems(items) {
+  try { localStorage.setItem('ac_bc_cat_items', JSON.stringify(items)); } catch(e) {}
+}
+
+function acRenderBcItemPills() {
+  var items = acGetBcItems();
+  var container = document.getElementById('ac-bc-cat-pills');
+  if (!container) return;
+  container.innerHTML = '';
+  items.forEach(function(val) {
+    var btn = document.createElement('button');
+    btn.className = 'pill-opt';
+    btn.dataset.val = val;
+    btn.textContent = val;
+    btn.onclick = function(){ acPickBcCatItem(btn); };
+    container.appendChild(btn);
+  });
+}
+
+function acPickBcCatItem(btn) {
+  document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('ac-exp-item').value = btn.dataset.val;
+}
+
+function acRenderBcManageList() {
+  var items = acGetBcItems();
+  var list = document.getElementById('ac-bc-manage-items-list');
+  if (!list) return;
+  list.innerHTML = '';
+  items.forEach(function(val, idx) {
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:var(--white);border:1px solid var(--border);border-radius:999px;font-size:12px;font-weight:500;color:var(--text)';
+    var label = document.createElement('span');
+    label.textContent = val;
+    var del = document.createElement('button');
+    del.innerHTML = '&times;';
+    del.title = 'Remove';
+    del.style.cssText = 'background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:0 0 0 2px;font-family:inherit';
+    del.onmouseover = function(){ del.style.color='var(--r)'; };
+    del.onmouseout  = function(){ del.style.color='var(--muted)'; };
+    del.onclick = function() {
+      var cur = acGetBcItems();
+      cur.splice(idx, 1);
+      acSaveBcItems(cur);
+      acRenderBcItemPills();
+      acRenderBcManageList();
+    };
+    wrap.appendChild(label);
+    wrap.appendChild(del);
+    list.appendChild(wrap);
+  });
+}
+
+function acToggleBcManageItems() {
+  var panel = document.getElementById('ac-bc-manage-items-panel');
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (!open) { acRenderBcManageList(); document.getElementById('ac-bc-new-item-input').focus(); }
+}
+
+function acAddBcCustomItem() {
+  var input = document.getElementById('ac-bc-new-item-input');
+  var val = input.value.trim();
+  if (!val) return;
+  var items = acGetBcItems();
+  if (items.map(function(i){return i.toLowerCase();}).indexOf(val.toLowerCase()) > -1) {
+    input.style.borderColor = 'var(--r)';
+    setTimeout(function(){ input.style.borderColor = 'var(--border)'; }, 1200);
+    return;
+  }
+  items.push(val);
+  acSaveBcItems(items);
+  acRenderBcItemPills();
+  acRenderBcManageList();
+  input.value = '';
+  input.focus();
+}
+
 async function acSaveExp() {
   const id          = document.getElementById('ac-exp-id').value;
   const item        = document.getElementById('ac-exp-item').value.trim();
@@ -1835,6 +1960,7 @@ async function acSaveExp() {
   let propertyToSave = null;
   if (category === 'Utility') propertyToSave = utilityProp || null;
   else if (category === 'Others') propertyToSave = othersProperty || null;
+  else if (category === 'Banyan Circle') propertyToSave = 'Banyan Circle';
   else if (category === 'Payout' && payoutType === 'Talent') propertyToSave = talentProperty || null;
   else if (category === 'Payout' && payoutType === 'Team') propertyToSave = teamAssigned || null;
 
@@ -1890,6 +2016,8 @@ function acCloseExpModal() {
   const op = document.getElementById('ac-exp-others-property');
   if (op) { op.innerHTML = '<option value="">— select property —</option>'; }
   document.getElementById('ac-others-property-fg').style.display = 'none';
+  document.getElementById('ac-bc-cat-fg').style.display = 'none';
+  document.querySelectorAll('#ac-bc-cat-pills .pill-opt').forEach(b=>b.classList.remove('on'));
 }
 document.addEventListener('click', e=>{ if(e.target.id==='ac-modal-exp') acCloseExpModal(); });
 
@@ -3396,19 +3524,22 @@ function bcPaneRender() {
   var total    = filtered.reduce(function(s,b){ return s + (parseFloat(b.bc_amount)||0); }, 0);
   var incoming = filtered.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); }, 0);
 
-  // Outgoing = talent payouts from expenses table, filtered by date + property
+  // Outgoing = talent payouts + Banyan Circle category expenses, filtered by date + property
   var expenses = _acExpenses || [];
   var filteredExp = expenses.filter(function(e) {
-    if (e.payout_type !== 'Talent') return false;
+    var isTalentPayout = e.payout_type === 'Talent';
+    var isBcCatExp = e.category === 'Banyan Circle';
+    if (!isTalentPayout && !isBcCatExp) return false;
     var dt = (e.date || e.created_at || '').slice(0,10);
     if (fromV && dt < fromV) return false;
     if (toV   && dt > toV)   return false;
-    // Property filter — match if active
+    // Property filter — match if active (BC category expenses always count as Banyan Circle property)
     if (_bcPropertyFilters.length > 0) {
-      if (_bcPropertyFilters.indexOf(e.property_name||'')=== -1) return false;
+      var propName = isBcCatExp ? 'Banyan Circle' : (e.property_name||'');
+      if (_bcPropertyFilters.indexOf(propName) === -1) return false;
     }
-    // Talent filter — match recipient name against active talent filters
-    if (_bcTalentFilters.length > 0) {
+    // Talent filter — only applies to talent payout rows
+    if (_bcTalentFilters.length > 0 && isTalentPayout) {
       if (_bcTalentFilters.indexOf(e.recipient||'')=== -1) return false;
     }
     return true;
@@ -3420,7 +3551,7 @@ function bcPaneRender() {
   var profit = total - outgoing;
   // Tile 2 — Total Received + Receivable = sum of all BC bill amounts
   // (total already computed above)
-  // Tile 3 — Total Paid + Pending = all talent payout expenses
+  // Tile 3 — Total Paid + Pending = talent payouts + Banyan Circle category expenses
   // (outgoing already computed above)
 
   var kpiTotal = document.getElementById('bc-kpi-total');
@@ -3464,19 +3595,22 @@ function bcPaneRender() {
       '</tr>';
   }).join('');
 
-  // ── Outgoing expenses table (Talent payouts) ──
+  // ── Outgoing expenses table (Talent payouts + Banyan Circle category expenses) ──
   var expRows = filteredExp.map(function(e) {
     var displayDate = fmtDate(e.date || e.created_at);
     var amt = parseFloat(e.pretax_amount)||parseFloat(e.amount)||0;
     var statusCls = (e.status==='Paid' || e.status==='Paid to landlord') ? 'bdg-g' : 'bdg-a';
     var statusLbl = (e.status==='Paid' || e.status==='Paid to landlord') ? 'Paid' : 'Pending';
+    var isBcCat = e.category === 'Banyan Circle';
+    var primaryCell = isBcCat ? esc(e.item||'—') : esc(e.recipient||'—');
+    var typeLabel = isBcCat ? 'BC Expense' : 'Payout';
     return '<tr style="background:var(--r-l)">' +
-      '<td style="font-weight:500;color:var(--r)">' + esc(e.recipient||'—') + '</td>' +
-      '<td style="font-size:12px;color:var(--muted)">' + esc(e.recipient||'—') + '</td>' +
-      '<td style="font-size:12px;color:var(--muted)">' + esc(e.property_name||'—') + '</td>' +
+      '<td style="font-weight:500;color:var(--r)">' + primaryCell + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + (isBcCat ? '—' : esc(e.recipient||'—')) + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">Banyan Circle</td>' +
       '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
       '<td style="text-align:right;font-weight:600;font-family:\'Playfair Display\',serif;color:var(--r)">−' + fmtF(amt) + '</td>' +
-      '<td style="font-size:11px;color:var(--muted)">Payout</td>' +
+      '<td style="font-size:11px;color:var(--muted)">' + typeLabel + '</td>' +
       '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
       '</tr>';
   }).join('');
@@ -3493,12 +3627,12 @@ function bcPaneRender() {
     : '<div style="padding:16px 22px;font-size:13px;color:var(--muted)">No Banyan Circle bills in this range</div>';
 
   var expSection = hasExp
-    ? '<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:16px 22px 8px;margin-top:4px">Outgoing — Talent Payouts</div>' +
+    ? '<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:16px 22px 8px;margin-top:4px">Outgoing — Paid &amp; Pending</div>' +
       '<table class="tbl"><thead><tr>' +
-      '<th>Talent</th><th>Recipient</th><th>Property</th><th>Date</th>' +
-      '<th style="text-align:right">Pre-tax Amount</th><th>Type</th><th>Status</th>' +
+      '<th>Item / Talent</th><th>Recipient</th><th>Property</th><th>Date</th>' +
+      '<th style="text-align:right">Amount</th><th>Type</th><th>Status</th>' +
       '</tr></thead><tbody>' + expRows + '</tbody></table>'
-    : '<div style="padding:16px 22px;font-size:13px;color:var(--muted)">No talent payout expenses in this range</div>';
+    : '<div style="padding:16px 22px;font-size:13px;color:var(--muted)">No outgoing expenses in this range</div>';
 
   if (listEl) listEl.innerHTML = billSection + expSection;
 }
