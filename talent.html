@@ -886,7 +886,7 @@ showPanel('profile');
     if(e.data.type==='bc_request_me'){
       var stored=JSON.parse(localStorage.getItem('bc_me')||'null');
       var iframe=document.getElementById('msg-iframe');
-      if(stored && iframe && iframe.contentWindow){
+      if(stored&&iframe&&iframe.contentWindow){
         iframe.contentWindow.postMessage({type:'bc_init_me',me:stored},'*');
       }
     }
@@ -905,7 +905,19 @@ showPanel('profile');
   var S="https://wwdnuajhqfajvsexszpy.supabase.co",K="sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX";
   var me=JSON.parse(localStorage.getItem("bc_me")||"null");
   if(me){
-    fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+(await getAuthToken())}})
+    fetch(S+"/rest/v1/messages?recipient_name=eq."+encodeURIComponent(me.name)+"&read_by_recipient=eq.false&select=id",{headers:{"apikey":K,"Authorization":"Bearer "+K}})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d&&d.length){
+          var b=document.getElementById("msg-fab-badge");
+          if(b){b.textContent=d.length>9?"9+":String(d.length);b.style.display="block";}
+        }
+      }).catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
       .then(function(r){return r.json();})
       .then(function(d){
         if(d&&d.length){
