@@ -129,7 +129,7 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
-const supabase = (window.supabase?.createClient || window.supabase?.default?.createClient)(SB, KEY);
+const _sb = window.supabase.createClient(SB, KEY);
 
 // Block browser back navigation — stay on this page
 history.pushState(null, '', location.href);
@@ -199,7 +199,7 @@ async function checkPin() {
 
   // Sign into Supabase Auth — block if account not set up
   const email = match.login_email || (match.phone + '@banyan.com');
-  const { error } = await supabase.auth.signInWithPassword({ email, password: pin });
+  const { error } = await _sb.auth.signInWithPassword({ email, password: pin });
   if (error) {
     dots('err');
     document.getElementById('pin-err').textContent = 'Access not set up — contact admin.';
@@ -308,7 +308,7 @@ async function savePinStaff(staff, newPin) {
 
     // 2. Update Supabase Auth password so login stays in sync
     try {
-      await supabase.auth.updateUser({ password: newPin });
+      await _sb.auth.updateUser({ password: newPin });
     } catch(e) {
       console.warn('Auth password update failed:', e.message);
     }
