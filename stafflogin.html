@@ -150,7 +150,7 @@ let staffList = DEFAULTS;
 
 async function loadStaff() {
   try {
-    const data = await fetch(SB + '/rest/v1/staff?select=id,name,designation,pin,role,phone&order=name', {
+    const data = await fetch(SB + '/rest/v1/staff?select=id,name,designation,pin,role,phone,login_email&order=name', {
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
     }).then(r => r.json());
     if (data && data.length) {
@@ -199,7 +199,7 @@ async function checkPin() {
   }
 
   // Sign into Supabase Auth — block if account not set up
-  const email = (match.phone || match.id) + '@banyan.com';
+  const email = match.login_email || (match.phone + '@banyan.com');
   const { error } = await supabase.auth.signInWithPassword({ email, password: pin });
   if (error) {
     dots('err');
