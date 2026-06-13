@@ -125,12 +125,11 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
   </div>
 </div>
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
-const supabase = createClient(SB, KEY);
+const supabase = window.supabase.createClient(SB, KEY);
 
 // Block browser back navigation — stay on this page
 history.pushState(null, '', location.href);
