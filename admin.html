@@ -1077,14 +1077,15 @@ const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if (!me || me.role !== 'office') { location.href='/offlogin.html'; throw new Error('No auth'); }
 
 // Verify Supabase Auth session is still valid — redirect to login if expired
-(async () => {
+// Small delay lets the Supabase client restore session from localStorage before we check
+setTimeout(async () => {
   const sb = await getSupabase();
   const { data } = await sb.auth.getSession();
   if (!data?.session) {
     localStorage.removeItem('bc_me');
     location.href = '/offlogin.html';
   }
-})();
+}, 500);
 
 async function api(path, method, body) {
   const token = await getAuthToken();
