@@ -291,7 +291,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
-<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden">
+<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden;overflow-y:hidden">
   <iframe id="iframe-earnings" src="earnings.html" style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
 
@@ -774,7 +774,6 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
   };
   var THRESHOLD = 80;
   panels.forEach(function(panel){
-    if(panel.id === 'panel-earnings') return; // earnings.html handles PTR internally
     var startY = 0, pulling = false, indicator = null;
     panel.addEventListener('touchstart', function(e){
       if(panel.scrollTop === 0){
