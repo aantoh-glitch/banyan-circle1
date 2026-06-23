@@ -3062,51 +3062,9 @@ function generateBillId() {
   return ts + pad(BILL_SEQ, 3);
 }
 
-// ── PIN ──
-var ADMIN_PIN   = '0000';
-var pinBuffer   = '';
-var pinCallback = null;
-
-function requirePin(label, cb) {
-  pinBuffer = '';
-  pinCallback = cb;
-  document.getElementById('pin-sub').textContent = label || 'Enter PIN to continue';
-  document.getElementById('pin-err').textContent = '';
-  updatePinDots();
-  document.getElementById('pin-overlay').style.display = 'flex';
-}
-
-function pinKey(k) {
-  if (k === 'back')  { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
-  if (k === 'clear') { pinBuffer = ''; updatePinDots(); return; }
-  if (pinBuffer.length >= 4) return;
-  pinBuffer += k;
-  updatePinDots();
-  if (pinBuffer.length === 4) {
-    if (pinBuffer === ADMIN_PIN) {
-      document.getElementById('pin-overlay').style.display = 'none';
-      var cb = pinCallback; pinCallback = null; pinBuffer = '';
-      updatePinDots();
-      if (cb) cb();
-    } else {
-      document.getElementById('pin-err').textContent = 'Incorrect PIN. Try again.';
-      setTimeout(function(){ pinBuffer = ''; updatePinDots(); document.getElementById('pin-err').textContent=''; }, 700);
-    }
-  }
-}
-
-function updatePinDots() {
-  for (var i=0;i<4;i++) {
-    var d = document.getElementById('pd'+i);
-    if (d) d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
-  }
-}
-
-function pinCancel() {
-  pinBuffer = ''; pinCallback = null;
-  document.getElementById('pin-overlay').style.display = 'none';
-  updatePinDots();
-}
+// ── PIN ── (routes to modal-pin-confirm / System 1)
+// The duplicate requirePin below is intentionally removed.
+// All PIN-gated actions now use the modal-pin-confirm system defined earlier.
 
 async function api(path, method, body) {
   var h = {apikey:KEY, Authorization:'Bearer '+KEY, 'Content-Type':'application/json', Accept:'application/json', Prefer:'return=representation'};
