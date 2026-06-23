@@ -1062,15 +1062,35 @@ function navCheckout(dir) {
   renderCheckoutPicker();
 }
 
-function isDateUnavailable(ds, ctx) {
-  // Determine which property to check — use the block/booking form's selected property if available
+function getPropertyId(ctx) {
   let propId = activeProperty;
   const propEl = document.getElementById(ctx === 'block' ? 'blockProperty' : 'bookingProperty');
   if (propEl && propEl.value) propId = propEl.value;
+  return propId;
+}
+
+// For check-in: entire blocked/booked range is unavailable
+function isCheckinUnavailable(ds, ctx) {
+  const propId = getPropertyId(ctx);
   return bookings.some(b => {
     if (propId && propId !== 'all' && b.property !== propId) return false;
     return ds >= b.start && ds < b.end;
   });
+}
+
+// For checkout: only dates strictly INSIDE the range are blocked.
+// The first date of a blocked section (b.start) is allowed as a checkout date.
+function isCheckoutUnavailable(ds, ctx) {
+  const propId = getPropertyId(ctx);
+  return bookings.some(b => {
+    if (propId && propId !== 'all' && b.property !== propId) return false;
+    return ds > b.start && ds < b.end;
+  });
+}
+
+// Legacy alias (used nowhere critical, kept for safety)
+function isDateUnavailable(ds, ctx) {
+  return isCheckinUnavailable(ds, ctx);
 }
 
 function renderCheckinPicker() {
@@ -1087,7 +1107,7 @@ function renderCheckinPicker() {
     let cls = 'drp-day';
     if (ds < today) cls += ' drp-day-past';
     else if (ds === selected) cls += ' drp-day-start drp-day-end';
-    else if (isDateUnavailable(ds, ctx)) cls += ' drp-day-blocked';
+    else if (isCheckinUnavailable(ds, ctx)) cls += ' drp-day-blocked';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
   document.getElementById('drpCheckinMonthLabel').textContent = MONTHS[month] + ' ' + year;
@@ -1131,7 +1151,7 @@ function renderCheckoutPicker() {
     let cls = 'drp-day';
     if (ds <= minDate) cls += ' drp-day-past';
     else if (ds === selected) cls += ' drp-day-start drp-day-end';
-    else if (isDateUnavailable(ds, ctx)) cls += ' drp-day-blocked';
+    else if (isCheckoutUnavailable(ds, ctx)) cls += ' drp-day-blocked';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
   document.getElementById('drpCheckoutMonthLabel').textContent = MONTHS[month] + ' ' + year;
