@@ -695,7 +695,8 @@ function goPageFromTray(id, btn) {
 }
 
 /* On load: restore tab from URL hash */
-(function(){
+(async function(){
+  await getSupabase(); // warm up auth client before any tab's data load
   var hash = location.hash.replace('#','');
   var validPages = ['description','earnings','messages','payments','assets','documents','pne','exp','bookings','vendors'];
   if (hash && validPages.indexOf(hash) !== -1) {
