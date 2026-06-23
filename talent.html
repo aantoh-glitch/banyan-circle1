@@ -293,6 +293,13 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
 <div class="panel" id="panel-earnings" style="padding:0;overflow:hidden">
   <iframe id="iframe-earnings" src="" style="width:100%;height:100%;border:none;display:block"></iframe>
+  <script>
+    (function(){
+      var p=new URLSearchParams(location.search);
+      var n=p.get('name')||'Talent';
+      document.getElementById('iframe-earnings').src='earnings.html?role=talent&name='+encodeURIComponent(n)+'&embedded=1';
+    })();
+  </script>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -411,12 +418,7 @@ let currentPanel=null;
 const loaders={
   schedule:()=>renderSchedule(),
   ratings:()=>loadRatings(),
-  earnings:()=>{
-    const fr=document.getElementById('iframe-earnings');
-    if(!fr.src||!fr.src.includes('earnings.html')){
-      fr.src='earnings.html?role=talent&name='+encodeURIComponent(talentNameParam)+'&embedded=1';
-    }
-  },
+  earnings:()=>{},
   profile:()=>{}
 };
 function showPanel(id){
@@ -815,44 +817,7 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
   });
 })();
 
-// EARNINGS PTR — postMessage into iframe on pull-down from panel edge
-(function(){
-  var epanel = document.getElementById('panel-earnings');
-  var THRESHOLD = 80;
-  var startY = 0, pulling = false, indicator = null;
 
-  epanel.addEventListener('touchstart', function(e){
-    startY = e.touches[0].clientY;
-    pulling = true;
-  }, {passive:true});
-
-  epanel.addEventListener('touchmove', function(e){
-    if(!pulling) return;
-    var dist = e.touches[0].clientY - startY;
-    if(dist > 10){
-      if(!indicator){
-        indicator = document.createElement('div');
-        indicator.style.cssText = 'position:absolute;top:0;left:0;right:0;text-align:center;font-size:13px;color:var(--muted);padding:10px 0;background:var(--bg);z-index:20;transition:opacity .2s';
-        epanel.appendChild(indicator);
-      }
-      indicator.textContent = dist >= THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
-      indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
-    }
-  }, {passive:true});
-
-  epanel.addEventListener('touchend', function(e){
-    if(!pulling) return;
-    pulling = false;
-    var dist = e.changedTouches[0].clientY - startY;
-    if(indicator){ indicator.remove(); indicator = null; }
-    if(dist >= THRESHOLD){
-      var fr = document.getElementById('iframe-earnings');
-      fr.src = fr.src;
-      toast('Earnings refreshed');
-    }
-    startY = 0;
-  }, {passive:true});
-})();
 </script>
 
 
