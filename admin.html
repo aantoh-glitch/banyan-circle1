@@ -3092,11 +3092,11 @@ async function init() {
   billDateEl.value = today;
   billDateEl.max = today;
   setPayMethod('pending');
-  await loadGuests();
+  await loadBillingGuests();
   await loadBills();
 }
 
-async function loadGuests() {
+async function loadBillingGuests() {
   try {
     var data = await api('/rest/v1/guest_profiles?select=id,name,property_name,check_in,check_out&order=name') || [];
     GUESTS = data;
