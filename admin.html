@@ -335,6 +335,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="dash-tile-label">Team Present</div>
       <div class="dash-tile-value loading" id="dash-staff">…</div>
       <div class="dash-tile-sub">clocked in today</div>
+      <div id="dash-staff-names" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;min-height:20px"></div>
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-leave" onclick="goPage('leave', this)">
@@ -2253,9 +2254,25 @@ async function loadDashboard(){
 
   // Team present
   try {
-    const st = await api('/rest/v1/attendance_log?select=id&date=eq.'+today) || [];
+    const st = await api('/rest/v1/attendance_log?select=staff_id,staff_name,type&date=eq.'+today+'&order=logged_at.asc') || [];
+    // Build a map: last record per staff_id determines current status
+    const presentMap = {};
+    st.forEach(r => {
+      presentMap[r.staff_id] = { name: r.staff_name, type: r.type };
+    });
+    const presentStaff = Object.values(presentMap).filter(s => s.type === 'in');
     const el = document.getElementById('dash-staff');
-    if(el){ el.textContent = st.length; el.className='dash-tile-value'; }
+    if(el){ el.textContent = presentStaff.length; el.className='dash-tile-value'; }
+    const sub = document.getElementById('dash-staff-names');
+    if(sub){
+      if(presentStaff.length){
+        sub.innerHTML = presentStaff.map(s =>
+          `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--g-l);color:#27500A;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:500;white-space:nowrap">${s.name}</span>`
+        ).join('');
+      } else {
+        sub.textContent = 'No one clocked in today';
+      }
+    }
   } catch(e){ const el=document.getElementById('dash-staff'); if(el) el.textContent='—'; }
 
   // Tasks pending by type
