@@ -69,7 +69,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .bottom-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .block-panel { flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 0; }
 .block-panel .panel-header { width: 100%; }
-.block-panel .block-form { display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: 12px; align-items: end; padding: 16px 20px 0; }
+.block-panel .block-form { display: grid; grid-template-columns: minmax(140px, 1fr) 1fr 1fr 2fr; gap: 12px; align-items: end; padding: 16px 20px 0; }
 .block-panel .block-form .form-group { margin-bottom: 0; }
 .block-panel .block-actions { width: 100%; }
 .bookings-list { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
@@ -221,7 +221,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
             <select class="form-select" id="blockProperty"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Check-in</label>
+            <label class="form-label">Start Date</label>
             <div class="drp-wrap">
               <div class="drp-display" id="blockCheckinDisplay" onclick="openCheckinPicker(event,'block')">
                 <span id="blockCheckinText">Select date</span>
@@ -231,7 +231,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Check-out</label>
+            <label class="form-label">End Date</label>
             <div class="drp-wrap">
               <div class="drp-display" id="blockCheckoutDisplay" onclick="openCheckoutPicker(event,'block')">
                 <span id="blockCheckoutText">Select date</span>
