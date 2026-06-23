@@ -292,10 +292,10 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
 <div class="panel" id="panel-earnings" style="padding:0;overflow:hidden;position:relative">
-  <!-- Transparent overlay captures touch at top of panel; shrinks to 0 after pull starts so iframe gets remaining touches -->
+  <iframe id="iframe-earnings" src="" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;display:block"></iframe>
+  <!-- Overlay sits above iframe only at the top edge to catch pull-down gesture -->
   <div id="earnings-overlay" style="position:absolute;top:0;left:0;right:0;height:40px;z-index:10;touch-action:none"></div>
-  <div id="earnings-ptr-bar" style="position:absolute;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);background:var(--bg);z-index:9;transition:height .15s">↓ Pull to refresh</div>
-  <iframe id="iframe-earnings" src="" style="width:100%;height:100%;border:none;display:block"></iframe>
+  <div id="earnings-ptr-bar" style="position:absolute;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);background:var(--bg);z-index:11;transition:height .15s">↓ Pull to refresh</div>
 </div>
 
 <!-- BOTTOM NAV -->
