@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
+  --br:#993C1D;--br-l:#FAF0EB;--br-mid:#F2D9D0;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
   --text:#2C2C2A;--muted:#5F5E5A;--faint:#9E9C97;--border:rgba(0,0,0,0.1);
   --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
   --nav-h:60px;--top-h:52px;
@@ -229,12 +229,12 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
     <div style="padding-bottom:10px">
       <button class="btn-sec" onclick="openEditMode()" style="display:flex;align-items:center;justify-content:center;gap:8px">
-        <span style="font-size:16px">✏️</span> Edit Profile
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Profile
       </button>
     </div>
     <div style="padding-bottom:16px">
       <button class="btn-sec" onclick="openDocsPanel()" style="display:flex;align-items:center;justify-content:center;gap:8px">
-        <span style="font-size:16px">📁</span> Documents
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Documents
       </button>
     </div>
   </div>
@@ -495,26 +495,26 @@ function renderProfileView(d){
   document.getElementById('view-tagline').textContent=d.tagline?'"'+d.tagline+'"':'';
   const badges=[];
   if(d.category) badges.push(d.category==='Others'&&d.category_other?d.category_other:d.category);
-  if(d.location) badges.push('📍 '+d.location);
+  if(d.location) badges.push(d.location);
   document.getElementById('view-badges').innerHTML=badges.map(b=>'<span style="font-size:12px;padding:4px 10px;border-radius:999px;background:var(--br-l);color:var(--br);font-weight:500">'+b+'</span>').join('');
   const aboutCard=document.getElementById('view-about-card');
   if(d.description){aboutCard.style.display='';document.getElementById('view-desc').textContent=d.description;}
   else aboutCard.style.display='none';
   const details=[];
-  if(d.age) details.push(['🎂','Age',d.age]);
-  if(d.phone) details.push(['📞','Phone',d.phone]);
-  if(d.email) details.push(['✉️','Email',d.email]);
-  if(d.bio_url) details.push(['📄','CV / Biodata','<a href="'+d.bio_url+'" target="_blank" style="color:var(--br);text-decoration:none">Download ↗</a>']);
+  if(d.age) details.push(['<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;color:var(--faint)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>','Age',d.age]);
+  if(d.phone) details.push(['<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;color:var(--faint)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6 6l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.5 16z"/></svg>','Phone',d.phone]);
+  if(d.email) details.push(['<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;color:var(--faint)"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>','Email',d.email]);
+  if(d.bio_url) details.push(['<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;color:var(--faint)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>','CV / Biodata','<a href="'+d.bio_url+'" target="_blank" style="color:var(--br);text-decoration:none">Download ↗</a>']);
   document.getElementById('view-details-rows').innerHTML=details.length
-    ? details.map(function(x){return'<div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:16px;flex-shrink:0;margin-top:1px">'+x[0]+'</span><div><div style="font-size:11px;color:var(--faint);margin-bottom:1px">'+x[1]+'</div><div style="font-size:14px">'+x[2]+'</div></div></div>';}).join('')
+    ? details.map(function(x){return'<div style="display:flex;align-items:flex-start;gap:10px">'+x[0]+'<div><div style="font-size:11px;color:var(--faint);margin-bottom:1px">'+x[1]+'</div><div style="font-size:14px">'+x[2]+'</div></div></div>';}).join('')
     : '<div style="font-size:13px;color:var(--muted)">No details added yet.</div>';
   const links=[];
-  if(d.instagram) links.push(['📸','Instagram',d.instagram]);
-  if(d.performance_link) links.push(['🎬','Demo Video',d.performance_link]);
+  if(d.instagram) links.push(['<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--faint)"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>','Instagram',d.instagram]);
+  if(d.performance_link) links.push(['<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--faint)"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>','Demo Video',d.performance_link]);
   const linksCard=document.getElementById('view-links-card');
   if(links.length){
     linksCard.style.display='';
-    document.getElementById('view-links-rows').innerHTML=links.map(function(x){return'<a href="'+x[2]+'" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)"><span style="font-size:18px">'+x[0]+'</span><div style="flex:1"><div style="font-size:13px;font-weight:500">'+x[1]+'</div><div style="font-size:11px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">'+x[2]+'</div></div><span style="color:var(--br);font-size:14px">↗</span></a>';}).join('');
+    document.getElementById('view-links-rows').innerHTML=links.map(function(x){return'<a href="'+x[2]+'" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)">'+x[0]+<div style="flex:1"><div style="font-size:13px;font-weight:500">'+x[1]+'</div><div style="font-size:11px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">'+x[2]+'</div></div><span style="color:var(--br);font-size:14px">↗</span></a>';}).join('');
   } else linksCard.style.display='none';
   const venuesCard=document.getElementById('view-venues-card');
   if(d.venues&&d.venues.length){
