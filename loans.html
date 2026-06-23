@@ -358,7 +358,7 @@ const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!_me) location.href = '/index.html';
 
 IS_MOBILE = (_me.role === 'staff');
-const IS_ADMIN = (_me.role === 'admin');
+const IS_ADMIN = (_me.role === 'admin' || _me.role === 'office');
 
 if (IS_MOBILE) {
   document.body.classList.add('mobile');
