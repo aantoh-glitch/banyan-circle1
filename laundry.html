@@ -361,7 +361,7 @@ async function loadProps(){
 }
 async function loadStaff(){
   if(STAFF.length) return;
-  STAFF = await api('/rest/v1/staff?select=name&order=name').catch(()=>[]) || [];
+  STAFF = await api('/rest/v1/staff?select=name&role=eq.operations&order=name').catch(()=>[]) || [];
 }
 
 /* ── Staff scope ── */
