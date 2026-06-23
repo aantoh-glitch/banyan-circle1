@@ -770,15 +770,11 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
   var refreshers = {
     'panel-profile':   function(){ loadProfile(); toast('Profile refreshed'); },
     'panel-schedule':  function(){ renderSchedule(); toast('Schedule refreshed'); },
-    'panel-ratings':   function(){ loadRatings(); toast('Ratings refreshed'); },
-    'panel-earnings':  function(){
-      var fr = document.getElementById('iframe-earnings');
-      fr.src = fr.src;
-      toast('Earnings refreshed');
-    }
+    'panel-ratings':   function(){ loadRatings(); toast('Ratings refreshed'); }
   };
   var THRESHOLD = 80;
   panels.forEach(function(panel){
+    if(panel.id === 'panel-earnings') return; // earnings.html handles PTR internally
     var startY = 0, pulling = false, indicator = null;
     panel.addEventListener('touchstart', function(e){
       if(panel.scrollTop === 0){
