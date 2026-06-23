@@ -291,10 +291,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
-<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden;position:relative">
-  <div id="earnings-ptr-bar" style="position:absolute;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);background:var(--bg);z-index:11;transition:height .15s">↓ Pull to refresh</div>
-  <div id="earnings-overlay" style="position:absolute;top:0;left:0;right:0;height:40px;z-index:10;touch-action:none"></div>
-  <iframe id="iframe-earnings" src="" style="position:absolute;inset:0;width:100%;height:100%;border:none;display:block"></iframe>
+<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden">
+  <iframe id="iframe-earnings" src="" style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -406,9 +404,6 @@ document.getElementById('top-name').textContent=talentNameParam;
 document.getElementById('top-avatar').textContent=ini(talentNameParam);
 document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
 
-// Set earnings iframe src immediately (same as landlord) so PTR works natively inside the iframe
-document.getElementById('iframe-earnings').src='earnings.html?role=talent&name='+encodeURIComponent(talentNameParam)+'&embedded=1';
-
 function signOut(){localStorage.removeItem('bc_me');location.replace('/tlogin.html');}
 
 // PANEL NAVIGATION
@@ -416,7 +411,12 @@ let currentPanel=null;
 const loaders={
   schedule:()=>renderSchedule(),
   ratings:()=>loadRatings(),
-  earnings:()=>{},
+  earnings:()=>{
+    const fr=document.getElementById('iframe-earnings');
+    if(!fr.src||!fr.src.includes('earnings.html')){
+      fr.src='earnings.html?role=talent&name='+encodeURIComponent(talentNameParam)+'&embedded=1';
+    }
+  },
   profile:()=>{}
 };
 function showPanel(id){
@@ -428,7 +428,6 @@ function showPanel(id){
   document.getElementById('nav-'+id).classList.add('active');
   const prev=currentPanel;
   currentPanel=id;
-  // Persist active panel in URL hash so refresh lands on same tab
   history.replaceState(null,'',location.pathname+location.search+'#'+id);
   if(loaders[id]) loaders[id]();
 }
@@ -755,14 +754,14 @@ window.addEventListener('pageshow',function(e){
   }
 });
 
-
+// Background preloads
 loadProfile();
 loadProperties();
 
-// Restore last active tab from URL hash (supports refresh landing on same page)
-const VALID_PANELS = ['profile','schedule','ratings','earnings'];
-const hashPanel = location.hash.replace('#','');
-showPanel(VALID_PANELS.includes(hashPanel) ? hashPanel : 'profile');
+// Show first tab — restore from hash if present
+const VALID_PANELS=['profile','schedule','ratings','earnings'];
+const _hashPanel=location.hash.replace('#','');
+showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 
 // PULL TO REFRESH
 (function(){
@@ -779,9 +778,6 @@ showPanel(VALID_PANELS.includes(hashPanel) ? hashPanel : 'profile');
   };
   var THRESHOLD = 80;
   panels.forEach(function(panel){
-    // earnings panel is an iframe — touch events are swallowed by the iframe,
-    // so it gets its own top-bar drag zone below
-    if(panel.id === 'panel-earnings') return;
     var startY = 0, pulling = false, indicator = null;
     panel.addEventListener('touchstart', function(e){
       if(panel.scrollTop === 0){
@@ -808,6 +804,7 @@ showPanel(VALID_PANELS.includes(hashPanel) ? hashPanel : 'profile');
       pulling = false;
       var dist = e.changedTouches[0].clientY - startY;
       if(indicator){ indicator.remove(); indicator = null; }
+      // Use currentPanel (the active tab) not panel.id — prevents stale panel from hijacking
       if(dist >= THRESHOLD && panel.scrollTop === 0){
         var activeId = 'panel-' + currentPanel;
         var fn = refreshers[activeId];
@@ -816,43 +813,45 @@ showPanel(VALID_PANELS.includes(hashPanel) ? hashPanel : 'profile');
       startY = 0;
     }, {passive:true});
   });
+})();
 
-  // EARNINGS PTR via overlay div (iframe swallows touches; overlay sits on top and catches the pull)
-  (function(){
-    var overlay = document.getElementById('earnings-overlay');
-    var bar = document.getElementById('earnings-ptr-bar');
-    var THRESH = 80;
-    var startY = 0, pulling = false;
+// EARNINGS PTR — postMessage into iframe on pull-down from panel edge
+(function(){
+  var epanel = document.getElementById('panel-earnings');
+  var THRESHOLD = 80;
+  var startY = 0, pulling = false, indicator = null;
 
-    overlay.addEventListener('touchstart', function(e){
-      startY = e.touches[0].clientY;
-      pulling = true;
-    }, {passive:true});
+  epanel.addEventListener('touchstart', function(e){
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }, {passive:true});
 
-    overlay.addEventListener('touchmove', function(e){
-      if(!pulling) return;
-      var dist = e.touches[0].clientY - startY;
-      if(dist > 0){
-        bar.style.height = Math.min(dist * 0.5, 44) + 'px';
-        bar.textContent = dist >= THRESH ? '↑ Release to refresh' : '↓ Pull to refresh';
-        bar.style.opacity = Math.min(dist / THRESH, 1);
+  epanel.addEventListener('touchmove', function(e){
+    if(!pulling) return;
+    var dist = e.touches[0].clientY - startY;
+    if(dist > 10){
+      if(!indicator){
+        indicator = document.createElement('div');
+        indicator.style.cssText = 'position:absolute;top:0;left:0;right:0;text-align:center;font-size:13px;color:var(--muted);padding:10px 0;background:var(--bg);z-index:20;transition:opacity .2s';
+        epanel.appendChild(indicator);
       }
-    }, {passive:true});
+      indicator.textContent = dist >= THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
+      indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
+    }
+  }, {passive:true});
 
-    overlay.addEventListener('touchend', function(e){
-      if(!pulling) return;
-      pulling = false;
-      var dist = e.changedTouches[0].clientY - startY;
-      bar.style.height = '0';
-      bar.style.opacity = '0';
-      if(dist >= THRESH){
-        var fr = document.getElementById('iframe-earnings');
-        fr.src = fr.src;
-        toast('Earnings refreshed');
-      }
-      startY = 0;
-    }, {passive:true});
-  })();
+  epanel.addEventListener('touchend', function(e){
+    if(!pulling) return;
+    pulling = false;
+    var dist = e.changedTouches[0].clientY - startY;
+    if(indicator){ indicator.remove(); indicator = null; }
+    if(dist >= THRESHOLD){
+      var fr = document.getElementById('iframe-earnings');
+      fr.src = fr.src;
+      toast('Earnings refreshed');
+    }
+    startY = 0;
+  }, {passive:true});
 })();
 </script>
 
