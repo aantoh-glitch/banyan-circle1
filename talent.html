@@ -13,14 +13,22 @@
   --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
   --nav-h:60px;--top-h:52px;
 }
-html{height:100%;overscroll-behavior-y:auto}
-body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+html,body{height:100%;overscroll-behavior-y:auto;font-family:'DM Sans',sans-serif;background:#E8E5E0;color:var(--text)}
+.app{
+  max-width:430px;margin:0 auto;min-height:100dvh;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  position:relative;
+  box-shadow:0 0 40px rgba(0,0,0,.15);
+}
 
 /* TOP BAR */
 .top-bar{
-  position:fixed;top:0;left:0;right:0;height:var(--top-h);z-index:50;
+  position:sticky;top:0;z-index:50;
+  height:var(--top-h);
   background:var(--white);border-bottom:1px solid var(--border);
   display:flex;align-items:center;padding:0 14px;gap:8px;
+  flex-shrink:0;
 }
 .top-logo{font-family:'Playfair Display',serif;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -29,7 +37,8 @@ body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color
 
 /* BOTTOM NAV */
 .bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:120;
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;z-index:120;
   background:var(--white);border-top:1px solid var(--border);
   display:flex;justify-content:space-around;
   padding:8px 4px calc(12px + env(safe-area-inset-bottom));
@@ -54,7 +63,7 @@ body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color
 
 /* CONTENT SCROLLER */
 .content{
-  margin-top:var(--top-h);
+  flex:1;
   margin-bottom:var(--nav-h);
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
@@ -165,6 +174,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </style>
 </head>
 <body>
+<div class="app">
 
 <!-- TOP BAR -->
 <div class="top-bar">
@@ -803,17 +813,17 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 </div>
 
 <!-- MESSAGING FAB -->
-<button id="msg-fab" onclick="openMessagingPanel()" title="Messages" style="position:fixed;bottom:calc(var(--nav-h) + 14px);right:14px;z-index:130;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(153,60,29,.45);border:none;cursor:pointer;transition:transform .15s,box-shadow .15s">
+<button id="msg-fab" onclick="openMessagingPanel()" title="Messages" style="position:fixed;bottom:calc(var(--nav-h) + 14px);right:max(14px, calc(50% - 215px + 14px));z-index:130;width:50px;height:50px;background:#993C1D;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(153,60,29,.45);border:none;cursor:pointer;transition:transform .15s,box-shadow .15s">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   <span id="msg-fab-badge" style="position:absolute;top:-3px;right:-3px;background:#A32D2D;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px;display:none;min-width:16px;text-align:center;font-family:sans-serif;border:2px solid #fff"></span>
 </button>
 
 <!-- Messaging panel overlay (closes on tap outside) -->
 <!-- Overlay only covers area above the nav -->
-<div id="msg-panel-overlay" onclick="closeMessagingPanel()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:60px;background:rgba(0,0,0,.4);z-index:100"></div>
+<div id="msg-panel-overlay" onclick="closeMessagingPanel()" style="display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;bottom:60px;background:rgba(0,0,0,.4);z-index:100"></div>
 
 <!-- Panel sits between top of screen and top of nav; translateY(calc(100%+60px)) shifts it fully below nav when closed -->
-<div id="msg-panel" style="position:fixed;bottom:60px;left:0;right:0;height:calc(100% - 60px);max-width:680px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(calc(100% + 60px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:110;display:flex;flex-direction:column">
+<div id="msg-panel" style="position:fixed;bottom:60px;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:calc(100% - 60px);background:#fff;border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(calc(100% + 60px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:110;display:flex;flex-direction:column">
   <div style="width:40px;height:4px;background:#D0CEC9;border-radius:2px;margin:10px auto 6px;flex-shrink:0"></div>
   <iframe id="msg-iframe" src="" title="Messages" style="width:100%;flex:1;border:none;display:block;min-height:0"></iframe>
 </div>
@@ -887,6 +897,7 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
   }
 })();
 </script>
+</div><!-- /.app -->
 </body>
 </html>
       .then(function(r){return r.json();})
