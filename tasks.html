@@ -147,6 +147,21 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:200;display:none;white-space:nowrap}
+
+/* ── Completed log section ── */
+.completed-log-section{margin-top:24px}
+.completed-log-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--g-l);border:1px solid rgba(59,109,17,.2);border-radius:12px;cursor:pointer;user-select:none;transition:all .15s}
+.completed-log-header:hover{background:#daefc8}
+.completed-log-title{display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px;color:#27500A}
+.completed-log-title svg{width:18px;height:18px;stroke:#3B6D11;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.completed-log-count{font-size:12px;font-weight:500;background:var(--g);color:#fff;padding:2px 10px;border-radius:999px}
+.completed-log-chevron{font-size:14px;color:#3B6D11;transition:transform .2s}
+.completed-log-chevron.open{transform:rotate(180deg)}
+.completed-log-body{border:1px solid rgba(59,109,17,.15);border-top:none;border-radius:0 0 12px 12px;overflow:hidden;display:none}
+.completed-log-body.open{display:block}
+.completed-log-body .tbl tr td{background:#fafffe}
+.completed-log-body .tbl tr:hover td{background:#f0faf0}
+.completed-log-body .tbl th{background:#f2fae8}
 </style>
 </head>
 <body>
@@ -235,6 +250,23 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
     <div class="card" style="padding:0;overflow:hidden">
       <div id="admin-tasks-list" style="min-height:120px"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- Completed tasks log -->
+    <div class="completed-log-section" id="completed-log-section" style="display:none">
+      <div class="completed-log-header" onclick="toggleCompletedLog()">
+        <div class="completed-log-title">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Completed Tasks Log
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="completed-log-count" id="completed-log-count">0</span>
+          <span class="completed-log-chevron" id="completed-log-chevron">▼</span>
+        </div>
+      </div>
+      <div class="completed-log-body" id="completed-log-body">
+        <div id="completed-tasks-list"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -734,38 +766,79 @@ function priorityBadge(p){
 
 function renderAdminTable(tasks){
   const el = document.getElementById('admin-tasks-list');
-  if(!tasks.length){ el.innerHTML='<div class="empty">No tasks found</div>'; return; }
 
-  // Group: tasks with bundle_id grouped together, singles stand alone
-  const groups = [];
-  const bundleMap = {};
-  tasks.forEach(t => {
-    if(t.bundle_id){
-      if(!bundleMap[t.bundle_id]){
-        bundleMap[t.bundle_id] = {bundle_id:t.bundle_id, bundle_name:t.bundle_name, tasks:[], staff_name:t.staff_name, staff_id:t.staff_id, priority:t.priority, due_date:t.due_date};
-        groups.push({type:'bundle', data:bundleMap[t.bundle_id]});
+  // Split into active (not completed) and completed
+  const activeTasks    = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t =>  t.completed);
+
+  // ── Active tasks table ──
+  if(!activeTasks.length){
+    el.innerHTML='<div class="empty">No active tasks — everything is completed! ✓</div>';
+  } else {
+    const groups = [];
+    const bundleMap = {};
+    activeTasks.forEach(t => {
+      if(t.bundle_id){
+        if(!bundleMap[t.bundle_id]){
+          bundleMap[t.bundle_id] = {bundle_id:t.bundle_id, bundle_name:t.bundle_name, tasks:[], staff_name:t.staff_name, staff_id:t.staff_id, priority:t.priority, due_date:t.due_date};
+          groups.push({type:'bundle', data:bundleMap[t.bundle_id]});
+        }
+        bundleMap[t.bundle_id].tasks.push(t);
+      } else {
+        groups.push({type:'single', data:t});
       }
-      bundleMap[t.bundle_id].tasks.push(t);
-    } else {
-      groups.push({type:'single', data:t});
-    }
-  });
+    });
+    let rows = '';
+    groups.forEach(g => { rows += g.type==='single' ? adminRow(g.data) : bundleRow(g.data); });
+    el.innerHTML = '<table class="tbl"><thead><tr>'
+      + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
+      + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
+      + '<th style="font-size:10px">Created</th><th style="font-size:10px">Ack\'d At</th><th style="font-size:10px">Done At</th>'
+      + '<th></th>'
+      + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
 
-  let rows = '';
-  groups.forEach(g => {
-    if(g.type === 'single'){
-      rows += adminRow(g.data);
-    } else {
-      rows += bundleRow(g.data);
-    }
-  });
+  // ── Completed tasks log ──
+  const logSection = document.getElementById('completed-log-section');
+  const logCount   = document.getElementById('completed-log-count');
+  const logList    = document.getElementById('completed-tasks-list');
 
-  el.innerHTML = '<table class="tbl"><thead><tr>'
-    + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
-    + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
-    + '<th style="font-size:10px">Created</th><th style="font-size:10px">Ack\'d At</th><th style="font-size:10px">Done At</th>'
-    + '<th></th>'
-    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  if(!completedTasks.length){
+    if(logSection) logSection.style.display = 'none';
+  } else {
+    if(logSection) logSection.style.display = '';
+    if(logCount)   logCount.textContent = completedTasks.length;
+
+    // Build completed rows (singles only for now — bundles fully completed shown as list)
+    const cGroups = [];
+    const cBundleMap = {};
+    completedTasks.forEach(t => {
+      if(t.bundle_id){
+        if(!cBundleMap[t.bundle_id]){
+          cBundleMap[t.bundle_id] = {bundle_id:t.bundle_id, bundle_name:t.bundle_name, tasks:[], staff_name:t.staff_name, staff_id:t.staff_id, priority:t.priority, due_date:t.due_date};
+          cGroups.push({type:'bundle', data:cBundleMap[t.bundle_id]});
+        }
+        cBundleMap[t.bundle_id].tasks.push(t);
+      } else {
+        cGroups.push({type:'single', data:t});
+      }
+    });
+    let cRows = '';
+    cGroups.forEach(g => { cRows += g.type==='single' ? adminRow(g.data) : bundleRow(g.data); });
+    if(logList) logList.innerHTML = '<table class="tbl"><thead><tr>'
+      + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
+      + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
+      + '<th style="font-size:10px">Created</th><th style="font-size:10px">Ack\'d At</th><th style="font-size:10px">Done At</th>'
+      + '<th></th>'
+      + '</tr></thead><tbody>' + cRows + '</tbody></table>';
+  }
+}
+
+function toggleCompletedLog(){
+  const body    = document.getElementById('completed-log-body');
+  const chevron = document.getElementById('completed-log-chevron');
+  const isOpen  = body.classList.toggle('open');
+  chevron.classList.toggle('open', isOpen);
 }
 
 function bundleRow(b){
