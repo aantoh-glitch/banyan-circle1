@@ -269,6 +269,78 @@ body.mobile .btn-sec:active{background:var(--bg)}
   </div>
 </div>
 
+<!-- Admin PIN Modal -->
+<div class="modal" id="modal-admin-pin">
+  <div class="modal-card" style="max-width:360px">
+    <div class="modal-handle"></div>
+    <div class="modal-ttl" id="pin-modal-title">Admin Confirmation</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px" id="pin-modal-desc"></p>
+    <div class="fg">
+      <label class="fl">Enter Admin PIN</label>
+      <input class="fc" type="password" id="admin-pin-input" inputmode="numeric" maxlength="4" placeholder="••••" style="letter-spacing:6px;font-size:20px;text-align:center"/>
+    </div>
+    <div id="pin-error" style="color:var(--r);font-size:12px;margin-top:-6px;margin-bottom:8px;display:none">Incorrect PIN. Try again.</div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closePinModal()">Cancel</button>
+      <button class="btn-p" id="pin-confirm-btn" onclick="confirmPinAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Loan Modal (Admin only) -->
+<div class="modal" id="modal-edit-loan">
+  <div class="modal-card" style="max-width:500px">
+    <div class="modal-handle"></div>
+    <div class="modal-ttl">Edit Loan</div>
+    <div class="fg">
+      <label class="fl">Item loaned</label>
+      <input class="fc" type="text" id="edit-loan-item"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Guest name</label>
+      <input class="fc" type="text" id="edit-loan-guest"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Property</label>
+      <input class="fc" type="text" id="edit-loan-property"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Loan date &amp; time</label>
+      <input class="fc" type="datetime-local" id="edit-loan-datetime"/>
+    </div>
+    <div class="fg">
+      <label class="fl">Pre-loan video taken</label>
+      <div class="toggle-wrap">
+        <label class="toggle"><input type="checkbox" id="edit-pre-video"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div id="edit-return-section">
+      <div class="fg">
+        <label class="fl">Return date &amp; time</label>
+        <input class="fc" type="datetime-local" id="edit-returned-at"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Return condition</label>
+        <select class="fc" id="edit-condition">
+          <option value="">— Not returned —</option>
+          <option value="no_damage">No Damage</option>
+          <option value="with_damage">With Damage</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Post-return video taken</label>
+        <div class="toggle-wrap">
+          <label class="toggle"><input type="checkbox" id="edit-post-video"/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal('modal-edit-loan')">Cancel</button>
+      <button class="btn-p" onclick="saveEditLoan()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -282,6 +354,7 @@ const _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!_me) location.href = '/index.html';
 
 IS_MOBILE = (_me.role === 'staff');
+const IS_ADMIN = (_me.role === 'admin');
 
 if (IS_MOBILE) {
   document.body.classList.add('mobile');
@@ -365,6 +438,11 @@ function renderDesktop(rows) {
       statusBadge = '<span class="loan-status-badge loan-returned-ok">✓ Returned</span>';
       actions = '<span style="font-size:12px;color:var(--muted)">Closed</span>';
     }
+    if (IS_ADMIN) {
+      actions += `
+        <button class="btn-admin-edit" onclick="promptAdminEdit('${r.id}')" title="Edit record" style="margin-left:6px">✏️</button>
+        <button class="btn-admin-del" onclick="promptAdminDelete('${r.id}','${esc(r.item)}','${esc(r.guest_name)}')" title="Delete record" style="margin-left:4px">🗑</button>`;
+    }
     return `<tr>
       <td style="font-weight:500">${esc(r.guest_name)||'—'}</td>
       <td style="font-size:12px;color:var(--muted)">${esc(r.property_name||'—')}</td>
@@ -408,6 +486,11 @@ function renderMobile() {
       badge  = '<span class="loan-status-badge loan-returned-ok">✓ Returned</span>';
       action = `<div class="loan-closed">Closed · ${fmtDtShort(r.returned_at)}</div>`;
     }
+    const adminBtns = IS_ADMIN ? `
+      <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <button class="btn-admin-edit" style="flex:1" onclick="promptAdminEdit('${r.id}')">✏️ Edit</button>
+        <button class="btn-admin-del" style="flex:1" onclick="promptAdminDelete('${r.id}','${esc(r.item)}','${esc(r.guest_name)}')">🗑 Delete</button>
+      </div>` : '';
     return `<div class="loan-card">
       <div class="loan-card-top">
         <div>
@@ -425,6 +508,7 @@ function renderMobile() {
         ${r.returned_at ? `<span class="vid-tag ${r.post_return_video?'vid-yes':'vid-no'}">Post-return: ${r.post_return_video?'✓ Taken':'—'}</span>` : ''}
       </div>
       ${action}
+      ${adminBtns}
     </div>`;
   }).join('');
 }
@@ -536,6 +620,129 @@ async function saveReturn() {
     });
     closeModal('modal-loan-return'); toast('Return recorded'); loadLoans();
   } catch(e) { toast('Error: '+e.message); }
+}
+
+/* ── Admin button styles ── */
+(function() {
+  const s = document.createElement('style');
+  s.textContent = `
+    .btn-admin-edit{padding:5px 10px;background:var(--b-l);color:var(--b);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-admin-edit:hover{background:#cce0f7}
+    .btn-admin-del{padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-admin-del:hover{background:#f5cccc}
+    body.mobile .btn-admin-edit,body.mobile .btn-admin-del{padding:10px;font-size:13px;border-radius:9px}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ── Admin PIN + Actions ── */
+const ADMIN_PIN = '0000';
+let _pinAction = null;
+
+function promptAdminEdit(id) {
+  const record = _allLoans.find(r => r.id == id);
+  if (!record) return;
+  _pinAction = { type: 'edit', id, record };
+  document.getElementById('pin-modal-title').textContent = 'Admin — Edit Record';
+  document.getElementById('pin-modal-desc').textContent = `Edit loan: "${record.item}" — ${record.guest_name}`;
+  openPinModal();
+}
+
+function promptAdminDelete(id, item, guest) {
+  _pinAction = { type: 'delete', id, item, guest };
+  document.getElementById('pin-modal-title').textContent = 'Admin — Delete Record';
+  document.getElementById('pin-modal-desc').textContent = `Permanently delete: "${item}" — ${guest}. This cannot be undone.`;
+  openPinModal();
+}
+
+function openPinModal() {
+  document.getElementById('admin-pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  openModal('modal-admin-pin');
+  setTimeout(() => document.getElementById('admin-pin-input').focus(), 100);
+}
+
+function closePinModal() {
+  closeModal('modal-admin-pin');
+  _pinAction = null;
+}
+
+function confirmPinAction() {
+  const entered = document.getElementById('admin-pin-input').value.trim();
+  if (entered !== ADMIN_PIN) {
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('admin-pin-input').value = '';
+    document.getElementById('admin-pin-input').focus();
+    return;
+  }
+  closeModal('modal-admin-pin');
+  if (!_pinAction) return;
+  if (_pinAction.type === 'delete') execDelete(_pinAction.id, _pinAction.item);
+  if (_pinAction.type === 'edit')   openEditModal(_pinAction.record);
+  _pinAction = null;
+}
+
+document.getElementById('admin-pin-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') confirmPinAction();
+});
+
+async function execDelete(id, item) {
+  try {
+    await api('/rest/v1/loan_register?id=eq.'+id, 'DELETE');
+    toast(`"${item}" record deleted`);
+    loadLoans();
+  } catch(e) { toast('Delete failed: '+e.message); }
+}
+
+let _editId = null;
+
+function openEditModal(r) {
+  _editId = r.id;
+  document.getElementById('edit-loan-item').value = r.item || '';
+  document.getElementById('edit-loan-guest').value = r.guest_name || '';
+  document.getElementById('edit-loan-property').value = r.property_name || '';
+  const toLocal = iso => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  document.getElementById('edit-loan-datetime').value = toLocal(r.loaned_at);
+  document.getElementById('edit-pre-video').checked = !!r.pre_loan_video;
+  document.getElementById('edit-returned-at').value = toLocal(r.returned_at);
+  document.getElementById('edit-condition').value = r.return_condition || '';
+  document.getElementById('edit-post-video').checked = !!r.post_return_video;
+  openModal('modal-edit-loan');
+}
+
+async function saveEditLoan() {
+  if (!_editId) return;
+  const item          = document.getElementById('edit-loan-item').value.trim();
+  const guest_name    = document.getElementById('edit-loan-guest').value.trim();
+  const property_name = document.getElementById('edit-loan-property').value.trim();
+  const loanedAt      = document.getElementById('edit-loan-datetime').value;
+  const preVideo      = document.getElementById('edit-pre-video').checked;
+  const returnedAtRaw = document.getElementById('edit-returned-at').value;
+  const condition     = document.getElementById('edit-condition').value;
+  const postVideo     = document.getElementById('edit-post-video').checked;
+
+  if (!item || !guest_name || !loanedAt) { toast('Item, Guest and Loan date are required'); return; }
+
+  const payload = {
+    item, guest_name, property_name,
+    loaned_at: new Date(loanedAt).toISOString(),
+    pre_loan_video: preVideo,
+    returned_at: returnedAtRaw ? new Date(returnedAtRaw).toISOString() : null,
+    return_condition: condition || null,
+    post_return_video: postVideo
+  };
+
+  try {
+    await api('/rest/v1/loan_register?id=eq.'+_editId, 'PATCH', payload);
+    closeModal('modal-edit-loan');
+    toast('Record updated');
+    loadLoans();
+  } catch(e) { toast('Save failed: '+e.message); }
 }
 
 loadLoans();
