@@ -413,7 +413,7 @@ const loaders={
   ratings:()=>loadRatings(),
   earnings:()=>{
     const fr=document.getElementById('iframe-earnings');
-    if(!fr.src||fr.src==='about:blank'||fr.src===window.location.href){
+    if(!fr.src||!fr.src.includes('earnings.html')){
       fr.src='earnings.html?role=talent&name='+encodeURIComponent(talentNameParam)+'&embedded=1';
     }
   },
