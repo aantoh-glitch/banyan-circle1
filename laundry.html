@@ -240,7 +240,7 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
   </div>
   <div class="fg"><label class="fl">Item Conditions</label><div id="col-items-list"></div></div>
   <div class="row-grid">
-    <div class="fg"><label class="fl">Amount Paid (₹)</label><input class="fc" type="number" id="col-amount" placeholder="0"/></div>
+    <div class="fg"><label class="fl">Amount Paid (₹)</label><input class="fc" type="text" inputmode="numeric" pattern="[0-9]*" id="col-amount"/></div>
     <div class="fg"><label class="fl">Invoice Upload</label><input class="fc" type="file" id="col-invoice" accept="image/*,application/pdf"/></div>
   </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="col-notes" placeholder="Any notes on collection…"></textarea></div>
@@ -556,7 +556,7 @@ async function openCreateModal(){
   document.getElementById('c-items-grid').innerHTML = LAUNDRY_ITEMS.map(name=>`
     <div class="item-row">
       <span class="item-label">${name}</span>
-      <input class="item-qty" type="number" min="0" inputmode="numeric" placeholder="0" data-item="${name}" value="0"/>
+      <input class="item-qty" type="text" inputmode="numeric" pattern="[0-9]*" data-item="${name}"/>
     </div>`).join('');
   openModal('modal-create');
 }
