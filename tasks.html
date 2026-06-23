@@ -404,6 +404,22 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 <!-- Edit preset / bundle task inline edit handled inline -->
 
+<!-- Admin PIN Modal -->
+<div id="modal-pin" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--white);border-radius:14px;padding:24px;max-width:340px;width:100%">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px">Confirm Delete</div>
+    <p id="pin-desc" style="font-size:13px;color:var(--muted);margin-bottom:18px"></p>
+    <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:5px">Enter Admin PIN</label>
+    <input id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
+      style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:22px;letter-spacing:8px;text-align:center;font-family:inherit;outline:none;color:var(--text)"/>
+    <div id="pin-error" style="color:var(--r);font-size:12px;margin-top:6px;display:none">Incorrect PIN. Try again.</div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button onclick="closePinModal()" style="flex:1;padding:12px;background:var(--white);border:1px solid var(--border);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="confirmPin()" style="flex:1;padding:12px;background:var(--r);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -901,13 +917,14 @@ function toggleBundle(bid, headerRow){
 }
 
 async function deleteBundleTasks(bundleId){
-  if(!confirm('Delete all tasks in this bundle? This cannot be undone.')) return;
-  try {
-    await api('/rest/v1/tasks?bundle_id=eq.'+bundleId,'DELETE');
-    ALL_TASKS = ALL_TASKS.filter(t=>t.bundle_id !== bundleId);
-    toast('Bundle deleted');
-    applyFilters();
-  } catch(e){ toast('Delete failed: '+e.message); }
+  requirePin(`Delete all tasks in this bundle? This cannot be undone.`, async () => {
+    try {
+      await api('/rest/v1/tasks?bundle_id=eq.'+bundleId,'DELETE');
+      ALL_TASKS = ALL_TASKS.filter(t=>t.bundle_id !== bundleId);
+      toast('Bundle deleted');
+      applyFilters();
+    } catch(e){ toast('Delete failed: '+e.message); }
+  });
 }
 
 function taskTypeBadge(type){
@@ -1088,14 +1105,16 @@ async function addSimplePreset(){
 
 async function deleteSimplePreset(i){
   const name = PRESETS[i];
-  try {
-    await sbDeletePreset(name);
-    PRESETS.splice(i,1);
-    if(PRESET_BUNDLES[name]) delete PRESET_BUNDLES[name];
-    renderPMSimple();
-    renderPMBundles();
-    toast('Preset removed');
-  } catch(e){ toast('Delete failed: '+e.message); }
+  requirePin(`Delete preset "${name}"?`, async () => {
+    try {
+      await sbDeletePreset(name);
+      PRESETS.splice(i,1);
+      if(PRESET_BUNDLES[name]) delete PRESET_BUNDLES[name];
+      renderPMSimple();
+      renderPMBundles();
+      toast('Preset removed');
+    } catch(e){ toast('Delete failed: '+e.message); }
+  });
 }
 
 // ── Bundle CRUD ───────────────────────────────────────────────────────
@@ -1116,15 +1135,16 @@ async function addBundle(){
 }
 
 async function deleteBundle(name){
-  if(!confirm('Delete bundle "'+name+'" and all its tasks?')) return;
-  try {
-    await sbDeletePreset(name);
-    delete PRESET_BUNDLES[name];
-    const idx = PRESETS.indexOf(name);
-    if(idx>-1) PRESETS.splice(idx,1);
-    renderPMBundles(); renderPMSimple();
-    toast('Bundle deleted');
-  } catch(e){ toast('Delete failed: '+e.message); }
+  requirePin(`Delete bundle "${name}" and all its tasks?`, async () => {
+    try {
+      await sbDeletePreset(name);
+      delete PRESET_BUNDLES[name];
+      const idx = PRESETS.indexOf(name);
+      if(idx>-1) PRESETS.splice(idx,1);
+      renderPMBundles(); renderPMSimple();
+      toast('Bundle deleted');
+    } catch(e){ toast('Delete failed: '+e.message); }
+  });
 }
 
 async function addBundleTask(bundleName, safeId){
@@ -1143,15 +1163,17 @@ async function addBundleTask(bundleName, safeId){
 }
 
 async function deleteBundleTask(bundleName, i){
-  const newTasks = PRESET_BUNDLES[bundleName].filter((_,idx)=>idx!==i);
-  const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
-  try {
-    await sbPatchPreset(bundleName, {tasks: newTasks});
-    PRESET_BUNDLES[bundleName] = newTasks;
-    renderPMBundles();
-    setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
-    toast('Task removed');
-  } catch(e){ toast('Delete failed: '+e.message); }
+  requirePin(`Remove this task from "${bundleName}"?`, async () => {
+    const newTasks = PRESET_BUNDLES[bundleName].filter((_,idx)=>idx!==i);
+    const safeId = 'bundle-'+bundleName.replace(/[^a-zA-Z0-9]/g,'_');
+    try {
+      await sbPatchPreset(bundleName, {tasks: newTasks});
+      PRESET_BUNDLES[bundleName] = newTasks;
+      renderPMBundles();
+      setTimeout(()=>{ const el = document.getElementById(safeId); if(el) el.style.display=''; }, 10);
+      toast('Task removed');
+    } catch(e){ toast('Delete failed: '+e.message); }
+  });
 }
 
 // ── Inline edit ───────────────────────────────────────────────────────
@@ -1454,13 +1476,52 @@ function editBundle(bundleId){
 }
 
 async function deleteTask(id){
-  if(!confirm('Delete this task? This cannot be undone.')) return;
-  try {
-    await api('/rest/v1/tasks?id=eq.'+id,'DELETE');
-    ALL_TASKS = ALL_TASKS.filter(t=>t.id!==id);
-    toast('Task deleted'); applyFilters();
-  } catch(e){ toast('Delete failed: '+e.message); }
+  requirePin(`Delete this task? This cannot be undone.`, async () => {
+    try {
+      await api('/rest/v1/tasks?id=eq.'+id,'DELETE');
+      ALL_TASKS = ALL_TASKS.filter(t=>t.id!==id);
+      toast('Task deleted'); applyFilters();
+    } catch(e){ toast('Delete failed: '+e.message); }
+  });
 }
+
+/* ── Admin PIN ── */
+const ADMIN_PIN = '0000';
+let _pinCallback = null;
+
+function requirePin(desc, callback) {
+  _pinCallback = callback;
+  document.getElementById('pin-desc').textContent = desc;
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  const m = document.getElementById('modal-pin');
+  m.style.display = 'flex';
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+
+function closePinModal() {
+  document.getElementById('modal-pin').style.display = 'none';
+  _pinCallback = null;
+}
+
+function confirmPin() {
+  const entered = document.getElementById('pin-input').value.trim();
+  if (entered !== ADMIN_PIN) {
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+    return;
+  }
+  closePinModal();
+  if (_pinCallback) _pinCallback();
+}
+
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmPin();
+});
+document.getElementById('modal-pin').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-pin')) closePinModal();
+});
 
 document.getElementById('modal-task').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
