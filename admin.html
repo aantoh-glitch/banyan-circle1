@@ -1160,7 +1160,14 @@ function goPage(id,btn){
   if(id==='dashboard')  loadDashboard();
   if(id==='properties'){ loadProperties(); }
   if(id==='staff')      loadStaff();
-  if(id==='guests')     loadGuests();
+  if(id==='guests'){
+    loadGuests();
+    document.getElementById('g-profiles-view').style.display='';
+    document.getElementById('g-registrations-view').style.display='none';
+    document.getElementById('g-log-view').style.display='none';
+    document.querySelectorAll('#pg-guests .ptab').forEach(t=>t.classList.remove('on'));
+    document.getElementById('gtab-profiles').classList.add('on');
+  }
   if(id==='docs')       loadDocsPage();
   if(id==='maint')      loadMaintPage();
   if(id==='msgs'){var mf=document.getElementById('messaging-frame');if(!mf.src||mf.src==='about:blank'||mf.src.indexOf('messaging.html')===-1)mf.src='messaging.html';}
@@ -1410,7 +1417,19 @@ async function loadGuests(){
 }
 async function openGuestModal(){ document.getElementById('mg-id').value=''; document.getElementById('mg-ttl').textContent='Add guest'; ['mg-name','mg-pin','mg-mobile','mg-platform','mg-in','mg-out'].forEach(i=>document.getElementById(i).value=''); document.getElementById('mg-out').min=''; if(!PROPS.length)await loadAllProperties(); fillPropSelect('mg-prop',''); openModal('modal-guest'); }
 function editGuest(g){ document.getElementById('mg-id').value=g.id; document.getElementById('mg-ttl').textContent='Edit guest'; document.getElementById('mg-name').value=g.name||''; document.getElementById('mg-pin').value=g.pin||''; document.getElementById('mg-mobile').value=g.mobile||''; document.getElementById('mg-platform').value=g.platform||''; document.getElementById('mg-in').value=g.check_in||''; document.getElementById('mg-out').value=g.check_out||''; document.getElementById('mg-out').min=g.check_in||''; fillPropSelect('mg-prop',g.property_name); openModal('modal-guest'); }
-async function saveGuest(){ const id=document.getElementById('mg-id').value; const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),mobile:document.getElementById('mg-mobile').value.trim()||null,platform:document.getElementById('mg-platform').value.trim()||null,property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,created_by:'OFFICE'}; if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;} if(!body.property_name){alert('Please select a property');return;} try{ if(id) await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body); else await api('/rest/v1/guest_profiles','POST',body); closeModal('modal-guest'); toast('Guest saved ✓'); loadGuests();}catch(e){alert('Error: '+e.message);} }
+async function saveGuest(){
+  const id=document.getElementById('mg-id').value;
+  const body={name:document.getElementById('mg-name').value.trim(),pin:document.getElementById('mg-pin').value.trim(),mobile:document.getElementById('mg-mobile').value.trim()||null,platform:document.getElementById('mg-platform').value.trim()||null,property_name:document.getElementById('mg-prop').value,check_in:document.getElementById('mg-in').value,check_out:document.getElementById('mg-out').value,created_by:'OFFICE'};
+  if(!body.name||!/^\d{4}$/.test(body.pin)||!body.check_in||!body.check_out){alert('Need name, 4-digit PIN, check-in and check-out');return;}
+  if(!body.property_name){alert('Please select a property');return;}
+  try{
+    if(id) await api('/rest/v1/guest_profiles?id=eq.'+id,'PATCH',body);
+    else await api('/rest/v1/guest_profiles','POST',body);
+  }catch(e){alert('Error saving guest: '+e.message);return;}
+  closeModal('modal-guest');
+  toast('Guest saved ✓');
+  loadGuests();
+}
 async function deleteGuest(id,name){ if(!confirm('Remove '+name+'? Their submitted registrations will be kept.'))return; try{ await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+id,'PATCH',{guest_profile_id:null}); await api('/rest/v1/guest_profiles?id=eq.'+id,'DELETE'); toast(name+' removed'); loadGuests(); }catch(e){ alert('Could not remove: '+e.message); } }
 
 // GUEST TAB TOGGLE
