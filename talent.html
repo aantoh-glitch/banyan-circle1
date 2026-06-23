@@ -13,8 +13,8 @@
   --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
   --nav-h:60px;--top-h:52px;
 }
-html{height:100%;overscroll-behavior-y:none}
-body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;position:fixed;width:100%;overscroll-behavior-y:none}
+html{height:100%;overscroll-behavior-y:auto}
+body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 
 /* TOP BAR */
 .top-bar{
@@ -48,17 +48,20 @@ body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var
   padding:1px 4px;border-radius:999px;display:none;min-width:14px;text-align:center;
 }
 
-/* SCROLL PANELS */
-.panel{
-  position:fixed;
-  top:var(--top-h);
-  left:0;right:0;
-  bottom:var(--nav-h);
+/* CONTENT SCROLLER */
+.content{
+  margin-top:var(--top-h);
+  margin-bottom:var(--nav-h);
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  background:var(--bg);
-  padding:16px 14px;
+  min-height:calc(100dvh - var(--top-h) - var(--nav-h));
+}
+
+/* SCROLL PANELS */
+.panel{
   display:none;
+  padding:16px 14px;
+  padding-bottom:20px;
 }
 .panel.active{display:block}
 
@@ -67,6 +70,7 @@ body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var
   display:none;
   flex-direction:column;
   padding:0;
+  height:calc(100dvh - var(--top-h) - var(--nav-h));
 }
 #panel-messages.active{display:flex}
 
@@ -167,6 +171,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     <button class="btn-signout" onclick="signOut()">Sign out</button>
   </div>
 </div>
+
+<div class="content">
 
 <!-- PANEL: PROFILE -->
 <div class="panel" id="panel-profile">
@@ -291,9 +297,11 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
-<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden;overflow-y:hidden">
+<div class="panel" id="panel-earnings" style="padding:0;height:calc(100dvh - var(--top-h) - var(--nav-h))">
   <iframe id="iframe-earnings" src="earnings.html" style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
+
+</div><!-- /content -->
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -430,6 +438,9 @@ function showPanel(id){
   const prev=currentPanel;
   currentPanel=id;
   history.replaceState(null,'',location.pathname+location.search+'#'+id);
+  /* Scroll content wrapper back to top on tab switch */
+  var c=document.querySelector('.content');
+  if(c) c.scrollTop=0;
   if(loaders[id]) loaders[id]();
 }
 
@@ -444,13 +455,13 @@ document.getElementById('p-cat').addEventListener('change',function(){
 function openEditMode(){
   document.getElementById('profile-view').style.display='none';
   document.getElementById('profile-edit').style.display='';
-  document.getElementById('panel-profile').scrollTop=0;
+  var c=document.querySelector('.content'); if(c) c.scrollTop=0;
 }
 function closeEditMode(){
   document.getElementById('profile-edit').style.display='none';
   document.getElementById('profile-view').style.display='';
   if(_profileData) renderProfileView(_profileData);
-  document.getElementById('panel-profile').scrollTop=0;
+  var c=document.querySelector('.content'); if(c) c.scrollTop=0;
 }
 
 function renderProfileView(d){
@@ -764,60 +775,6 @@ const VALID_PANELS=['profile','schedule','ratings','earnings'];
 const _hashPanel=location.hash.replace('#','');
 showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 
-// PULL TO REFRESH
-(function(){
-  var THRESHOLD = 80;
-  var refreshers = {
-    'panel-profile':   function(){ loadProfile(); toast('Profile refreshed'); },
-    'panel-schedule':  function(){ renderSchedule(); toast('Schedule refreshed'); },
-    'panel-ratings':   function(){ loadRatings(); toast('Ratings refreshed'); },
-    'panel-earnings':  function(){
-      var fr = document.getElementById('iframe-earnings');
-      fr.src = 'earnings.html?role=talent&name=' + encodeURIComponent(talentNameParam) + '&embedded=1';
-      toast('Earnings refreshed');
-    }
-  };
-
-  document.querySelectorAll('.panel').forEach(function(panel){
-    var isIframe = panel.id === 'panel-earnings'; // iframe panel: scrollTop always 0, no scroll gating
-    var startY = 0, pulling = false, indicator = null;
-
-    panel.addEventListener('touchstart', function(e){
-      if(isIframe || panel.scrollTop === 0){
-        startY = e.touches[0].clientY;
-        pulling = true;
-      }
-    }, {passive:true});
-
-    panel.addEventListener('touchmove', function(e){
-      if(!pulling) return;
-      var dist = e.touches[0].clientY - startY;
-      if(dist > 10 && (isIframe || panel.scrollTop === 0)){
-        if(!indicator){
-          indicator = document.createElement('div');
-          indicator.style.cssText = 'text-align:center;font-size:13px;color:var(--muted);padding:10px 0;transition:opacity .2s';
-          indicator.textContent = '↓ Pull to refresh';
-          panel.insertBefore(indicator, panel.firstChild);
-        }
-        indicator.textContent = dist >= THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
-        indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
-      }
-    }, {passive:true});
-
-    panel.addEventListener('touchend', function(e){
-      if(!pulling) return;
-      pulling = false;
-      var dist = e.changedTouches[0].clientY - startY;
-      if(indicator){ indicator.remove(); indicator = null; }
-      if(dist >= THRESHOLD && (isIframe || panel.scrollTop === 0)){
-        var fn = refreshers['panel-' + currentPanel];
-        if(fn) fn();
-      }
-      startY = 0;
-    }, {passive:true});
-  });
-})();
-
 
 </script>
 
@@ -872,7 +829,6 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
     /* Slide up */
     panel.style.transform='translateY(0)';
     panelOpen=true;
-    document.body.style.overflow='hidden';
   };
 
   window.closeMessagingPanel=function(){
@@ -880,7 +836,6 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
     /* Slide panel down */
     panel.style.transform='translateY(calc(100% + 60px))';
     panelOpen=false;
-    document.body.style.overflow='';
     /* Hide overlay after transition completes (matches 300ms CSS transition) */
     setTimeout(function(){
       document.getElementById('msg-panel-overlay').style.display='none';
