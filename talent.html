@@ -766,7 +766,7 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 
 // PULL TO REFRESH
 (function(){
-  var panels = document.querySelectorAll('.panel');
+  var THRESHOLD = 80;
   var refreshers = {
     'panel-profile':   function(){ loadProfile(); toast('Profile refreshed'); },
     'panel-schedule':  function(){ renderSchedule(); toast('Schedule refreshed'); },
@@ -778,54 +778,21 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
     }
   };
 
-  // Pull-to-refresh for earnings panel (iframe swallows touch events — listen on panel div directly)
-  (function(){
-    var earningsPanel = document.getElementById('panel-earnings');
-    if (!earningsPanel) return;
+  document.querySelectorAll('.panel').forEach(function(panel){
+    var isIframe = panel.id === 'panel-earnings'; // iframe panel: scrollTop always 0, no scroll gating
     var startY = 0, pulling = false, indicator = null;
-    var THRESHOLD = 80;
-    earningsPanel.addEventListener('touchstart', function(e){
-      startY = e.touches[0].clientY;
-      pulling = true;
-    }, {passive:true});
-    earningsPanel.addEventListener('touchmove', function(e){
-      if (!pulling) return;
-      var dist = e.touches[0].clientY - startY;
-      if (dist > 10) {
-        if (!indicator) {
-          indicator = document.createElement('div');
-          indicator.style.cssText = 'text-align:center;font-size:13px;color:var(--muted);padding:10px 0;transition:opacity .2s';
-          indicator.textContent = '↓ Pull to refresh';
-          earningsPanel.insertBefore(indicator, earningsPanel.firstChild);
-        }
-        indicator.textContent = dist >= THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
-        indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
-      }
-    }, {passive:true});
-    earningsPanel.addEventListener('touchend', function(e){
-      if (!pulling) return;
-      pulling = false;
-      var dist = e.changedTouches[0].clientY - startY;
-      if (indicator) { indicator.remove(); indicator = null; }
-      if (dist >= THRESHOLD) {
-        refreshers['panel-earnings']();
-      }
-      startY = 0;
-    }, {passive:true});
-  })();
-  var THRESHOLD = 80;
-  panels.forEach(function(panel){
-    var startY = 0, pulling = false, indicator = null;
+
     panel.addEventListener('touchstart', function(e){
-      if(panel.scrollTop === 0){
+      if(isIframe || panel.scrollTop === 0){
         startY = e.touches[0].clientY;
         pulling = true;
       }
     }, {passive:true});
+
     panel.addEventListener('touchmove', function(e){
       if(!pulling) return;
       var dist = e.touches[0].clientY - startY;
-      if(dist > 10 && panel.scrollTop === 0){
+      if(dist > 10 && (isIframe || panel.scrollTop === 0)){
         if(!indicator){
           indicator = document.createElement('div');
           indicator.style.cssText = 'text-align:center;font-size:13px;color:var(--muted);padding:10px 0;transition:opacity .2s';
@@ -836,15 +803,14 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
         indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
       }
     }, {passive:true});
+
     panel.addEventListener('touchend', function(e){
       if(!pulling) return;
       pulling = false;
       var dist = e.changedTouches[0].clientY - startY;
       if(indicator){ indicator.remove(); indicator = null; }
-      // Use currentPanel (the active tab) not panel.id — prevents stale panel from hijacking
-      if(dist >= THRESHOLD && panel.scrollTop === 0){
-        var activeId = 'panel-' + currentPanel;
-        var fn = refreshers[activeId];
+      if(dist >= THRESHOLD && (isIframe || panel.scrollTop === 0)){
+        var fn = refreshers['panel-' + currentPanel];
         if(fn) fn();
       }
       startY = 0;
