@@ -1406,7 +1406,7 @@ async function pcCheck() {
 
 // GUESTS — profiles
 async function loadGuests(){
-  await loadAllProperties();
+  if(!PROPS.length) await loadAllProperties();
   const data=await api('/rest/v1/guest_profiles?select=*&order=check_in.desc')||[];
   const el=document.getElementById('guests-list');
   if(!data.length){el.innerHTML='<div class="empty">No guest profiles yet</div>';return;}
@@ -1428,7 +1428,7 @@ async function saveGuest(){
   }catch(e){alert('Error saving guest: '+e.message);return;}
   closeModal('modal-guest');
   toast('Guest saved ✓');
-  loadGuests();
+  await loadGuests();
 }
 async function deleteGuest(id,name){ if(!confirm('Remove '+name+'? Their submitted registrations will be kept.'))return; try{ await api('/rest/v1/guest_checkins?guest_profile_id=eq.'+id,'PATCH',{guest_profile_id:null}); await api('/rest/v1/guest_profiles?id=eq.'+id,'DELETE'); toast(name+' removed'); loadGuests(); }catch(e){ alert('Could not remove: '+e.message); } }
 
