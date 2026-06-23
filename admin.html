@@ -1808,7 +1808,7 @@ async function loadMaintPage(){
         </td>
         <td style="white-space:nowrap;font-size:12px">${fmtDateTime(m.created_at)}</td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
-          <button class="btn-edit" style="font-size:11px;padding:4px 8px" onclick='requirePin("Edit issue",()=>editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")}))'>Edit</button>
+          <button class="btn-edit" style="font-size:11px;padding:4px 8px" onclick='editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")})'>Edit</button>
           <button onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px;transition:color .15s" onmouseover="this.style.color='var(--r)'" onmouseout="this.style.color='var(--muted)'">×</button>
         </td>
       </tr>
