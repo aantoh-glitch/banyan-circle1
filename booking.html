@@ -656,7 +656,7 @@ async function blockDates() {
   const reason = document.getElementById('blockReason').value;
   if (!prop || !start || !end) { showToast('Fill all required fields','error'); return; }
   if (end < start) { showToast('End must be after start','error'); return; }
-  const conflict = bookings.find(b => b.property === prop && !(b.end < start || b.start > end));
+  const conflict = bookings.find(b => b.property === prop && !(b.end <= start || b.start >= end));
   if (conflict) { showToast('Conflicts with existing booking','error'); return; }
   const propName = properties.find(p => p.id === prop)?.name;
   try {
