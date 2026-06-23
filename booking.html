@@ -148,6 +148,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
 .drp-day-start.drp-day-end { border-radius:6px !important; }
 .drp-hint { font-size:11px; color:var(--muted); margin-top:10px; text-align:center; }
 .drp-footer { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
+.drp-day-blocked { background:#fde8e8 !important; color:#c0392b !important; cursor:not-allowed !important; pointer-events:none !important; }
 </style>
 </head>
 <body>
@@ -1061,6 +1062,17 @@ function navCheckout(dir) {
   renderCheckoutPicker();
 }
 
+function isDateUnavailable(ds, ctx) {
+  // Determine which property to check — use the block/booking form's selected property if available
+  let propId = activeProperty;
+  const propEl = document.getElementById(ctx === 'block' ? 'blockProperty' : 'bookingProperty');
+  if (propEl && propEl.value) propId = propEl.value;
+  return bookings.some(b => {
+    if (propId && propId !== 'all' && b.property !== propId) return false;
+    return ds >= b.start && ds < b.end;
+  });
+}
+
 function renderCheckinPicker() {
   if (!activePicker) return;
   const { ctx, month, year } = activePicker;
@@ -1075,6 +1087,7 @@ function renderCheckinPicker() {
     let cls = 'drp-day';
     if (ds < today) cls += ' drp-day-past';
     else if (ds === selected) cls += ' drp-day-start drp-day-end';
+    else if (isDateUnavailable(ds, ctx)) cls += ' drp-day-blocked';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
   document.getElementById('drpCheckinMonthLabel').textContent = MONTHS[month] + ' ' + year;
@@ -1082,7 +1095,7 @@ function renderCheckinPicker() {
   el.innerHTML = cells;
   el.onmousedown = function(e) {
     const cell = e.target.closest('[data-ds]');
-    if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty')) return;
+    if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty') || cell.classList.contains('drp-day-blocked')) return;
     e.preventDefault(); e.stopPropagation();
     selectCheckin(cell.dataset.ds);
   };
@@ -1118,6 +1131,7 @@ function renderCheckoutPicker() {
     let cls = 'drp-day';
     if (ds <= minDate) cls += ' drp-day-past';
     else if (ds === selected) cls += ' drp-day-start drp-day-end';
+    else if (isDateUnavailable(ds, ctx)) cls += ' drp-day-blocked';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
   }
   document.getElementById('drpCheckoutMonthLabel').textContent = MONTHS[month] + ' ' + year;
@@ -1125,7 +1139,7 @@ function renderCheckoutPicker() {
   el.innerHTML = cells;
   el.onmousedown = function(e) {
     const cell = e.target.closest('[data-ds]');
-    if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty')) return;
+    if (!cell || cell.classList.contains('drp-day-past') || cell.classList.contains('drp-day-empty') || cell.classList.contains('drp-day-blocked')) return;
     e.preventDefault(); e.stopPropagation();
     selectCheckout(cell.dataset.ds);
   };
