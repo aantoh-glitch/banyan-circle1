@@ -310,10 +310,9 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   <div id="ratings-list"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
 </div>
 
-<!-- PANEL: EARNINGS -->
-<div class="panel" id="panel-earnings">
-  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:16px">Earnings</div>
-  <div id="earnings-content"><div style="font-size:13px;color:var(--muted)">Loading…</div></div>
+<!-- PANEL: EARNINGS — inline iframe, no redirect -->
+<div class="panel" id="panel-earnings" style="padding:0;height:calc(100dvh - var(--top-h) - var(--nav-h))">
+  <iframe id="iframe-earnings" src="earnings.html" style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
 
 </div><!-- /content -->
@@ -439,8 +438,8 @@ const loaders={
   schedule:()=>renderSchedule(),
   ratings:()=>loadRatings(),
   earnings:()=>{
-    // earnings panel loads inline
-    document.getElementById('earnings-content').innerHTML='<div style="font-size:13px;color:var(--muted);text-align:center;padding:40px 0">Earnings data coming soon.</div>';
+    const fr=document.getElementById('iframe-earnings');
+    fr.src='earnings.html?role=talent&name='+encodeURIComponent(talentNameParam)+'&embedded=1';
     fr.onload=function(){
       try{fr.contentWindow.postMessage({type:'hide-back-button'},'*');}catch(err){}
     };
