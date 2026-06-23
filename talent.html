@@ -208,17 +208,17 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     </div>
 
     <div class="card" id="view-about-card" style="display:none">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px">About</div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:8px">About</div>
       <div style="font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap" id="view-desc"></div>
     </div>
 
     <div class="card">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px">Details</div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:12px">Details</div>
       <div id="view-details-rows" style="display:flex;flex-direction:column;gap:10px"></div>
     </div>
 
     <div class="card" id="view-links-card" style="display:none">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px">Links</div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:12px">Links</div>
       <div id="view-links-rows" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
 
@@ -506,7 +506,7 @@ function renderProfileView(d){
   if(d.email) details.push(['✉️','Email',d.email]);
   if(d.bio_url) details.push(['📄','CV / Biodata','<a href="'+d.bio_url+'" target="_blank" style="color:var(--br);text-decoration:none">Download ↗</a>']);
   document.getElementById('view-details-rows').innerHTML=details.length
-    ? details.map(function(x){return'<div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:16px;flex-shrink:0;margin-top:1px">'+x[0]+'</span><div><div style="font-size:11px;color:var(--muted);margin-bottom:1px">'+x[1]+'</div><div style="font-size:14px">'+x[2]+'</div></div></div>';}).join('')
+    ? details.map(function(x){return'<div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:16px;flex-shrink:0;margin-top:1px">'+x[0]+'</span><div><div style="font-size:11px;color:var(--faint);margin-bottom:1px">'+x[1]+'</div><div style="font-size:14px">'+x[2]+'</div></div></div>';}).join('')
     : '<div style="font-size:13px;color:var(--muted)">No details added yet.</div>';
   const links=[];
   if(d.instagram) links.push(['📸','Instagram',d.instagram]);
@@ -514,7 +514,7 @@ function renderProfileView(d){
   const linksCard=document.getElementById('view-links-card');
   if(links.length){
     linksCard.style.display='';
-    document.getElementById('view-links-rows').innerHTML=links.map(function(x){return'<a href="'+x[2]+'" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)"><span style="font-size:18px">'+x[0]+'</span><div style="flex:1"><div style="font-size:13px;font-weight:500">'+x[1]+'</div><div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">'+x[2]+'</div></div><span style="color:var(--br);font-size:14px">↗</span></a>';}).join('');
+    document.getElementById('view-links-rows').innerHTML=links.map(function(x){return'<a href="'+x[2]+'" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)"><span style="font-size:18px">'+x[0]+'</span><div style="flex:1"><div style="font-size:13px;font-weight:500">'+x[1]+'</div><div style="font-size:11px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">'+x[2]+'</div></div><span style="color:var(--br);font-size:14px">↗</span></a>';}).join('');
   } else linksCard.style.display='none';
   const venuesCard=document.getElementById('view-venues-card');
   if(d.venues&&d.venues.length){
