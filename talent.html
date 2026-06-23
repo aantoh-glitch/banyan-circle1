@@ -291,7 +291,10 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
-<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden">
+<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden;position:relative">
+  <!-- Transparent overlay captures touch at top of panel; shrinks to 0 after pull starts so iframe gets remaining touches -->
+  <div id="earnings-overlay" style="position:absolute;top:0;left:0;right:0;height:40px;z-index:10;touch-action:none"></div>
+  <div id="earnings-ptr-bar" style="position:absolute;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);background:var(--bg);z-index:9;transition:height .15s">↓ Pull to refresh</div>
   <iframe id="iframe-earnings" src="" style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
 
@@ -814,6 +817,43 @@ showPanel(VALID_PANELS.includes(hashPanel) ? hashPanel : 'profile');
       startY = 0;
     }, {passive:true});
   });
+
+  // EARNINGS PTR via overlay div (iframe swallows touches; overlay sits on top and catches the pull)
+  (function(){
+    var overlay = document.getElementById('earnings-overlay');
+    var bar = document.getElementById('earnings-ptr-bar');
+    var THRESH = 80;
+    var startY = 0, pulling = false;
+
+    overlay.addEventListener('touchstart', function(e){
+      startY = e.touches[0].clientY;
+      pulling = true;
+    }, {passive:true});
+
+    overlay.addEventListener('touchmove', function(e){
+      if(!pulling) return;
+      var dist = e.touches[0].clientY - startY;
+      if(dist > 0){
+        bar.style.height = Math.min(dist * 0.5, 44) + 'px';
+        bar.textContent = dist >= THRESH ? '↑ Release to refresh' : '↓ Pull to refresh';
+        bar.style.opacity = Math.min(dist / THRESH, 1);
+      }
+    }, {passive:true});
+
+    overlay.addEventListener('touchend', function(e){
+      if(!pulling) return;
+      pulling = false;
+      var dist = e.changedTouches[0].clientY - startY;
+      bar.style.height = '0';
+      bar.style.opacity = '0';
+      if(dist >= THRESH){
+        var fr = document.getElementById('iframe-earnings');
+        fr.src = fr.src;
+        toast('Earnings refreshed');
+      }
+      startY = 0;
+    }, {passive:true});
+  })();
 })();
 </script>
 
