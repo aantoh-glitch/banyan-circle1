@@ -737,13 +737,8 @@ function openEditDirect(id) {
   openEditModal(record);
 }
 
-async function execDeleteDirect(id, item, guest) {
-  if (!confirm(`Delete loan: "${item}" — ${guest}?\nThis cannot be undone.`)) return;
-  try {
-    await api('/rest/v1/loan_register?id=eq.'+id, 'DELETE');
-    toast(`"${item}" record deleted`);
-    loadLoans();
-  } catch(e) { toast('Delete failed: '+e.message); }
+function execDeleteDirect(id, item, guest) {
+  promptAdminDelete(id, item, guest);
 }
 
 loadLoans();
