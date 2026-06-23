@@ -428,6 +428,8 @@ function showPanel(id){
   document.getElementById('nav-'+id).classList.add('active');
   const prev=currentPanel;
   currentPanel=id;
+  // Persist active panel in URL hash so refresh lands on same tab
+  history.replaceState(null,'',location.pathname+location.search+'#'+id);
   if(loaders[id]) loaders[id]();
 }
 
@@ -757,8 +759,10 @@ window.addEventListener('pageshow',function(e){
 loadProfile();
 loadProperties();
 
-// Show first tab (Profile) on load
-showPanel('profile');
+// Restore last active tab from URL hash (supports refresh landing on same page)
+const VALID_PANELS = ['profile','schedule','ratings','earnings'];
+const hashPanel = location.hash.replace('#','');
+showPanel(VALID_PANELS.includes(hashPanel) ? hashPanel : 'profile');
 
 // PULL TO REFRESH
 (function(){
