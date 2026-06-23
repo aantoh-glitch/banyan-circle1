@@ -444,8 +444,8 @@ function renderDesktop(rows) {
     }
     if (IS_ADMIN) {
       actions += `
-        <button class="btn-admin-edit" onclick="promptAdminEdit('${r.id}')" title="Edit record" style="margin-left:6px">✏️</button>
-        <button class="btn-admin-del" onclick="promptAdminDelete('${r.id}','${esc(r.item)}','${esc(r.guest_name)}')" title="Delete record" style="margin-left:4px">🗑</button>`;
+        <button class="btn-admin-edit" onclick="openEditDirect('${r.id}')" title="Edit record" style="margin-left:6px">✏️ Edit</button>
+        <button class="btn-admin-del" onclick="execDeleteDirect('${r.id}','${esc(r.item)}','${esc(r.guest_name)}')" title="Delete record" style="margin-left:4px">🗑 Delete</button>`;
     }
     return `<tr>
       <td style="font-weight:500">${esc(r.guest_name)||'—'}</td>
@@ -728,6 +728,22 @@ async function saveEditLoan() {
     toast('Record updated');
     loadLoans();
   } catch(e) { toast('Save failed: '+e.message); }
+}
+
+/* ── Admin direct actions (no PIN — already authenticated as admin role) ── */
+function openEditDirect(id) {
+  const record = _allLoans.find(r => r.id == id);
+  if (!record) return;
+  openEditModal(record);
+}
+
+async function execDeleteDirect(id, item, guest) {
+  if (!confirm(`Delete loan: "${item}" — ${guest}?\nThis cannot be undone.`)) return;
+  try {
+    await api('/rest/v1/loan_register?id=eq.'+id, 'DELETE');
+    toast(`"${item}" record deleted`);
+    loadLoans();
+  } catch(e) { toast('Delete failed: '+e.message); }
 }
 
 loadLoans();
