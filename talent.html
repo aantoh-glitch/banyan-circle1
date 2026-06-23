@@ -9,7 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;
-  --text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);
+  --text:#2C2C2A;--muted:#5F5E5A;--faint:#9E9C97;--border:rgba(0,0,0,0.1);
   --bg:#F9F8F6;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;
   --nav-h:60px;--top-h:52px;
 }
@@ -31,17 +31,21 @@ body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:120;
   background:var(--white);border-top:1px solid var(--border);
-  display:flex;
+  display:flex;justify-content:space-around;
+  padding:8px 4px max(12px,env(safe-area-inset-bottom));
+  box-shadow:0 -4px 20px rgba(0,0,0,.06);
 }
 .nav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;cursor:pointer;border:none;background:none;font-family:inherit;
-  color:var(--muted);font-size:9px;font-weight:500;letter-spacing:.2px;
-  padding:6px 2px;position:relative;transition:color .15s;
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:3px;cursor:pointer;border:none;background:none;font-family:inherit;
+  color:var(--faint);font-size:9.5px;font-weight:500;letter-spacing:.3px;
+  padding:4px 2px;border-radius:10px;position:relative;transition:color .15s;
+  min-width:0;
 }
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .nav-btn.active{color:var(--br)}
-.nav-btn.active::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;background:var(--br);border-radius:0 0 2px 2px}
-.nav-icon{font-size:22px;line-height:1}
+.nav-btn.active svg{stroke:var(--br)}
+.nav-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52px;display:block}
 .nav-badge{
   position:absolute;top:5px;right:calc(50% - 20px);
   background:var(--br);color:#fff;font-size:9px;font-weight:700;
@@ -306,16 +310,20 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn" id="nav-profile" onclick="showPanel('profile')">
-    <span class="nav-icon">&#128100;</span><span>Profile</span>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span>Profile</span>
   </button>
   <button class="nav-btn" id="nav-schedule" onclick="showPanel('schedule')">
-    <span class="nav-icon">&#128197;</span><span>Schedule</span>
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+    <span>Schedule</span>
   </button>
   <button class="nav-btn" id="nav-ratings" onclick="showPanel('ratings')">
-    <span class="nav-icon">&#11088;</span><span>Ratings</span>
+    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <span>Ratings</span>
   </button>
   <button class="nav-btn" id="nav-earnings" onclick="showPanel('earnings')">
-    <span class="nav-icon">₹</span><span>Earnings</span>
+    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <span>Earnings</span>
   </button>
 </nav>
 
