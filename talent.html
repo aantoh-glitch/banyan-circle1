@@ -291,8 +291,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- PANEL: EARNINGS — inline iframe, no redirect -->
-<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden">
-  <iframe id="iframe-earnings" src="" style="width:100%;height:100%;border:none;display:block"></iframe>
+<div class="panel" id="panel-earnings" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+  <iframe id="iframe-earnings" src="" style="width:100%;flex:1;border:none;display:block;min-height:0"></iframe>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -755,7 +755,45 @@ window.addEventListener('pageshow',function(e){
   }
 });
 
-// Background preloads
+// PULL TO REFRESH — earnings iframe (touch events don't cross iframe boundary)
+// Matches exact same pattern as other panel PTR below
+(function(){
+  var epanel = document.getElementById('panel-earnings');
+  var THRESHOLD = 80;
+  var startY = 0, pulling = false, indicator = null;
+
+  epanel.addEventListener('touchstart', function(e){
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }, {passive:true});
+
+  epanel.addEventListener('touchmove', function(e){
+    if(!pulling) return;
+    var dist = e.touches[0].clientY - startY;
+    if(dist > 10){
+      if(!indicator){
+        indicator = document.createElement('div');
+        indicator.style.cssText = 'text-align:center;font-size:13px;color:var(--muted);padding:10px 0;transition:opacity .2s;background:var(--bg);flex-shrink:0';
+        epanel.insertBefore(indicator, epanel.firstChild);
+      }
+      indicator.textContent = dist >= THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh';
+      indicator.style.opacity = Math.min(dist / THRESHOLD, 1);
+    }
+  }, {passive:true});
+
+  epanel.addEventListener('touchend', function(e){
+    if(!pulling) return;
+    pulling = false;
+    var dist = e.changedTouches[0].clientY - startY;
+    if(indicator){ indicator.remove(); indicator = null; }
+    if(dist >= THRESHOLD){
+      var fr = document.getElementById('iframe-earnings');
+      fr.src = fr.src;
+      toast('Earnings refreshed');
+    }
+    startY = 0;
+  }, {passive:true});
+})();
 loadProfile();
 loadProperties();
 
