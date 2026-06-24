@@ -1928,7 +1928,7 @@ async function saveMaint(){
   else { body.created_at=new Date().toISOString(); await api('/rest/v1/maintenance_log','POST',body); }
   closeModal('modal-maint'); toast('Saved'); loadMaintPage();
 }
-async function deleteMaint(id){ if(!confirm('Delete this issue?'))return; await api('/rest/v1/maintenance_log?id=eq.'+id,'DELETE'); loadMaintPage(); }
+async function deleteMaint(id){ await api('/rest/v1/maintenance_log?id=eq.'+id,'DELETE'); loadMaintPage(); }
 
 function downloadMaintExcel(){
   // Grab all rows currently rendered in the table
@@ -2083,15 +2083,13 @@ async function saveTalent(){
     closeModal('modal-talent'); toast('Saved'); await loadTalentsPage();
   }catch(e){ alert('Save failed: '+e.message); loadTalentsPage(); }
 }
-async function deleteTalent(id,name){
-  if(!confirm('Remove talent '+name+'?'))return;
-  const enteredPin = prompt('Enter admin PIN to confirm deletion:');
-  if(enteredPin === null) return;
-  if(enteredPin !== '0000'){ alert('Incorrect PIN. Deletion cancelled.'); return; }
-  try{
-    await api('/rest/v1/talents?id=eq.'+id,'DELETE');
-    toast(name+' removed'); loadTalentsPage();
-  }catch(e){ alert('Delete failed: '+e.message); }
+function deleteTalent(id,name){
+  requirePin('Delete talent · ' + name, async () => {
+    try{
+      await api('/rest/v1/talents?id=eq.'+id,'DELETE');
+      toast(name+' removed'); loadTalentsPage();
+    }catch(e){ alert('Delete failed: '+e.message); }
+  });
 }
 function openTalentPortal(id,name,pin){
   // Admin goes directly to talent schedule — no PIN prompt
