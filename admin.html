@@ -812,7 +812,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="ml-notes"></textarea></div>
   <div class="fg"><label class="fl">Login Email <span style="color:var(--r)">*</span></label><input class="fc" id="ml-login-email" placeholder="e.g. 9876543210.landlord@banyan.com" type="email"/><div style="font-size:11px;color:var(--muted);margin-top:3px">Format: mobile.landlord@banyan.com</div></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-landlord')">Cancel</button><button class="btn-p" onclick="saveLandlord()">Save</button></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-landlord')">Cancel</button><button class="btn-p" onclick="btnGuard(this,saveLandlord)">Save</button></div>
 </div></div>
 
 <div class="modal" id="modal-staff"><div class="modal-card">
@@ -852,7 +852,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"></div>
   </div>
   <div class="fg"><label class="fl">Login Email</label><input class="fc" id="ms-login-email" placeholder="e.g. 9876543210@banyan.com" type="email"/><div style="font-size:11px;color:var(--muted);margin-top:3px">Auto-filled from phone. Change only if different.</div></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-staff')">Cancel</button><button class="btn-p" onclick="saveStaff()">Save</button></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-staff')">Cancel</button><button class="btn-p" onclick="btnGuard(this,saveStaff)">Save</button></div>
 </div></div>
 
 <div class="modal" id="modal-guest"><div class="modal-card">
@@ -868,7 +868,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"><label class="fl">Check-in <span style="color:var(--r)">*</span></label><input class="fc" id="mg-in" type="date" onchange="const o=document.getElementById('mg-out');o.min=this.value;if(o.value&&o.value<=this.value){const d=new Date(this.value+'T00:00:00');d.setDate(d.getDate()+1);o.value=d.toISOString().split('T')[0];}"/></div>
     <div class="fg"><label class="fl">Check-out <span style="color:var(--r)">*</span></label><input class="fc" id="mg-out" type="date"/></div>
   </div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-guest')">Cancel</button><button class="btn-p" onclick="saveGuest()">Save</button></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-guest')">Cancel</button><button class="btn-p" onclick="btnGuard(this,saveGuest)">Save</button></div>
 </div></div>
 
 
@@ -891,7 +891,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg"><label class="fl">Status</label><select class="fc" id="mm-status"><option>open</option><option>in_progress</option><option>resolved</option></select></div>
   </div>
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="mm-notes"></textarea></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-maint')">Cancel</button><button class="btn-p" onclick="saveMaint()">Save</button></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-maint')">Cancel</button><button class="btn-p" onclick="btnGuard(this,saveMaint)">Save</button></div>
 </div></div>
 
 <!-- Guest Registration Detail Modal -->
@@ -965,7 +965,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
   <div class="modal-actions">
     <button class="btn-sec" onclick="closeModal('modal-earn')">Cancel</button>
-    <button class="btn-p" id="me-save-btn" onclick="saveEarning()">Add Entry</button>
+    <button class="btn-p" id="me-save-btn" onclick="btnGuard(this,saveEarning)">Add Entry</button>
   </div>
 </div></div>
 
@@ -984,7 +984,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div style="font-size:12px;color:var(--r);margin-top:4px" id="ep-err"></div>
   <div class="modal-actions">
     <button class="btn-sec" onclick="closeModal('modal-editpin')">Cancel</button>
-    <button class="btn-p" onclick="savePropertyPin()">Save PIN</button>
+    <button class="btn-p" onclick="btnGuard(this,savePropertyPin)">Save PIN</button>
   </div>
 </div></div>
 
@@ -1000,7 +1000,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
   <div class="fg"><label class="fl">Property / Venue</label><select class="fc" id="abk-prop"></select></div>
   <div class="fg"><label class="fl">Message (optional)</label><textarea class="fc" id="abk-message" style="min-height:80px" placeholder="Session details, group size, requirements…"></textarea></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-admin-booking')">Cancel</button><button class="btn-p" onclick="submitAdminBooking()">Send Request</button></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-admin-booking')">Cancel</button><button class="btn-p" onclick="btnGuard(this,submitAdminBooking)">Send Request</button></div>
 </div></div>
 
 
@@ -1038,7 +1038,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div style="font-size:12px;color:var(--muted)">Loading venues…</div>
     </div>
   </div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-talent')">Cancel</button><button class="btn-p" onclick="saveTalent()">Save</button></div>
+  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-talent')">Cancel</button><button class="btn-p" onclick="btnGuard(this,saveTalent)">Save</button></div>
 </div></div>
 <script>
 const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
@@ -2482,7 +2482,7 @@ async function saveTalentDoc(){
   <div class="fg"><label class="fl">Update note</label><textarea class="fc" id="mu-note" style="min-height:100px" placeholder="Describe what was done, observed, or next steps…"></textarea></div>
   <div class="modal-actions">
     <button class="btn-sec" onclick="closeModal('modal-maint-update')">Cancel</button>
-    <button class="btn-p" onclick="saveMaintUpdate()">Save Update</button>
+    <button class="btn-p" onclick="btnGuard(this,saveMaintUpdate)">Save Update</button>
   </div>
 </div></div>
 
@@ -2533,7 +2533,7 @@ async function saveTalentDoc(){
   <div class="fg"><label class="fl">Notes (optional)</label><textarea class="fc" id="lc-leave-notes" placeholder="Reason or additional info…"></textarea></div>
   <div class="modal-actions">
     <button class="btn-sec" onclick="lcCloseModal()">Cancel</button>
-    <button class="btn-p" onclick="lcSaveLeave()">Save</button>
+    <button class="btn-p" onclick="btnGuard(this,lcSaveLeave)">Save</button>
   </div>
 </div></div>
 
@@ -3006,7 +3006,10 @@ function acPickSt(btn) {
   btn.classList.add('on'); document.getElementById('ac-exp-status').value=btn.dataset.val;
 }
 
-async function acSaveExp() {
+async function acSaveExp(btn) {
+  if (btn) { if (btn.disabled) return; btn.disabled = true; const _ot=btn.textContent; btn.setAttribute('data-orig',_ot); btn.textContent='Saving…'; }
+  const _reEnable = () => { if(btn){ btn.disabled=false; btn.textContent=btn.getAttribute('data-orig')||'Save'; } };
+  try {
   const id       = document.getElementById('ac-exp-id').value;
   const item     = document.getElementById('ac-exp-item').value.trim();
   const amount   = document.getElementById('ac-exp-amount').value;
@@ -3023,7 +3026,8 @@ async function acSaveExp() {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id,'PATCH',body);
     else   await acApi('/rest/v1/expenses','POST',{...body,created_at:new Date().toISOString()});
     acCloseExpModal(); acToast('Saved ✓'); await acLoadExp();
-  } catch(e){ alert('Error: '+e.message); }
+  } catch(e){ alert('Error: '+e.message); _reEnable(); return; }
+  _reEnable();
 }
 
 async function acDelExp(id) {
@@ -3059,5 +3063,26 @@ function acClearUpload() {
   document.getElementById('ac-upload-area').style.display='';
 }
 
+
+// ── Single-click guard for save buttons ──────────────────────────────────────
+// Wraps an async save function: disables button on click, re-enables on error/completion.
+// Modal close on success re-enables naturally since the modal is gone.
+async function btnGuard(btn, fn) {
+  if (btn.disabled) return;           // already running — ignore extra clicks
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    await fn();
+  } catch(e) {
+    // fn itself usually shows alert; just re-enable so user can retry
+    console.error('btnGuard caught:', e);
+  } finally {
+    // Only re-enable if button is still in the DOM and modal is still visible
+    // (if modal closed on success, btn is hidden anyway — no harm re-enabling)
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
 </script>
 
