@@ -69,6 +69,11 @@ html,body{height:100%;overscroll-behavior-y:auto;font-family:'DM Sans',sans-seri
   -webkit-overflow-scrolling:touch;
   min-height:calc(100dvh - var(--top-h) - var(--nav-h));
 }
+/* When top bar is hidden, content expands to fill that space */
+.top-bar[style*="display: none"] ~ .content,
+.top-bar[style*="display:none"] ~ .content{
+  min-height:calc(100dvh - var(--nav-h));
+}
 
 /* SCROLL PANELS */
 .panel{
@@ -456,6 +461,9 @@ function showPanel(id){
   const prev=currentPanel;
   currentPanel=id;
   history.replaceState(null,'',location.pathname+location.search+'#'+id);
+  /* Show top bar only on profile page */
+  var topBar=document.querySelector('.top-bar');
+  if(topBar) topBar.style.display=id==='profile'?'':'none';
   /* Scroll content wrapper back to top on tab switch */
   var c=document.querySelector('.content');
   if(c) c.scrollTop=0;
