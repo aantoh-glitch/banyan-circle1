@@ -2065,17 +2065,23 @@ async function acSaveExp() {
 
       // Sync utility_payments when editing a Utility expense
       if (category === 'Utility') {
+        // Derive the month string (YYYY-MM) from billDate or today
+        const syncMonth = (billDate || new Date().toISOString().slice(0,10)).slice(0,7);
         if (status === 'Paid') {
-          // Upsert: check if a matching row already exists (by expense id stored in notes, or by property+type+expense_id)
-          // We use expense id stored in the notes/description field as a link key.
-          // Strategy: delete any existing row tied to this expense id, then re-insert.
+          // Delete any existing utility_payments row for this property+type+month, then re-insert.
+          // This avoids duplicates whether or not a previous row exists.
           try {
-            await acApi('/rest/v1/utility_payments?expense_id=eq.'+id, 'DELETE');
+            await acApi(
+              '/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(utilityProp)
+              +'&utility_type=eq.'+encodeURIComponent(utilityType)
+              +'&month=eq.'+encodeURIComponent(syncMonth),
+              'DELETE'
+            );
           } catch(_) {}
           const upBody = {
-            expense_id:    id,
             property_name: utilityProp,
             utility_type:  utilityType,
+            month:         syncMonth,
             amount:        Number(amount),
             status:        'paid',
             paid_on:       new Date().toISOString().slice(0,10),
@@ -2084,17 +2090,16 @@ async function acSaveExp() {
             notes:         desc     || null,
             created_at:    new Date().toISOString()
           };
-          // Try with expense_id first; fall back without it if column doesn't exist
-          try {
-            await acApi('/rest/v1/utility_payments', 'POST', upBody);
-          } catch(_) {
-            const { expense_id, ...upBodyFallback } = upBody;
-            await acApi('/rest/v1/utility_payments', 'POST', upBodyFallback);
-          }
+          await acApi('/rest/v1/utility_payments', 'POST', upBody);
         } else {
-          // Status changed to Pending — remove from utility_payments if present
+          // Status changed to Pending — remove from utility_payments so landlord page stays clean
           try {
-            await acApi('/rest/v1/utility_payments?expense_id=eq.'+id, 'DELETE');
+            await acApi(
+              '/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(utilityProp)
+              +'&utility_type=eq.'+encodeURIComponent(utilityType)
+              +'&month=eq.'+encodeURIComponent(syncMonth),
+              'DELETE'
+            );
           } catch(_) {}
         }
       }
@@ -2107,9 +2112,11 @@ async function acSaveExp() {
 
       // If Utility + Paid → also write to utility_payments (new expense only)
       if (category === 'Utility' && status === 'Paid') {
+        const syncMonth = (billDate || new Date().toISOString().slice(0,10)).slice(0,7);
         const upBody = {
           property_name: utilityProp,
           utility_type:  utilityType,
+          month:         syncMonth,
           amount:        Number(amount),
           status:        'paid',
           paid_on:       new Date().toISOString().slice(0,10),
