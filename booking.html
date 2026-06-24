@@ -764,7 +764,10 @@ function toggleBanyanCircle() {
   btn.setAttribute('aria-pressed', String(!active));
 }
 
+let _isSavingBooking = false;
+
 async function saveBooking() {
+  if (_isSavingBooking) return; // block double-clicks
   const guest = document.getElementById('manualGuest').value.trim();
   const prop = document.getElementById('manualProperty').value;
   const source = document.getElementById('manualSource').value;
@@ -779,6 +782,12 @@ async function saveBooking() {
   if (end < start) { showToast('End must be after start','error'); return; }
   const propObj = properties.find(p => p.id === prop);
   const propName = propObj?.name;
+
+  // Disable button and set saving state
+  _isSavingBooking = true;
+  const saveBtn = document.querySelector('#addBookingModal .btn-primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+
   try {
     const res = await fetch(SB + '/rest/v1/bookings', {
       method: 'POST',
@@ -797,8 +806,16 @@ async function saveBooking() {
   } catch(e) {
     showToast('Could not save to Supabase: ' + e.message, 'error');
     console.error('saveBooking error:', e);
-    return; // Don't close modal or add locally — let user retry
+    // Re-enable button so user can retry
+    _isSavingBooking = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Booking'; }
+    return; // Don't close modal — let user retry
   }
+
+  // Reset saving state
+  _isSavingBooking = false;
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Booking'; }
+
   closeModal('addBookingModal');
   document.getElementById('manualGuest').value = '';
   resetDrp('manual');
