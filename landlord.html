@@ -567,7 +567,7 @@ async function getAuthToken() {
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 const IS_ADMIN_VIEW = new URLSearchParams(location.search).get('viewer') === 'admin';
 if (!me || (me.role !== 'landlord' && !IS_ADMIN_VIEW)) { location.href='/landlogin.html'; throw new Error('No auth'); }
-if (IS_ADMIN_VIEW) { const tb = document.querySelector('.top-bar'); if (tb) tb.style.display = 'none'; }
+if (IS_ADMIN_VIEW) document.querySelector('.top-bar').style.display = 'none';
 // Hide Edit Details button when accessed via landlord PIN login (not admin view)
 if (!IS_ADMIN_VIEW) {
   const editToggle = document.getElementById('desc-edit-toggle');
