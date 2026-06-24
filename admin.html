@@ -243,7 +243,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .filter-clear{padding:9px 14px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;align-self:flex-end}
 .filter-clear:hover{border-color:var(--br);color:var(--br)}
 /* PIN modal */
-.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:flex;align-items:center;justify-content:center}
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;display:none;align-items:center;justify-content:center}
+.pin-overlay.on{display:flex}
 .pin-box{background:var(--white);border-radius:16px;padding:32px 28px;width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18)}
 .pin-title{font-family:'EB Garamond',Georgia,serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
 .pin-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
@@ -1391,7 +1392,7 @@ function pcDel() { _pcPin = _pcPin.slice(0, -1); pcDots(); }
 function pcDots(state) {
   for (let i = 0; i < 4; i++) {
     const el = document.getElementById('pc-d' + i);
-    el.className = 'dot' + (state === 'err' ? ' err' : i < _pcPin.length ? ' on' : '');
+    el.className = 'pin-dot' + (state === 'err' ? ' err' : i < _pcPin.length ? ' filled' : '');
   }
 }
 async function pcCheck() {
@@ -2487,23 +2488,34 @@ async function saveTalentDoc(){
 </div></div>
 
 <!-- PIN Confirm Modal for staff removal -->
-<div class="modal" id="modal-pin-confirm"><div class="modal-card" style="max-width:320px">
-  <div class="modal-ttl" id="pin-confirm-title">Enter PIN for confirmation</div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:16px" id="pin-confirm-name"></p>
-  <div style="display:flex;justify-content:center;gap:14px;margin-bottom:16px" id="pin-confirm-dots">
-    <div class="dot" id="pc-d0"></div><div class="dot" id="pc-d1"></div>
-    <div class="dot" id="pc-d2"></div><div class="dot" id="pc-d3"></div>
+<div class="pin-overlay" id="modal-pin-confirm" onclick="if(event.target===this)closeModal('modal-pin-confirm')">
+  <div class="pin-box">
+    <div class="pin-title" id="pin-confirm-title">Enter PIN for confirmation</div>
+    <div class="pin-sub" id="pin-confirm-name"></div>
+    <div class="pin-dots" id="pin-confirm-dots">
+      <div class="pin-dot" id="pc-d0"></div>
+      <div class="pin-dot" id="pc-d1"></div>
+      <div class="pin-dot" id="pc-d2"></div>
+      <div class="pin-dot" id="pc-d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pcKey('1')">1</button>
+      <button class="pin-key" onclick="pcKey('2')">2</button>
+      <button class="pin-key" onclick="pcKey('3')">3</button>
+      <button class="pin-key" onclick="pcKey('4')">4</button>
+      <button class="pin-key" onclick="pcKey('5')">5</button>
+      <button class="pin-key" onclick="pcKey('6')">6</button>
+      <button class="pin-key" onclick="pcKey('7')">7</button>
+      <button class="pin-key" onclick="pcKey('8')">8</button>
+      <button class="pin-key" onclick="pcKey('9')">9</button>
+      <div></div>
+      <button class="pin-key" onclick="pcKey('0')">0</button>
+      <button class="pin-key" onclick="pcDel()">⌫</button>
+    </div>
+    <div class="pin-err" id="pin-confirm-err"></div>
+    <button class="pin-cancel" onclick="closeModal('modal-pin-confirm')">Cancel</button>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
-    <button class="key" onclick="pcKey('1')">1</button><button class="key" onclick="pcKey('2')">2</button><button class="key" onclick="pcKey('3')">3</button>
-    <button class="key" onclick="pcKey('4')">4</button><button class="key" onclick="pcKey('5')">5</button><button class="key" onclick="pcKey('6')">6</button>
-    <button class="key" onclick="pcKey('7')">7</button><button class="key" onclick="pcKey('8')">8</button><button class="key" onclick="pcKey('9')">9</button>
-    <div></div><button class="key" onclick="pcKey('0')">0</button>
-    <button class="key" onclick="pcDel()" style="font-size:16px;color:var(--muted)">⌫</button>
-  </div>
-  <div style="font-size:13px;color:var(--r);text-align:center;min-height:18px;margin-bottom:10px" id="pin-confirm-err"></div>
-  <div class="modal-actions"><button class="btn-sec" onclick="closeModal('modal-pin-confirm')">Cancel</button></div>
-</div></div>
+</div>
 
 <!-- LEAVE CALENDAR MODALS -->
 <div class="modal" id="lc-modal-leave"><div class="modal-card">
