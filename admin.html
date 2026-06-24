@@ -3006,10 +3006,7 @@ function acPickSt(btn) {
   btn.classList.add('on'); document.getElementById('ac-exp-status').value=btn.dataset.val;
 }
 
-async function acSaveExp(btn) {
-  if (btn) { if (btn.disabled) return; btn.disabled = true; const _ot=btn.textContent; btn.setAttribute('data-orig',_ot); btn.textContent='Saving…'; }
-  const _reEnable = () => { if(btn){ btn.disabled=false; btn.textContent=btn.getAttribute('data-orig')||'Save'; } };
-  try {
+async function acSaveExp() {
   const id       = document.getElementById('ac-exp-id').value;
   const item     = document.getElementById('ac-exp-item').value.trim();
   const amount   = document.getElementById('ac-exp-amount').value;
@@ -3026,8 +3023,7 @@ async function acSaveExp(btn) {
     if(id) await acApi('/rest/v1/expenses?id=eq.'+id,'PATCH',body);
     else   await acApi('/rest/v1/expenses','POST',{...body,created_at:new Date().toISOString()});
     acCloseExpModal(); acToast('Saved ✓'); await acLoadExp();
-  } catch(e){ alert('Error: '+e.message); _reEnable(); return; }
-  _reEnable();
+  } catch(e){ alert('Error: '+e.message); }
 }
 
 async function acDelExp(id) {
@@ -3068,18 +3064,15 @@ function acClearUpload() {
 // Wraps an async save function: disables button on click, re-enables on error/completion.
 // Modal close on success re-enables naturally since the modal is gone.
 async function btnGuard(btn, fn) {
-  if (btn.disabled) return;           // already running — ignore extra clicks
-  const origText = btn.textContent;
+  if (btn.disabled) return;
   btn.disabled = true;
+  const origText = btn.textContent;
   btn.textContent = 'Saving…';
   try {
     await fn();
   } catch(e) {
-    // fn itself usually shows alert; just re-enable so user can retry
     console.error('btnGuard caught:', e);
   } finally {
-    // Only re-enable if button is still in the DOM and modal is still visible
-    // (if modal closed on success, btn is hidden anyway — no harm re-enabling)
     btn.disabled = false;
     btn.textContent = origText;
   }
