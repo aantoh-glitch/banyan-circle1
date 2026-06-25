@@ -126,36 +126,13 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
 <body>
 <script>
 (function(){
-  function initMe(_me) {
-    window.BC_ME = _me;
-    window.ROLE = _me.role || 'staff';
-    window.STAFF_NAME = _me.name || '';
-    var isDesktop = (_me.role === 'admin') || (window.self !== window.top && _me.role === 'admin');
-    document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
-    if(!isDesktop){
-      var dv=document.getElementById('desktop-view');
-      var mv=document.getElementById('mobile-view');
-      if(dv) dv.style.display='none';
-      if(mv) mv.style.display='flex';
-    }
-  }
-
   var _me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-  if(_me){
-    initMe(_me);
-  } else if(window.self !== window.top){
-    // In iframe (staff app) — request me from parent
-    window.addEventListener('message', function handler(e){
-      if(e.data && e.data.type === 'bc_init_me' && e.data.me){
-        window.removeEventListener('message', handler);
-        try{ localStorage.setItem('bc_me', JSON.stringify(e.data.me)); } catch(err){}
-        initMe(e.data.me);
-      }
-    });
-    window.parent.postMessage({ type: 'bc_request_me' }, '*');
-  } else {
-    location.href = '/index.html';
-  }
+  if(!_me) { location.href = '/index.html'; return; }
+  window.BC_ME = _me;
+  window.ROLE = _me.role || 'staff';
+  window.STAFF_NAME = _me.name || '';
+  var isDesktop = (_me.role === 'admin') || (window.self !== window.top);
+  document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
 })();
 </script>
 
@@ -655,22 +632,6 @@ if(IS_MOBILE){
 // ── Staff scope (mobile only) ──
 async function resolveStaffScope(){
   if(!IS_MOBILE) return;
-  // Use property_name from bc_me directly — avoids an extra API call
-  const meProps = window.BC_ME && window.BC_ME.property_name
-    ? (Array.isArray(window.BC_ME.property_name) ? window.BC_ME.property_name : [window.BC_ME.property_name])
-    : [];
-  if(meProps.length){
-    STAFF_ASSIGNED_PROPS = meProps.filter(Boolean);
-    if(STAFF_ASSIGNED_PROPS.length === 1){
-      window.STAFF_PROPERTY = STAFF_ASSIGNED_PROPS[0];
-      document.getElementById('m-prop-label').textContent = STAFF_ASSIGNED_PROPS[0];
-    } else {
-      document.getElementById('pp-select').innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
-      openModal('modal-prop-pick');
-    }
-    return;
-  }
-  // Fallback: query staff table if property_name not in bc_me
   const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(window.STAFF_NAME)).catch(()=>[]);
   const record = (rows||[])[0];
   if(!record || !(record.assigned_properties||[]).length) return;
