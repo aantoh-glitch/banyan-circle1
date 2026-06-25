@@ -163,11 +163,6 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
   <div class="topbar">
     
     <div class="topbar-name">Booking Manager</div>
-    <div class="topbar-actions">
-      <button class="btn btn-ghost" onclick="openBookingsLog()">Bookings Log</button>
-      <button class="btn btn-ghost" onclick="triggerSync()">Sync</button>
-      <button class="btn btn-primary" onclick="openAddBooking()">+ Manual Booking</button>
-    </div>
   </div>
   <div class="prop-subbar">
     <div class="pill-bar" id="pillBar"></div>
@@ -418,7 +413,13 @@ const _propertyParam = _urlParams.get('property');
 if (_viewerParam === 'landlord') {
   document.addEventListener('DOMContentLoaded', function() {
     const tb = document.querySelector('.topbar');
-    if (tb) tb.style.display = 'none';
+    // Keep topbar visible but hide action buttons (Sync, Manual Booking)
+    const actions = document.querySelector('.topbar-actions');
+    if (actions) actions.style.display = 'none';
+    const mark = document.querySelector('.topbar-mark');
+    if (mark) mark.style.display = 'none';
+    const divider = document.querySelector('.topbar-divider');
+    if (divider) divider.style.display = 'none';
     document.body.classList.add('landlord-view');
     // Reorder: calendar → bookings → block dates (all stacked vertically)
     const mainEl = document.querySelector('.main');
