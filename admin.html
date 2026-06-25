@@ -407,14 +407,18 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <div class="pg" id="pg-properties">
   <!-- Property selector -->
   <div id="prop-selector">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;max-width:460px;flex-wrap:wrap;gap:12px">
-      <div class="pg-title" style="margin:0">Properties</div>
-      <button class="btn-p" onclick="openLandlordModal()" style="display:flex;align-items:center;gap:8px;white-space:nowrap">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Landlord
-      </button>
+    <div class="pg-title">Properties</div>
+    <div class="pg-sub">All properties and their landlord portals</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-ttl" style="margin:0">All properties</div>
+        <button class="btn-p" onclick="openLandlordModal()" style="display:flex;align-items:center;gap:8px;white-space:nowrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Landlord
+        </button>
+      </div>
+      <div id="props-list">Loading…</div>
     </div>
-    <div id="props-list" style="display:flex;flex-direction:column;gap:12px;max-width:460px">Loading…</div>
   </div>
   <!-- Inline landlord portal iframe -->
   <div id="prop-iframe-view" style="display:none;flex-direction:column;height:calc(100vh - 80px)">
@@ -1205,32 +1209,34 @@ async function loadAllProperties(){
 async function loadProperties(){
   await loadAllProperties();
   const el=document.getElementById('props-list');
-  if(!PROPS.length){el.innerHTML='<div class="empty">No properties.</div>';return;}
-  el.innerHTML=PROPS.map(p=>`
-    <div style="display:flex;align-items:stretch;gap:8px;max-width:460px">
-      <button onclick="openLandlordPortal('${p.name.replace(/'/g,"\\'")}')"
-        style="flex:1;text-align:left;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 24px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;transition:all .15s"
-        onmouseover="this.style.borderColor='#D85A30';this.style.background='var(--br-l)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--white)'">
-        <span style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text)">${p.name}</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
-      </button>
-      <button onclick="editPropertyLandlord('${p.name.replace(/'/g,"\\'")}',event)"
-        style="flex-shrink:0;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .15s;min-width:72px"
-        onmouseover="this.style.borderColor='var(--br)';this.style.color='var(--br)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit
-      </button>
-      <button onclick="removePropertyLandlord('${p.name.replace(/'/g,"\'")}',event)"
-        title="Remove this landlord & property"
-        style="flex-shrink:0;background:var(--r-l);border:1px solid #F5C6C6;border-radius:12px;padding:10px 14px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .15s;min-width:72px"
-        onmouseover="this.style.borderColor='var(--r)';this.style.background='#FBDADA'"
-        onmouseout="this.style.borderColor='#F5C6C6';this.style.background='var(--r-l)'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1v2"/></svg>
-        Remove
-      </button>
-    </div>`).join('');
+  if(!PROPS.length){el.innerHTML='<div class="empty">No properties yet.</div>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr>
+    <th>Property</th>
+    <th>Landlord</th>
+    <th>Mobile</th>
+    <th>Email</th>
+    <th></th>
+  </tr></thead><tbody id="props-tbody"></tbody></table>`;
+  // Load landlord details for all props
+  const landlords = await api('/rest/v1/landlords?select=*&order=name').catch(()=>[]);
+  const landlordMap = {};
+  (landlords||[]).forEach(l=>{ landlordMap[l.property_name]=l; });
+  document.getElementById('props-tbody').innerHTML = PROPS.map(p=>{
+    const l = landlordMap[p.name]||{};
+    return `<tr>
+      <td>
+        <span style="font-family:'Playfair Display',serif;font-size:15px;font-weight:500;color:var(--text)">${p.name}</span>
+      </td>
+      <td style="font-size:13px;color:var(--text);font-weight:500">${l.name||'<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-size:13px;color:var(--muted)">${l.mobile||'—'}</td>
+      <td style="font-size:13px;color:var(--muted)">${l.email||'—'}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn-edit" onclick="openLandlordPortal('${p.name.replace(/'/g,"\\'")}')">Portal</button>
+        <button class="btn-edit" onclick="editPropertyLandlord('${p.name.replace(/'/g,"\\'")}',event)" style="margin-left:4px">Edit</button>
+        <button class="btn-del" onclick="removePropertyLandlord('${p.name.replace(/'/g,"\\'") }',event)" style="margin-left:4px">Remove</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 function openLandlordPortal(propName){
   const officeMe = localStorage.getItem('bc_me');
