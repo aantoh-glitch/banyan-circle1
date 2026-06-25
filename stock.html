@@ -133,12 +133,6 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   window.STAFF_NAME = _me.name || '';
   var isDesktop = (_me.role === 'admin') || (window.self !== window.top);
   document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
-  if(!isDesktop){
-    var dv=document.getElementById('desktop-view');
-    var mv=document.getElementById('mobile-view');
-    if(dv) dv.style.display='none';
-    if(mv) mv.style.display='';
-  }
 })();
 </script>
 
@@ -608,7 +602,7 @@ async function api(path, method, body){
 }
 
 const IS_MOBILE = document.body.classList.contains('mobile');
-const IS_ADMIN  = window.ROLE === 'admin' || (window.self !== window.top);
+const IS_ADMIN  = window.ROLE === 'admin' || !IS_MOBILE;
 let ACTIVE_PROP = null; // null until a tab is selected
 let ALL_ITEMS   = [];   // from stock-item-list
 let PROPS_LIST  = [];   // from landlords
