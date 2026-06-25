@@ -447,6 +447,11 @@ if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/staf
 // Prevent back-navigation bypassing auth
 history.pushState(null, '', location.href);
 window.addEventListener('popstate', function() {
+  // Don't interfere when a sheet or modal is open
+  if (_sheetOpen || _msgSheetOpen) return;
+  if (document.getElementById('modal-leave') && document.getElementById('modal-leave').classList.contains('on')) return;
+  if (document.getElementById('modal-reviews') && document.getElementById('modal-reviews').classList.contains('on')) return;
+  if (document.getElementById('modal-vendors') && document.getElementById('modal-vendors').classList.contains('on')) return;
   if (!localStorage.getItem('bc_me')) {
     location.replace('/stafflogin.html');
   } else {
