@@ -131,7 +131,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   window.BC_ME = _me;
   window.ROLE = _me.role || 'staff';
   window.STAFF_NAME = _me.name || '';
-  var isDesktop = (_me.role === 'admin');
+  var isDesktop = (_me.role === 'admin') || (_me.role === 'office');
   document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
 })();
 </script>
@@ -602,7 +602,7 @@ async function api(path, method, body){
 }
 
 const IS_MOBILE = document.body.classList.contains('mobile');
-const IS_ADMIN  = window.ROLE === 'admin';
+const IS_ADMIN  = window.ROLE === 'admin' || window.ROLE === 'office';
 let ACTIVE_PROP = null; // null until a tab is selected
 let ALL_ITEMS   = [];   // from stock-item-list
 let PROPS_LIST  = [];   // from landlords
