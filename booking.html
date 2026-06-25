@@ -35,6 +35,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .pill-edit-btn:hover { background: var(--br-l); color: var(--br); border-color: #D85A30; }
 .topbar-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: auto; }
 .main { flex: 1; padding: 24px 32px; }
+body.admin-view .topbar { display: none; }
+body.admin-view .prop-subbar { padding: 0; margin-bottom: 0; }
+body.admin-view .main { padding: 28px 32px; }
+body.admin-view .pg-title { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 4px; color: var(--text); }
+body.admin-view .pg-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
 .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .main-title { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--text); }
 .main-subtitle { font-size: 13px; color: var(--muted); margin-top: 2px; }
@@ -408,6 +413,28 @@ let selectedBookingId = null;
 const _urlParams = new URLSearchParams(window.location.search);
 const _viewerParam = _urlParams.get('viewer');
 const _propertyParam = _urlParams.get('property');
+
+if (_viewerParam === 'admin') {
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('admin-view');
+    const mainEl = document.querySelector('.main');
+    if (mainEl) {
+      const heading = document.createElement('div');
+      heading.innerHTML = '<div class="pg-title">Bookings</div><div class="pg-sub">Manage reservations across all properties</div>';
+      mainEl.insertBefore(heading, mainEl.firstChild);
+    }
+    // move prop pills into main, right after heading
+    const subbar = document.querySelector('.prop-subbar');
+    const pillBar = document.getElementById('pillBar');
+    if (subbar && pillBar && mainEl) {
+      const pillWrap = document.createElement('div');
+      pillWrap.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;';
+      pillWrap.appendChild(pillBar);
+      mainEl.insertBefore(pillWrap, mainEl.children[1]);
+      subbar.style.display = 'none';
+    }
+  });
+}
 
 if (_viewerParam === 'landlord') {
   document.addEventListener('DOMContentLoaded', function() {
