@@ -399,13 +399,13 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   <div class="modal" id="modal-leave">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <button class="sheet-close-btn" onclick="document.getElementById('modal-leave').classList.remove('on')" aria-label="Close">
+      <button class="sheet-close-btn" onclick="closeLeaveModal()" aria-label="Close">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <div class="modal-ttl">My Leave</div>
       <div class="modal-sub" id="leave-modal-sub"></div>
       <div id="leave-modal-list"><div class="leave-empty">Loading…</div></div>
-      <button onclick="document.getElementById('modal-leave').classList.remove('on')"
+      <button onclick="closeLeaveModal()"
         style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
         Close
       </button>
@@ -416,13 +416,13 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   <div class="modal" id="modal-reviews">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <button class="sheet-close-btn" onclick="document.getElementById('modal-reviews').classList.remove('on')" aria-label="Close">
+      <button class="sheet-close-btn" onclick="closeReviewsModal()" aria-label="Close">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <div class="modal-ttl">My Reviews</div>
       <div class="modal-sub" id="reviews-modal-sub"></div>
       <div id="reviews-modal-list"><div class="rev-empty">Loading…</div></div>
-      <button onclick="document.getElementById('modal-reviews').classList.remove('on')"
+      <button onclick="closeReviewsModal()"
         style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
         Close
       </button>
@@ -435,7 +435,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   <div class="modal" id="modal-vendors">
     <div class="modal-sheet" style="padding-bottom:28px">
       <div class="modal-handle"></div>
-      <button class="sheet-close-btn" onclick="document.getElementById('modal-vendors').classList.remove('on')" aria-label="Close">
+      <button class="sheet-close-btn" onclick="closeVendorsModal()" aria-label="Close">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <div class="modal-ttl">Vendors</div>
@@ -443,7 +443,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div id="vendors-modal-content" style="margin-top:12px">
         <iframe id="iframe-vendors-ops" src="" style="width:100%;border:none;border-radius:12px;min-height:400px;display:block" scrolling="no"></iframe>
       </div>
-      <button onclick="document.getElementById('modal-vendors').classList.remove('on')"
+      <button onclick="closeVendorsModal()"
         style="margin-top:16px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
         Close
       </button>
@@ -584,10 +584,10 @@ async function openLeaveModal() {
 
 // Close modal on backdrop click
 document.getElementById('modal-leave').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('on');
+  if (e.target === this) closeLeaveModal();
 });
 document.getElementById('modal-reviews').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('on');
+  if (e.target === this) closeReviewsModal();
 });
 
 /* ── Unread messages badge ── */
@@ -649,7 +649,7 @@ function openVendorsModal() {
 }
 
 document.getElementById('modal-vendors').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('on');
+  if (e.target === this) closeVendorsModal();
 });
 
 // Auto-resize vendors iframe — debounced + delta-gated to prevent scroll loop
@@ -748,13 +748,15 @@ function openSheet(id, url) {
   requestAnimationFrame(function() {
     document.getElementById('generic-sheet').style.transform = 'translateX(-50%) translateY(0)';
   });
+  history.pushState({ sheet: 'generic' }, '');
 }
-function closeSheet() {
+function closeSheet(fromPop) {
   document.getElementById('generic-sheet').style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('sheet-overlay').style.display = 'none';
     document.getElementById('generic-sheet-iframe').src = '';
   }, 320);
+  if (!fromPop) history.back();
 }
 </script>
 
@@ -772,13 +774,15 @@ function openMsgSheet() {
   requestAnimationFrame(function() {
     document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(0)';
   });
+  history.pushState({ sheet: 'msg' }, '');
 }
-function closeMsgSheet() {
+function closeMsgSheet(fromPop) {
   document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
     document.getElementById('msg-sheet-iframe').src = '';
   }, 320);
+  if (!fromPop) history.back();
 }
 // Pass me object to messaging iframe when it requests it
 window.addEventListener('message', function(e) {
@@ -793,6 +797,58 @@ window.addEventListener('message', function(e) {
   }
   if (e.data && e.data.type === 'bc_close_panel') {
     closeMsgSheet();
+  }
+});
+
+// ── Modal open: push history state ──
+var _origOpenLeaveModal = openLeaveModal;
+openLeaveModal = async function() {
+  await _origOpenLeaveModal();
+  history.pushState({ sheet: 'leave' }, '');
+};
+var _origOpenReviewsModal = openReviewsModal;
+openReviewsModal = async function() {
+  await _origOpenReviewsModal();
+  history.pushState({ sheet: 'reviews' }, '');
+};
+var _origOpenVendorsModal = openVendorsModal;
+openVendorsModal = function() {
+  _origOpenVendorsModal();
+  history.pushState({ sheet: 'vendors' }, '');
+};
+
+// ── Named modal close functions ──
+function closeLeaveModal(fromPop) {
+  document.getElementById('modal-leave').classList.remove('on');
+  if (!fromPop) history.back();
+}
+function closeReviewsModal(fromPop) {
+  document.getElementById('modal-reviews').classList.remove('on');
+  if (!fromPop) history.back();
+}
+function closeVendorsModal(fromPop) {
+  document.getElementById('modal-vendors').classList.remove('on');
+  if (!fromPop) history.back();
+}
+
+// ── Handle back gesture / button ──
+window.addEventListener('popstate', function(e) {
+  var sheet = e.state && e.state.sheet;
+  // Generic sheet open?
+  var gsVisible = document.getElementById('generic-sheet').style.transform === 'translateX(-50%) translateY(0)';
+  // Msg sheet open?
+  var msVisible = document.getElementById('msg-sheet').style.transform === 'translateX(-50%) translateY(0)';
+
+  if (gsVisible) { closeSheet(true); return; }
+  if (msVisible) { closeMsgSheet(true); return; }
+  if (document.getElementById('modal-leave').classList.contains('on')) {
+    closeLeaveModal(true); return;
+  }
+  if (document.getElementById('modal-reviews').classList.contains('on')) {
+    closeReviewsModal(true); return;
+  }
+  if (document.getElementById('modal-vendors').classList.contains('on')) {
+    closeVendorsModal(true); return;
   }
 });
 </script>
