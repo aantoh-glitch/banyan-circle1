@@ -742,12 +742,12 @@ function openSheet(id, url) {
   history.pushState({ sheet: 'generic' }, '');
 }
 function closeSheet(fromPop) {
-  if (!_sheetOpen) { if (!fromPop) history.back(); return; }
+  if (!_sheetOpen) return;
   _sheetOpen = false;
+  document.getElementById('generic-sheet-iframe').src = '';
   document.getElementById('generic-sheet').style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('sheet-overlay').style.display = 'none';
-    document.getElementById('generic-sheet-iframe').src = '';
   }, 320);
   if (!fromPop) history.back();
 }
@@ -773,12 +773,12 @@ function openMsgSheet() {
   history.pushState({ sheet: 'msg' }, '');
 }
 function closeMsgSheet(fromPop) {
-  if (!_msgSheetOpen) { if (!fromPop) history.back(); return; }
+  if (!_msgSheetOpen) return;
   _msgSheetOpen = false;
+  document.getElementById('msg-sheet-iframe').src = '';
   document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
-    document.getElementById('msg-sheet-iframe').src = '';
   }, 320);
   if (!fromPop) history.back();
 }
