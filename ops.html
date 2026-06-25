@@ -791,6 +791,11 @@ window.addEventListener('message', function(e) {
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
     }
+    // Also respond to stock iframe requesting me
+    var stockIframe = document.getElementById('generic-sheet-iframe');
+    if (stockIframe && stockIframe.contentWindow) {
+      stockIframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
+    }
   }
   if (e.data && e.data.type === 'bc_close_sheet') {
     closeMsgSheet();
