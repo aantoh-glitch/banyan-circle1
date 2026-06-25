@@ -84,7 +84,7 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-hdr{padding:20px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--white)}
 .m-hdr-back{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center}
 .m-hdr-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.m-hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:22px;font-weight:500;flex:1}
+.m-hdr-title{font-family:'EB Garamond',Georgia,serif;font-size:20px;font-weight:500;flex:1}
 .m-hdr-prop{font-size:12px;color:var(--muted);margin-top:1px}
 .m-btn-log{width:100%;padding:15px;background:var(--teal);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
 .m-btn-log svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -133,6 +133,12 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
   window.STAFF_NAME = _me.name || '';
   var isDesktop = (_me.role === 'admin') || (window.self !== window.top);
   document.body.classList.add(isDesktop ? 'desktop' : 'mobile');
+  if(!isDesktop){
+    var dv=document.getElementById('desktop-view');
+    var mv=document.getElementById('mobile-view');
+    if(dv) dv.style.display='none';
+    if(mv) mv.style.display='';
+  }
 })();
 </script>
 
