@@ -176,7 +176,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .modal.on{display:flex}
 .modal-sheet{background:#f3eee8;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;overscroll-behavior:contain;position:relative}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
-.modal-ttl{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;margin-bottom:4px;color:var(--text)}
+.modal-ttl{font-family:'EB Garamond',serif;font-size:18px;font-weight:600;margin-bottom:4px;color:var(--text)}
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
 
 /* Leave list inside modal */
@@ -405,10 +405,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div class="modal-ttl">My Leave</div>
       <div class="modal-sub" id="leave-modal-sub"></div>
       <div id="leave-modal-list"><div class="leave-empty">Loading…</div></div>
-      <button onclick="closeLeaveModal()"
-        style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
-        Close
-      </button>
     </div>
   </div>
 
@@ -422,10 +418,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div class="modal-ttl">My Reviews</div>
       <div class="modal-sub" id="reviews-modal-sub"></div>
       <div id="reviews-modal-list"><div class="rev-empty">Loading…</div></div>
-      <button onclick="closeReviewsModal()"
-        style="margin-top:20px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
-        Close
-      </button>
     </div>
   </div>
 
@@ -443,10 +435,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div id="vendors-modal-content" style="margin-top:12px">
         <iframe id="iframe-vendors-ops" src="" style="width:100%;border:none;border-radius:12px;min-height:400px;display:block" scrolling="no"></iframe>
       </div>
-      <button onclick="closeVendorsModal()"
-        style="margin-top:16px;width:100%;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;cursor:pointer;color:var(--muted)">
-        Close
-      </button>
     </div>
   </div>
 
@@ -790,11 +778,6 @@ window.addEventListener('message', function(e) {
     var iframe = document.getElementById('msg-sheet-iframe');
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
-    }
-    // Also respond to stock iframe requesting me
-    var stockIframe = document.getElementById('generic-sheet-iframe');
-    if (stockIframe && stockIframe.contentWindow) {
-      stockIframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
     }
   }
   if (e.data && e.data.type === 'bc_close_sheet') {
