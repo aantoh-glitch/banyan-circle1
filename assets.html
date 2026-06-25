@@ -4,12 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Assets</title>
-<meta name="theme-color" content="#F9F8F6"/>
+<meta name="theme-color" content="#f3eee8"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F9F8F6;--white:#fff;--text:#1a1a18;--muted:#7a7870;
+  --bg:#f3eee8;--white:#fff;--text:#1a1a18;--muted:#7a7870;
   --border:rgba(0,0,0,0.08);--br:#993C1D;--br-l:#FAECE7;
   --g:#3B6D11;--g-l:#EAF3DE;--r:#A32D2D;--r-l:#FCEBEB;
   --a:#854F0B;--a-l:#FAEEDA;
@@ -18,10 +18,10 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .shell{max-width:960px;margin:0 auto;padding:0 0 60px}
 
 /* Header */
-.hdr{display:flex;align-items:center;gap:12px;padding:16px 24px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-.back{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:none;cursor:pointer;font-size:18px;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none}
-.hdr-info{flex:1}
-.hdr-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:500}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;background:#f3eee8 !important;position:sticky;top:0;z-index:40}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:6px 4px}
+.back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.hdr-title{font-family:'Playfair Display',serif;font-size:28px;color:var(--text)}
 .hdr-sub{font-size:12px;color:var(--muted);margin-top:1px}
 
 /* Content */
@@ -131,11 +131,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 
   <div class="hdr" id="main-hdr">
-    <a class="back" onclick="history.back()">←</a>
-    <div class="hdr-info">
-      <div class="hdr-title" id="hdr-title">Assets</div>
-      <div class="hdr-sub" id="hdr-sub">Loading…</div>
-    </div>
+    <div class="hdr-title" id="hdr-title">Assets</div>
+    <div style="width:60px"></div>
   </div>
 
   <div class="content">
@@ -252,11 +249,6 @@ let PROPERTY = decodeURIComponent(params.get('property') || '');
 const IS_ADMIN = params.get('viewer') === 'admin';
 const IS_EMBEDDED = window !== window.top;
 
-// Hide header when embedded inside landlord.html iframe
-if (IS_EMBEDDED) {
-  document.getElementById('main-hdr').style.display = 'none';
-  document.querySelector('.shell').style.paddingTop = '0';
-}
 
 function notifyResize() {
   try { window.parent.postMessage({type: 'bc_resize', height: document.body.scrollHeight}, '*'); } catch(e) {}
