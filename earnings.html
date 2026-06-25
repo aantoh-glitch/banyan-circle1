@@ -720,7 +720,11 @@ chipEl.className = 'id-role-chip ' + (isAdmin ? 'admin' : viewRole);
 document.getElementById('id-name').textContent = isAdmin
   ? 'All Earnings'
   : (viewName || 'Unknown');
-if (!isAdmin) document.getElementById('readonly-tag').style.display = '';
+if (!isAdmin) {
+  document.getElementById('readonly-tag').style.display = '';
+  document.getElementById('id-strip') && (document.getElementById('id-strip').style.display = 'none');
+  document.querySelector('.id-strip') && (document.querySelector('.id-strip').style.display = 'none');
+}
 
 /* Embedded mode — compact shell, no back button chrome */
 if (isEmbedded) {
