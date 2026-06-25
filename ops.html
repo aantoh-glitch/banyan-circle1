@@ -729,7 +729,10 @@ async function openReviewsModal() {
 </div>
 
 <script>
+var _sheetOpen = false;
 function openSheet(id, url) {
+  if (_sheetOpen) return;
+  _sheetOpen = true;
   const iframe = document.getElementById('generic-sheet-iframe');
   iframe.src = url;
   document.getElementById('sheet-overlay').style.display = 'block';
@@ -739,6 +742,8 @@ function openSheet(id, url) {
   history.pushState({ sheet: 'generic' }, '');
 }
 function closeSheet(fromPop) {
+  if (!_sheetOpen) { if (!fromPop) history.back(); return; }
+  _sheetOpen = false;
   document.getElementById('generic-sheet').style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('sheet-overlay').style.display = 'none';
@@ -755,7 +760,10 @@ function closeSheet(fromPop) {
 </div>
 
 <script>
+var _msgSheetOpen = false;
 function openMsgSheet() {
+  if (_msgSheetOpen) return;
+  _msgSheetOpen = true;
   const staffName = (me && me.name) ? encodeURIComponent(me.name) : '';
   document.getElementById('msg-sheet-iframe').src = 'messaging.html?staff=' + staffName + '&embedded=1';
   document.getElementById('msg-sheet-overlay').style.display = 'block';
@@ -765,6 +773,8 @@ function openMsgSheet() {
   history.pushState({ sheet: 'msg' }, '');
 }
 function closeMsgSheet(fromPop) {
+  if (!_msgSheetOpen) { if (!fromPop) history.back(); return; }
+  _msgSheetOpen = false;
   document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
@@ -821,14 +831,8 @@ function closeVendorsModal(fromPop) {
 
 // ── Handle back gesture / button ──
 window.addEventListener('popstate', function(e) {
-  var sheet = e.state && e.state.sheet;
-  // Generic sheet open?
-  var gsVisible = document.getElementById('generic-sheet').style.transform === 'translateX(-50%) translateY(0)';
-  // Msg sheet open?
-  var msVisible = document.getElementById('msg-sheet').style.transform === 'translateX(-50%) translateY(0)';
-
-  if (gsVisible) { closeSheet(true); return; }
-  if (msVisible) { closeMsgSheet(true); return; }
+  if (_sheetOpen) { closeSheet(true); return; }
+  if (_msgSheetOpen) { closeMsgSheet(true); return; }
   if (document.getElementById('modal-leave').classList.contains('on')) {
     closeLeaveModal(true); return;
   }
