@@ -599,6 +599,7 @@ function changeMonth(dir) {
 }
 
 function handleDayClick(ds) {
+  if (_viewerParam === 'landlord') return; // calendar fully read-only in landlord view
   const b = getBookingForDate(ds);
   if (b) { showBookingDetail(b.id); return; }
   document.getElementById('blockStart').value = ds;
