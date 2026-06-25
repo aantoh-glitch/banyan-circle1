@@ -431,13 +431,9 @@ if (_viewerParam === 'landlord') {
       // Remove from current positions
       topRow.remove();
       bottomRow.remove();
-      // Append in desired order
+      // Append calendar and bookings only — block dates panel hidden for landlord
       mainEl.appendChild(calContainer);
       mainEl.appendChild(bookingsList);
-      const blockWrapper = document.createElement('div');
-      blockWrapper.style.marginTop = '0';
-      blockWrapper.appendChild(blockPanel);
-      mainEl.appendChild(blockWrapper);
     }
   });
 }
@@ -599,11 +595,8 @@ function changeMonth(dir) {
 }
 
 function handleDayClick(ds) {
+  if (_viewerParam === 'landlord') return;
   const b = getBookingForDate(ds);
-  if (_viewerParam === 'landlord') {
-    if (b && b.source === 'blocked') { showBookingDetail(b.id); } // allow unblock
-    return; // all other dates read-only
-  }
   if (b) { showBookingDetail(b.id); return; }
   document.getElementById('blockStart').value = ds;
   document.getElementById('blockEnd').value = ds;
