@@ -33,18 +33,13 @@ html,body{min-height:100%;font-family:'Playfair Display',serif;background:var(--
   background:#f3eee8 !important;
   position:sticky;top:0;z-index:40;
 }
-.back-btn{
-  display:flex;align-items:center;gap:6px;
-  font-size:13px;color:var(--muted);
-  background:none;border:none;cursor:pointer;font-family:inherit;
-  padding:6px 4px;
-}
-.back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
 .hdr-title{
   font-family:'Playfair Display',serif;
   font-size:24px;
   color:var(--text);
 }
+.hdr-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .hdr-right{width:60px;display:flex;justify-content:flex-end}
 
 /* IDENTITY STRIP */
@@ -415,11 +410,10 @@ html,body{min-height:100%;font-family:'Playfair Display',serif;background:var(--
 
   <!-- HEADER -->
   <div class="hdr">
-    <button class="back-btn" id="back-btn" onclick="goBack()">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
-    </button>
-    <div class="hdr-title">Earnings</div>
+<div>
+      <div class="hdr-title">Earnings</div>
+      <div class="hdr-sub" id="hdr-sub">Summary &amp; breakdown</div>
+    </div>
     <div class="hdr-right"></div>
   </div>
 
@@ -709,7 +703,6 @@ const BACK_MAP = {
   admin:    '/admin.html',
   office:   '/admin.html',
 };
-document.getElementById('back-btn').style.display = (!isAdmin && !isEmbedded && BACK_MAP[viewRole]) ? 'flex' : 'none';
 
 /* Identity strip — hide when embedded (parent page already shows identity) */
 const idStrip = document.querySelector('.id-strip');
@@ -793,13 +786,6 @@ async function apiPatch(path, body) {
   });
   if (!r.ok) throw new Error(await r.text());
   return r.json();
-}
-
-/* ═══════════════════════════════════════════
-   BACK
-═══════════════════════════════════════════ */
-function goBack() {
-  location.href = BACK_MAP[viewRole] || '/admin.html';
 }
 
 /* ═══════════════════════════════════════════
