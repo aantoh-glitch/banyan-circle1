@@ -655,6 +655,22 @@ if(IS_MOBILE){
 // ── Staff scope (mobile only) ──
 async function resolveStaffScope(){
   if(!IS_MOBILE) return;
+  // Use property_name from bc_me directly — avoids an extra API call
+  const meProps = window.BC_ME && window.BC_ME.property_name
+    ? (Array.isArray(window.BC_ME.property_name) ? window.BC_ME.property_name : [window.BC_ME.property_name])
+    : [];
+  if(meProps.length){
+    STAFF_ASSIGNED_PROPS = meProps.filter(Boolean);
+    if(STAFF_ASSIGNED_PROPS.length === 1){
+      window.STAFF_PROPERTY = STAFF_ASSIGNED_PROPS[0];
+      document.getElementById('m-prop-label').textContent = STAFF_ASSIGNED_PROPS[0];
+    } else {
+      document.getElementById('pp-select').innerHTML = STAFF_ASSIGNED_PROPS.map(p=>`<option value="${p}">${p}</option>`).join('');
+      openModal('modal-prop-pick');
+    }
+    return;
+  }
+  // Fallback: query staff table if property_name not in bc_me
   const rows = await api('/rest/v1/staff?select=name,assigned_properties&name=eq.'+encodeURIComponent(window.STAFF_NAME)).catch(()=>[]);
   const record = (rows||[])[0];
   if(!record || !(record.assigned_properties||[]).length) return;
