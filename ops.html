@@ -46,23 +46,24 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:14px 24px;
-  background:var(--white);
-  border-radius:16px;
-  margin:6px 16px 16px;
-  box-shadow:0 1px 4px rgba(0,0,0,0.07);
+  padding:10px 20px;
+  background:#f3eee8;
+  margin:0 16px 12px;
 }
 .user-info{}
 .user-name{font-size:14px;font-weight:500;color:var(--text)}
 .user-date{font-size:11px;color:var(--muted);margin-top:1px}
 .sign-out{
-  font-size:12px;color:var(--muted);
-  background:none;border:1px solid var(--border);
-  border-radius:999px;padding:5px 14px;
-  cursor:pointer;font-family:inherit;
+  color:var(--muted);
+  background:none;border:none;
+  padding:6px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:8px;
   transition:all .18s;
 }
-.sign-out:active{background:var(--bg)}
+.sign-out:active{background:rgba(0,0,0,0.06)}
+.sign-out svg{width:20px;height:20px;stroke:var(--muted);stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* Section label */
 .section-label{
@@ -251,7 +252,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       <div class="user-name" id="user-name">—</div>
       <div class="user-date" id="user-date"></div>
     </div>
-    <button class="sign-out" onclick="signOut()">Sign out</button>
+    <button class="sign-out" onclick="signOut()" title="Sign out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
   </div>
 
   <div class="section-label">Quick Access</div>
