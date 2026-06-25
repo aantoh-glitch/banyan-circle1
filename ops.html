@@ -174,7 +174,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 /* Leave bottom-sheet modal */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
-.modal-sheet{background:#f3eee8;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;overscroll-behavior:contain}
+.modal-sheet{background:#f3eee8;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;overscroll-behavior:contain;position:relative}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;display:block}
 .modal-ttl{font-family:'EB Garamond',serif;font-size:22px;font-weight:500;margin-bottom:4px;color:var(--text)}
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
@@ -225,6 +225,20 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .rev-comment{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic;line-height:1.5}
 .rev-stars{font-size:14px;letter-spacing:1px;color:#E8A020;margin-top:3px}
 .rev-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+
+/* Close X button for sheets/modals */
+.sheet-close-btn{
+  position:absolute;top:14px;right:16px;
+  width:32px;height:32px;
+  border-radius:50%;
+  background:rgba(0,0,0,0.06);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  z-index:10;
+  transition:background .15s;
+}
+.sheet-close-btn:active{background:rgba(0,0,0,0.12)}
+.sheet-close-btn svg{width:16px;height:16px;stroke:var(--muted);stroke-width:2.5;stroke-linecap:round;fill:none}
 
 /* Task pill badge */
 .task-badge{
@@ -385,6 +399,9 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   <div class="modal" id="modal-leave">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
+      <button class="sheet-close-btn" onclick="document.getElementById('modal-leave').classList.remove('on')" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
       <div class="modal-ttl">My Leave</div>
       <div class="modal-sub" id="leave-modal-sub"></div>
       <div id="leave-modal-list"><div class="leave-empty">Loading…</div></div>
@@ -399,6 +416,9 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   <div class="modal" id="modal-reviews">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
+      <button class="sheet-close-btn" onclick="document.getElementById('modal-reviews').classList.remove('on')" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
       <div class="modal-ttl">My Reviews</div>
       <div class="modal-sub" id="reviews-modal-sub"></div>
       <div id="reviews-modal-list"><div class="rev-empty">Loading…</div></div>
@@ -415,6 +435,9 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   <div class="modal" id="modal-vendors">
     <div class="modal-sheet" style="padding-bottom:28px">
       <div class="modal-handle"></div>
+      <button class="sheet-close-btn" onclick="document.getElementById('modal-vendors').classList.remove('on')" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
       <div class="modal-ttl">Vendors</div>
       <div class="modal-sub" id="vendors-modal-sub">Loading…</div>
       <div id="vendors-modal-content" style="margin-top:12px">
@@ -710,8 +733,10 @@ async function openReviewsModal() {
 
 <!-- GENERIC SLIDE-UP SHEET -->
 <div id="sheet-overlay" onclick="closeSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
-<div id="generic-sheet" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:88dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;display:flex;flex-direction:column;">
-
+<div id="generic-sheet" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:88dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;display:flex;flex-direction:column;position:relative;">
+  <button class="sheet-close-btn" onclick="closeSheet()" aria-label="Close">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
   <iframe id="generic-sheet-iframe" src="" style="width:100%;flex:1;border:none;display:block;"></iframe>
 </div>
 
@@ -736,6 +761,9 @@ function closeSheet() {
 <!-- MESSAGING SHEET -->
 <div id="msg-sheet-overlay" onclick="closeMsgSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
 <div id="msg-sheet" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:75dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;">
+  <button class="sheet-close-btn" onclick="closeMsgSheet()" aria-label="Close">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
   <iframe id="msg-sheet-iframe" src="" style="width:100%;height:100%;border:none;display:block;"></iframe>
 </div>
 
