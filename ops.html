@@ -766,7 +766,7 @@ function openSheet(id, url) {
   document.getElementById('sheet-overlay').style.display = 'block';
   sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
-  iframe.src = url;
+  iframe.contentWindow.location.replace(url);
 }
 function closeSheet() {
   if (!_sheetOpen) return;
@@ -775,10 +775,8 @@ function closeSheet() {
   sheet.style.transition = 'none';
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
   document.getElementById('sheet-overlay').style.display = 'none';
-  document.getElementById('generic-sheet-iframe').src = '';
+  document.getElementById('generic-sheet-iframe').contentWindow.location.replace('about:blank');
   requestAnimationFrame(function() { sheet.style.transition = ''; });
-  var steps = history.length - _sheetOpenDepth;
-  if (steps > 0) history.go(-steps);
 }
 </script>
 
@@ -801,7 +799,7 @@ function openMsgSheet() {
   document.getElementById('msg-sheet-overlay').style.display = 'block';
   sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
-  iframe.src = 'messaging.html?staff=' + staffName + '&embedded=1';
+  iframe.contentWindow.location.replace('messaging.html?staff=' + staffName + '&embedded=1');
 }
 function closeMsgSheet() {
   if (!_msgSheetOpen) return;
@@ -810,10 +808,8 @@ function closeMsgSheet() {
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
-    document.getElementById('msg-sheet-iframe').src = '';
+    document.getElementById('msg-sheet-iframe').contentWindow.location.replace('about:blank');
   }, 360);
-  var steps = history.length - _msgSheetOpenDepth;
-  if (steps > 0) history.go(-steps);
 }
 // Pass me object to messaging iframe when it requests it
 window.addEventListener('message', function(e) {
