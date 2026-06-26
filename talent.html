@@ -25,7 +25,7 @@ html,body{height:100%;overscroll-behavior-y:auto;font-family:'DM Sans',sans-seri
 /* TOP BAR */
 .top-bar{
   position:sticky;top:0;z-index:50;
-  background:var(--bg);border-bottom:1px solid var(--border);
+  background:var(--bg);
   display:flex;align-items:center;justify-content:space-between;
   padding:18px 20px 14px;
   flex-shrink:0;
@@ -185,8 +185,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <div class="top-bar">
   <div class="top-logo">Banyan Circle · Talent</div>
   <div class="top-right">
-    <span style="font-size:13px;font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="top-name"></span>
-    <div class="avatar" id="top-avatar">?</div>
     <button class="btn-signout" onclick="signOut()">Sign out</button>
   </div>
 </div>
@@ -431,8 +429,6 @@ window.addEventListener('popstate',function(){
   history.pushState(null,'',location.href);
 });
 
-document.getElementById('top-name').textContent=talentNameParam;
-document.getElementById('top-avatar').textContent=ini(talentNameParam);
 document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
 
 function signOut(){localStorage.removeItem('bc_me');location.replace('/tlogin.html');}
@@ -569,6 +565,8 @@ async function loadProperties(){
   const landlords=await api('/rest/v1/landlords?select=property_name&order=property_name')||[];
   ALL_PROPS=landlords.filter(function(l){return l.property_name;}).map(function(l){return{name:l.property_name};});
   document.getElementById('p-venues').innerHTML=ALL_PROPS.map(function(p){return'<label class="opt-label"><input type="checkbox" name="venue" value="'+p.name+'"/> '+p.name+'</label>';}).join('');
+  // Re-apply venue checks if profile already loaded
+  if(_profileData&&_profileData.venues) setVenueChecks(_profileData.venues);
 }
 function setVenueChecks(arr){document.querySelectorAll('[name="venue"]').forEach(function(cb){cb.checked=arr.includes(cb.value);});}
 function getVenueChecks(){return Array.from(document.querySelectorAll('[name="venue"]:checked')).map(function(cb){return cb.value;});}
