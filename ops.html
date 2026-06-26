@@ -756,17 +756,19 @@ async function openReviewsModal() {
 
 <script>
 var _sheetOpen = false;
-var _sheetOpenDepth = 0;
 function openSheet(id, url) {
   if (_sheetOpen) return;
   _sheetOpen = true;
-  _sheetOpenDepth = history.length;
   var sheet = document.getElementById('generic-sheet');
   var iframe = document.getElementById('generic-sheet-iframe');
   document.getElementById('sheet-overlay').style.display = 'block';
   sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
-  iframe.contentWindow.location.replace(url);
+  if (iframe.getAttribute('data-src') !== url) {
+    iframe.src = url;
+    iframe.setAttribute('data-src', url);
+  }
+  history.pushState({ ops: true, sheetOpen: true }, '');
 }
 function closeSheet() {
   if (!_sheetOpen) return;
@@ -775,7 +777,8 @@ function closeSheet() {
   sheet.style.transition = 'none';
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
   document.getElementById('sheet-overlay').style.display = 'none';
-  document.getElementById('generic-sheet-iframe').contentWindow.location.replace('about:blank');
+  document.getElementById('generic-sheet-iframe').removeAttribute('data-src');
+  document.getElementById('generic-sheet-iframe').src = '';
   requestAnimationFrame(function() { sheet.style.transition = ''; });
 }
 </script>
@@ -788,18 +791,21 @@ function closeSheet() {
 
 <script>
 var _msgSheetOpen = false;
-var _msgSheetOpenDepth = 0;
 function openMsgSheet() {
   if (_msgSheetOpen) return;
   _msgSheetOpen = true;
-  _msgSheetOpenDepth = history.length;
   const staffName = (me && me.name) ? encodeURIComponent(me.name) : '';
+  var url = 'messaging.html?staff=' + staffName + '&embedded=1';
   var sheet = document.getElementById('msg-sheet');
   var iframe = document.getElementById('msg-sheet-iframe');
   document.getElementById('msg-sheet-overlay').style.display = 'block';
   sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
-  iframe.contentWindow.location.replace('messaging.html?staff=' + staffName + '&embedded=1');
+  if (iframe.getAttribute('data-src') !== url) {
+    iframe.src = url;
+    iframe.setAttribute('data-src', url);
+  }
+  history.pushState({ ops: true, sheetOpen: true }, '');
 }
 function closeMsgSheet() {
   if (!_msgSheetOpen) return;
@@ -808,7 +814,8 @@ function closeMsgSheet() {
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
   setTimeout(function() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
-    document.getElementById('msg-sheet-iframe').contentWindow.location.replace('about:blank');
+    document.getElementById('msg-sheet-iframe').removeAttribute('data-src');
+    document.getElementById('msg-sheet-iframe').src = '';
   }, 360);
 }
 // Pass me object to messaging iframe when it requests it
@@ -843,13 +850,14 @@ window.addEventListener('message', function(e) {
   }
 });
 
-// ── Back button: close whatever is open, else navigate away ──
+// ── Back button: close whatever is open, re-push to stay on page ──
 window.addEventListener('popstate', function(e) {
-  if (_sheetOpen) { closeSheet(); return; }
-  if (_msgSheetOpen) { closeMsgSheet(); return; }
-  if (document.getElementById('modal-leave').classList.contains('on')) { closeLeaveModal(); return; }
-  if (document.getElementById('modal-reviews').classList.contains('on')) { closeReviewsModal(); return; }
-  if (document.getElementById('modal-vendors').classList.contains('on')) { closeVendorsModal(); return; }
+  if (_sheetOpen) { closeSheet(); history.pushState({ ops: true }, ''); return; }
+  if (_msgSheetOpen) { closeMsgSheet(); history.pushState({ ops: true }, ''); return; }
+  if (document.getElementById('modal-leave').classList.contains('on')) { closeLeaveModal(); history.pushState({ ops: true }, ''); return; }
+  if (document.getElementById('modal-reviews').classList.contains('on')) { closeReviewsModal(); history.pushState({ ops: true }, ''); return; }
+  if (document.getElementById('modal-vendors').classList.contains('on')) { closeVendorsModal(); history.pushState({ ops: true }, ''); return; }
+  history.pushState({ ops: true }, '');
 });
 
 /* ── Idle Auto-Logout ── */
