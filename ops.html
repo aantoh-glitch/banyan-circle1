@@ -477,8 +477,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
 
-// Prevent back-navigation bypassing auth
-history.pushState({ guard: true }, '', location.href);
+// Back navigation is handled by the popstate listener below
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
@@ -881,6 +880,7 @@ window.addEventListener('popstate', function(e) {
     closeVendorsModal(true);
     return;
   }
+  // Nothing open — allow navigation away (back to login)
 });
 
 /* ── Idle Auto-Logout ── */
