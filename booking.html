@@ -447,18 +447,17 @@ if (_viewerParam === 'landlord') {
     const divider = document.querySelector('.topbar-divider');
     if (divider) divider.style.display = 'none';
     document.body.classList.add('landlord-view');
-    // Reorder: calendar → bookings → block dates (all stacked vertically)
+    // Reorder: calendar → bookings (stacked vertically, block dates removed)
     const mainEl = document.querySelector('.main');
     const topRow = document.querySelector('.top-row');
     const bottomRow = document.querySelector('.bottom-row');
     const calContainer = topRow ? topRow.querySelector('.calendar-container') : null;
     const bookingsList = topRow ? topRow.querySelector('.bookings-list') : null;
-    const blockPanel = bottomRow ? bottomRow.querySelector('.block-panel') : null;
-    if (mainEl && calContainer && bookingsList && blockPanel) {
+    if (mainEl && calContainer && bookingsList) {
       // Remove from current positions
       topRow.remove();
-      bottomRow.remove();
-      // Append calendar and bookings only — block dates panel hidden for landlord
+      if (bottomRow) bottomRow.remove();
+      // Append calendar and bookings only
       mainEl.appendChild(calContainer);
       mainEl.appendChild(bookingsList);
     }
