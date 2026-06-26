@@ -72,6 +72,12 @@ const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
 let pin = '';
 
+window.addEventListener('pageshow', function() {
+  pin = '';
+  dots();
+  document.getElementById('pin-err').textContent = '';
+});
+
 function pk(d) {
   if (pin.length >= 4) return;
   pin += d;
