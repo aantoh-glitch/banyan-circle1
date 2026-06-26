@@ -860,8 +860,8 @@ function closeVendorsModal(fromPop) {
 window.addEventListener('message', function(e) {
   if (!e.data || typeof e.data !== 'object') return;
   if (e.data.type === 'bc_close_sheet' || e.data.type === 'bc_close_panel') {
-    if (_sheetOpen) { closeSheet(); history.back(); }
-    else if (_msgSheetOpen) { closeMsgSheet(); history.back(); }
+    if (_sheetOpen) { history.back(); }
+    else if (_msgSheetOpen) { history.back(); }
   }
 });
 
@@ -892,12 +892,8 @@ window.addEventListener('popstate', function(e) {
     history.pushState({ guard: true }, '', location.href);
     return;
   }
-  // No sheet open — re-push guard so back never leaves the page
-  if (!localStorage.getItem('bc_me')) {
-    location.replace('/stafflogin.html');
-  } else {
-    history.pushState({ guard: true }, '', location.href);
-  }
+  // No sheet open — go to home page
+  location.replace('/index.html');
 });
 
 /* ── Idle Auto-Logout ── */
