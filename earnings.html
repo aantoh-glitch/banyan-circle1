@@ -708,6 +708,20 @@ const BACK_MAP = {
 const idStrip = document.querySelector('.id-strip');
 if (isEmbedded && idStrip) idStrip.style.display = 'none';
 
+/* ── Heading font: match the host app's page-title style per role ── */
+/* landlord & talent: Playfair Display 24px/400 (matches landlord.html .pg-title) */
+/* staff / admin / ops: keep default EB Garamond 18px/600                         */
+(function applyHdrTitleStyle() {
+  const el = document.querySelector('.hdr-title');
+  if (!el) return;
+  if (viewRole === 'landlord' || viewRole === 'talent') {
+    el.style.fontFamily = "'Playfair Display', serif";
+    el.style.fontSize   = '24px';
+    el.style.fontWeight = '400';
+  }
+  /* staff / admin: no override — CSS default (EB Garamond 18px 600) applies */
+})();
+
 /* Identity strip */
 const roleLabels = {admin:'Admin',office:'Admin',landlord:'Landlord',staff:'Staff',talent:'Talent'};
 const chipEl = document.getElementById('id-role-chip');
