@@ -422,11 +422,14 @@ if(!talentId){location.replace('/tlogin.html');throw new Error('No talent ID');}
 const _me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if(!_me){location.replace('/tlogin.html');throw new Error('Not authenticated');}
 
-// Replace current history entry so back button cannot return to this page
-history.replaceState(null,'',location.href);
-history.pushState(null,'',location.href);
+// Back button: go to profile from any panel; block back when already on profile
+history.replaceState({panel:'profile'},'',location.href);
+history.pushState({panel:'profile'},'',location.href);
 window.addEventListener('popstate',function(){
-  history.pushState(null,'',location.href);
+  if(currentPanel && currentPanel!=='profile'){
+    showPanel('profile');
+  }
+  history.pushState({panel:currentPanel||'profile'},'',location.href);
 });
 
 document.getElementById('prof-avatar-lg').textContent=ini(talentNameParam);
@@ -829,8 +832,8 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 <div id="msg-panel-overlay" onclick="closeMessagingPanel()" style="display:none;position:fixed;top:0;left:max(0px,calc(50% - 215px));right:max(0px,calc(50% - 215px));bottom:60px;background:rgba(0,0,0,.4);z-index:100"></div>
 
 <!-- Panel sits between top of screen and top of nav; translateY(calc(100%+60px)) shifts it fully below nav when closed -->
-<div id="msg-panel" style="position:fixed;bottom:60px;left:max(0px,calc(50% - 215px));right:max(0px,calc(50% - 215px));height:calc(100% - 60px);background:#fff;border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(calc(100% + 60px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:110;display:flex;flex-direction:column">
-  <div style="width:40px;height:4px;background:#D0CEC9;border-radius:2px;margin:10px auto 6px;flex-shrink:0"></div>
+<div id="msg-panel" style="position:fixed;bottom:60px;left:max(0px,calc(50% - 215px));right:max(0px,calc(50% - 215px));height:calc(100% - 60px);background:var(--bg);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(calc(100% + 60px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:110;display:flex;flex-direction:column">
+  <div style="width:40px;height:4px;background:#C8C4BE;border-radius:2px;margin:10px auto 6px;flex-shrink:0"></div>
   <iframe id="msg-iframe" src="" title="Messages" style="width:100%;flex:1;border:none;display:block;min-height:0"></iframe>
 </div>
 
