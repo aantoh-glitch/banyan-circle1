@@ -643,8 +643,10 @@ function goPage(id, btn) {
   if (id==='exp')         document.getElementById('iframe-exp').src = 'experience.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
   if (id==='bookings')    document.getElementById('iframe-bookings').src = 'booking.html?property=' + encodeURIComponent(PROP) + '&viewer=landlord&readonly=true';
   if (id==='vendors')     document.getElementById('iframe-vendors').src = 'vendors.html?property=' + encodeURIComponent(PROP) + (IS_ADMIN_VIEW ? '&viewer=admin' : '');
-  /* Persist active tab in URL hash so refresh stays on same page */
-  history.replaceState(null, '', '#' + id);
+  /* Persist active tab in URL hash and push a history entry so back works */
+  if (!_suppressPush && location.hash !== '#' + id) {
+    history.pushState({landlordPage: id}, '', '#' + id);
+  }
 }
 
 function openOthersTray() {
@@ -689,6 +691,42 @@ function goPageFromTray(id, btn) {
     // No hash or invalid hash — default to Home/Description and load its data
     goPage('description', document.getElementById('nb-description'));
   }
+})();
+
+// ── Back-button support ──────────────────────────────────────────────────────
+
+// popstate fires when the user hits back/forward.
+// If the new state has a landlordPage, render it; otherwise go home.
+window.addEventListener('popstate', function(e) {
+  var validPages = ['description','earnings','messages','payments','assets','documents','pne','exp','bookings','vendors'];
+  var id = (e.state && e.state.landlordPage) || location.hash.replace('#','') || 'description';
+  if (validPages.indexOf(id) === -1) id = 'description';
+  _suppressPush = true;
+  var navBtn = document.getElementById('nb-'+id);
+  if (typeof TRAY_PAGES !== 'undefined' && TRAY_PAGES.has(id)) {
+    goPageFromTray(id, navBtn || null);
+  } else {
+    goPage(id, navBtn || null);
+  }
+  _suppressPush = false;
+});
+
+// Flag used by goPage to skip pushState when we are already reacting to popstate.
+var _suppressPush = false;
+
+// Iframe sentinel: push a parent-history entry each time an iframe navigates,
+// so back from inside the iframe lands back on this page instead of exiting.
+(function() {
+  var iframeIds = ['iframe-earnings','iframe-assets','iframe-documents','iframe-pne','iframe-exp','iframe-bookings','iframe-vendors'];
+  iframeIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('load', function() {
+      if (!el.src || el.src === 'about:blank') return;
+      var currentPage = location.hash.replace('#','') || 'description';
+      history.pushState({landlordPage: currentPage}, '', '#' + currentPage);
+    });
+  });
 })();
 
 // ── ADMIN ASSET CONTROLS ──
