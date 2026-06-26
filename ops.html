@@ -863,27 +863,22 @@ window.addEventListener('message', function(e) {
 window.addEventListener('popstate', function(e) {
   if (_sheetOpen) {
     closeSheet();
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (_msgSheetOpen) {
     closeMsgSheet();
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-leave').classList.contains('on')) {
     closeLeaveModal(true);
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-reviews').classList.contains('on')) {
     closeReviewsModal(true);
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-vendors').classList.contains('on')) {
     closeVendorsModal(true);
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
 });
