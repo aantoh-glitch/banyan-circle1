@@ -477,8 +477,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
 
-// Start with a clean single history entry
-history.replaceState({ ops: true, depth: 0 }, '');
+history.replaceState({ ops: true }, '');
+history.pushState({ ops: true }, '');
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
