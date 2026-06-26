@@ -555,9 +555,9 @@ function goPage(id, btn) {
 /* Handle browser back/forward */
 window.addEventListener('popstate', function(e) {
   var page = (e.state && e.state.page) || 'checkin';
-  /* If going back to checkin (home), stay — don't let it go further back */
+  /* If landing on checkin (home), re-push to restore the buffer so
+     repeated back presses never escape to the login page */
   if (page === 'checkin') {
-    /* Re-push home so another back press stays here too */
     history.pushState({page: 'checkin'}, '', '#checkin');
   }
   /* Activate the page without pushing a new entry */
@@ -575,15 +575,17 @@ window.addEventListener('popstate', function(e) {
   if (typeof closeMessagingPanel === 'function') closeMessagingPanel();
 });
 
-/* On load: seed home into history, then restore tab from URL hash */
+/* On load: push TWO home entries so back is a no-op on the checkin tab */
 (function(){
   var hash = location.hash.replace('#','');
   var validPages = ['checkin','experience','finalbill','reviews'];
-  /* Always seed the home state at the bottom of the stack */
+  /* Entry 1: replace whatever is current with home */
   history.replaceState({page: 'checkin'}, '', '#checkin');
+  /* Entry 2: push a second home on top — back from checkin hits entry 1 (also home) */
+  history.pushState({page: 'checkin'}, '', '#checkin');
   _currentPageId = 'checkin';
   if(hash && hash !== 'checkin' && validPages.indexOf(hash) !== -1) {
-    /* Push the saved tab on top of home so back returns to home */
+    /* Push the saved tab on top so back returns to checkin */
     history.pushState({page: hash}, '', '#' + hash);
     _currentPageId = hash;
     var btns = document.querySelectorAll('.bnt');
@@ -594,9 +596,7 @@ window.addEventListener('popstate', function(e) {
       }
     });
   } else {
-    /* Default page is checkin — ensure header visible */
     document.querySelector('.hdr').style.display = 'flex';
-    history.replaceState({page: 'checkin'}, '', '#checkin');
   }
 })();
 
