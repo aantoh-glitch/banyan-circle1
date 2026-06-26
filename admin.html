@@ -1156,8 +1156,9 @@ const fmtDate=d=>d?new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'
 const fmtDateTime=d=>d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}):'—';
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
+var _suppressHashWrite = false;
 function goPage(id,btn){
-  location.hash = id;
+  if(!_suppressHashWrite) location.hash = id;
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
   const pg = document.getElementById('pg-'+id); if(pg) pg.classList.add('on');
@@ -2467,6 +2468,49 @@ async function saveTalentDoc(){
     loadDashboard();
     loadProperties();
   }
+})();
+
+// ── Back-button support ──────────────────────────────────────────────────────
+// Listen for hash changes (browser back/forward) and re-render the right page.
+window.addEventListener('hashchange', function(){
+  const validPages = ['dashboard','properties','staff','guests','docs','maint','msgs','assets','talents','bookings','laundry','tasks','loans','lostfound','reviews','stock','leave','accounts'];
+  const hash = location.hash.replace('#','') || 'dashboard';
+  if(validPages.includes(hash)){
+    // Re-use goPage but prevent it from pushing another hash entry.
+    // Temporarily patch location.hash assignment via the flag below.
+    _suppressHashWrite = true;
+    const btn = document.querySelector(`.sb-btn[onclick*="'${hash}'"]`);
+    goPage(hash, btn);
+    _suppressHashWrite = false;
+  }
+});
+
+// Flag read by goPage to skip writing the hash when we are reacting to a hashchange.
+
+// ── Iframe back-button interception ─────────────────────────────────────────
+// Iframes (tasks, bookings, laundry, etc.) can capture the browser back button.
+// We push a sentinel history entry whenever an iframe loads, then intercept
+// popstate: if the sentinel is missing we redirect to dashboard instead.
+(function(){
+  const iframeIds = ['tasks-frame','bookings-frame','laundry-frame','loans-frame','lostfound-frame','messaging-frame'];
+  iframeIds.forEach(function(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('load', function(){
+      if(!el.src || el.src === 'about:blank') return;
+      // Push a sentinel so the parent page has a history entry to return to.
+      history.pushState({adminPage: location.hash.replace('#','') || 'dashboard'}, '');
+    });
+  });
+
+  window.addEventListener('popstate', function(e){
+    // If state has adminPage it means we're popping past an iframe sentinel —
+    // navigate the parent to dashboard (or whichever page was active).
+    if(e.state && e.state.adminPage){
+      const target = e.state.adminPage;
+      location.hash = target; // triggers hashchange listener above
+    }
+  });
 })();
 </script>
 
