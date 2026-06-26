@@ -438,13 +438,15 @@ if (_viewerParam === 'admin') {
 if (_viewerParam === 'landlord') {
   document.addEventListener('DOMContentLoaded', function() {
     const tb = document.querySelector('.topbar');
-    // Keep topbar visible but hide action buttons (Sync, Manual Booking)
-    const actions = document.querySelector('.topbar-actions');
-    if (actions) actions.style.display = 'none';
-    const mark = document.querySelector('.topbar-mark');
-    if (mark) mark.style.display = 'none';
-    const divider = document.querySelector('.topbar-divider');
-    if (divider) divider.style.display = 'none';
+    if (tb) tb.style.display = 'none';
+    document.body.classList.add('landlord-view');
+    // Inject a proper page-level heading into main content
+    const mainEl2 = document.querySelector('.main');
+    if (mainEl2) {
+      const heading = document.createElement('div');
+      heading.innerHTML = '<div class="pg-title" style="font-family:\'Playfair Display\',serif;font-size:22px;font-weight:400;color:#2C2C2A;margin-bottom:16px">Booking Manager</div>';
+      mainEl2.insertBefore(heading, mainEl2.firstChild);
+    }
     const removeBtn = document.getElementById('removeBookingBtn');
     if (removeBtn) removeBtn.style.display = 'none';
     // Reorder: calendar → bookings (stacked vertically, block dates removed)
