@@ -1334,10 +1334,10 @@ function closeRevSheet(sheetId, backdropId) {
 </button>
 
 <!-- Overlay — only above the nav -->
-<div id="msg-panel-overlay" onclick="closeMessagingPanel()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:62px;background:rgba(0,0,0,.4);z-index:491"></div>
+<div id="msg-panel-overlay" onclick="closeMessagingPanel()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:491"></div>
 
-<!-- Panel — bottom:62px keeps nav visible; translateY(calc(100%+62px)) slides fully off screen -->
-<div id="msg-panel" style="position:fixed;bottom:62px;left:0;right:0;height:calc(100% - 62px);max-width:430px;margin:0 auto;background:var(--bg);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(calc(100% + 62px));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:492;display:flex;flex-direction:column">
+<!-- Panel — bottom:0, full height; nav z-index:510 renders on top naturally, no gap possible -->
+<div id="msg-panel" style="position:fixed;bottom:0;left:0;right:0;height:100%;max-width:430px;margin:0 auto;background:var(--bg);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -4px 32px rgba(0,0,0,.18);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:492;display:flex;flex-direction:column">
   <div style="width:40px;height:4px;background:#D0CEC9;border-radius:2px;margin:10px auto 6px;flex-shrink:0"></div>
   <iframe id="msg-iframe" src="" title="Messages" style="width:100%;flex:1;border:none;display:block;min-height:0"></iframe>
 </div>
@@ -1371,7 +1371,7 @@ function closeRevSheet(sheetId, backdropId) {
 
   window.closeMessagingPanel=function(){
     var panel=document.getElementById('msg-panel');
-    panel.style.transform='translateY(calc(100% + 62px))';
+    panel.style.transform='translateY(100%)';
     panelOpen=false;
     document.body.style.overflow='';
     /* Hide overlay after transition completes (matches 300ms CSS transition) */
