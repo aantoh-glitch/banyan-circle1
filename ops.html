@@ -767,43 +767,22 @@ function openSheet(id, url) {
   _sheetOpen = true;
   var sheet = document.getElementById('generic-sheet');
   var iframe = document.getElementById('generic-sheet-iframe');
-  document.getElementById('sheet-overlay').style.display = 'block';
-  sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
-  requestAnimationFrame(function() {
-    sheet.style.transform = 'translateX(-50%) translateY(0)';
-  });
-  // Set src AFTER pushing state — prevents iframe from hijacking back
-  history.pushState({ sheet: 'generic' }, '');
   iframe.src = url;
+  document.getElementById('sheet-overlay').style.display = 'block';
+  sheet.getBoundingClientRect(); // force reflow so transition fires
+  sheet.style.transform = 'translateX(-50%) translateY(0)';
+  history.pushState({ sheet: 'generic' }, '');
 }
-function closeSheet(fromPop) {
+function closeSheet() {
   if (!_sheetOpen) return;
   _sheetOpen = false;
   var sheet = document.getElementById('generic-sheet');
-  var overlay = document.getElementById('sheet-overlay');
-  sheet.style.transition = 'none';
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
-  overlay.style.display = 'none';
   setTimeout(function() {
+    document.getElementById('sheet-overlay').style.display = 'none';
     document.getElementById('generic-sheet-iframe').src = '';
-    sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
-  }, 50);
-  if (!fromPop) history.back();
+  }, 360);
 }
-
-// Inject back-trap into iframe so its back button posts to parent instead
-document.getElementById('generic-sheet-iframe').addEventListener('load', function() {
-  try {
-    var iwin = this.contentWindow;
-    // Push a dummy state so iframe has something to pop
-    iwin.history.pushState({ trapped: true }, '');
-    iwin.addEventListener('popstate', function(e) {
-      if (e.state && e.state.trapped) {
-        window.parent.postMessage({ type: 'bc_close_sheet' }, '*');
-      }
-    });
-  } catch(e) {}
-});
 </script>
 
 <!-- MESSAGING SHEET -->
@@ -818,38 +797,32 @@ function openMsgSheet() {
   if (_msgSheetOpen) return;
   _msgSheetOpen = true;
   const staffName = (me && me.name) ? encodeURIComponent(me.name) : '';
-  document.getElementById('msg-sheet-iframe').src = 'messaging.html?staff=' + staffName + '&embedded=1';
+  var sheet = document.getElementById('msg-sheet');
+  var iframe = document.getElementById('msg-sheet-iframe');
+  iframe.src = 'messaging.html?staff=' + staffName + '&embedded=1';
   document.getElementById('msg-sheet-overlay').style.display = 'block';
-  requestAnimationFrame(function() {
-    document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(0)';
-  });
+  sheet.getBoundingClientRect(); // force reflow so transition fires
+  sheet.style.transform = 'translateX(-50%) translateY(0)';
   history.pushState({ sheet: 'msg' }, '');
 }
-function closeMsgSheet(fromPop) {
+function closeMsgSheet() {
   if (!_msgSheetOpen) return;
   _msgSheetOpen = false;
   var sheet = document.getElementById('msg-sheet');
-  var overlay = document.getElementById('msg-sheet-overlay');
-  sheet.style.transition = 'none';
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
-  overlay.style.display = 'none';
   setTimeout(function() {
+    document.getElementById('msg-sheet-overlay').style.display = 'none';
     document.getElementById('msg-sheet-iframe').src = '';
-    sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
-  }, 50);
-  if (!fromPop) history.back();
+  }, 360);
 }
 // Pass me object to messaging iframe when it requests it
 window.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'bc_request_me') {
+  if (!e.data || typeof e.data !== 'object') return;
+  if (e.data.type === 'bc_request_me') {
     var iframe = document.getElementById('msg-sheet-iframe');
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
     }
-  }
-  if (e.data && e.data.type === 'bc_close_sheet' || e.data && e.data.type === 'bc_close_panel') {
-    if (_sheetOpen) closeSheet();
-    else if (_msgSheetOpen) closeMsgSheet();
   }
 });
 
@@ -883,32 +856,40 @@ function closeVendorsModal(fromPop) {
   document.getElementById('modal-vendors').classList.remove('on');
   if (!fromPop) history.back();
 }
+// ── message handler: close whichever sheet is open ──
+window.addEventListener('message', function(e) {
+  if (!e.data || typeof e.data !== 'object') return;
+  if (e.data.type === 'bc_close_sheet' || e.data.type === 'bc_close_panel') {
+    if (_sheetOpen) { closeSheet(); history.back(); }
+    else if (_msgSheetOpen) { closeMsgSheet(); history.back(); }
+  }
+});
 
 // ── Handle back gesture / button ──
 window.addEventListener('popstate', function(e) {
   if (_sheetOpen) {
-    closeSheet(true);
-    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
+    closeSheet();
+    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (_msgSheetOpen) {
-    closeMsgSheet(true);
-    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
+    closeMsgSheet();
+    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-leave').classList.contains('on')) {
     closeLeaveModal(true);
-    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
+    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-reviews').classList.contains('on')) {
     closeReviewsModal(true);
-    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
+    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-vendors').classList.contains('on')) {
     closeVendorsModal(true);
-    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
+    history.pushState({ guard: true }, '', location.href);
     return;
   }
   // No sheet open — re-push guard so back never leaves the page
