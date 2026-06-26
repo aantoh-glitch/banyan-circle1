@@ -251,6 +251,45 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   padding:0 5px;
   line-height:1;
 }
+
+/* ── Idle Timeout Warning ── */
+#idle-warning{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.55);
+  align-items:center;justify-content:center;
+}
+#idle-warning.on{ display:flex; }
+#idle-warning-box{
+  background:#fff;border-radius:16px;
+  padding:28px 24px 24px;
+  max-width:320px;width:90%;
+  text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,0.18);
+}
+#idle-warning-box h3{
+  font-size:17px;font-weight:600;
+  color:#1a1a18;margin-bottom:8px;
+}
+#idle-warning-box p{
+  font-size:14px;color:#7a7870;
+  margin-bottom:20px;line-height:1.5;
+}
+#idle-countdown{
+  font-weight:700;color:#993C1D;
+}
+.idle-btn{
+  display:block;width:100%;
+  padding:12px;border-radius:10px;
+  border:none;cursor:pointer;
+  font-size:15px;font-weight:600;
+}
+.idle-btn-stay{
+  background:#993C1D;color:#fff;
+  margin-bottom:10px;
+}
+.idle-btn-out{
+  background:#f3eee8;color:#1a1a18;
+}
 </style>
 </head>
 <body>
@@ -445,19 +484,7 @@ const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
 
 // Prevent back-navigation bypassing auth
-history.pushState(null, '', location.href);
-window.addEventListener('popstate', function() {
-  // Don't interfere when a sheet or modal is open
-  if (_sheetOpen || _msgSheetOpen) return;
-  if (document.getElementById('modal-leave') && document.getElementById('modal-leave').classList.contains('on')) return;
-  if (document.getElementById('modal-reviews') && document.getElementById('modal-reviews').classList.contains('on')) return;
-  if (document.getElementById('modal-vendors') && document.getElementById('modal-vendors').classList.contains('on')) return;
-  if (!localStorage.getItem('bc_me')) {
-    location.replace('/stafflogin.html');
-  } else {
-    history.pushState(null, '', location.href);
-  }
-});
+history.pushState({ guard: true }, '', location.href);
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
@@ -836,18 +863,110 @@ function closeVendorsModal(fromPop) {
 
 // ── Handle back gesture / button ──
 window.addEventListener('popstate', function(e) {
-  if (_sheetOpen) { closeSheet(true); return; }
-  if (_msgSheetOpen) { closeMsgSheet(true); return; }
+  if (_sheetOpen) {
+    closeSheet(true);
+    history.pushState({ guard: true }, '', location.href);
+    return;
+  }
+  if (_msgSheetOpen) {
+    closeMsgSheet(true);
+    history.pushState({ guard: true }, '', location.href);
+    return;
+  }
   if (document.getElementById('modal-leave').classList.contains('on')) {
-    closeLeaveModal(true); return;
+    closeLeaveModal(true);
+    history.pushState({ guard: true }, '', location.href);
+    return;
   }
   if (document.getElementById('modal-reviews').classList.contains('on')) {
-    closeReviewsModal(true); return;
+    closeReviewsModal(true);
+    history.pushState({ guard: true }, '', location.href);
+    return;
   }
   if (document.getElementById('modal-vendors').classList.contains('on')) {
-    closeVendorsModal(true); return;
+    closeVendorsModal(true);
+    history.pushState({ guard: true }, '', location.href);
+    return;
+  }
+  // No sheet open — re-push guard so back never leaves the page
+  if (!localStorage.getItem('bc_me')) {
+    location.replace('/stafflogin.html');
+  } else {
+    history.pushState({ guard: true }, '', location.href);
   }
 });
+
+/* ── Idle Auto-Logout ── */
+(function() {
+  const IDLE_LIMIT    = 30 * 60 * 1000; // 30 minutes
+  const WARN_BEFORE   = 60 * 1000;       // warn 60 seconds before logout
+  const WARN_DURATION = 60;              // countdown seconds
+
+  let idleTimer, warnTimer, countdownInterval;
+  const overlay  = document.getElementById('idle-warning');
+  const countEl  = document.getElementById('idle-countdown');
+
+  function resetTimers() {
+    clearTimeout(idleTimer);
+    clearTimeout(warnTimer);
+    clearInterval(countdownInterval);
+    hideWarning();
+
+    // Show warning 60s before the 30-min mark
+    warnTimer = setTimeout(showWarning, IDLE_LIMIT - WARN_BEFORE);
+
+    // Hard logout at 30 min
+    idleTimer = setTimeout(function() {
+      clearInterval(countdownInterval);
+      signOut();
+    }, IDLE_LIMIT);
+  }
+
+  function showWarning() {
+    overlay.classList.add('on');
+    let secs = WARN_DURATION;
+    countEl.textContent = secs;
+    countdownInterval = setInterval(function() {
+      secs--;
+      countEl.textContent = secs;
+      if (secs <= 0) { clearInterval(countdownInterval); signOut(); }
+    }, 1000);
+  }
+
+  function hideWarning() {
+    overlay.classList.remove('on');
+    clearInterval(countdownInterval);
+  }
+
+  // "Stay logged in" button
+  document.getElementById('idle-stay').addEventListener('click', function() {
+    resetTimers();
+  });
+
+  // "Log out" button
+  document.getElementById('idle-logout').addEventListener('click', function() {
+    signOut();
+  });
+
+  // Reset on any user activity
+  ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(function(evt) {
+    document.addEventListener(evt, resetTimers, { passive: true });
+  });
+
+  // Kick off
+  resetTimers();
+})();
 </script>
+
+<!-- Idle Timeout Warning Modal -->
+<div id="idle-warning">
+  <div id="idle-warning-box">
+    <h3>Still there?</h3>
+    <p>You've been inactive for a while. You'll be logged out in <span id="idle-countdown">60</span>s.</p>
+    <button class="idle-btn idle-btn-stay" id="idle-stay">Stay logged in</button>
+    <button class="idle-btn idle-btn-out" id="idle-logout">Log out now</button>
+  </div>
+</div>
+
 </body>
 </html>
