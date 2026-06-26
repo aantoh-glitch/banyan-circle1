@@ -477,8 +477,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
 
-// Prevent back-navigation bypassing auth
-history.pushState({ guard: true }, '', location.href);
+// Auth check passed
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
@@ -746,9 +745,9 @@ async function openReviewsModal() {
 </script>
 
 <!-- GENERIC SLIDE-UP SHEET -->
-<div id="sheet-overlay" onclick="history.back()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
+<div id="sheet-overlay" onclick="closeSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
 <div id="generic-sheet" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:88dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;display:flex;flex-direction:column;">
-  <button class="sheet-close-btn" onclick="history.back()" aria-label="Close">
+  <button class="sheet-close-btn" onclick="closeSheet()" aria-label="Close">
     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </button>
   <iframe id="generic-sheet-iframe" src="" style="width:100%;flex:1;border:none;display:block;"></iframe>
@@ -763,9 +762,8 @@ function openSheet(id, url) {
   var iframe = document.getElementById('generic-sheet-iframe');
   iframe.src = url;
   document.getElementById('sheet-overlay').style.display = 'block';
-  sheet.getBoundingClientRect(); // force reflow so transition fires
+  sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
-  history.pushState({ sheet: 'generic' }, '');
 }
 function closeSheet() {
   if (!_sheetOpen) return;
@@ -780,7 +778,7 @@ function closeSheet() {
 </script>
 
 <!-- MESSAGING SHEET -->
-<div id="msg-sheet-overlay" onclick="history.back()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
+<div id="msg-sheet-overlay" onclick="closeMsgSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:58;"></div>
 <div id="msg-sheet" style="position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);width:100%;max-width:430px;height:88dvh;background:#fff;border-radius:20px 20px 0 0;z-index:59;box-shadow:0 -8px 40px rgba(0,0,0,.15);transition:transform .32s cubic-bezier(.32,0,.25,1);overflow:hidden;">
   <iframe id="msg-sheet-iframe" src="" style="width:100%;height:100%;border:none;display:block;"></iframe>
 </div>
@@ -797,7 +795,6 @@ function openMsgSheet() {
   document.getElementById('msg-sheet-overlay').style.display = 'block';
   sheet.getBoundingClientRect(); // force reflow so transition fires
   sheet.style.transform = 'translateX(-50%) translateY(0)';
-  history.pushState({ sheet: 'msg' }, '');
 }
 function closeMsgSheet() {
   if (!_msgSheetOpen) return;
@@ -820,70 +817,57 @@ window.addEventListener('message', function(e) {
   }
 });
 
-// ── Modal open: push history state ──
-var _origOpenLeaveModal = openLeaveModal;
-openLeaveModal = async function() {
-  await _origOpenLeaveModal();
-  history.pushState({ sheet: 'leave' }, '');
-};
-var _origOpenReviewsModal = openReviewsModal;
-openReviewsModal = async function() {
-  await _origOpenReviewsModal();
-  history.pushState({ sheet: 'reviews' }, '');
-};
-var _origOpenVendorsModal = openVendorsModal;
-openVendorsModal = function() {
-  _origOpenVendorsModal();
-  history.pushState({ sheet: 'vendors' }, '');
-};
+// Modal open: no history push needed
 
 // ── Named modal close functions ──
-function closeLeaveModal(fromPop) {
+function closeLeaveModal() {
   document.getElementById('modal-leave').classList.remove('on');
-  if (!fromPop) history.back();
 }
-function closeReviewsModal(fromPop) {
+function closeReviewsModal() {
   document.getElementById('modal-reviews').classList.remove('on');
-  if (!fromPop) history.back();
 }
-function closeVendorsModal(fromPop) {
+function closeVendorsModal() {
   document.getElementById('modal-vendors').classList.remove('on');
-  if (!fromPop) history.back();
 }
 // ── message handler: close whichever sheet is open ──
 window.addEventListener('message', function(e) {
   if (!e.data || typeof e.data !== 'object') return;
   if (e.data.type === 'bc_close_sheet' || e.data.type === 'bc_close_panel') {
-    if (_sheetOpen) { history.back(); }
-    else if (_msgSheetOpen) { history.back(); }
+    if (_sheetOpen) closeSheet();
+    else if (_msgSheetOpen) closeMsgSheet();
   }
 });
 
-// ── Handle back gesture / button ──
+// ── Intercept back gesture: push a dummy state so popstate fires instead of navigating away ──
+history.pushState({ sheetGuard: true }, '');
 window.addEventListener('popstate', function(e) {
   if (_sheetOpen) {
     closeSheet();
+    history.pushState({ sheetGuard: true }, '');
     return;
   }
   if (_msgSheetOpen) {
     closeMsgSheet();
+    history.pushState({ sheetGuard: true }, '');
     return;
   }
   if (document.getElementById('modal-leave').classList.contains('on')) {
-    closeLeaveModal(true);
-    history.pushState({ guard: true }, '', location.href);
+    closeLeaveModal();
+    history.pushState({ sheetGuard: true }, '');
     return;
   }
   if (document.getElementById('modal-reviews').classList.contains('on')) {
-    closeReviewsModal(true);
-    history.pushState({ guard: true }, '', location.href);
+    closeReviewsModal();
+    history.pushState({ sheetGuard: true }, '');
     return;
   }
   if (document.getElementById('modal-vendors').classList.contains('on')) {
-    closeVendorsModal(true);
-    history.pushState({ guard: true }, '', location.href);
+    closeVendorsModal();
+    history.pushState({ sheetGuard: true }, '');
     return;
   }
+  // Nothing open — re-push so back doesn't leave the page unexpectedly
+  history.pushState({ sheetGuard: true }, '');
 });
 
 /* ── Idle Auto-Logout ── */
