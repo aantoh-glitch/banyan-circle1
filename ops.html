@@ -771,11 +771,11 @@ function closeSheet() {
   if (!_sheetOpen) return;
   _sheetOpen = false;
   var sheet = document.getElementById('generic-sheet');
+  sheet.style.transition = 'none';
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
-  setTimeout(function() {
-    document.getElementById('sheet-overlay').style.display = 'none';
-    document.getElementById('generic-sheet-iframe').src = '';
-  }, 360);
+  document.getElementById('sheet-overlay').style.display = 'none';
+  document.getElementById('generic-sheet-iframe').src = '';
+  requestAnimationFrame(function() { sheet.style.transition = ''; });
 }
 </script>
 
@@ -863,12 +863,10 @@ window.addEventListener('message', function(e) {
 window.addEventListener('popstate', function(e) {
   if (_sheetOpen) {
     closeSheet();
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (_msgSheetOpen) {
     closeMsgSheet();
-    history.pushState({ guard: true }, '', location.href);
     return;
   }
   if (document.getElementById('modal-leave').classList.contains('on')) {
