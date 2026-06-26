@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Banyan Circle — Tasks</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -39,7 +39,7 @@ body.staff-mode .main{max-width:100%;padding:0}
 .staff-shell{display:none;flex-direction:column;min-height:100vh}
 body.staff-mode .staff-shell{display:flex}
 .staff-hdr{background:#f3eee8;border-bottom:none;padding:18px 20px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.staff-hdr-title{font-family:'EB Garamond',serif;font-size:18px;font-weight:600}
+.staff-hdr-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:400}
 .staff-hdr-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .staff-body{flex:1;padding:20px 16px 40px}
 
@@ -105,7 +105,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
 .modal.on{display:flex}
 .modal-card{background:var(--white);border-radius:14px;padding:26px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:20px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 
@@ -404,7 +404,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 <!-- Admin PIN Modal -->
 <div id="modal-pin" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--white);border-radius:14px;padding:24px;max-width:340px;width:100%">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px">Confirm Delete</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:8px">Confirm Delete</div>
     <p id="pin-desc" style="font-size:13px;color:var(--muted);margin-bottom:18px"></p>
     <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:5px">Enter Admin PIN</label>
     <input id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
@@ -1186,7 +1186,7 @@ function startEditPreset(type, indexOrName){
   else if(type === 'bundleName'){ currentVal = indexOrName; titleText = 'Rename Bundle'; }
 
   overlay.innerHTML = `<div style="background:#fff;border-radius:14px;padding:26px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px">${titleText}</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:18px">${titleText}</div>
     <div class="fg"><label class="fl">Name</label>
     <input class="fc" id="iep-val" value="${escHtml(currentVal)}" style="width:100%"/></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
@@ -1205,7 +1205,7 @@ function startEditBundleTask(bundleName, taskIdx){
   overlay.id = 'inline-edit-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:19999;display:flex;align-items:center;justify-content:center;padding:20px';
   overlay.innerHTML = `<div style="background:#fff;border-radius:14px;padding:26px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px">Edit Task</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:18px">Edit Task</div>
     <div class="fg"><label class="fl">Task Description</label>
     <textarea class="fc" id="iep-val" rows="3" style="width:100%">${escHtml(currentVal)}</textarea></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
