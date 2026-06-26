@@ -109,7 +109,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 /* CARDS */
 .card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px}
-.section-hdg{font-family:'Playfair Display',serif;font-size:24px;font-weight:400;margin:0 0 14px;padding-bottom:10px}
+.section-hdg{font-family:'Playfair Display',serif;font-size:18px;font-weight:400;margin:0 0 14px;padding-bottom:10px}
 
 /* BOOKING STATUS CARDS */
 .booking-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
@@ -424,6 +424,7 @@ if(!_me){location.replace('/tlogin.html');throw new Error('Not authenticated');}
 
 // Back button: go to profile from any panel; block back when already on profile
 history.replaceState({panel:'profile'},'',location.href);
+history.pushState({panel:'profile'},'',location.href);
 history.pushState({panel:'profile'},'',location.href);
 window.addEventListener('popstate',function(){
   if(currentPanel && currentPanel!=='profile'){
