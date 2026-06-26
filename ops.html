@@ -477,7 +477,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
 
-
+// Start with a clean single history entry
+history.replaceState({ ops: true, depth: 0 }, '');
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
@@ -755,11 +756,11 @@ async function openReviewsModal() {
 
 <script>
 var _sheetOpen = false;
-var _sheetHistoryLen = 0;
+var _sheetOpenDepth = 0;
 function openSheet(id, url) {
   if (_sheetOpen) return;
   _sheetOpen = true;
-  _sheetHistoryLen = history.length;
+  _sheetOpenDepth = history.length;
   var sheet = document.getElementById('generic-sheet');
   var iframe = document.getElementById('generic-sheet-iframe');
   document.getElementById('sheet-overlay').style.display = 'block';
@@ -776,7 +777,7 @@ function closeSheet() {
   document.getElementById('sheet-overlay').style.display = 'none';
   document.getElementById('generic-sheet-iframe').src = '';
   requestAnimationFrame(function() { sheet.style.transition = ''; });
-  var steps = history.length - _sheetHistoryLen;
+  var steps = history.length - _sheetOpenDepth;
   if (steps > 0) history.go(-steps);
 }
 </script>
@@ -789,11 +790,11 @@ function closeSheet() {
 
 <script>
 var _msgSheetOpen = false;
-var _msgSheetHistoryLen = 0;
+var _msgSheetOpenDepth = 0;
 function openMsgSheet() {
   if (_msgSheetOpen) return;
   _msgSheetOpen = true;
-  _msgSheetHistoryLen = history.length;
+  _msgSheetOpenDepth = history.length;
   const staffName = (me && me.name) ? encodeURIComponent(me.name) : '';
   var sheet = document.getElementById('msg-sheet');
   var iframe = document.getElementById('msg-sheet-iframe');
@@ -811,7 +812,7 @@ function closeMsgSheet() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
     document.getElementById('msg-sheet-iframe').src = '';
   }, 360);
-  var steps = history.length - _msgSheetHistoryLen;
+  var steps = history.length - _msgSheetOpenDepth;
   if (steps > 0) history.go(-steps);
 }
 // Pass me object to messaging iframe when it requests it
@@ -837,7 +838,7 @@ function closeReviewsModal() {
 function closeVendorsModal() {
   document.getElementById('modal-vendors').classList.remove('on');
 }
-// ── message handler: close whichever sheet is open ──
+// ── message handler ──
 window.addEventListener('message', function(e) {
   if (!e.data || typeof e.data !== 'object') return;
   if (e.data.type === 'bc_close_sheet' || e.data.type === 'bc_close_panel') {
@@ -846,7 +847,7 @@ window.addEventListener('message', function(e) {
   }
 });
 
-// ── Back button handler ──
+// ── Back button: close whatever is open, else navigate away ──
 window.addEventListener('popstate', function(e) {
   if (_sheetOpen) { closeSheet(); return; }
   if (_msgSheetOpen) { closeMsgSheet(); return; }
