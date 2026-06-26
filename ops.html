@@ -765,30 +765,45 @@ var _sheetOpen = false;
 function openSheet(id, url) {
   if (_sheetOpen) return;
   _sheetOpen = true;
-  const iframe = document.getElementById('generic-sheet-iframe');
-  iframe.src = url;
+  var sheet = document.getElementById('generic-sheet');
+  var iframe = document.getElementById('generic-sheet-iframe');
   document.getElementById('sheet-overlay').style.display = 'block';
+  sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
   requestAnimationFrame(function() {
-    document.getElementById('generic-sheet').style.transform = 'translateX(-50%) translateY(0)';
+    sheet.style.transform = 'translateX(-50%) translateY(0)';
   });
+  // Set src AFTER pushing state — prevents iframe from hijacking back
   history.pushState({ sheet: 'generic' }, '');
+  iframe.src = url;
 }
 function closeSheet(fromPop) {
   if (!_sheetOpen) return;
   _sheetOpen = false;
   var sheet = document.getElementById('generic-sheet');
   var overlay = document.getElementById('sheet-overlay');
-  // Hide immediately — no animation flash
   sheet.style.transition = 'none';
   sheet.style.transform = 'translateX(-50%) translateY(110%)';
   overlay.style.display = 'none';
   setTimeout(function() {
     document.getElementById('generic-sheet-iframe').src = '';
-    // Restore transition for next open
     sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
   }, 50);
   if (!fromPop) history.back();
 }
+
+// Inject back-trap into iframe so its back button posts to parent instead
+document.getElementById('generic-sheet-iframe').addEventListener('load', function() {
+  try {
+    var iwin = this.contentWindow;
+    // Push a dummy state so iframe has something to pop
+    iwin.history.pushState({ trapped: true }, '');
+    iwin.addEventListener('popstate', function(e) {
+      if (e.state && e.state.trapped) {
+        window.parent.postMessage({ type: 'bc_close_sheet' }, '*');
+      }
+    });
+  } catch(e) {}
+});
 </script>
 
 <!-- MESSAGING SHEET -->
@@ -832,11 +847,9 @@ window.addEventListener('message', function(e) {
       iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
     }
   }
-  if (e.data && e.data.type === 'bc_close_sheet') {
-    closeMsgSheet();
-  }
-  if (e.data && e.data.type === 'bc_close_panel') {
-    closeMsgSheet();
+  if (e.data && e.data.type === 'bc_close_sheet' || e.data && e.data.type === 'bc_close_panel') {
+    if (_sheetOpen) closeSheet();
+    else if (_msgSheetOpen) closeMsgSheet();
   }
 });
 
