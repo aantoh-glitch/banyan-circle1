@@ -132,8 +132,6 @@ body.landlord-view .top-row .calendar-container { margin-bottom: 14px; height: a
 body.landlord-view .top-row .bookings-list { height: auto; max-height: none; overflow-y: visible; margin-bottom: 14px; }
 body.landlord-view .bottom-row { margin-top: 0 !important; }
 body.landlord-view .block-panel .block-form { display: block; padding: 14px 16px 0; }
-body.landlord-view .booking-item { cursor: default; pointer-events: none; }
-body.landlord-view .booking-item:hover { background: transparent; }
 body.landlord-view .day-cell { font-size: 12px; }
 body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
 
@@ -343,7 +341,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
     <div class="modal-title" id="detailTitle"></div>
     <div id="detailBody"></div>
     <div class="modal-footer">
-      <button class="btn btn-danger" onclick="deleteCurrentBooking()">Remove</button>
+      <button class="btn btn-danger" id="removeBookingBtn" onclick="deleteCurrentBooking()">Remove</button>
       <button class="btn btn-ghost" onclick="closeModal('bookingDetailModal')">Close</button>
     </div>
   </div>
@@ -447,7 +445,8 @@ if (_viewerParam === 'landlord') {
     if (mark) mark.style.display = 'none';
     const divider = document.querySelector('.topbar-divider');
     if (divider) divider.style.display = 'none';
-    document.body.classList.add('landlord-view');
+    const removeBtn = document.getElementById('removeBookingBtn');
+    if (removeBtn) removeBtn.style.display = 'none';
     // Reorder: calendar → bookings (stacked vertically, block dates removed)
     const mainEl = document.querySelector('.main');
     const topRow = document.querySelector('.top-row');
@@ -645,7 +644,7 @@ function renderBookings() {
   document.getElementById('bookingsList').innerHTML = filtered.map(b => {
     const prop = properties.find(p=>p.id===b.property);
     const srcLabel = b.source === 'airbnb' ? 'Airbnb' : b.source === 'booking' ? 'Booking' : 'Direct';
-    return '<div class="booking-item"' + (_viewerParam !== 'landlord' ? ' onclick="showBookingDetail(\'' + b.id + '\')"' : ' style="cursor:default"') + '>' +
+    return '<div class="booking-item" onclick="showBookingDetail(\'' + b.id + '\')">' +
       '<div class="booking-source source-' + b.source + '">' + srcLabel + '</div>' +
       '<div class="booking-info"><div class="booking-guest">' + b.guest + '</div>' +
       '<div class="booking-dates">' + formatDate(b.start) + ' &rarr; ' + formatDate(b.end) + '</div></div>' +
