@@ -776,11 +776,17 @@ function openSheet(id, url) {
 function closeSheet(fromPop) {
   if (!_sheetOpen) return;
   _sheetOpen = false;
-  document.getElementById('generic-sheet').style.transform = 'translateX(-50%) translateY(110%)';
+  var sheet = document.getElementById('generic-sheet');
+  var overlay = document.getElementById('sheet-overlay');
+  // Hide immediately — no animation flash
+  sheet.style.transition = 'none';
+  sheet.style.transform = 'translateX(-50%) translateY(110%)';
+  overlay.style.display = 'none';
   setTimeout(function() {
     document.getElementById('generic-sheet-iframe').src = '';
-    document.getElementById('sheet-overlay').style.display = 'none';
-  }, 340);
+    // Restore transition for next open
+    sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
+  }, 50);
   if (!fromPop) history.back();
 }
 </script>
@@ -807,11 +813,15 @@ function openMsgSheet() {
 function closeMsgSheet(fromPop) {
   if (!_msgSheetOpen) return;
   _msgSheetOpen = false;
-  document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(110%)';
+  var sheet = document.getElementById('msg-sheet');
+  var overlay = document.getElementById('msg-sheet-overlay');
+  sheet.style.transition = 'none';
+  sheet.style.transform = 'translateX(-50%) translateY(110%)';
+  overlay.style.display = 'none';
   setTimeout(function() {
     document.getElementById('msg-sheet-iframe').src = '';
-    document.getElementById('msg-sheet-overlay').style.display = 'none';
-  }, 340);
+    sheet.style.transition = 'transform .32s cubic-bezier(.32,0,.25,1)';
+  }, 50);
   if (!fromPop) history.back();
 }
 // Pass me object to messaging iframe when it requests it
@@ -865,27 +875,27 @@ function closeVendorsModal(fromPop) {
 window.addEventListener('popstate', function(e) {
   if (_sheetOpen) {
     closeSheet(true);
-    history.pushState({ guard: true }, '', location.href);
+    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
     return;
   }
   if (_msgSheetOpen) {
     closeMsgSheet(true);
-    history.pushState({ guard: true }, '', location.href);
+    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
     return;
   }
   if (document.getElementById('modal-leave').classList.contains('on')) {
     closeLeaveModal(true);
-    history.pushState({ guard: true }, '', location.href);
+    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
     return;
   }
   if (document.getElementById('modal-reviews').classList.contains('on')) {
     closeReviewsModal(true);
-    history.pushState({ guard: true }, '', location.href);
+    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
     return;
   }
   if (document.getElementById('modal-vendors').classList.contains('on')) {
     closeVendorsModal(true);
-    history.pushState({ guard: true }, '', location.href);
+    setTimeout(function() { history.pushState({ guard: true }, '', location.href); }, 0);
     return;
   }
   // No sheet open — re-push guard so back never leaves the page
