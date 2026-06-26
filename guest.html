@@ -11,7 +11,7 @@
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
 .hdr-logo{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--br);display:flex;align-items:center;justify-content:center}
 .hdr-logo img{width:36px;height:36px;object-fit:contain}
 .hdr-info{flex:1}
@@ -124,7 +124,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .rev-sheet{position:fixed;bottom:62px;left:50%;transform:translateX(-50%) translateY(102%);width:100%;max-width:430px;height:88vh;background:var(--bg);border-radius:20px 20px 0 0;z-index:201;transition:transform .36s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.18)}
 .rev-sheet.open{transform:translateX(-50%) translateY(0)}
 .rev-sheet-grab{width:36px;height:4px;background:var(--border);border-radius:999px;margin:10px auto 0;flex-shrink:0}
-.rev-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.rev-sheet-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;flex-shrink:0}
 .rev-sheet-title{font-family:'EB Garamond',Georgia,serif;font-size:16px;font-weight:500;flex:1;color:var(--text)}
 .rev-sheet-close{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .rev-sheet-close svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
@@ -554,6 +554,14 @@ function goPage(id, btn) {
 
 /* Handle browser back/forward */
 window.addEventListener('popstate', function(e) {
+  /* If a review sheet is open, back closes it and goes home */
+  if (_activeRevSheet) {
+    closeRevSheet(_activeRevSheet.sheetId, _activeRevSheet.backdropId);
+    /* Navigate home */
+    var homeBtn = document.querySelector('.bnt[onclick*="checkin"]');
+    if (homeBtn) goPage('checkin', homeBtn);
+    return;
+  }
   var page = (e.state && e.state.page) || 'checkin';
   /* If landing on checkin (home), re-push to restore the buffer so
      repeated back presses never escape to the login page */
@@ -1341,6 +1349,7 @@ async function openPropertyReview() {
 }
 
 // ── Review sheets ──
+var _activeRevSheet = null;
 function openRevSheet(sheetId, frameId, title, src) {
   var frame = document.getElementById(frameId);
   // Pass guest's property into staff-review so it can filter by assignment
@@ -1355,10 +1364,13 @@ function openRevSheet(sheetId, frameId, title, src) {
   var backdropId = sheetId === 'rating-sheet' ? 'rating-backdrop' : 'staff-backdrop';
   document.getElementById(backdropId).classList.add('open');
   document.getElementById(sheetId).classList.add('open');
+  _activeRevSheet = {sheetId: sheetId, backdropId: backdropId};
+  history.pushState({page: 'checkin', revSheet: sheetId}, '', '#checkin');
 }
 function closeRevSheet(sheetId, backdropId) {
   document.getElementById(sheetId).classList.remove('open');
   document.getElementById(backdropId).classList.remove('open');
+  _activeRevSheet = null;
 }
 
 </script>
