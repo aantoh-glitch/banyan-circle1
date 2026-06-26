@@ -765,10 +765,15 @@ function openSheet(id, url) {
   sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
   if (iframe.getAttribute('data-src') !== url) {
-    iframe.src = url;
     iframe.setAttribute('data-src', url);
+    iframe.onload = function() {
+      iframe.onload = null;
+      history.pushState({ ops: true, sheetOpen: true }, '');
+    };
+    iframe.src = url;
+  } else {
+    history.pushState({ ops: true, sheetOpen: true }, '');
   }
-  history.pushState({ ops: true, sheetOpen: true }, '');
 }
 function closeSheet() {
   if (!_sheetOpen) return;
@@ -802,10 +807,15 @@ function openMsgSheet() {
   sheet.getBoundingClientRect();
   sheet.style.transform = 'translateX(-50%) translateY(0)';
   if (iframe.getAttribute('data-src') !== url) {
-    iframe.src = url;
     iframe.setAttribute('data-src', url);
+    iframe.onload = function() {
+      iframe.onload = null;
+      history.pushState({ ops: true, sheetOpen: true }, '');
+    };
+    iframe.src = url;
+  } else {
+    history.pushState({ ops: true, sheetOpen: true }, '');
   }
-  history.pushState({ ops: true, sheetOpen: true }, '');
 }
 function closeMsgSheet() {
   if (!_msgSheetOpen) return;
