@@ -531,6 +531,8 @@ function checkLateCheckout() {
   banner.style.display = isLate ? 'flex' : 'none';
 }
 
+var _currentPageId = 'checkin';
+
 function goPage(id, btn) {
   /* Close messaging panel if open */
   if(typeof closeMessagingPanel==='function') closeMessagingPanel();
@@ -541,16 +543,49 @@ function goPage(id, btn) {
   if(id==='finalbill') loadFinalBill();
   /* Show header only on check-in page */
   document.querySelector('.hdr').style.display = (id === 'checkin') ? 'flex' : 'none';
-  /* Persist active tab in URL hash so refresh stays on same page */
-  history.replaceState(null, '', '#' + id);
+  /* Push a new history entry so back button navigates between tabs */
+  if (_currentPageId !== id) {
+    history.pushState({page: id}, '', '#' + id);
+    _currentPageId = id;
+  } else {
+    history.replaceState({page: id}, '', '#' + id);
+  }
 }
 
-/* On load: restore tab from URL hash */
+/* Handle browser back/forward */
+window.addEventListener('popstate', function(e) {
+  var page = (e.state && e.state.page) || 'checkin';
+  /* If going back to checkin (home), stay — don't let it go further back */
+  if (page === 'checkin') {
+    /* Re-push home so another back press stays here too */
+    history.pushState({page: 'checkin'}, '', '#checkin');
+  }
+  /* Activate the page without pushing a new entry */
+  _currentPageId = page;
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.bnt').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('pg-' + page).classList.add('on');
+  var btns = document.querySelectorAll('.bnt');
+  btns.forEach(function(b){
+    var oc = b.getAttribute('onclick') || '';
+    if(oc.indexOf("'"+page+"'") !== -1 || oc.indexOf('"'+page+'"') !== -1) b.classList.add('on');
+  });
+  document.querySelector('.hdr').style.display = (page === 'checkin') ? 'flex' : 'none';
+  if (page === 'finalbill') loadFinalBill();
+  if (typeof closeMessagingPanel === 'function') closeMessagingPanel();
+});
+
+/* On load: seed home into history, then restore tab from URL hash */
 (function(){
   var hash = location.hash.replace('#','');
   var validPages = ['checkin','experience','finalbill','reviews'];
-  if(hash && validPages.indexOf(hash) !== -1) {
-    /* Find matching nav button and activate */
+  /* Always seed the home state at the bottom of the stack */
+  history.replaceState({page: 'checkin'}, '', '#checkin');
+  _currentPageId = 'checkin';
+  if(hash && hash !== 'checkin' && validPages.indexOf(hash) !== -1) {
+    /* Push the saved tab on top of home so back returns to home */
+    history.pushState({page: hash}, '', '#' + hash);
+    _currentPageId = hash;
     var btns = document.querySelectorAll('.bnt');
     btns.forEach(function(b){
       var onclick = b.getAttribute('onclick') || '';
@@ -561,6 +596,7 @@ function goPage(id, btn) {
   } else {
     /* Default page is checkin — ensure header visible */
     document.querySelector('.hdr').style.display = 'flex';
+    history.replaceState({page: 'checkin'}, '', '#checkin');
   }
 })();
 
