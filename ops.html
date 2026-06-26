@@ -477,7 +477,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
 
-// Auth check passed
+
 
 document.getElementById('user-name').textContent = me.name || 'Staff';
 const today = new Date();
@@ -762,8 +762,9 @@ function openSheet(id, url) {
   var iframe = document.getElementById('generic-sheet-iframe');
   iframe.src = url;
   document.getElementById('sheet-overlay').style.display = 'block';
-  sheet.getBoundingClientRect();
+  sheet.getBoundingClientRect(); // force reflow so transition fires
   sheet.style.transform = 'translateX(-50%) translateY(0)';
+  history.pushState({ sheetOpen: true }, '');
 }
 function closeSheet() {
   if (!_sheetOpen) return;
@@ -795,6 +796,7 @@ function openMsgSheet() {
   document.getElementById('msg-sheet-overlay').style.display = 'block';
   sheet.getBoundingClientRect(); // force reflow so transition fires
   sheet.style.transform = 'translateX(-50%) translateY(0)';
+  history.pushState({ sheetOpen: true }, '');
 }
 function closeMsgSheet() {
   if (!_msgSheetOpen) return;
@@ -817,7 +819,22 @@ window.addEventListener('message', function(e) {
   }
 });
 
-// Modal open: no history push needed
+// ── Modal open: push history state ──
+var _origOpenLeaveModal = openLeaveModal;
+openLeaveModal = async function() {
+  await _origOpenLeaveModal();
+  history.pushState({ sheetOpen: true }, '');
+};
+var _origOpenReviewsModal = openReviewsModal;
+openReviewsModal = async function() {
+  await _origOpenReviewsModal();
+  history.pushState({ sheetOpen: true }, '');
+};
+var _origOpenVendorsModal = openVendorsModal;
+openVendorsModal = function() {
+  _origOpenVendorsModal();
+  history.pushState({ sheetOpen: true }, '');
+};
 
 // ── Named modal close functions ──
 function closeLeaveModal() {
@@ -838,36 +855,13 @@ window.addEventListener('message', function(e) {
   }
 });
 
-// ── Intercept back gesture: push a dummy state so popstate fires instead of navigating away ──
-history.pushState({ sheetGuard: true }, '');
+// ── Back button: if anything open close it, else leave page naturally ──
 window.addEventListener('popstate', function(e) {
-  if (_sheetOpen) {
-    closeSheet();
-    history.pushState({ sheetGuard: true }, '');
-    return;
-  }
-  if (_msgSheetOpen) {
-    closeMsgSheet();
-    history.pushState({ sheetGuard: true }, '');
-    return;
-  }
-  if (document.getElementById('modal-leave').classList.contains('on')) {
-    closeLeaveModal();
-    history.pushState({ sheetGuard: true }, '');
-    return;
-  }
-  if (document.getElementById('modal-reviews').classList.contains('on')) {
-    closeReviewsModal();
-    history.pushState({ sheetGuard: true }, '');
-    return;
-  }
-  if (document.getElementById('modal-vendors').classList.contains('on')) {
-    closeVendorsModal();
-    history.pushState({ sheetGuard: true }, '');
-    return;
-  }
-  // Nothing open — re-push so back doesn't leave the page unexpectedly
-  history.pushState({ sheetGuard: true }, '');
+  if (_sheetOpen) { closeSheet(); return; }
+  if (_msgSheetOpen) { closeMsgSheet(); return; }
+  if (document.getElementById('modal-leave').classList.contains('on')) { closeLeaveModal(); return; }
+  if (document.getElementById('modal-reviews').classList.contains('on')) { closeReviewsModal(); return; }
+  if (document.getElementById('modal-vendors').classList.contains('on')) { closeVendorsModal(); return; }
 });
 
 /* ── Idle Auto-Logout ── */
