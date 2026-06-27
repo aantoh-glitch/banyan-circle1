@@ -1,37 +1,33 @@
-const CACHE_NAME = 'pbh-portal-v1';
-const ASSETS = [
-  '/',
-  '/glogin.html',
-  '/guest.html',
-  '/tlogin.html',
-  '/talent.html',
-  '/teamlogin.html',
-  '/ops.html',
-  '/landlord.html',
+const CACHE = 'heritance-v1';
+const PRECACHE = [
+  '/offlogin.html',
   '/admin.html',
+  '/manifest-office.json',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', e => {
+  // Network-first for API calls; cache-first for assets
+  if (e.request.url.includes('supabase') || e.request.url.includes('/rest/v1')) {
+    return; // always go to network for auth/data
+  }
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
