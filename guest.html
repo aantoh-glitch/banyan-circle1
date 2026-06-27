@@ -1260,7 +1260,7 @@ async function loadFinalBill(){
     } else {
       document.getElementById('bill-items').innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges on record.</div>';
     }
-    document.getElementById('bill-total').textContent = fmtA(bill.amount || bill.subtotal);
+    document.getElementById('bill-total').textContent = fmtA(bill.subtotal);
     var statusMap = {paid:'bdg-g', pending:'bdg-a'};
     var st = (bill.payment_status||'pending').toLowerCase();
     var badge = document.getElementById('bill-status-badge');
@@ -1298,7 +1298,7 @@ function downloadGuestBillPdf(){
   var statusBg    = b.payment_status==='paid' ? '#EAF3DE' : '#FAEEDA';
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + ref + '</title><style>' +
-    '*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#2C2C2A;padding:36px 44px;font-size:13px}' +
+    '*{box-sizing:border-box;margin:0;padding:0}body{font-family:Georgia,serif;color:#2C2C2A;padding:36px 44px;font-size:13px;background:#f3eee8}' +
     'h1{font-size:21px;color:#993C1D}' +
     '.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #993C1D;padding-bottom:14px;margin-bottom:18px}' +
     '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7}' +
