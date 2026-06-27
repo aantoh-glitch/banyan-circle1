@@ -1260,7 +1260,7 @@ async function loadFinalBill(){
     } else {
       document.getElementById('bill-items').innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges on record.</div>';
     }
-    document.getElementById('bill-total').textContent = fmtA(bill.subtotal);
+    document.getElementById('bill-total').textContent = fmtA(bill.amount || bill.subtotal);
     var statusMap = {paid:'bdg-g', pending:'bdg-a'};
     var st = (bill.payment_status||'pending').toLowerCase();
     var badge = document.getElementById('bill-status-badge');
