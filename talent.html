@@ -4,6 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Banyan Circle — Talent Portal</title>
+<meta name="theme-color" content="#f0ede8"/>
+<link rel="manifest" href="/manifest-talent.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Banyan Circle Talent">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -911,5 +917,10 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 })();
 </script>
 </div><!-- /.app -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
+</script>
 </body>
 </html>
