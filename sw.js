@@ -1,4 +1,4 @@
-const CACHE = 'heritance-v1';
+const CACHE = 'heritance-v2';
 const PRECACHE = [
   '/offlogin.html',
   '/admin.html',
@@ -7,13 +7,13 @@ const PRECACHE = [
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];
-
+ 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
   );
 });
-
+ 
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -21,7 +21,7 @@ self.addEventListener('activate', e => {
     ).then(() => self.clients.claim())
   );
 });
-
+ 
 self.addEventListener('fetch', e => {
   // Network-first for API calls; cache-first for assets
   if (e.request.url.includes('supabase') || e.request.url.includes('/rest/v1')) {
@@ -31,3 +31,4 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
+ 
