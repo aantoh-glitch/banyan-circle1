@@ -459,7 +459,12 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
     </div>
   </div>
 
-  <div class="footer">a property by heritance</div>
+  <div class="footer" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+    a property by heritance
+    <button onclick="clearCacheAndReload()" title="Refresh app" style="background:none;border:none;cursor:pointer;padding:2px;opacity:0.4;line-height:0;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+  </div>
 
   <!-- Vendors bottom-sheet modal -->
   <div class="modal" id="modal-vendors">
@@ -950,6 +955,19 @@ window.addEventListener('popstate', function(e) {
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js");
+}
+</script>
+<script>
+function clearCacheAndReload() {
+  if ('caches' in window) {
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+        });
+      } else { location.reload(true); }
+    });
+  } else { location.reload(true); }
 }
 </script>
 </body>
