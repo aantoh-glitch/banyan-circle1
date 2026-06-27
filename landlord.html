@@ -313,9 +313,14 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 <div class="pg on" id="pg-description">
   <div class="pg-head">
     <div class="pg-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:#2C2C2A">Home</div>
-    <button class="top-signout" onclick="signOut()">
-      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    </button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="top-signout" onclick="clearCacheAndReload()" title="Clear cache &amp; refresh">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="top-signout" onclick="signOut()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
   </div>
   <div id="desc-hero">
     <div class="card"><div class="empty"><div class="empty-icon">&#127969;</div>Loading property&hellip;</div></div>
@@ -1404,6 +1409,19 @@ async function deleteUtility(id) {
   </div>
 </div>
 
+<script>
+function clearCacheAndReload() {
+  if ('caches' in window) {
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+        });
+      } else { location.reload(true); }
+    });
+  } else { location.reload(true); }
+}
+</script>
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js");
