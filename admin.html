@@ -296,7 +296,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <!-- DASHBOARD PAGE -->
 <div class="pg on" id="pg-dashboard">
-  <div class="pg-title">Dashboard</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="pg-title">Dashboard</div>
+    <button onclick="clearCacheAndReload()" title="Refresh app" style="background:none;border:none;cursor:pointer;padding:6px;opacity:0.45;line-height:0;flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+  </div>
   <div class="pg-sub" id="dash-date-label">Today</div>
 
   <div class="dash-section-title">Guests · Today</div>
@@ -3142,4 +3147,16 @@ async function btnGuard(btn, fn) {
   }
 }
 </script>
-
+<script>
+function clearCacheAndReload() {
+  if ('caches' in window) {
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+        });
+      } else { location.reload(true); }
+    });
+  } else { location.reload(true); }
+}
+</script>
