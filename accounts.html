@@ -3084,6 +3084,13 @@ function editBill(bill) {
     else setPayMethod('pending');
 
     document.getElementById('bill-remarks').value = bill.remarks || '';
+    // Open the form panel if it's collapsed
+    var body = document.getElementById('new-bill-body');
+    var chev = document.getElementById('new-bill-chevron');
+    if (body && body.style.display === 'none') {
+      body.style.display = '';
+      if (chev) chev.style.transform = 'rotate(180deg)';
+    }
     window.scrollTo({top:0, behavior:'smooth'});
   });
 }
@@ -3350,7 +3357,7 @@ function downloadBillPdf(b) {
     '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>' +
     '<style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
-    'body{font-family:\'DM Sans\',Arial,sans-serif;color:#2C2C2A;padding:40px 48px;font-size:13px;font-weight:400}' +
+    'body{font-family:\'DM Sans\',Arial,sans-serif;color:#2C2C2A;padding:40px 48px;font-size:13px;font-weight:400;background:#f3eee8}' +
     '.hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #993C1D;padding-bottom:16px;margin-bottom:20px}' +
     '.hdr-spacer{min-width:140px}' +
     '.prop{text-align:right;font-size:12px;color:#888;line-height:1.7;min-width:140px}' +
