@@ -1249,18 +1249,23 @@ async function loadFinalBill(){
     document.getElementById('bill-address').textContent    = bill.guest_address || '--';
     document.getElementById('bill-checkin').textContent    = fmtD(me.check_in);
     document.getElementById('bill-checkout').textContent   = fmtD(me.check_out);
-    // Itemised charges
+    // Itemised charges — grouped by type
     var items = bill.items || [];
-    if(items.length){
-      document.getElementById('bill-items').innerHTML = items.map(function(i){
-        var desc = i.name || 'Item';
-        if((i.qty||0) > 1) desc += ' <span style="color:var(--muted);font-size:12px">× ' + i.qty + ' @ ₹' + Number(i.rate||0).toLocaleString('en-IN') + '</span>';
-        return '<div class="bill-line"><span style="flex:1">' + desc + '</span><span style="font-weight:500;flex-shrink:0;margin-left:12px">' + fmtA(i.total) + '</span></div>';
-      }).join('');
-    } else {
-      document.getElementById('bill-items').innerHTML = '<div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges on record.</div>';
-    }
-    document.getElementById('bill-total').textContent = fmtA(bill.subtotal);
+    var typeOrder = ['banyan','banyan_general','accommodation','addon',''];
+    var typeLabels = {banyan:'Banyan Circle', banyan_general:'Banyan Circle', accommodation:'Rent', addon:'Add-ons', '':'Other'};
+    var grouped = {};
+    typeOrder.forEach(function(t){ grouped[t] = []; });
+    items.forEach(function(i){ var t = i.type||''; if(!(t in grouped)) grouped[t]=[]; grouped[t].push(i); });
+    var billHtml = '';
+    typeOrder.forEach(function(t){
+      var grp = grouped[t];
+      if (!grp || !grp.length) return;
+      var groupTotal = grp.reduce(function(s,i){ return s + (parseFloat(i.total)||((parseFloat(i.qty)||1)*(parseFloat(i.rate)||0))); }, 0);
+      var label = typeLabels[t] || t;
+      billHtml += '<div class="bill-line"><span style="flex:1">' + label + '</span><span style="font-weight:500;flex-shrink:0;margin-left:12px">' + fmtA(groupTotal) + '</span></div>';
+    });
+    document.getElementById('bill-items').innerHTML = billHtml || '<div style="font-size:13px;color:var(--muted);padding:10px 0">No itemised charges on record.</div>';
+    document.getElementById('bill-total').textContent = fmtA(bill.amount || bill.subtotal);
     var statusMap = {paid:'bdg-g', pending:'bdg-a'};
     var st = (bill.payment_status||'pending').toLowerCase();
     var badge = document.getElementById('bill-status-badge');
