@@ -475,7 +475,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 
 <script>
 const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
-if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/stafflogin.html');
+if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/teamlogin.html');
 
 history.replaceState({ ops: true }, '');
 history.pushState({ ops: true }, '');
@@ -489,7 +489,7 @@ if (me.staffRole === 'ma_team' || me.staffRole === 'associates') {
   document.querySelectorAll('.ops-only').forEach(el => el.style.display = 'none');
 }
 
-function signOut(){ localStorage.removeItem('bc_me'); location.href='/stafflogin.html'; }
+function signOut(){ localStorage.removeItem('bc_me'); location.href='/teamlogin.html'; }
 // Earnings button onclick already includes role=staff&name param
 // Wire laundry link with property_name from logged-in staff
 const laundryLink = document.getElementById('laundry-link');
