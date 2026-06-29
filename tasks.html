@@ -1476,7 +1476,8 @@ async function deleteTask(id){
   requirePin(`Delete this task? This cannot be undone.`, async () => {
     try {
       await api('/rest/v1/tasks?id=eq.'+id,'DELETE');
-      ALL_TASKS = ALL_TASKS.filter(t=>t.id!==id);
+      ALL_TASKS = ALL_TASKS.filter(t=>String(t.id)!==String(id));
+      STAFF_TASKS = typeof STAFF_TASKS !== 'undefined' ? STAFF_TASKS.filter(t=>String(t.id)!==String(id)) : [];
       toast('Task deleted'); applyFilters();
     } catch(e){ toast('Delete failed: '+e.message); }
   });
