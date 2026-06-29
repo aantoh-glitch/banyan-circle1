@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Guest</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+<title>Property by Heritance — Guest</title>
 <meta name="theme-color" content="#f3eee8"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -150,7 +150,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 
 <div class="hdr">
   <div class="hdr-logo"><img src="/herit.jpg" onerror="this.style.display='none';this.parentNode.innerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;white&quot; width=&quot;18&quot; height=&quot;18&quot;><path d=&quot;M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z&quot;/></svg>'"/></div>
-  <div class="hdr-info"><div class="hdr-name" id="hdr-name">Guest</div><div class="hdr-prop" id="hdr-prop">Banyan Circle</div></div>
+  <div class="hdr-info"><div class="hdr-name" id="hdr-name">Guest</div><div class="hdr-prop" id="hdr-prop">Property by Heritance</div></div>
   <button class="hdr-out" onclick="signOut()" title="Sign out">
     <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
   </button>
@@ -509,7 +509,7 @@ var KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
 
 document.getElementById('hdr-name').textContent = me.name;
-document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
+document.getElementById('hdr-prop').textContent = me.prop || 'Property by Heritance';
 document.getElementById('ci-name').value = me.name || '';
 if(me.check_in) document.getElementById('ci-arr-date').value = me.check_in;
 if(me.check_out) document.getElementById('ci-dep-date').value = me.check_out;
@@ -1318,7 +1318,7 @@ function downloadGuestBillPdf(){
     '.footer{margin-top:28px;font-size:11px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:12px}' +
     '@media print{body{padding:16px 22px}}' +
     '</style></head><body>' +
-    '<div class="hdr"><div><h1>Banyan Circle</h1><div style="font-size:11px;color:#888;margin-top:2px">Properties by Heritance</div></div>' +
+    '<div class="hdr"><div><h1>Property by Heritance</h1><div style="font-size:11px;color:#888;margin-top:2px">Properties by Heritance</div></div>' +
     '<div class="prop"><div>Ref: <strong>' + ref + '</strong></div><div>' + esc(b.property_name||'') + '</div><div>' + fmtD(b.created_at) + '</div></div></div>' +
     '<div class="guest-card"><div class="guest-name">' + esc(b.guest_name||name) + '</div>' +
     '<div class="guest-detail">' + esc(b.guest_address||'').replace(/\n/g,'<br/>') + '</div>' +
@@ -1330,7 +1330,7 @@ function downloadGuestBillPdf(){
     '<tr class="total-row"><td colspan="3">Total</td><td style="text-align:right">' + fmtA(b.subtotal) + '</td></tr></tbody></table>' +
     '<div class="status-pill">' + statusStr + '</div>' +
     (b.remarks ? '<div style="font-size:12px;color:#888;margin-top:8px">Note: ' + esc(b.remarks) + '</div>' : '') +
-    '<div class="footer">Thank you for staying with Banyan Circle · For queries contact the front desk</div>' +
+    '<div class="footer">Thank you for staying with Property by Heritance · For queries contact the front desk</div>' +
     '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
     '</body></html>';
 
