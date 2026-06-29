@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Heritance — Staff</title>
+<title>Heritance — Team</title>
 <meta name="theme-color" content="#f3eee8"/>
 <link rel="manifest" href="/manifest-team.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -396,7 +396,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
       </div>
       <div>
         <div class="db-label">Reviews</div>
-        <div class="db-sub">Guest staff ratings</div>
+        <div class="db-sub">Guest team ratings</div>
       </div>
     </button>
 
@@ -486,7 +486,7 @@ if (!me || (me.role !== 'staff' && me.role !== 'owner')) location.replace('/team
 history.replaceState({ ops: true }, '');
 history.pushState({ ops: true }, '');
 
-document.getElementById('user-name').textContent = me.name || 'Staff';
+document.getElementById('user-name').textContent = me.name || 'Team Member';
 const today = new Date();
 document.getElementById('user-date').textContent = today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
@@ -968,3 +968,61 @@ function clearCacheAndReload() {
 </script>
 </body>
 </html>
+<script>
+// ── Push Notifications ──
+const VAPID_PUBLIC_KEY = 'R3uce8gsNDzIWidW3gRBGERSyQ9i5guToOn4B-7MxwE';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function savePushSubscription(subscription) {
+  const key  = subscription.getKey('p256dh');
+  const auth = subscription.getKey('auth');
+  const body = {
+    staff_name: me.name,
+    endpoint:   subscription.endpoint,
+    p256dh:     btoa(String.fromCharCode(...new Uint8Array(key))),
+    auth:       btoa(String.fromCharCode(...new Uint8Array(auth)))
+  };
+  await fetch('https://wwdnuajhqfajvsexszpy.supabase.co/rest/v1/push_subscriptions', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX',
+      'Authorization': 'Bearer sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX',
+      'Prefer':        'resolution=merge-duplicates'
+    },
+    body: JSON.stringify(body)
+  });
+}
+
+async function initPushNotifications() {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    const reg = await navigator.serviceWorker.ready;
+    let subscription = await reg.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly:      true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    await savePushSubscription(subscription);
+  } catch (err) {
+    console.warn('Push setup failed:', err);
+  }
+}
+
+// Trigger after login confirmed
+if (me && me.name) initPushNotifications();
+</script>
