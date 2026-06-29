@@ -837,7 +837,7 @@ function renderAdminTable(tasks){
       }
     });
     let cRows = '';
-    cGroups.forEach(g => { cRows += g.type==='single' ? adminRow(g.data) : bundleRow(g.data); });
+    cGroups.forEach(g => { cRows += g.type==='single' ? adminRow(g.data, 'log') : bundleRow(g.data, 'log'); });
     if(logList) logList.innerHTML = '<table class="tbl"><thead><tr>'
       + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
       + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
@@ -854,7 +854,8 @@ function toggleCompletedLog(){
   chevron.classList.toggle('open', isOpen);
 }
 
-function bundleRow(b){
+function bundleRow(b, idPrefix){
+  idPrefix = idPrefix || 'row';
   const tasks = b.tasks;
   const total = tasks.length;
   const done  = tasks.filter(t=>t.completed).length;
@@ -866,7 +867,11 @@ function bundleRow(b){
   const due = b.due_date
     ? new Date(b.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
     : '<span style="color:var(--muted)">—</span>';
-  const bid = 'bundle-' + b.bundle_id.replace(/-/g,'');
+  const rawBid = 'bundle-' + b.bundle_id.replace(/-/g,'');
+  // Use a prefix-scoped ID so active and log bundles don't collide
+  const bid = idPrefix === 'log' ? 'log-' + rawBid : rawBid;
+  const ackCellId  = idPrefix === 'log' ? 'log-bundle-ack-'+b.bundle_id  : 'bundle-ack-'+b.bundle_id;
+  const doneCellId = idPrefix === 'log' ? 'log-bundle-done-'+b.bundle_id : 'bundle-done-'+b.bundle_id;
 
   let html = '<tr class="bundle-row" onclick="toggleBundle(\''+bid+'\',this)">'
     + '<td><div class="bundle-toggle">'
@@ -880,8 +885,8 @@ function bundleRow(b){
     + '<td>' + (b.tasks[0]&&b.tasks[0].task_type ? taskTypeBadge(b.tasks[0].task_type) : '<span style="color:var(--muted)">—</span>') + '</td>'
     + '<td>' + priorityBadge(b.priority) + '</td>'
     + '<td style="font-size:12px">' + due + '</td>'
-    + '<td id="bundle-ack-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
-    + '<td id="bundle-done-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
+    + '<td id="'+ackCellId+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
+    + '<td id="'+doneCellId+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
     + '<td></td><td></td><td></td>'
     + '<td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="event.stopPropagation();editBundle(\''+b.bundle_id+'\')">Edit</button> <button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
     + '</tr>';
@@ -889,14 +894,16 @@ function bundleRow(b){
   // Sub-rows (hidden by default)
   tasks.forEach(t => {
     const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
-    html += `<tr class="bundle-sub-row hidden" id="sub-${bid}">
+    const tsAckId  = idPrefix === 'log' ? `log-ts-ack-${t.id}`  : `ts-ack-${t.id}`;
+    const tsDoneId = idPrefix === 'log' ? `log-ts-done-${t.id}` : `ts-done-${t.id}`;
+    html += `<tr class="bundle-sub-row hidden" id="sub-${bid}-${t.id}">
       <td><div style="font-size:12px;line-height:1.4;color:var(--text)">${escHtml(t.work)}</div></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td>${ackWidget(t.id,'acknowledged',t.acknowledged,'admin')}</td>
       <td>${ackWidget(t.id,'completed',t.completed,'admin')}</td>
       <td>${fmtTs(t.created_at)}</td>
-      <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
-      <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
+      <td id="${tsAckId}">${fmtTs(t.acknowledged_at)}</td>
+      <td id="${tsDoneId}">${fmtTs(t.completed_at)}</td>
       <td style="text-align:right;white-space:nowrap">
         <button class="btn-edit" onclick='editTask(${tJson})'>Edit</button>
         <button class="btn-del" onclick="deleteTask('${t.id}')">✕</button>
@@ -936,7 +943,8 @@ function fmtTs(val){
   return `<span style="font-size:11px;color:var(--muted)">${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}<br>${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}</span>`;
 }
 
-function adminRow(t){
+function adminRow(t, idPrefix){
+  idPrefix = idPrefix || 'row';
   const ackOn = t.acknowledged;
   const initials = (t.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const staffCell = t.staff_name
@@ -947,7 +955,9 @@ function adminRow(t){
     : '<span style="color:var(--muted)">—</span>';
   const notes = t.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(t.notes)}</div>` : '';
   const propCell = t.property_name ? `<span style="font-size:11px;font-weight:500;background:var(--br-l);color:var(--br);padding:2px 8px;border-radius:6px">${escHtml(t.property_name)}</span>` : '<span style="color:var(--muted)">—</span>';
-  return `<tr id="row-${t.id}">
+  const tsAckId  = idPrefix === 'row' ? `ts-ack-${t.id}`  : `log-ts-ack-${t.id}`;
+  const tsDoneId = idPrefix === 'row' ? `ts-done-${t.id}` : `log-ts-done-${t.id}`;
+  return `<tr id="${idPrefix}-${t.id}">
     <td><div style="font-weight:500;line-height:1.4">${escHtml(t.work)}</div>${notes}</td>
     <td>${staffCell}</td>
     <td>${propCell}</td>
@@ -957,8 +967,8 @@ function adminRow(t){
     <td>${ackWidget(t.id, 'acknowledged', ackOn, 'admin')}</td>
     <td>${ackWidget(t.id, 'completed', t.completed, 'admin')}</td>
     <td>${fmtTs(t.created_at)}</td>
-    <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
-    <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
+    <td id="${tsAckId}">${fmtTs(t.acknowledged_at)}</td>
+    <td id="${tsDoneId}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
       <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
       <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
