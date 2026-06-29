@@ -645,10 +645,10 @@ async function api(path, method, body){
   const m = method || 'GET';
   const isDelete = m === 'DELETE';
   const h = {apikey:KEY, Authorization:'Bearer '+_getJWT(), Accept:'application/json'};
-  if(!isDelete) h['Prefer'] = 'return=representation';
+  h['Prefer'] = isDelete ? 'return=minimal' : 'return=representation';
   if(body) h['Content-Type'] = 'application/json';
   const r = await fetch(SB+path,{method:m, headers:h, body:body?JSON.stringify(body):undefined});
-  if(r.status===204 || isDelete) return null;
+  if(r.status===204 || r.status===200) return null;
   const json = await r.json().catch(()=>null);
   if(!r.ok){
     const msg = (json&&(json.message||json.hint||json.error||json.details||json.code)) || ('HTTP '+r.status);
