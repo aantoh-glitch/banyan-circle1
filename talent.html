@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <title>Banyan Circle — Talent Portal</title>
 <meta name="theme-color" content="#f0ede8"/>
 <link rel="manifest" href="/manifest-talent.json">
@@ -926,11 +926,11 @@ function clearCacheAndReload() {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = window.location.href; });
         });
-      } else { location.reload(true); }
+      } else { window.location.href = window.location.href; }
     });
-  } else { location.reload(true); }
+  } else { window.location.href = window.location.href; }
 }
 </script>
 <script>
