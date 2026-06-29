@@ -648,13 +648,13 @@ async function api(path, method, body){
   h['Prefer'] = isDelete ? 'return=minimal' : 'return=representation';
   if(body) h['Content-Type'] = 'application/json';
   const r = await fetch(SB+path,{method:m, headers:h, body:body?JSON.stringify(body):undefined});
-  if(r.status===204 || isDelete) return null;
   const json = await r.json().catch(()=>null);
   if(!r.ok){
     const msg = (json&&(json.message||json.hint||json.error||json.details||json.code)) || ('HTTP '+r.status);
     console.error('API error', r.status, json);
     throw new Error(msg);
   }
+  if(r.status===204 || isDelete) return null;
   return json;
 }
 
@@ -903,7 +903,7 @@ function bundleRow(b){
       <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
       <td style="text-align:right;white-space:nowrap">
         <button class="btn-edit" onclick='editTask(${tJson})'>Edit</button>
-        <button class="btn-del" onclick="deleteTask('${t.id}')">✕</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteTask('${t.id}')">✕</button>
       </td>
     </tr>`;
   });
@@ -965,7 +965,7 @@ function adminRow(t){
     <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
       <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
-      <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
+      <button class="btn-del" onclick="event.stopPropagation();deleteTask('${t.id}')">Delete</button>
     </td>
   </tr>`;
 }
