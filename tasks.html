@@ -642,9 +642,13 @@ function _getJWT() {
 }
 
 async function api(path, method, body){
-  const h = {apikey:KEY,Authorization:'Bearer '+_getJWT(),'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
-  const r = await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
-  if(r.status===204) return null;
+  const m = method || 'GET';
+  const isDelete = m === 'DELETE';
+  const h = {apikey:KEY, Authorization:'Bearer '+_getJWT(), Accept:'application/json'};
+  if(!isDelete) h['Prefer'] = 'return=representation';
+  if(body) h['Content-Type'] = 'application/json';
+  const r = await fetch(SB+path,{method:m, headers:h, body:body?JSON.stringify(body):undefined});
+  if(r.status===204 || isDelete) return null;
   const json = await r.json().catch(()=>null);
   if(!r.ok){
     const msg = (json&&(json.message||json.hint||json.error||json.details||json.code)) || ('HTTP '+r.status);
@@ -753,20 +757,15 @@ function applyFilters(){
   const staffFilter    = (document.getElementById('filter-staff')||{}).value || '';
   const propertyFilter = (document.getElementById('filter-property')||{}).value || '';
   const typeFilter     = (document.getElementById('filter-type')||{}).value || '';
-  // Base filters apply to both active table and completed log
-  let base = ALL_TASKS;
-  if(staffFilter)    base = base.filter(t=> t.staff_id === staffFilter);
-  if(propertyFilter) base = base.filter(t=> t.property_name === propertyFilter);
-  if(typeFilter)     base = base.filter(t=> t.task_type === typeFilter);
-  if(LOG_DATE_FROM)  base = base.filter(t=> (t.created_at||'').slice(0,10) >= LOG_DATE_FROM);
-  if(LOG_DATE_TO)    base = base.filter(t=> (t.created_at||'').slice(0,10) <= LOG_DATE_TO);
-  // Active table: exclude completed, then apply ack filter chip
-  let rows = base.filter(t => !t.completed);
-  if(adminFilter === 'pending') rows = rows.filter(t=>!t.acknowledged);
-  if(adminFilter === 'ack')     rows = rows.filter(t=> t.acknowledged);
-  // Completed log always shows all completed tasks regardless of ack filter
-  const completedRows = base.filter(t => t.completed);
-  renderAdminTable(rows, completedRows);
+  let rows = ALL_TASKS;
+  if(adminFilter === 'pending')  rows = rows.filter(t=>!t.acknowledged);
+  if(adminFilter === 'ack')      rows = rows.filter(t=> t.acknowledged);
+  if(staffFilter)                rows = rows.filter(t=> t.staff_id === staffFilter);
+  if(propertyFilter)             rows = rows.filter(t=> t.property_name === propertyFilter);
+  if(typeFilter)                 rows = rows.filter(t=> t.task_type === typeFilter);
+  if(LOG_DATE_FROM)              rows = rows.filter(t=> (t.created_at||'').slice(0,10) >= LOG_DATE_FROM);
+  if(LOG_DATE_TO)                rows = rows.filter(t=> (t.created_at||'').slice(0,10) <= LOG_DATE_TO);
+  renderAdminTable(rows);
   updateKpis(ALL_TASKS);
 }
 
@@ -782,10 +781,12 @@ function priorityBadge(p){
   return `<span class="bdg ${map[p]||'bdg'}" style="text-transform:capitalize">${p||'medium'}</span>`;
 }
 
-function renderAdminTable(tasks, completedTasks){
+function renderAdminTable(tasks){
   const el = document.getElementById('admin-tasks-list');
-  // activeTasks = tasks (already filtered by caller; completedTasks passed separately)
-  const activeTasks = tasks;
+
+  // Split into active (not completed) and completed
+  const activeTasks    = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t =>  t.completed);
 
   // ── Active tasks table ──
   if(!activeTasks.length){
@@ -840,7 +841,7 @@ function renderAdminTable(tasks, completedTasks){
       }
     });
     let cRows = '';
-    cGroups.forEach(g => { cRows += g.type==='single' ? adminRow(g.data, 'log') : bundleRow(g.data, 'log'); });
+    cGroups.forEach(g => { cRows += g.type==='single' ? adminRow(g.data) : bundleRow(g.data); });
     if(logList) logList.innerHTML = '<table class="tbl"><thead><tr>'
       + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
       + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
@@ -857,8 +858,7 @@ function toggleCompletedLog(){
   chevron.classList.toggle('open', isOpen);
 }
 
-function bundleRow(b, idPrefix){
-  idPrefix = idPrefix || 'active';
+function bundleRow(b){
   const tasks = b.tasks;
   const total = tasks.length;
   const done  = tasks.filter(t=>t.completed).length;
@@ -870,10 +870,7 @@ function bundleRow(b, idPrefix){
   const due = b.due_date
     ? new Date(b.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
     : '<span style="color:var(--muted)">—</span>';
-  const rawBid = 'bundle-' + b.bundle_id.replace(/-/g,'');
-  const bid = idPrefix + '-' + rawBid;
-  const ackCellId  = idPrefix + '-bundle-ack-'  + b.bundle_id;
-  const doneCellId = idPrefix + '-bundle-done-' + b.bundle_id;
+  const bid = 'bundle-' + b.bundle_id.replace(/-/g,'');
 
   let html = '<tr class="bundle-row" onclick="toggleBundle(\''+bid+'\',this)">'
     + '<td><div class="bundle-toggle">'
@@ -887,8 +884,8 @@ function bundleRow(b, idPrefix){
     + '<td>' + (b.tasks[0]&&b.tasks[0].task_type ? taskTypeBadge(b.tasks[0].task_type) : '<span style="color:var(--muted)">—</span>') + '</td>'
     + '<td>' + priorityBadge(b.priority) + '</td>'
     + '<td style="font-size:12px">' + due + '</td>'
-    + '<td id="'+ackCellId+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
-    + '<td id="'+doneCellId+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
+    + '<td id="bundle-ack-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
+    + '<td id="bundle-done-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
     + '<td></td><td></td><td></td>'
     + '<td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="event.stopPropagation();editBundle(\''+b.bundle_id+'\')">Edit</button> <button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
     + '</tr>';
@@ -896,14 +893,14 @@ function bundleRow(b, idPrefix){
   // Sub-rows (hidden by default)
   tasks.forEach(t => {
     const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
-    html += `<tr class="bundle-sub-row hidden" id="sub-${bid}-${t.id}">
+    html += `<tr class="bundle-sub-row hidden" id="sub-${bid}">
       <td><div style="font-size:12px;line-height:1.4;color:var(--text)">${escHtml(t.work)}</div></td>
       <td></td><td></td><td></td><td></td><td></td>
       <td>${ackWidget(t.id,'acknowledged',t.acknowledged,'admin')}</td>
       <td>${ackWidget(t.id,'completed',t.completed,'admin')}</td>
       <td>${fmtTs(t.created_at)}</td>
-      <td id="${idPrefix}-ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
-      <td id="${idPrefix}-ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
+      <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
+      <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
       <td style="text-align:right;white-space:nowrap">
         <button class="btn-edit" onclick='editTask(${tJson})'>Edit</button>
         <button class="btn-del" onclick="deleteTask('${t.id}')">✕</button>
@@ -915,7 +912,7 @@ function bundleRow(b, idPrefix){
 
 function toggleBundle(bid, headerRow){
   const icon = document.getElementById('icon-'+bid);
-  const subs = document.querySelectorAll('[id^="sub-'+bid+'-"]');
+  const subs = document.querySelectorAll('#sub-'+bid);
   const isOpen = icon.classList.toggle('open');
   subs.forEach(r => r.classList.toggle('hidden', !isOpen));
 }
@@ -943,8 +940,7 @@ function fmtTs(val){
   return `<span style="font-size:11px;color:var(--muted)">${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}<br>${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}</span>`;
 }
 
-function adminRow(t, idPrefix){
-  idPrefix = idPrefix || 'active';
+function adminRow(t){
   const ackOn = t.acknowledged;
   const initials = (t.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const staffCell = t.staff_name
@@ -955,7 +951,7 @@ function adminRow(t, idPrefix){
     : '<span style="color:var(--muted)">—</span>';
   const notes = t.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">${escHtml(t.notes)}</div>` : '';
   const propCell = t.property_name ? `<span style="font-size:11px;font-weight:500;background:var(--br-l);color:var(--br);padding:2px 8px;border-radius:6px">${escHtml(t.property_name)}</span>` : '<span style="color:var(--muted)">—</span>';
-  return `<tr id="${idPrefix}-row-${t.id}">
+  return `<tr id="row-${t.id}">
     <td><div style="font-weight:500;line-height:1.4">${escHtml(t.work)}</div>${notes}</td>
     <td>${staffCell}</td>
     <td>${propCell}</td>
@@ -965,8 +961,8 @@ function adminRow(t, idPrefix){
     <td>${ackWidget(t.id, 'acknowledged', ackOn, 'admin')}</td>
     <td>${ackWidget(t.id, 'completed', t.completed, 'admin')}</td>
     <td>${fmtTs(t.created_at)}</td>
-    <td id="${idPrefix}-ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
-    <td id="${idPrefix}-ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
+    <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
+    <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
       <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
       <button class="btn-del" onclick="deleteTask('${t.id}')">Delete</button>
@@ -1651,7 +1647,7 @@ async function toggleAck(id, field, current, labelEl, view){
     labelEl.dataset.on = String(newVal);
     // If completed=true, also update the acknowledged widget in the same row inline
     if(field === 'completed' && newVal && view === 'admin'){
-      const row = document.getElementById('active-row-'+id) || document.getElementById('log-row-'+id);
+      const row = document.getElementById('row-'+id);
       if(row){
         const ackLabel = row.querySelector('[data-field="acknowledged"]');
         if(ackLabel){
@@ -1661,11 +1657,13 @@ async function toggleAck(id, field, current, labelEl, view){
         }
       }
       // Also update ack timestamp cell
-      ['active-ts-ack-'+id, 'log-ts-ack-'+id].forEach(eid=>{ const c=document.getElementById(eid); if(c) c.innerHTML=fmtTs(now); });
+      const tsAckCell = document.getElementById('ts-ack-'+id);
+      if(tsAckCell) tsAckCell.innerHTML = fmtTs(now);
     }
     // Update timestamp cell inline (admin view)
     if(view === 'admin' && tsField){
-      ['active','log'].forEach(p=>{ const tsCell=document.getElementById(p+'-ts-'+(field==='acknowledged'?'ack':'done')+'-'+id); if(tsCell) tsCell.innerHTML=fmtTs(newVal?now:null); });
+      const tsCell = document.getElementById('ts-' + (field==='acknowledged'?'ack':'done') + '-' + id);
+      if(tsCell) tsCell.innerHTML = fmtTs(newVal ? now : null);
     }
     if(view==='admin') updateKpis(ALL_TASKS);
     // Refresh bundle header counters if this task belongs to a bundle
