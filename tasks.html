@@ -1514,8 +1514,9 @@ function confirmPin() {
     document.getElementById('pin-input').focus();
     return;
   }
+  const cb = _pinCallback;
   closePinModal();
-  if (_pinCallback) _pinCallback();
+  if (cb) cb();
 }
 
 document.getElementById('pin-input').addEventListener('keydown', e => {
