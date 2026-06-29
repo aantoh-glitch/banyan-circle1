@@ -350,11 +350,11 @@ function clearCacheAndReload() {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = window.location.href; });
         });
-      } else { location.reload(true); }
+      } else { window.location.href = window.location.href; }
     });
-  } else { location.reload(true); }
+  } else { window.location.href = window.location.href; }
 }
 </script>
 </body>
