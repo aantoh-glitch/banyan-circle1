@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>Banyan Circle — Landlord</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+<title>Property by Heritance — Landlord</title>
 <meta name="theme-color" content="#f3eee8"/>
 <link rel="manifest" href="/manifest-landlord.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -935,7 +935,7 @@ async function downloadEarningsReport() {
   td{padding:9px 10px;border-bottom:1px solid #eee}.green{color:#27500A}.red{color:#A32D2D}
   .profit-box{border-radius:10px;padding:22px 24px;margin-top:28px;border:2px solid}.p-val{font-size:36px;font-weight:700}</style>
   </head><body>
-  <h1>Banyan Circle · ${PROP}</h1>
+  <h1>Property by Heritance · ${PROP}</h1>
   <p style="color:#888;font-size:13px">Monthly Financial Report · ${month}</p>
   <h2>Revenue</h2>
   ${revList.length?`<table><thead><tr><th>Item</th><th>Date</th><th>Amount</th></tr></thead><tbody>
@@ -1415,15 +1415,12 @@ function clearCacheAndReload() {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = window.location.href; });
         });
-      } else { location.reload(true); }
+      } else { window.location.href = window.location.href; }
     });
-  } else { location.reload(true); }
-}
-</script>
-<script>
-if ("serviceWorker" in navigator) {
+  } else { window.location.href = window.location.href; }
+}if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js");
 }
 </script>
