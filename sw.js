@@ -35,20 +35,25 @@ self.addEventListener('fetch', e => {
 // ── Push: show notification ──
 self.addEventListener('push', function(e) {
   if (!e.data) return;
-  let data;
+  let raw;
   try {
-    data = e.data.json();
+    raw = e.data.json();
   } catch (err) {
-    return; // ignore non-JSON test pushes
+    console.log('Push data not JSON, raw text:', e.data.text());
+    return;
   }
-  const title = data.title || 'Heritance';
+  console.log('Push payload received:', JSON.stringify(raw));
+
+  // FCM data-only messages may nest fields under raw.data instead of top-level
+  const fields = raw.data || raw.notification || raw;
+  const title = fields.title || 'Heritance';
   const options = {
-    body:     data.body  || '',
+    body:     fields.body  || '',
     icon:     '/icons/icon-192.png',
     badge:    '/icons/icon-192.png',
-    tag:      data.tag   || 'heritance-notif',
+    tag:      fields.tag   || 'heritance-notif',
     renotify: true,
-    data:     { url: data.url || '/ops.html' }
+    data:     { url: fields.url || '/ops.html' }
   };
   e.waitUntil(self.registration.showNotification(title, options));
 });
