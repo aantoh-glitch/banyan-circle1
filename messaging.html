@@ -537,10 +537,10 @@ function renderFilterBar(){
   if(isAdmin()){
     var tabs = [
       {key:'all',   label:'All'},
+      {key:'unread',   label:'Unread'},
       {key:'guest',    label:'Guest'},
       {key:'talent',   label:'Talent'},
       {key:'landlord', label:'Landlord'},
-      {key:'ops',      label:'Ops'},
       {key:'staff',    label:'Team'},
     ];
     bar.innerHTML = tabs.map(function(t){
@@ -630,7 +630,9 @@ function renderInbox(){
     else if(currentFilter==='out') msgs=msgs.filter(m=>iMine(m));
   }
   var threads = getThreads(msgs);
-  if(isAdmin() && currentAdminRoleFilter !== 'all'){
+  if(isAdmin() && currentAdminRoleFilter === 'unread'){
+    threads = threads.filter(function(t){ return t.msgs.some(msg => amIRecipient(msg) && !msg.read_by_recipient); });
+  } else if(isAdmin() && currentAdminRoleFilter !== 'all'){
     threads = threads.filter(function(t){ return getOtherRole(t) === currentAdminRoleFilter; });
   }
   var el = document.getElementById('inbox-list');
