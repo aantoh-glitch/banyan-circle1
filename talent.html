@@ -858,6 +858,8 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
     var overlay=document.getElementById('msg-panel-overlay');
     var panel=document.getElementById('msg-panel');
     var iframe=document.getElementById('msg-iframe');
+    var fab=document.getElementById('msg-fab');
+    if(fab) fab.style.display='none';
     if(!iframeReady){
       iframeReady=true;
       iframe.src='messaging.html?embedded=1';
@@ -873,12 +875,14 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
 
   window.closeMessagingPanel=function(){
     var panel=document.getElementById('msg-panel');
+    var fab=document.getElementById('msg-fab');
     /* Slide panel down */
     panel.style.transform='translateY(calc(100% + 60px))';
     panelOpen=false;
     /* Hide overlay after transition completes (matches 300ms CSS transition) */
     setTimeout(function(){
       document.getElementById('msg-panel-overlay').style.display='none';
+      if(fab) fab.style.display='flex';
     }, 320);
   };
 

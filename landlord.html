@@ -1180,6 +1180,7 @@ function openMsgSheet() {
   var prop = encodeURIComponent(PROP);
   document.getElementById('msg-sheet-iframe').src = 'messaging.html?property=' + prop + '&embedded=1';
   document.getElementById('msg-sheet-overlay').style.display = 'block';
+  var f=document.getElementById('msg-fab'); if(f) f.style.display='none';
   requestAnimationFrame(function() {
     document.getElementById('msg-sheet').style.transform = 'translateX(-50%) translateY(0)';
   });
@@ -1189,6 +1190,7 @@ function closeMsgSheet() {
   setTimeout(function() {
     document.getElementById('msg-sheet-overlay').style.display = 'none';
     document.getElementById('msg-sheet-iframe').src = '';
+    if(window===window.top){var f=document.getElementById('msg-fab'); if(f) f.style.display='flex';}
   }, 320);
 }
 </script>
