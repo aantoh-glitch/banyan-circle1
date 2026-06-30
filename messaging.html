@@ -75,7 +75,8 @@ body.embedded .sheet-x-btn{display:flex}
 .rb-talent{background:var(--b-l);color:#0C447C}
 .rb-landlord{background:var(--g-l);color:#27500A}
 .rb-guest{background:var(--a-l);color:#633806}
-.rb-staff,.rb-ops{background:var(--b-l);color:#0C447C}
+.rb-staff{background:var(--b-l);color:#0C447C}
+.rb-ops{background:#F0F0EE;color:#3D3C39}
 .booking-pill{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;gap:4px;align-items:center;flex-shrink:0}
 .bp-pending{background:var(--a-l);color:var(--a)}
 .bp-accepted{background:var(--g-l);color:#27500A}
@@ -352,7 +353,7 @@ textarea.fc{resize:vertical;min-height:90px;line-height:1.6}
         <button class="recip-pill" data-type="talent"   onclick="selectRecipType('talent',this)">Talent</button>
         <button class="recip-pill" data-type="landlord" onclick="selectRecipType('landlord',this)">Landlord</button>
         <button class="recip-pill" data-type="guest"    onclick="selectRecipType('guest',this)">Guest</button>
-        <button class="recip-pill" data-type="ops"      onclick="selectRecipType('ops',this)">Team</button>
+        <button class="recip-pill" data-type="staff"    onclick="selectRecipType('staff',this)">Team</button>
       </div>
       <div id="name-list-wrap" style="display:none;margin-top:12px">
         <div id="name-list" class="name-list"></div>
@@ -482,7 +483,7 @@ function roleDisplayName(role){
   if(role === 'landlord') return 'Landlord';
   if(role === 'guest') return 'Guest';
   if(role === 'staff') return 'Team';
-  if(role === 'ops') return 'Team';
+  if(role === 'ops') return 'Ops';
   return role;
 }
 /* ────────────────────────────────
@@ -631,11 +632,7 @@ function renderInbox(){
   if(isAdmin() && currentAdminRoleFilter === 'unread'){
     threads = threads.filter(function(t){ return t.msgs.some(msg => amIRecipient(msg) && !msg.read_by_recipient); });
   } else if(isAdmin() && currentAdminRoleFilter !== 'all'){
-    threads = threads.filter(function(t){
-      var r = getOtherRole(t);
-      if(currentAdminRoleFilter === 'staff') return r === 'staff' || r === 'ops';
-      return r === currentAdminRoleFilter;
-    });
+    threads = threads.filter(function(t){ return getOtherRole(t) === currentAdminRoleFilter; });
   }
   var el = document.getElementById('inbox-list');
   if(!threads.length){
@@ -1059,7 +1056,7 @@ async function selectRecipType(type, btn){
   selectedRecipType=type; selectedRecipName=null;
   document.querySelectorAll('.recip-pill').forEach(p=>p.className='recip-pill');
   btn.className='recip-pill on-'+type;
-  if(type==='staff' || type==='ops'){
+  if(type==='staff'){
     document.getElementById('fg-topic').style.display='none';
     document.getElementById('compose-topic').value='General';
   } else {
@@ -1344,7 +1341,7 @@ async function loadVenues(){
 async function sendMessage(){
   var body  = document.getElementById('compose-body').value.trim();
   var topic = document.getElementById('compose-topic').value;
-  var isStaffMsg = isAdmin() && (selectedRecipType === 'staff' || selectedRecipType === 'ops');
+  var isStaffMsg = isAdmin() && selectedRecipType === 'staff';
   if(!isStaffMsg && !topic){ showToast('Please select a topic'); return; }
   if(!topic) topic = 'General';
   if(!body) { showToast('Please write a message'); return; }
