@@ -966,28 +966,26 @@ function clearCacheAndReload() {
   } else { location.reload(true); }
 }
 </script>
-</body>
-</html>
-<script>
-// ── Push Notifications ──
-const VAPID_PUBLIC_KEY = 'BFpW8xibgWlIaBbtPl8V5FRweB23fxqQ5qX6TyreuJCCHLu6G2apoK9YfP08dFNZYJ-Pqu0PDGbH8KLbM0ImLJs';
+<script type="module">
+// ── Push Notifications (Firebase Cloud Messaging) ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging.js";
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyC6-7BijSXxyav4soPrGOHhRuuMu0p-nck",
+  authDomain: "propertiesbyheritance.firebaseapp.com",
+  projectId: "propertiesbyheritance",
+  storageBucket: "propertiesbyheritance.firebasestorage.app",
+  messagingSenderId: "218982671642",
+  appId: "1:218982671642:web:448da81964e195d74ff8a3"
+};
 
-async function savePushSubscription(subscription) {
-  const key  = subscription.getKey('p256dh');
-  const auth = subscription.getKey('auth');
-  const body = {
-    staff_name: me.name,
-    endpoint:   subscription.endpoint,
-    p256dh:     btoa(String.fromCharCode(...new Uint8Array(key))),
-    auth:       btoa(String.fromCharCode(...new Uint8Array(auth)))
-  };
+const VAPID_KEY = 'BFpW8xibgWlIaBbtPl8V5FRweB23fxqQ5qX6TyreuJCCHLu6G2apoK9YfP08dFNZYJ-Pqu0PDGbH8KLbM0ImLJs';
+
+const fbApp = initializeApp(firebaseConfig);
+const messaging = getMessaging(fbApp);
+
+async function saveFcmToken(token) {
   await fetch('https://wwdnuajhqfajvsexszpy.supabase.co/rest/v1/push_subscriptions', {
     method: 'POST',
     headers: {
@@ -996,35 +994,38 @@ async function savePushSubscription(subscription) {
       'Authorization': 'Bearer sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX',
       'Prefer':        'resolution=merge-duplicates'
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify({
+      staff_name: me.name,
+      endpoint:   token,   // storing the FCM token in the endpoint column
+      p256dh:     'fcm',   // not used by FCM v1, kept for schema compatibility
+      auth:       'fcm'
+    })
   });
 }
 
 async function initPushNotifications() {
   try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!('serviceWorker' in navigator)) return;
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
 
-    const reg = await navigator.serviceWorker.ready;
-    let subscription = await reg.pushManager.getSubscription();
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
-    if (!subscription) {
-      subscription = await reg.pushManager.subscribe({
-        userVisibleOnly:      true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
-    }
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
 
-    await savePushSubscription(subscription);
+    if (token) await saveFcmToken(token);
   } catch (err) {
     console.warn('Push setup failed:', err);
   }
 }
 
-// Trigger after login confirmed
 window.addEventListener("load", function() {
   if (me && me.name) initPushNotifications();
 });
 </script>
+</body>
+</html>
