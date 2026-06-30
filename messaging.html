@@ -529,6 +529,30 @@ window.initMessagingPanel = function(meObj){
   loadInbox();
 };
 /* ────────────────────────────────
+   AUTO-REFRESH
+   Keeps the inbox fresh without relying on the host page to
+   re-init the panel each time it's shown (e.g. tab-based hosts
+   that mount the iframe once and just toggle visibility).
+──────────────────────────────── */
+var _silentRefreshTimer = null;
+function silentRefresh(){
+  if(!me) return;
+  /* Skip if a compose/edit overlay is open, or a thread is open and the
+     person might be mid-typing a reply — avoid yanking the screen. */
+  if(document.getElementById('compose-overlay').classList.contains('on')) return;
+  if(document.getElementById('edit-response-overlay').classList.contains('on')) return;
+  if(currentThread) return;
+  loadInbox();
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible') silentRefresh();
+});
+window.addEventListener('focus', silentRefresh);
+window.addEventListener('pageshow', silentRefresh);
+if(_silentRefreshTimer) clearInterval(_silentRefreshTimer);
+_silentRefreshTimer = setInterval(silentRefresh, 15000);
+
+/* ────────────────────────────────
    FILTER BAR
 ──────────────────────────────── */
 function renderFilterBar(){
