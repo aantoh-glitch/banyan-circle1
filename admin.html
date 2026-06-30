@@ -3157,11 +3157,11 @@ function clearCacheAndReload() {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = window.location.href; });
+          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.reload(); });
         });
-      } else { window.location.href = window.location.href; }
+      } else { window.location.reload(); }
     });
-  } else { window.location.href = window.location.href; }
+  } else { window.location.reload(); }
 }
 </script>
 <script>
