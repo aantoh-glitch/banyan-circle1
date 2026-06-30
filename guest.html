@@ -1406,6 +1406,8 @@ function closeRevSheet(sheetId, backdropId) {
     var overlay=document.getElementById('msg-panel-overlay');
     var panel=document.getElementById('msg-panel');
     var iframe=document.getElementById('msg-iframe');
+    var fab=document.getElementById('msg-fab');
+    if(fab) fab.style.display='none';
     if(!iframeReady){
       iframeReady=true;
       iframe.src='messaging.html';
@@ -1427,12 +1429,14 @@ function closeRevSheet(sheetId, backdropId) {
 
   window.closeMessagingPanel=function(){
     var panel=document.getElementById('msg-panel');
+    var fab=document.getElementById('msg-fab');
     panel.style.transform='translateY(100%)';
     panelOpen=false;
     document.body.style.overflow='';
     /* Hide overlay after transition completes (matches 300ms CSS transition) */
     setTimeout(function(){
       document.getElementById('msg-panel-overlay').style.display='none';
+      if(fab) fab.style.display='flex';
     }, 320);
   };
 
