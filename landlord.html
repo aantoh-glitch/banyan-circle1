@@ -1424,5 +1424,69 @@ function clearCacheAndReload() {
   navigator.serviceWorker.register("/sw.js");
 }
 </script>
+<script type="module">
+// ── Push Notifications (Firebase Cloud Messaging) ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC6-7BijSXxyav4soPrGOHhRuuMu0p-nck",
+  authDomain: "propertiesbyheritance.firebaseapp.com",
+  projectId: "propertiesbyheritance",
+  storageBucket: "propertiesbyheritance.firebasestorage.app",
+  messagingSenderId: "218982671642",
+  appId: "1:218982671642:web:448da81964e195d74ff8a3"
+};
+
+const VAPID_KEY = 'BFpW8xibgWlIaBbtPl8V5FRweB23fxqQ5qX6TyreuJCCHLu6G2apoK9YfP08dFNZYJ-Pqu0PDGbH8KLbM0ImLJs';
+
+const fbApp = initializeApp(firebaseConfig);
+const messaging = getMessaging(fbApp);
+
+async function saveFcmToken(staffName, token) {
+  await fetch('https://wwdnuajhqfajvsexszpy.supabase.co/rest/v1/push_subscriptions', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX',
+      'Authorization': 'Bearer sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX',
+      'Prefer':        'resolution=merge-duplicates'
+    },
+    body: JSON.stringify({
+      staff_name: staffName,
+      endpoint:   token,
+      p256dh:     'fcm',
+      auth:       'fcm'
+    })
+  });
+}
+
+async function initPushNotifications() {
+  try {
+    const me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+    if (!me || !me.name) return;
+
+    if (!('serviceWorker' in navigator)) return;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
+
+    if (token) await saveFcmToken(me.name, token);
+  } catch (err) {
+    console.warn('Push setup failed:', err);
+  }
+}
+
+window.addEventListener("load", function() {
+  initPushNotifications();
+});
+</script>
 </body>
 </html>
