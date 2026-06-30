@@ -1163,6 +1163,9 @@ window.addEventListener('message', function(e) {
       iframe.contentWindow.postMessage({ type: 'bc_init_me', me: me }, '*');
     }
   }
+  if (e.data.type === 'bc_close_panel') {
+    goPage('dashboard', document.getElementById('sb-dashboard'));
+  }
 });
 function toast(msg){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
 const fmt=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
