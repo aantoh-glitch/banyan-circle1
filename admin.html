@@ -3169,15 +3169,20 @@ async function btnGuard(btn, fn) {
 </script>
 <script>
 function clearCacheAndReload() {
+  function hardNavigate() {
+    var url = new URL(window.location.href);
+    url.searchParams.set('_r', Date.now());
+    window.location.replace(url.toString());
+  }
   if ('caches' in window) {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = window.location.href; });
-        });
-      } else { window.location.href = window.location.href; }
-    });
-  } else { window.location.href = window.location.href; }
+          Promise.all(regs.map(r => r.unregister())).then(hardNavigate).catch(hardNavigate);
+        }).catch(hardNavigate);
+      } else { hardNavigate(); }
+    }).catch(hardNavigate);
+  } else { hardNavigate(); }
 }
 </script>
 <script>
