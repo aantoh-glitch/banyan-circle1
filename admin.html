@@ -2401,6 +2401,19 @@ try {
       el.className = 'dash-tile-value';
     }
     if(sub) sub.textContent = totalLow===0 ? 'all stock healthy' : totalLow+' location'+(totalLow!==1?'s':'')+' below critical';
+
+    // ── Notify admin only when critical count increases vs last check ──
+    try {
+      const lastLow = parseInt(localStorage.getItem('lastCriticalStockCount') || '0');
+      if (totalLow > 0 && totalLow > lastLow) {
+        fetch('https://wwdnuajhqfajvsexszpy.supabase.co/functions/v1/notify-stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count: totalLow })
+        }).catch(()=>{});
+      }
+      localStorage.setItem('lastCriticalStockCount', String(totalLow));
+    } catch(e) {}
   } catch(e){
     const el = document.getElementById('dash-stock');
     if(el){ el.textContent = '—'; el.className = 'dash-tile-value'; }
@@ -3157,11 +3170,11 @@ function clearCacheAndReload() {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).then(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.reload(); });
+          Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = window.location.href; });
         });
-      } else { window.location.reload(); }
+      } else { window.location.href = window.location.href; }
     });
-  } else { window.location.reload(); }
+  } else { window.location.href = window.location.href; }
 }
 </script>
 <script>
