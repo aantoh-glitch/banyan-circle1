@@ -31,33 +31,3 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
- 
-// ── Push: show notification ──
-self.addEventListener('push', function(e) {
-  if (!e.data) return;
-  const data = e.data.json();
-  const title = data.title || 'Heritance';
-  const options = {
-    body:     data.body  || '',
-    icon:     '/icons/icon-192.png',
-    badge:    '/icons/icon-192.png',
-    tag:      data.tag   || 'heritance-notif',
-    renotify: true,
-    data:     { url: data.url || '/ops.html' }
-  };
-  e.waitUntil(self.registration.showNotification(title, options));
-});
-
-// ── Notification click: open/focus the app ──
-self.addEventListener('notificationclick', function(e) {
-  e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || '/ops.html';
-  e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
-      for (const client of list) {
-        if (client.url.includes(url) && 'focus' in client) return client.focus();
-      }
-      if (clients.openWindow) return clients.openWindow(url);
-    })
-  );
-});
