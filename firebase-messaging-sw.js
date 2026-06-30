@@ -13,9 +13,10 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-  const title = payload.notification?.title || payload.data?.title || 'Heritance';
+  console.log('Background message received:', payload);
+  const title = payload.data?.title || 'Heritance';
   const options = {
-    body:  payload.notification?.body || payload.data?.body || '',
+    body:  payload.data?.body || '',
     icon:  '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
     data:  { url: payload.data?.url || '/ops.html' }
