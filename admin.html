@@ -1042,7 +1042,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">Name <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-name" placeholder="Full name"/></div>
   <div class="fg"><label class="fl">PIN (4 digits) <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-pin" maxlength="4" placeholder="e.g. 4821"/></div>
   <input type="hidden" id="mtal-desc"/>
-  <input type="hidden" id="mtal-cat"/>
   <div class="fg"><label class="fl">Phone Number <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-phone" placeholder="e.g. +91 98765 43210" type="tel" oninput="syncLoginEmail('mtal-phone','mtal-login-email','.talent@banyan.com')"/></div>
   <div class="fg"><input type="hidden" id="mtal-login-email"/><div style="font-size:12px;color:var(--muted)">Supabase Auth account: <span id="mtal-login-email-disp" style="font-weight:600;color:var(--ink)">—</span></div></div>
   <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="mtal-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
@@ -2028,7 +2027,7 @@ async function loadTalentsPage(){
   let data;
   try{ data = await api('/rest/v1/talents?select=*&order=name') || []; }
   catch(e){
-    document.getElementById('talents-list').innerHTML='<div class="empty" style="color:var(--r)">Could not load talents. Make sure the <b>talents</b> table exists in Supabase.<br><br><code style="font-size:11px;background:#f4f4f4;padding:6px 10px;border-radius:6px;display:inline-block;margin-top:6px">create table talents (id uuid primary key default gen_random_uuid(), name text, pin text, short_desc text, category text, created_at timestamptz default now());</code></div>';
+    document.getElementById('talents-list').innerHTML='<div class="empty" style="color:var(--r)">Could not load talents. Make sure the <b>talents</b> table exists in Supabase.<br><br><code style="font-size:11px;background:#f4f4f4;padding:6px 10px;border-radius:6px;display:inline-block;margin-top:6px">create table talents (id uuid primary key default gen_random_uuid(), name text, pin text, short_desc text, created_at timestamptz default now());</code></div>';
     return;
   }
   // Talents update their category via the talent portal, which writes to talent_profiles
@@ -2085,7 +2084,6 @@ function openTalentModal(){
   document.getElementById('mtal-ttl').textContent='Add talent';
   ['mtal-name','mtal-pin','mtal-desc','mtal-pan','mtal-phone','mtal-login-email'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('mtal-login-email-disp').textContent='—';
-  document.getElementById('mtal-cat').value='Yoga';
   renderVenuePills(null);
   openModal('modal-talent');
 }
@@ -2095,7 +2093,6 @@ function editTalentRow(t){
   document.getElementById('mtal-name').value=t.name||'';
   document.getElementById('mtal-pin').value=t.pin||'';
   document.getElementById('mtal-desc').value=t.short_desc||'';
-  document.getElementById('mtal-cat').value=t.category||'Yoga';
   document.getElementById('mtal-pan').value=t.pan||'';
   document.getElementById('mtal-phone').value=t.phone||'';
   document.getElementById('mtal-login-email').value=t.login_email||'';
@@ -2109,7 +2106,7 @@ async function saveTalent(){
   const pin=document.getElementById('mtal-pin').value.trim();
   const phone=document.getElementById('mtal-phone').value.trim();
   const login_email=document.getElementById('mtal-login-email').value.trim()||null;
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:phone||null,login_email};
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:phone||null,login_email};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
   if(!phone){alert('Phone number is required');return;}
@@ -2154,10 +2151,10 @@ let ADMIN_TALENT_ID = null;
 
 async function loadAdminTalentSelect(){
   try{
-    const talents = await api('/rest/v1/talents?select=id,name,category&order=name') || [];
+    const talents = await api('/rest/v1/talents?select=id,name&order=name') || [];
     const sel = document.getElementById('admin-talent-select');
     sel.innerHTML = '<option value="">Select a talent…</option>' +
-      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
+      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}</option>`).join('');
     // Auto-select first if only one
     if(talents.length === 1){ sel.value=talents[0].id; loadAdminTalentThread(); }
   } catch(e){ toast('Could not load talents'); }
@@ -2222,9 +2219,9 @@ async function sendAdminTalentMsg(){
 async function openAdminBookingModal(){
   // Load talents into select
   try{
-    const talents = await api('/rest/v1/talents?select=id,name,category&order=name') || [];
+    const talents = await api('/rest/v1/talents?select=id,name&order=name') || [];
     document.getElementById('abk-talent').innerHTML = '<option value="">Select talent…</option>' +
-      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}${t.category?' — '+t.category:''}</option>`).join('');
+      talents.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}</option>`).join('');
   } catch(e){ document.getElementById('abk-talent').innerHTML='<option>Could not load</option>'; }
   // Load properties
   if(!PROPS.length) await loadAllProperties();

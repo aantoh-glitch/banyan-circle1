@@ -599,7 +599,7 @@ async function saveProfile(){
     btn.textContent='Saving…';
     if(profileExists){await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);}
     else{await api('/rest/v1/talent_profiles','POST',body);profileExists=true;}
-    await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name:name,category:body.category});
+    await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name:name});
     if(pf) document.getElementById('p-photo-current').innerHTML='Current: <a href="'+body.photo_url+'" target="_blank" style="color:var(--br)">View photo\u003c/a>';
     if(bf) document.getElementById('p-bio-current').innerHTML='Current: <a href="'+body.bio_url+'" target="_blank" style="color:var(--br)">Download '+body.bio_name+'\u003c/a>';
     _profileData=Object.assign(_profileData||{},body);
