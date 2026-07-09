@@ -2031,6 +2031,15 @@ async function loadTalentsPage(){
     document.getElementById('talents-list').innerHTML='<div class="empty" style="color:var(--r)">Could not load talents. Make sure the <b>talents</b> table exists in Supabase.<br><br><code style="font-size:11px;background:#f4f4f4;padding:6px 10px;border-radius:6px;display:inline-block;margin-top:6px">create table talents (id uuid primary key default gen_random_uuid(), name text, pin text, short_desc text, category text, created_at timestamptz default now());</code></div>';
     return;
   }
+  // Talents update their category via the talent portal, which writes to talent_profiles
+  // (RLS may block talents from writing to the talents table directly). Merge the live
+  // category from talent_profiles so the admin list always reflects what the talent set.
+  try{
+    const profiles = await api('/rest/v1/talent_profiles?select=talent_id,category') || [];
+    const catByTalentId = {};
+    profiles.forEach(p=>{ if(p.talent_id && p.category) catByTalentId[p.talent_id]=p.category; });
+    data = data.map(t => catByTalentId[t.id] ? Object.assign({}, t, {category: catByTalentId[t.id]}) : t);
+  }catch(e){ /* fall back to talents.category if talent_profiles fetch fails */ }
   const el = document.getElementById('talents-list');
   if(!data.length){ el.innerHTML='<div class="empty">No talents yet. Add the first one.</div>'; return; }
   el.innerHTML = `<table class="tbl"><thead><tr><th>Name</th><th>Category</th><th>Phone</th><th>Login Email</th><th></th></tr></thead><tbody>
