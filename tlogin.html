@@ -172,7 +172,7 @@ function showErr(msg) {
 }
 
 async function checkPin() {
-  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,category,phone,login_email', {
+  const res = await fetch(SB + '/rest/v1/talents?pin=eq.' + encodeURIComponent(pin) + '&select=id,name,pin,phone,login_email', {
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' }
   }).then(async r => {
     const text = await r.text();
