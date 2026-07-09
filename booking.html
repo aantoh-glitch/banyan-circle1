@@ -335,6 +335,10 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
         <button type="button" class="toggle-btn" id="toggleBanyan" onclick="toggleBanyanCircle()" aria-pressed="false"><span class="toggle-knob"></span></button>
       </div>
     </div>
+    <div class="form-group" style="margin-bottom:4px;">
+      <label class="form-label">Remarks</label>
+      <textarea class="form-input" id="manualRemarks" placeholder="Any notes about this booking…" rows="2" style="resize:vertical;"></textarea>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('addBookingModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveBooking()">Save Booking</button>
@@ -393,6 +397,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
             <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Amount</th>
             <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Booking Type</th>
             <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Banyan Circle</th>
+            <th style="padding:9px 12px;text-align:left;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500;">Remarks</th>
           </tr>
         </thead>
         <tbody id="logTableBody"></tbody>
@@ -544,7 +549,7 @@ async function loadBlockedDates() {
 async function loadManualBookings() {
   try {
     const res = await fetch(
-      SB + '/rest/v1/bookings?select=id,property_id,property_name,guest_name,check_in,check_out,num_guests,source,"disc-amount",partial_booking,num_rooms,banyan_circle&order=check_in',
+      SB + '/rest/v1/bookings?select=id,property_id,property_name,guest_name,check_in,check_out,num_guests,source,"disc-amount",partial_booking,num_rooms,banyan_circle,remarks&order=check_in',
       { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, Accept: 'application/json' } }
     );
     const data = await res.json();
@@ -568,7 +573,8 @@ async function loadManualBookings() {
         disc_amount: row['disc-amount'] ?? null,
         partial_booking: row.partial_booking ?? null,
         num_rooms: row.num_rooms ?? null,
-        banyan_circle: row.banyan_circle ?? null
+        banyan_circle: row.banyan_circle ?? null,
+        remarks: row.remarks ?? null
       });
     });
     renderCalendar(); renderBookings(); renderStats();
@@ -824,6 +830,7 @@ async function saveBooking() {
   const partialBooking = document.getElementById('togglePartial').getAttribute('aria-pressed') === 'true';
   const numRooms = partialBooking ? (parseInt(document.getElementById('manualNumRooms').value) || null) : null;
   const banyanCircle = document.getElementById('toggleBanyan').getAttribute('aria-pressed') === 'true';
+  const remarks = document.getElementById('manualRemarks').value.trim() || null;
   if (!guest||!prop||!start||!end) { showToast('Fill all fields','error'); return; }
   if (end < start) { showToast('End must be after start','error'); return; }
   const propObj = properties.find(p => p.id === prop);
@@ -838,7 +845,7 @@ async function saveBooking() {
     const res = await fetch(SB + '/rest/v1/bookings', {
       method: 'POST',
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null })
+      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks })
     });
     if (!res.ok) {
       const errBody = await res.text();
@@ -847,7 +854,7 @@ async function saveBooking() {
     }
     const saved = await res.json();
     const sbId = Array.isArray(saved) ? saved[0]?.id : null;
-    bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null });
+    bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks });
     showToast('Booking for ' + guest + ' saved');
   } catch(e) {
     showToast('Could not save to Supabase: ' + e.message, 'error');
@@ -871,6 +878,7 @@ async function saveBooking() {
   document.getElementById('togglePartial').setAttribute('aria-pressed','false');
   document.getElementById('numRoomsRow').style.display = 'none';
   document.getElementById('toggleBanyan').setAttribute('aria-pressed','false');
+  document.getElementById('manualRemarks').value = '';
   renderCalendar(); renderBookings(); renderStats();
 }
 
@@ -888,6 +896,7 @@ function showBookingDetail(id) {
   if (b.disc_amount!=null) html += '<div class="modal-detail-row"><div class="modal-detail-label">Amount</div><div class="modal-detail-value">₹ ' + Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</div></div>';
   if (b.partial_booking) html += '<div class="modal-detail-row"><div class="modal-detail-label">Booking</div><div class="modal-detail-value">Partial' + (b.num_rooms!=null?' - '+b.num_rooms+' room(s)':'') + '</div></div>';
   if (b.banyan_circle) html += '<div class="modal-detail-row"><div class="modal-detail-label">Banyan Circle</div><div class="modal-detail-value">Yes</div></div>';
+  if (b.remarks) html += '<div class="modal-detail-row"><div class="modal-detail-label">Remarks</div><div class="modal-detail-value">' + b.remarks + '</div></div>';
   if (b.reason) html += '<div class="modal-detail-row"><div class="modal-detail-label">Note</div><div class="modal-detail-value">' + b.reason + '</div></div>';
   document.getElementById('detailBody').innerHTML = html;
   document.getElementById('bookingDetailModal').classList.add('open');
@@ -993,7 +1002,7 @@ function renderLogTable() {
   } else { occEl.innerHTML = ''; }
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="10" style="padding:24px;text-align:center;color:var(--muted);">No bookings found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted);">No bookings found</td></tr>';
     document.getElementById('logCount').textContent = '0 bookings';
     return;
   }
@@ -1016,6 +1025,7 @@ function renderLogTable() {
       '<td style="padding:9px 12px;">' + (b.disc_amount!=null?'₹'+Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}):'--') + '</td>' +
       '<td style="padding:9px 12px;">' + (b.partial_booking ? ('Partial' + (b.num_rooms!=null?' ('+b.num_rooms+' rm)':'')) : 'Whole') + '</td>' +
       '<td style="padding:9px 12px;">' + (b.banyan_circle ? 'Yes' : 'No') + '</td>' +
+      '<td style="padding:9px 12px;color:var(--muted);max-width:180px;">' + (b.remarks ? b.remarks : '--') + '</td>' +
       '</tr>';
   }).join('');
   document.getElementById('logCount').textContent = rows.length + ' booking' + (rows.length!==1?'s':'');
@@ -1024,7 +1034,7 @@ function renderLogTable() {
 function downloadLogExcel() {
   const rows = getLogFiltered();
   if (!rows.length) { showToast('No bookings to export', 'error'); return; }
-  const headers = ['Guest','Property','Source','Check-in','Check-out','Nights','Num Guests','Disc Amount','Booking Type','Banyan Circle'];
+  const headers = ['Guest','Property','Source','Check-in','Check-out','Nights','Num Guests','Disc Amount','Booking Type','Banyan Circle','Remarks'];
   const data = [headers];
   rows.forEach(b => {
     const prop = properties.find(p => p.id === b.property);
@@ -1032,7 +1042,7 @@ function downloadLogExcel() {
     const srcLabel = b.source==='airbnb'?'Airbnb':b.source==='booking'?'Booking.com':'Direct';
     const nights = nightsBetween(b.start, b.end);
     const bookingType = b.partial_booking ? ('Partial' + (b.num_rooms!=null?' ('+b.num_rooms+' rm)':'')) : 'Whole';
-    data.push([b.guest, propLabel, srcLabel, formatDate(b.start), formatDate(b.end), nights, b.num_guests!=null?b.num_guests:'', b.disc_amount!=null?b.disc_amount:'', bookingType, b.banyan_circle ? 'Yes' : 'No']);
+    data.push([b.guest, propLabel, srcLabel, formatDate(b.start), formatDate(b.end), nights, b.num_guests!=null?b.num_guests:'', b.disc_amount!=null?b.disc_amount:'', bookingType, b.banyan_circle ? 'Yes' : 'No', b.remarks || '']);
   });
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws['!cols'] = headers.map(() => ({ wch: 16 }));
