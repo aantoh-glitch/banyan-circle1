@@ -153,7 +153,7 @@ let starValue = 0;
 // Load talents
 async function loadTalents(){
   try{
-    const rows = await api('/rest/v1/talents?select=id,name,category,venues&order=name') || [];
+    const rows = await api('/rest/v1/talents?select=id,name,venues&order=name') || [];
     const el = document.getElementById('talent-list');
     if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents found</div>'; return; }
     // Filter by guest's property if available; fallback to all
@@ -173,7 +173,6 @@ async function loadTalents(){
         <div class="talent-av">${ini(t.name)}</div>
         <div class="talent-info">
           <div class="talent-name">${t.name}</div>
-          <div class="talent-cat">${t.category||''}</div>
           ${propBadges}
         </div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="check-${t.id}"><polyline points="20,6 9,17 4,12"/></svg>
