@@ -557,8 +557,10 @@ function fillForm(d){
   const cats=['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
   if(cats.includes(d.category)) document.getElementById('p-cat').value=d.category;
   if(d.category==='Others'&&d.category_other){document.getElementById('cat-others-fg').style.display='';document.getElementById('p-cat-other').value=d.category_other||'';}
-  if(d.photo_url) document.getElementById('p-photo-current').innerHTML='Current: <a href="'+d.photo_url+'" target="_blank" style="color:var(--br)">View photo\u003c/a>';
-  if(d.bio_url) document.getElementById('p-bio-current').innerHTML='Current: <a href="'+d.bio_url+'" target="_blank" style="color:var(--br)">Download '+(d.bio_name||'file')+'\u003c/a>';
+  if(d.photo_url) document.getElementById('p-photo-current').innerHTML='Current: <a href="'+d.photo_url+'" target="_blank" style="color:var(--br)">View photo\u003c/a> &middot; <a href="#" onclick="removePhoto();return false;" style="color:var(--r)">Remove</a>';
+  else document.getElementById('p-photo-current').innerHTML='';
+  if(d.bio_url) document.getElementById('p-bio-current').innerHTML='Current: <a href="'+d.bio_url+'" target="_blank" style="color:var(--br)">Download '+(d.bio_name||'file')+'\u003c/a> &middot; <a href="#" onclick="removeBio();return false;" style="color:var(--r)">Remove</a>';
+  else document.getElementById('p-bio-current').innerHTML='';
   if(d.venues) setVenueChecks(d.venues);
 }
 async function loadProfile(){
@@ -600,8 +602,8 @@ async function saveProfile(){
     if(profileExists){await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',body);}
     else{await api('/rest/v1/talent_profiles','POST',body);profileExists=true;}
     await api('/rest/v1/talents?id=eq.'+encodeURIComponent(talentId),'PATCH',{name:name});
-    if(pf) document.getElementById('p-photo-current').innerHTML='Current: <a href="'+body.photo_url+'" target="_blank" style="color:var(--br)">View photo\u003c/a>';
-    if(bf) document.getElementById('p-bio-current').innerHTML='Current: <a href="'+body.bio_url+'" target="_blank" style="color:var(--br)">Download '+body.bio_name+'\u003c/a>';
+    if(pf) document.getElementById('p-photo-current').innerHTML='Current: <a href="'+body.photo_url+'" target="_blank" style="color:var(--br)">View photo\u003c/a> &middot; <a href="#" onclick="removePhoto();return false;" style="color:var(--r)">Remove</a>';
+    if(bf) document.getElementById('p-bio-current').innerHTML='Current: <a href="'+body.bio_url+'" target="_blank" style="color:var(--br)">Download '+body.bio_name+'\u003c/a> &middot; <a href="#" onclick="removeBio();return false;" style="color:var(--r)">Remove</a>';
     _profileData=Object.assign(_profileData||{},body);
     renderProfileView(_profileData);
     closeEditMode();
@@ -609,6 +611,32 @@ async function saveProfile(){
     toast('Profile saved ✓');btn.textContent='Update profile';
   }catch(e){alert('Error: '+e.message);btn.textContent='Save profile';}
   finally{btn.disabled=false;}
+}
+
+// REMOVE PHOTO / BIO
+async function removePhoto(){
+  if(!profileExists){return;}
+  if(!confirm('Remove your photo?'))return;
+  try{
+    await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',{photo_url:null,photo_name:null});
+    document.getElementById('p-photo').value='';
+    document.getElementById('p-photo-current').innerHTML='';
+    _profileData=Object.assign(_profileData||{},{photo_url:null,photo_name:null});
+    renderProfileView(_profileData);
+    toast('Photo removed');
+  }catch(e){toast('Error: '+e.message);}
+}
+async function removeBio(){
+  if(!profileExists){return;}
+  if(!confirm('Remove your biodata/CV?'))return;
+  try{
+    await api('/rest/v1/talent_profiles?talent_id=eq.'+encodeURIComponent(talentId),'PATCH',{bio_url:null,bio_name:null});
+    document.getElementById('p-bio').value='';
+    document.getElementById('p-bio-current').innerHTML='';
+    _profileData=Object.assign(_profileData||{},{bio_url:null,bio_name:null});
+    renderProfileView(_profileData);
+    toast('Biodata/CV removed');
+  }catch(e){toast('Error: '+e.message);}
 }
 
 // SCHEDULE
