@@ -8,27 +8,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:#fff;--r:#A32D2D;--r-l:#FCEBEB;--pur:#5B21B6;--pur-l:#EDE9FE}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB;--pur:#5B21B6;--pur-l:#EDE9FE}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:block;min-height:100vh}
 .sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
 .main{flex:1;padding:28px 40px;max-width:1400px;margin:0 auto;width:100%}
 .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .top-bar-left{display:flex;align-items:center;gap:12px}
-.tb-mark{width:38px;height:38px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:500;font-size:14px}
+.tb-mark{width:38px;height:38px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--bg);font-weight:500;font-size:14px}
 .tb-name{font-family:'Playfair Display',serif;font-size:20px}
 .tb-sub{font-size:11px;color:var(--muted)}
 .top-bar-right{display:flex;align-items:center;gap:8px}
 .sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
-.sb-mark{width:36px;height:36px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:500;font-size:14px}
+.sb-mark{width:36px;height:36px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--bg);font-weight:500;font-size:14px}
 .sb-name{font-family:'Playfair Display',serif;font-size:16px}
 .sb-sub{font-size:11px;color:var(--muted)}
 .sb-nav{flex:1;padding:0 12px;overflow-y:auto}
 .sb-btn{width:100%;padding:10px 12px;background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;border-radius:8px;text-align:left;margin-bottom:2px;transition:all .15s}
 .sb-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .sb-btn:hover{background:var(--bg);color:var(--text)}
-.sb-btn.on{background:#222;color:#fff;font-weight:500}
-.sb-btn.on svg{stroke:#fff}
+.sb-btn.on{background:#222;color:var(--bg);font-weight:500}
+.sb-btn.on svg{stroke:var(--bg)}
 .sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
 .sb-user{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
 
@@ -78,7 +78,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .dp-actions{display:flex;gap:8px;justify-content:flex-end}
 .dp-clear{padding:7px 14px;background:var(--white);color:var(--muted);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit}
 .dp-clear:hover{border-color:var(--r);color:var(--r)}
-.dp-apply{padding:7px 14px;background:var(--br);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.dp-apply{padding:7px 14px;background:var(--br);color:var(--bg);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .dp-apply:hover{background:#712B13}
 
 /* ── Action buttons ── */
@@ -135,7 +135,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* ── Toast ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:9000;display:none;white-space:nowrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:var(--bg);padding:10px 22px;border-radius:999px;font-size:13px;z-index:9000;display:none;white-space:nowrap}
 .toast.show{display:block}
 
 /* ── Detail modal ── */
