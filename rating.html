@@ -161,7 +161,7 @@ async function loadTalents(){
     const filtered = guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.includes(guestProp)) : rows;
     const display = guestProp ? filtered : rows;
     if(guestProp && !filtered.length){
-      el.innerHTML = '<div style="font-size:13px;color:var(--muted)">No talents assigned to '+guestProp+' yet</div>';
+      el.innerHTML = '';
       return;
     }
     el.innerHTML = display.map(t => {
