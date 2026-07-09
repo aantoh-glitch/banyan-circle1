@@ -268,6 +268,17 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
     </div>
     <div class="fg"><label class="fl">Email</label><input class="fc" id="p-email" type="email" placeholder="you@email.com"/></div>
     <div class="fg"><label class="fl">Location</label><input class="fc" id="p-location" placeholder="e.g. Goa, India"/></div>
+    <div class="fg">
+      <label class="fl">Category</label>
+      <select class="fc" id="p-cat">
+        <option value="">Select a category</option>
+        <option>Art</option><option>Music</option><option>Dance</option><option>Food</option>
+        <option>Pottery</option><option>Healing</option><option>Yoga</option><option>Therapy</option>
+        <option>Wellness</option><option>Fitness</option><option>Mentalism</option><option>Palmistry</option>
+        <option>Games</option><option>Standups</option><option>Storytelling</option><option>Motivational</option><option>Others</option>
+      </select>
+    </div>
+    <div id="cat-others-fg" class="fg" style="display:none"><label class="fl">Please specify</label><input class="fc" id="p-cat-other" placeholder="Your talent category"/></div>
     <div class="fg"><label class="fl">Name your talent</label><input class="fc" id="p-talent-name" placeholder="e.g. Sound Healing Journey"/></div>
     <div class="fg"><label class="fl">Tagline</label><input class="fc" id="p-tagline" placeholder="e.g. Where breath meets music"/></div>
     <div class="fg"><label class="fl">Describe your talent</label><textarea class="fc" id="p-desc" placeholder="Describe the experience you create…"></textarea></div>
@@ -475,6 +486,10 @@ function showPanel(id){
 let profileExists=false;
 let _profileData=null;
 
+document.getElementById('p-cat').addEventListener('change',function(){
+  document.getElementById('cat-others-fg').style.display=this.value==='Others'?'':'none';
+});
+
 function openEditMode(){
   document.getElementById('profile-view').style.display='none';
   document.getElementById('profile-edit').style.display='';
@@ -499,6 +514,7 @@ function renderProfileView(d){
   document.getElementById('view-talent-name').textContent=d.talent_name||'';
   document.getElementById('view-tagline').textContent=d.tagline?'"'+d.tagline+'"':'';
   const badges=[];
+  if(d.category) badges.push(d.category==='Others'&&d.category_other?d.category_other:d.category);
   if(d.location) badges.push(d.location);
   document.getElementById('view-badges').innerHTML=badges.map(b=>'<span style="font-size:12px;padding:4px 10px;border-radius:999px;background:var(--br-l);color:var(--br);font-weight:500">'+b+'</span>').join('');
   const aboutCard=document.getElementById('view-about-card');
@@ -538,6 +554,9 @@ function fillForm(d){
   document.getElementById('p-desc').value=d.description||'';
   document.getElementById('p-instagram').value=d.instagram||'';
   document.getElementById('p-performance').value=d.performance_link||'';
+  const cats=['Art','Music','Dance','Food','Pottery','Healing','Yoga','Therapy','Wellness','Fitness','Mentalism','Palmistry','Games','Standups','Storytelling','Motivational','Others'];
+  if(cats.includes(d.category)) document.getElementById('p-cat').value=d.category;
+  if(d.category==='Others'&&d.category_other){document.getElementById('cat-others-fg').style.display='';document.getElementById('p-cat-other').value=d.category_other||'';}
   if(d.photo_url) document.getElementById('p-photo-current').innerHTML='Current: <a href="'+d.photo_url+'" target="_blank" style="color:var(--br)">View photo\u003c/a>';
   if(d.bio_url) document.getElementById('p-bio-current').innerHTML='Current: <a href="'+d.bio_url+'" target="_blank" style="color:var(--br)">Download '+(d.bio_name||'file')+'\u003c/a>';
   if(d.venues) setVenueChecks(d.venues);
@@ -570,7 +589,7 @@ function getVenueChecks(){return Array.from(document.querySelectorAll('[name="ve
 async function saveProfile(){
   const name=talentNameParam||document.getElementById('p-name').value.trim();
   if(!name){alert('Name is required');return;}
-  const body={talent_id:talentId,name:name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
+  const body={talent_id:talentId,name:name,age:parseInt(document.getElementById('p-age').value)||null,phone:document.getElementById('p-phone').value.trim()||null,email:document.getElementById('p-email').value.trim()||null,location:document.getElementById('p-location').value.trim()||null,category:document.getElementById('p-cat').value||null,category_other:document.getElementById('p-cat').value==='Others'?document.getElementById('p-cat-other').value.trim()||null:null,talent_name:document.getElementById('p-talent-name').value.trim()||null,tagline:document.getElementById('p-tagline').value.trim()||null,description:document.getElementById('p-desc').value.trim()||null,instagram:document.getElementById('p-instagram').value.trim()||null,performance_link:document.getElementById('p-performance').value.trim()||null,venues:getVenueChecks()};
   const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='Saving…';
   async function uploadToStorage(bucket,file,folder){const path=folder+'/'+Date.now()+'_'+file.name.replace(/\s+/g,'_');const res=await fetch(SB+'/storage/v1/object/'+bucket+'/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+(await getAuthToken()),'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},body:file});if(!res.ok){const e=await res.json().catch(function(){});throw new Error((e&&(e.message||e.error))||'Upload failed: '+res.status);}return SB+'/storage/v1/object/public/'+bucket+'/'+path;}
   try{
