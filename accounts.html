@@ -635,7 +635,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="method-btn" id="m-cash" onclick="setPayMethod('cash')">Cash</button>
       <button class="method-btn" id="m-card" onclick="setPayMethod('card')">Card</button>
       <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
+      <button class="method-btn" id="m-aggregator" onclick="setPayMethod('aggregator')">Aggregator</button>
       <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Receivable</button>
+    </div>
+    <div id="aggregator-opts" style="display:none;margin-top:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
+        <input type="checkbox" id="agg-hide-guest" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--br)"/>
+        Do not display this bill to guest
+      </label>
     </div>
   </div>
 
@@ -2817,6 +2824,8 @@ function setPayMethod(m) {
   document.querySelectorAll('.method-btn').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('m-'+m).classList.add('on');
   // method shown via button highlight
+  var aggOpts = document.getElementById('aggregator-opts');
+  if (aggOpts) aggOpts.style.display = (m === 'aggregator') ? 'block' : 'none';
 }
 
 // ── Save ──
@@ -2885,6 +2894,7 @@ async function saveBill() {
     amount           : amount,
     payment_status   : payStatus,
     payment_method   : payMethod !== 'pending' ? payMethod : null,
+    hide_from_guest  : payMethod === 'aggregator' ? !!document.getElementById('agg-hide-guest').checked : false,
     remarks          : document.getElementById('bill-remarks').value.trim()||null,
     bill_date        : billDate,
     bc_amount        : bcAmount || null,
@@ -2941,6 +2951,8 @@ function cancelEdit() {
   document.getElementById('grand-total').textContent = '₹0';
   payMethod = '';
   document.querySelectorAll('.method-btn').forEach(function(b){b.classList.remove('on');});
+  var aggCb = document.getElementById('agg-hide-guest');
+  if (aggCb) aggCb.checked = true;
   setPayMethod('pending');
   document.getElementById('bill-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('bill-remarks').value = '';
@@ -3082,6 +3094,8 @@ function editBill(bill) {
     // Payment method
     if (bill.payment_method) setPayMethod(bill.payment_method);
     else setPayMethod('pending');
+    var aggCbEdit = document.getElementById('agg-hide-guest');
+    if (aggCbEdit) aggCbEdit.checked = (bill.payment_method === 'aggregator') ? (bill.hide_from_guest !== false) : true;
 
     document.getElementById('bill-remarks').value = bill.remarks || '';
     // Open the form panel if it's collapsed
@@ -3252,9 +3266,10 @@ function renderBills(data) {
     data.map(function(b){
         var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
         var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
-        var statusLbl = b.payment_status==='paid'
+        var hiddenTag = (b.payment_method==='aggregator' && b.hide_from_guest) ? ' <span class="bdg" style="background:var(--muted);color:#fff;font-size:9px;vertical-align:middle">Hidden from guest</span>' : '';
+        var statusLbl = (b.payment_status==='paid'
           ? 'Received' + methodStr
-          : 'Receivable';
+          : 'Receivable') + hiddenTag;
         var items = b.items || [];
         var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
         var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);

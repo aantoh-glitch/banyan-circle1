@@ -1236,10 +1236,13 @@ async function loadFinalBill(){
   document.getElementById('bill-content').style.display = 'none';
   document.getElementById('bill-none').style.display = 'none';
   try {
-    var data = await api('/rest/v1/bills?guest_profile_id=eq.' + me.id + '&select=*&order=created_at.desc&limit=1');
+    var data = await api('/rest/v1/bills?guest_profile_id=eq.' + me.id + '&select=*&order=created_at.desc&limit=20');
     document.getElementById('bill-loading').style.display = 'none';
     if(!data || !data.length){ document.getElementById('bill-none').style.display = 'block'; return; }
-    var bill = data[0];
+    // Aggregator bills can be flagged to stay hidden from the guest view
+    var visible = data.filter(function(b){ return !b.hide_from_guest; });
+    if(!visible.length){ document.getElementById('bill-none').style.display = 'block'; return; }
+    var bill = visible[0];
     GUEST_BILL = bill;
     document.getElementById('bill-content').style.display = 'block';
     var fmtD = function(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '--'; };
