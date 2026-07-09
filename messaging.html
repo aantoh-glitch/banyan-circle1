@@ -1092,14 +1092,14 @@ async function selectRecipType(type, btn){
   list.innerHTML='<div class="name-loading">Loading…</div>';
   try{
     var rows=[];
-    if(type==='talent')   rows=await api('GET','talents?select=id,name,category&order=name');
+    if(type==='talent')   rows=await api('GET','talents?select=id,name&order=name');
     else if(type==='landlord') rows=await api('GET','landlords?select=id,name,property_name&order=name');
     else if(type==='guest')    rows=await api('GET','guest_profiles?select=id,name,property_name&order=name');
     else if(type==='ops')      rows=await api('GET','ops_profiles?select=id,name,role&order=name').catch(()=>api('GET','profiles?select=id,name&role=eq.ops&order=name').catch(()=>[]));
     else if(type==='staff')    rows=await api('GET','staff?select=id,name,designation&order=name');
     if(!rows.length){ list.innerHTML='<div class="name-loading">No '+type+'s found</div>'; return; }
     list.innerHTML = rows.map(r=>{
-      var sub = r.category||r.property_name||r.designation||'';
+      var sub = r.property_name||r.designation||'';
       return '<div class="name-item" data-name="'+esc(r.name)+'" onclick="selectRecipName(this)">'+
         '<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>'+
         '<div><div style="font-size:14px">'+esc(r.name)+'</div>'+
