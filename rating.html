@@ -133,12 +133,18 @@ const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if(!me){ location.href='/index.html'; throw new Error('No auth'); }
 
+// The parent (guest.html) passes the guest's property via ?prop= when opening this
+// sheet in an iframe. Prefer that over localStorage since storage isn't guaranteed
+// to be shared/available inside the iframe context.
+const urlProp = new URLSearchParams(location.search).get('prop');
+const myProp = urlProp || me.prop || me.property_name || '';
+
 // Iframe-aware: hide internal header when inside the sheet
 const inIframe = (window.self !== window.top);
 if(inIframe) document.getElementById('page-hdr').style.display='none';
 
 if(document.getElementById('hdr-name')) document.getElementById('hdr-name').textContent = me.name || 'Guest';
-if(document.getElementById('hdr-prop')) document.getElementById('hdr-prop').textContent = me.prop || 'Banyan Circle';
+if(document.getElementById('hdr-prop')) document.getElementById('hdr-prop').textContent = myProp || 'Banyan Circle';
 if(document.getElementById('hdr-av'))  document.getElementById('hdr-av').textContent  = ini(me.name||'G');
 
 let selectedTalent = null;
@@ -151,9 +157,13 @@ async function loadTalents(){
     const el = document.getElementById('talent-list');
     if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents found</div>'; return; }
     // Filter by guest's property if available; fallback to all
-    const guestProp = (me.prop||me.property_name||'').trim();
+    const guestProp = (myProp||'').trim();
     const filtered = guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.includes(guestProp)) : rows;
-    const display = filtered.length ? filtered : rows;
+    const display = guestProp ? filtered : rows;
+    if(guestProp && !filtered.length){
+      el.innerHTML = '<div style="font-size:13px;color:var(--muted)">No talents assigned to '+guestProp+' yet</div>';
+      return;
+    }
     el.innerHTML = display.map(t => {
       const propBadges = Array.isArray(t.venues) && t.venues.length
         ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${t.venues.map(v=>`<span style="font-size:10px;padding:2px 7px;border-radius:6px;background:var(--br-l);color:var(--br);font-weight:500;border:1px solid var(--br)">${v}</span>`).join('')}</div>`

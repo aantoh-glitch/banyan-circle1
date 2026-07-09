@@ -1360,9 +1360,9 @@ async function openPropertyReview() {
 var _activeRevSheet = null;
 function openRevSheet(sheetId, frameId, title, src) {
   var frame = document.getElementById(frameId);
-  // Pass guest's property into staff-review so it can filter by assignment
+  // Pass guest's property into staff-review / rating so they can filter by assignment
   var finalSrc = src;
-  if (frameId === 'staff-frame' && me && me.prop) {
+  if ((frameId === 'staff-frame' || frameId === 'rating-frame') && me && me.prop) {
     finalSrc = src + '?prop=' + encodeURIComponent(me.prop);
   }
   if (frame.getAttribute('data-src') !== finalSrc) {
