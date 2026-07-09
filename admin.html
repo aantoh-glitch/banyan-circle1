@@ -1043,7 +1043,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="fg"><label class="fl">PIN (4 digits) <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-pin" maxlength="4" placeholder="e.g. 4821"/></div>
   <input type="hidden" id="mtal-desc"/>
   <input type="hidden" id="mtal-cat"/>
-  <div class="fg"><label class="fl">Phone Number</label><input class="fc" id="mtal-phone" placeholder="e.g. +91 98765 43210" type="tel" oninput="syncLoginEmail('mtal-phone','mtal-login-email','.talent@banyan.com')"/></div>
+  <div class="fg"><label class="fl">Phone Number <span style="color:var(--r)">*</span></label><input class="fc" id="mtal-phone" placeholder="e.g. +91 98765 43210" type="tel" oninput="syncLoginEmail('mtal-phone','mtal-login-email','.talent@banyan.com')"/></div>
   <div class="fg"><input type="hidden" id="mtal-login-email"/><div style="font-size:12px;color:var(--muted)">Supabase Auth account: <span id="mtal-login-email-disp" style="font-weight:600;color:var(--ink)">—</span></div></div>
   <div class="fg"><label class="fl">PAN Number</label><input class="fc" id="mtal-pan" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase"/></div>
   <div class="fg">
@@ -2098,10 +2098,12 @@ async function saveTalent(){
   const id=document.getElementById('mtal-id').value;
   const name=document.getElementById('mtal-name').value.trim();
   const pin=document.getElementById('mtal-pin').value.trim();
+  const phone=document.getElementById('mtal-phone').value.trim();
   const login_email=document.getElementById('mtal-login-email').value.trim()||null;
-  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:document.getElementById('mtal-phone').value.trim()||null,login_email};
+  const body={name,pin,short_desc:document.getElementById('mtal-desc').value.trim()||null,category:document.getElementById('mtal-cat').value,pan:document.getElementById('mtal-pan').value.trim().toUpperCase()||null,phone:phone||null,login_email};
   if(!name){alert('Name is required');return;}
   if(!pin||!/^\d{4}$/.test(pin)){alert('PIN must be exactly 4 digits');return;}
+  if(!phone){alert('Phone number is required');return;}
   if(!login_email){alert('Login email is required');return;}
   try{
     if(id){
