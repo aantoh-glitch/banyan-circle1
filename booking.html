@@ -166,6 +166,11 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
   <div class="topbar">
     
     <div class="topbar-name">Booking Manager</div>
+    <div class="topbar-actions" id="topbarActions">
+      <button class="btn btn-ghost" onclick="openBookingsLog()">Bookings Log</button>
+      <button class="btn btn-ghost" onclick="triggerSync()">Sync</button>
+      <button class="btn btn-primary" onclick="openAddBooking()">+ Manual Booking</button>
+    </div>
   </div>
   <div class="prop-subbar">
     <div class="pill-bar" id="pillBar"></div>
@@ -419,8 +424,15 @@ if (_viewerParam === 'admin') {
     const mainEl = document.querySelector('.main');
     if (mainEl) {
       const heading = document.createElement('div');
-      heading.innerHTML = '<div class="pg-title">Bookings</div><div class="pg-sub">Manage reservations across all properties</div>';
+      heading.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;';
+      heading.innerHTML = '<div><div class="pg-title">Bookings</div><div class="pg-sub">Manage reservations across all properties</div></div>';
       mainEl.insertBefore(heading, mainEl.firstChild);
+      // move topbar action buttons (Bookings Log / Sync / Manual Booking) into the heading row
+      const topbarActions = document.getElementById('topbarActions');
+      if (topbarActions) {
+        topbarActions.style.marginLeft = '0';
+        heading.appendChild(topbarActions);
+      }
     }
     // move prop pills into main, right after heading
     const subbar = document.querySelector('.prop-subbar');
