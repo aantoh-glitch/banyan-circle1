@@ -3046,7 +3046,7 @@ function editBill(bill) {
       if (document.getElementById('bc-toggle-lbl')) document.getElementById('bc-toggle-lbl').textContent = 'On';
       if (bcSec) bcSec.style.display = '';
       (bill.items||[]).filter(function(i){ return i.type==='banyan'; }).forEach(function(i){
-        addBcGeneralRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+        addBcRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
     if (hasAcc) {
@@ -3058,7 +3058,7 @@ function editBill(bill) {
       if (document.getElementById('acc-toggle-lbl')) document.getElementById('acc-toggle-lbl').textContent = 'On';
       if (accSec) accSec.style.display = '';
       (bill.items||[]).filter(function(i){ return i.type==='accommodation'; }).forEach(function(i){
-        addAccRow(i.name, i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+        addAccRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
     var hasAddon = (bill.items||[]).some(function(i){ return i.type === 'addon'; });
@@ -3071,7 +3071,7 @@ function editBill(bill) {
       if (document.getElementById('addon-toggle-lbl')) document.getElementById('addon-toggle-lbl').textContent = 'On';
       if (addonSec) addonSec.style.display = '';
       (bill.items||[]).filter(function(i){ return i.type==='addon'; }).forEach(function(i){
-        addAddonRow(i.sub_item||i.name, i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
+        addAddonRow(i.sub_item||'', i.qty, i.rate, i.cgst_pct||0, i.sgst_pct||0);
       });
     }
     var hasBcGen = (bill.items||[]).some(function(i){ return i.type === 'banyan_general'; });
