@@ -2859,8 +2859,14 @@ async function saveBill() {
   // Collect sub_item: talent names from BC rows (comma-separated if multiple)
   var bcTalents = [];
   document.querySelectorAll('#bc-items-body tr').forEach(function(tr){
-    var sel = tr.querySelector('select.bc-talent-sel');
-    if (sel && sel.value) bcTalents.push(sel.options[sel.selectedIndex].text);
+    if (tr.dataset.rowtype === 'bcgeneral') {
+      var nameInput = tr.querySelector('input');
+      var nameVal = nameInput ? nameInput.value.trim() : '';
+      if (nameVal) bcTalents.push(nameVal);
+    } else {
+      var sel = tr.querySelector('select.bc-talent-sel');
+      if (sel && sel.value) bcTalents.push(sel.options[sel.selectedIndex].text);
+    }
   });
   var subItemVal = bcTalents.length ? bcTalents.join(', ') : null;
 
