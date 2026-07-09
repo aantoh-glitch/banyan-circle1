@@ -7,7 +7,8 @@
 <meta name="theme-color" content="#2C2C2A"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+button{outline:none}
 :root{
   --bg:#f3eee8;
   --text:#2C2C2A;
@@ -77,11 +78,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .period-tabs::-webkit-scrollbar{display:none}
 .ptab{
   font-size:12px;padding:7px 14px;border-radius:999px;
-  border:1px solid var(--border);background:var(--white);
+  border:none;background:var(--bg);
   cursor:pointer;font-family:inherit;color:var(--muted);
   white-space:nowrap;flex-shrink:0;transition:all .15s;
 }
-.ptab.active{background:var(--text);color:var(--white);border-color:var(--text)}
+.ptab.active{background:var(--text);color:var(--white)}
 
 /* MONTH NAV (shown in month mode) */
 .month-nav{
@@ -89,11 +90,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   padding:0 20px;margin-bottom:16px;
 }
 .month-nav button{
-  width:36px;height:36px;border:1px solid var(--border);
-  border-radius:8px;background:var(--white);cursor:pointer;
+  width:36px;height:36px;border:none;
+  border-radius:8px;background:var(--bg);cursor:pointer;
   font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text);
 }
-.month-nav button:active{border-color:var(--br);color:var(--br)}
+.month-nav button:active{color:var(--br)}
 .month-label{font-size:14px;font-weight:500}
 
 /* CUSTOM RANGE */
@@ -133,9 +134,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   background:var(--white);border:1px solid var(--border);
   border-radius:12px;padding:16px 20px;text-align:center;
 }
-.kpi-card.positive{border-top:3px solid var(--green)}
-.kpi-card.negative{border-top:3px solid var(--red)}
-.kpi-card.net{border-top:3px solid var(--br)}
+.kpi-card.positive{}
+.kpi-card.negative{}
+.kpi-card.net{}
 .kpi-val{
   
   font-size:18px;font-weight:400;
@@ -154,11 +155,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .filter-tabs{display:flex;gap:6px}
 .ftab{
   font-size:12px;padding:6px 12px;border-radius:999px;
-  border:1px solid var(--border);background:var(--white);
+  border:none;background:var(--bg);
   cursor:pointer;font-family:inherit;color:var(--muted);
   transition:all .15s;
 }
-.ftab.active{background:var(--text);color:var(--white);border-color:var(--text)}
+.ftab.active{background:var(--text);color:var(--white)}
 .add-btn{
   display:flex;align-items:center;gap:5px;
   font-size:12px;font-weight:500;
@@ -179,7 +180,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .head-filter-row::-webkit-scrollbar{display:none}
 .hftab{
   font-size:11px;padding:5px 11px;border-radius:999px;
-  border:1px solid var(--border);background:var(--white);
+  border:1px solid var(--border);background:var(--bg);
   cursor:pointer;font-family:inherit;color:var(--muted);
   white-space:nowrap;flex-shrink:0;
   transition:all .15s;
@@ -206,12 +207,30 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .entry-card{
   background:var(--white);border:1px solid var(--border);
   border-radius:12px;padding:14px 16px;margin-bottom:10px;
-  position:relative;
+  position:relative;cursor:pointer;
 }
 .entry-card.positive{border-left:3px solid var(--green)}
 .entry-card.negative{border-left:3px solid var(--red)}
 .entry-card.unassigned{border-left:3px solid #FFD54F}
 .entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.entry-top-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.entry-chev{
+  font-size:10px;color:var(--muted);flex-shrink:0;
+  transition:transform .2s ease;transform:rotate(0deg);
+  width:14px;text-align:center;
+}
+.entry-card.open .entry-chev{transform:rotate(180deg)}
+.entry-sub{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--muted);margin-top:6px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.entry-sub .dot{color:var(--border)}
+.entry-detail{
+  display:none;margin-top:10px;padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.entry-card.open .entry-detail{display:block}
 .entry-head-chip{
   display:inline-flex;align-items:center;
   font-size:11px;font-weight:500;letter-spacing:.3px;
@@ -339,7 +358,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .type-btn{
   padding:11px;text-align:center;font-size:13px;font-weight:500;
-  cursor:pointer;background:var(--white);border:none;
+  cursor:pointer;background:var(--bg);border:none;
   font-family:inherit;color:var(--muted);transition:all .15s;
 }
 .type-btn.active.pos{background:var(--green-l);color:var(--green)}
@@ -389,7 +408,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 }
 .assign-type-btn{
   padding:10px 4px;text-align:center;font-size:12px;font-weight:500;
-  cursor:pointer;background:var(--white);border:none;
+  cursor:pointer;background:var(--bg);border:none;
   font-family:inherit;color:var(--muted);transition:all .15s;
 }
 .assign-type-btn.active{background:var(--br-l);color:var(--br)}
@@ -1115,7 +1134,7 @@ function renderLog() {
       const banner = document.createElement('div');
       banner.id = 'unassigned-banner';
       banner.className = 'unassigned-banner';
-      banner.innerHTML = `<span><strong>${unassignedCount}</strong> unassigned entr${unassignedCount===1?'y':'ies'} this month</span><button class="hftab" style="background:var(--white);border-color:#FFD54F;color:#795548" onclick="setHeadFilter('unassigned')">View</button>`;
+      banner.innerHTML = `<span><strong>${unassignedCount}</strong> unassigned entr${unassignedCount===1?'y':'ies'} this month</span><button class="hftab" style="background:var(--bg);border-color:#FFD54F;color:#795548" onclick="setHeadFilter('unassigned')">View</button>`;
       wrap.parentNode.insertBefore(banner, wrap);
     }
   }
@@ -1178,35 +1197,43 @@ function renderLog() {
 
     // Admin: show assign button if unassigned
     const assignHtml = (isAdmin && isUnassigned && !e._fromExpense)
-      ? `<button class="assign-btn" onclick="openAssignSheet('${e.id}')">Assign to head →</button>` : '';
+      ? `<button class="assign-btn" onclick="event.stopPropagation();openAssignSheet('${e.id}')">Assign to head →</button>` : '';
 
     // Admin: edit + delete on every card — hide for expense-sourced entries (managed in Accounts)
     const actionsHtml = (isAdmin && !e._fromExpense)
       ? `<div class="entry-actions">
-          <button class="entry-edit-btn" onclick="openEditSheet('${e.id}')">Edit</button>
-          <button class="entry-del-btn" onclick="deleteEntry('${e.id}')">Delete</button>
+          <button class="entry-edit-btn" onclick="event.stopPropagation();openEditSheet('${e.id}')">Edit</button>
+          <button class="entry-del-btn" onclick="event.stopPropagation();deleteEntry('${e.id}')">Delete</button>
          </div>`
       : (isAdmin && e._fromExpense)
         ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);background:var(--bg);padding:5px 10px;border-radius:6px">From Expenses · manage in Accounts</div>`
         : '';
 
+    // Collapsed sub-line: date + entity/unassigned, single line
+    const subEntity = isUnassigned ? 'Unassigned' : esc(e.entity_name || '—');
+    const entrySub = `<div class="entry-sub"><span>${fmtDate(e.entry_date)}</span><span class="dot">·</span><span>${subEntity}</span>${byTag ? `<span class="dot">·</span>${byTag}` : ''}</div>`;
+
     return `
-      <div class="entry-card ${cardClass}">
+      <div class="entry-card ${cardClass}" onclick="this.classList.toggle('open')">
         <div class="entry-top">
           <span class="entry-head-chip">${esc(e.head)}</span>
-          ${amtDisplay}
+          <div class="entry-top-right">
+            ${amtDisplay}
+            <span class="entry-chev">▾</span>
+          </div>
         </div>
-        ${pctNote}
-        <div class="entry-meta">
-          <span class="entry-date">${fmtDate(e.entry_date)}</span>
-          ${entityTag}
-          ${statusChip}
-          ${byTag}
+        ${entrySub}
+        <div class="entry-detail">
+          ${pctNote}
+          <div class="entry-meta">
+            ${entityTag}
+            ${statusChip}
+          </div>
+          ${notesHtml}
+          ${tdsBreakdown}
+          ${assignHtml}
+          ${actionsHtml}
         </div>
-        ${notesHtml}
-        ${tdsBreakdown}
-        ${assignHtml}
-        ${actionsHtml}
       </div>`;
   }).join('');
 }
