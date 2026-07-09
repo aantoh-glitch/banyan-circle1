@@ -2041,7 +2041,7 @@ async function loadTalentsPage(){
   }catch(e){ /* fall back to talents.category if talent_profiles fetch fails */ }
   const el = document.getElementById('talents-list');
   if(!data.length){ el.innerHTML='<div class="empty">No talents yet. Add the first one.</div>'; return; }
-  el.innerHTML = `<table class="tbl"><thead><tr><th>Name</th><th>Category</th><th>Phone</th><th>Login Email</th><th></th></tr></thead><tbody>
+  el.innerHTML = `<table class="tbl"><thead><tr><th>Name</th><th>Category</th><th>Phone</th><th></th></tr></thead><tbody>
     ${data.map(t => {
       const col = CAT_COLORS[t.category] || '#5A5A5A';
       const catBadge = t.category ? `<span class="bdg" style="background:${col}18;color:${col};border-color:${col}40;font-size:10px">${t.category}</span>` : '—';
@@ -2049,7 +2049,6 @@ async function loadTalentsPage(){
         <td><b>${t.name||'—'}</b>${t.short_desc ? `<div style="font-size:11px;color:var(--muted);margin-top:1px">${t.short_desc}</div>` : ''}</td>
         <td>${catBadge}</td>
         <td>${t.phone||'—'}</td>
-        <td style="font-size:11px;color:var(--muted)">${t.login_email||'—'}</td>
         <td style="text-align:right;white-space:nowrap">
           <button class="btn-edit" onclick="openTalentPortal('${t.id}','${(t.name||'').replace(/'/g,"\\'")}','${t.pin||''}')" style="font-size:11px;padding:5px 10px">Portal</button>
           <button class="btn-edit" data-talent-edit="${encodeURIComponent(JSON.stringify(t))}" onclick="editTalentRow(JSON.parse(decodeURIComponent(this.dataset.talentEdit)))" style="font-size:11px;padding:5px 10px">Edit</button>
