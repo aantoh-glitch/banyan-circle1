@@ -26,14 +26,24 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 textarea.fc{resize:none;min-height:90px;line-height:1.6}
 .fg{margin-bottom:16px}
 
-/* Talent selector */
-.talent-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--white);border:none;border-radius:10px;cursor:pointer;transition:all .15s;margin-bottom:8px}
-.talent-card:hover{border-color:var(--br);background:var(--br-l)}
-.talent-card.selected{border-color:var(--br);background:var(--br-l)}
+/* Talent list — doubles as the review list once rated (staff-review style boxes) */
+.talent-card{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--white);border:none;border-radius:12px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.talent-card:hover{background:var(--br-l)}
+.talent-card.selected{background:var(--br-l)}
 .talent-av{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
-.talent-info{flex:1}
-.talent-name{font-size:14px;font-weight:500}
-.talent-cat{font-size:12px;color:var(--muted)}
+.talent-info{flex:1;min-width:0}
+.talent-name{font-size:14px;font-weight:600}
+.talent-cat{font-size:12px;color:var(--muted);margin-top:1px}
+.card-stars{font-size:14px;letter-spacing:1px;color:var(--star);margin-top:6px}
+.card-review{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic;line-height:1.5}
+.card-meta{font-size:11px;color:var(--muted);margin-top:5px}
+.card-hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Trailing icon area on each card */
+.card-trailing{flex-shrink:0;display:flex;align-items:center}
+.log-btn{width:28px;height:28px;border-radius:8px;border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s}
+.log-btn:hover{background:var(--br-l);color:var(--br)}
+.log-btn.del:hover{background:var(--r-l);color:var(--r)}
 
 /* Star rating */
 .stars-input{display:flex;gap:6px;margin:4px 0 8px}
@@ -55,22 +65,6 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 .btn-again{padding:11px 26px;background:var(--white);border:none;border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
 
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-
-/* Ratings log — boxes styled like the staff review list */
-.log-section{margin-top:28px}
-.log-title{font-size:15px;font-weight:600;margin-bottom:2px}
-.log-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
-.log-item{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--white);border-radius:12px;margin-bottom:10px}
-.log-avatar{width:36px;height:36px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--br);flex-shrink:0}
-.log-detail{flex:1;min-width:0}
-.log-name{font-size:13px;font-weight:600;color:var(--text)}
-.log-stars{font-size:14px;letter-spacing:1px;color:var(--star);margin-top:2px}
-.log-comment{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic;line-height:1.5}
-.log-meta{font-size:11px;color:var(--muted);margin-top:5px}
-.log-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
-.log-btn{width:28px;height:28px;border-radius:8px;border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s}
-.log-btn:hover{background:var(--br-l);color:var(--br)}
-.log-btn.del:hover{background:var(--r-l);color:var(--r)}
 .log-empty{text-align:center;padding:28px 20px;color:var(--muted);font-size:13px;background:var(--white);border-radius:12px}
 </style>
 </head>
@@ -86,15 +80,15 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 
 <div class="pg" id="pg-rate">
   <div class="pg-title">Rate Your Experience</div>
-  <div class="pg-sub">Share how your session went — your feedback goes directly to the talent</div>
+  <div class="pg-sub">Share how your session went — your feedback goes directly to the talent. Already rated someone? Tap their card to edit, or use the delete icon.</div>
 
-  <!-- Step 1: Select talent -->
+  <!-- Talent list: shows the rating inline once given -->
   <div class="fg">
     <label class="fl">Who did you work with?</label>
-    <div id="talent-list"><div style="font-size:13px;color:var(--muted)">Loading talents…</div></div>
+    <div id="talent-list"><div class="log-empty">Loading talents…</div></div>
   </div>
 
-  <!-- Step 2: Star rating (shown after selection) -->
+  <!-- Star rating form (shown after tapping a card) -->
   <div id="rating-section" style="display:none">
     <div class="card">
       <div style="font-size:14px;font-weight:500;margin-bottom:14px" id="rating-talent-name">Rate your session</div>
@@ -116,13 +110,6 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
       <button class="btn-sub" id="submit-btn" onclick="submitRating()" disabled>Submit Rating</button>
     </div>
   </div>
-
-  <!-- Log of ratings already given -->
-  <div class="log-section">
-    <div class="log-title">Your Ratings</div>
-    <div class="log-sub">Edit or remove a rating you've already submitted</div>
-    <div id="ratings-log"><div class="log-empty">Loading…</div></div>
-  </div>
 </div>
 
 <!-- SUCCESS STATE -->
@@ -132,7 +119,7 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
   </div>
   <div class="s-title">Thank you!</div>
   <div class="s-sub" id="success-msg">Your rating has been submitted. It helps us celebrate our talent.</div>
-  <button class="btn-again" onclick="resetForm()">Rate another talent</button>
+  <button class="btn-again" onclick="resetForm()">Back to the list</button>
 </div>
 
 </div>
@@ -152,6 +139,8 @@ async function api(path, method, body) {
 }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+function starStr(n){ let s=''; for(let i=0;i<5;i++) s += i<n ? '★' : '☆'; return s; }
+function fmtLogDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
 
 // Auth
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
@@ -175,58 +164,102 @@ let selectedTalent = null;
 let starValue = 0;
 let currentRatingId = null; // supabase row id of the rating being edited, if any
 const talentsById = {};
+const ratingsByTalent = {}; // talent_id -> {id, rating, review, created_at}
 
-// Load talents
-async function loadTalents(){
+// --- Data loading ---
+async function fetchTalents(){
+  const rows = await api('/rest/v1/talents?select=id,name,venues,category&order=name') || [];
+  const norm = s => (s||'').trim().toLowerCase();
+  const guestProp = (myProp||'').trim();
+  const guestPropNorm = norm(guestProp);
+  return guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.some(v=>norm(v)===guestPropNorm)) : rows;
+}
+
+async function fetchMyRatings(){
+  if(!me.id) return [];
+  return await api('/rest/v1/talent_ratings?guest_id=eq.'+me.id+'&order=created_at.desc') || [];
+}
+
+async function init(){
+  const el = document.getElementById('talent-list');
   try{
-    const rows = await api('/rest/v1/talents?select=id,name,venues,category&order=name') || [];
-    const el = document.getElementById('talent-list');
-    if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents found</div>'; return; }
-    // Filter by guest's property if available; fallback to all
-    const norm = s => (s||'').trim().toLowerCase();
-    const guestProp = (myProp||'').trim();
-    const guestPropNorm = norm(guestProp);
-    const filtered = guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.some(v=>norm(v)===guestPropNorm)) : rows;
-    const display = guestProp ? filtered : rows;
-    if(guestProp && !filtered.length){
-      el.innerHTML = '<div style="font-size:13px;color:var(--muted)">No talents are currently assigned to '+guestProp+'.</div>';
+    const [talents, ratings] = await Promise.all([fetchTalents(), fetchMyRatings()]);
+
+    Object.keys(ratingsByTalent).forEach(k=>delete ratingsByTalent[k]);
+    ratings.forEach(r => { ratingsByTalent[r.talent_id] = r; });
+
+    if(!talents.length){
+      el.innerHTML = (myProp||'').trim()
+        ? '<div class="log-empty">No talents are currently assigned to '+myProp+'.</div>'
+        : '<div class="log-empty">No talents found</div>';
       return;
     }
-    display.forEach(t => talentsById[t.id] = t);
-    el.innerHTML = display.map(t => {
-      const catSub = t.category ? `<div class="talent-cat">${t.category}</div>` : '';
-      return `
+
+    Object.keys(talentsById).forEach(k=>delete talentsById[k]);
+    talents.forEach(t => talentsById[t.id] = t);
+
+    renderTalentList(talents);
+  } catch(e){
+    el.innerHTML = '<div class="log-empty">Could not load talents</div>';
+  }
+}
+
+function renderTalentList(talents){
+  const el = document.getElementById('talent-list');
+  el.innerHTML = talents.map(t => {
+    const rated = ratingsByTalent[t.id];
+    const catSub = t.category ? `<div class="talent-cat">${t.category}</div>` : '';
+
+    const body = rated
+      ? `${catSub}
+         <div class="card-stars">${starStr(rated.rating||0)}</div>
+         ${rated.review ? `<div class="card-review">"${rated.review}"</div>` : ''}
+         <div class="card-meta">Rated ${fmtLogDate(rated.created_at)} · tap to edit</div>`
+      : `${catSub}<div class="card-hint">Tap to rate</div>`;
+
+    const trailing = rated
+      ? `<button class="log-btn del" title="Delete rating" onclick="event.stopPropagation(); deleteRating(${rated.id}, ${t.id})">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+         </button>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="check-${t.id}"><polyline points="20,6 9,17 4,12"/></svg>`;
+
+    return `
       <div class="talent-card" id="tc-${t.id}" onclick="selectTalent(${JSON.stringify(t).replace(/"/g,'&quot;')})">
         <div class="talent-av">${ini(t.name)}</div>
         <div class="talent-info">
           <div class="talent-name">${t.name}</div>
-          ${catSub}
+          ${body}
         </div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="check-${t.id}"><polyline points="20,6 9,17 4,12"/></svg>
+        <div class="card-trailing">${trailing}</div>
       </div>`;
-    }).join('');
-  } catch(e){ document.getElementById('talent-list').innerHTML='<div style="font-size:13px;color:var(--muted)">Could not load talents</div>'; }
+  }).join('');
 }
 
 function selectTalent(t){
-  // Deselect all
   document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
-  document.querySelectorAll('[id^="check-"]').forEach(c=>c.style.stroke='var(--border)');
-  // Select this
   document.getElementById('tc-'+t.id)?.classList.add('selected');
-  const chk = document.getElementById('check-'+t.id);
-  if(chk) chk.style.stroke='var(--br)';
+
   selectedTalent = t;
   currentRatingId = null;
+  starValue = 0;
+
   document.getElementById('rating-talent-name').textContent = 'Rate your session with ' + t.name;
   document.getElementById('rating-section').style.display = '';
-  document.getElementById('rating-section').scrollIntoView({behavior:'smooth', block:'nearest'});
-  // Reset stars
-  starValue = 0;
-  renderStars();
-  document.getElementById('review-text').value='';
+  document.getElementById('review-text').value = '';
   document.getElementById('submit-btn').disabled = true;
   document.getElementById('submit-btn').textContent = 'Submit Rating';
+
+  const rated = ratingsByTalent[t.id];
+  if(rated){
+    currentRatingId = rated.id;
+    starValue = rated.rating;
+    document.getElementById('review-text').value = rated.review||'';
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').textContent = 'Update Rating';
+  }
+  renderStars();
+  document.getElementById('star-label').textContent = starValue ? STAR_LABELS[starValue] : 'Tap a star to rate';
+  document.getElementById('rating-section').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 const STAR_LABELS = ['','Poor','Fair','Good','Very Good','Excellent'];
@@ -242,54 +275,6 @@ function renderStars(){
   });
 }
 
-// --- Persistence helpers ---
-function ratingKey(talentId){ return 'bc_rating_'+(me.id||'guest')+'_'+talentId; }
-
-function saveRatingLocally(talent, rating, review, id){
-  localStorage.setItem(ratingKey(talent.id), JSON.stringify({
-    id: id||null,
-    talentId: talent.id,
-    talentName: talent.name,
-    rating,
-    review: review||''
-  }));
-}
-
-function getSavedRating(talentId){
-  try{ return JSON.parse(localStorage.getItem(ratingKey(talentId))); } catch(e){ return null; }
-}
-
-// After talents render, restore any previously saved rating
-function restoreSavedRatings(){
-  document.querySelectorAll('.talent-card').forEach(card=>{
-    const id = card.id.replace('tc-','');
-    const saved = getSavedRating(id);
-    if(!saved) return;
-    // Add a subtle "rated" badge to the card
-    if(!card.querySelector('.rated-badge')){
-      const badge = document.createElement('span');
-      badge.className='rated-badge';
-      badge.innerHTML = '★'.repeat(saved.rating);
-      badge.style.cssText='font-size:11px;color:var(--star);margin-left:auto;white-space:nowrap;flex-shrink:0';
-      card.appendChild(badge);
-    }
-  });
-}
-
-// When a talent is selected, restore their saved rating if it exists
-function restoreForTalent(t){
-  const saved = getSavedRating(t.id);
-  if(!saved) return;
-  currentRatingId = saved.id || null;
-  starValue = saved.rating;
-  renderStars();
-  document.getElementById('star-label').textContent = STAR_LABELS[saved.rating]||'';
-  document.getElementById('review-text').value = saved.review||'';
-  document.getElementById('submit-btn').disabled = false;
-  // Update button label to indicate it's an edit
-  document.getElementById('submit-btn').textContent = 'Update Rating';
-}
-
 async function submitRating(){
   if(!selectedTalent || !starValue){ toast('Please select a talent and rating'); return; }
   const btn = document.getElementById('submit-btn');
@@ -298,12 +283,14 @@ async function submitRating(){
   const review = document.getElementById('review-text').value.trim()||null;
   try{
     let savedId = currentRatingId;
+    let createdAt = new Date().toISOString();
     if(isEdit){
       await api('/rest/v1/talent_ratings?id=eq.'+currentRatingId,'PATCH',{
         rating: starValue,
         review,
         updated_at: new Date().toISOString()
       });
+      createdAt = (ratingsByTalent[selectedTalent.id] && ratingsByTalent[selectedTalent.id].created_at) || createdAt;
     } else {
       const inserted = await api('/rest/v1/talent_ratings','POST',{
         talent_id: selectedTalent.id,
@@ -313,21 +300,45 @@ async function submitRating(){
         property_name: me.prop||null,
         rating: starValue,
         review,
-        created_at: new Date().toISOString()
+        created_at: createdAt
       });
       savedId = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
     }
-    // Persist locally so it survives a refresh
-    saveRatingLocally(selectedTalent, starValue, review, savedId);
+    // Update in-memory cache so the card reflects it immediately
+    ratingsByTalent[selectedTalent.id] = {
+      id: savedId, talent_id: selectedTalent.id, talent_name: selectedTalent.name,
+      rating: starValue, review, created_at: createdAt
+    };
     document.getElementById('success-msg').textContent = isEdit
       ? `Your rating for ${selectedTalent.name} has been updated. Thank you!`
       : `Your ${starValue}-star rating for ${selectedTalent.name} has been saved. Thank you!`;
     document.getElementById('pg-rate').style.display='none';
     document.getElementById('pg-success').style.display='flex';
-    loadRatingsLog();
+    renderTalentList(Object.values(talentsById));
   } catch(e){
     toast('Error: '+e.message);
     btn.disabled=false; btn.textContent = isEdit ? 'Update Rating' : 'Submit Rating';
+  }
+}
+
+async function deleteRating(ratingId, talentId){
+  if(!confirm('Delete this rating? This cannot be undone.')) return;
+  try{
+    await api('/rest/v1/talent_ratings?id=eq.'+ratingId, 'DELETE');
+    delete ratingsByTalent[talentId];
+    if(selectedTalent && selectedTalent.id === talentId){
+      currentRatingId = null;
+      starValue = 0;
+      renderStars();
+      document.getElementById('star-label').textContent = 'Tap a star to rate';
+      document.getElementById('review-text').value = '';
+      document.getElementById('submit-btn').disabled = true;
+      document.getElementById('submit-btn').textContent = 'Submit Rating';
+    }
+    renderTalentList(Object.values(talentsById));
+    toast('Rating deleted');
+  } catch(e){
+    toast('Error: '+e.message);
   }
 }
 
@@ -341,102 +352,11 @@ function resetForm(){
   document.getElementById('submit-btn').textContent='Submit Rating';
   document.getElementById('rating-section').style.display='none';
   document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
-  document.querySelectorAll('[id^="check-"]').forEach(c=>c.style.stroke='var(--border)');
   document.getElementById('pg-rate').style.display='';
   document.getElementById('pg-success').style.display='none';
-  loadRatingsLog();
 }
 
-// --- Ratings log (editable / deletable) ---
-function starStr(n){ let s=''; for(let i=0;i<5;i++) s += i<n ? '★' : '☆'; return s; }
-function fmtLogDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
-
-async function loadRatingsLog(){
-  const el = document.getElementById('ratings-log');
-  if(!el) return;
-  el.innerHTML = '<div class="log-empty">Loading…</div>';
-  try{
-    let rows = [];
-    if(me.id){
-      rows = await api('/rest/v1/talent_ratings?guest_id=eq.'+me.id+'&order=created_at.desc') || [];
-    }
-    if(!rows.length){
-      el.innerHTML = '<div class="log-empty">You haven\'t rated anyone yet</div>';
-      return;
-    }
-    el.innerHTML = rows.map(r => `
-      <div class="log-item" id="log-${r.id}">
-        <div class="log-avatar">${ini(r.talent_name)}</div>
-        <div class="log-detail">
-          <div class="log-name">${r.talent_name}</div>
-          <div class="log-stars">${starStr(r.rating||0)}</div>
-          ${r.review ? `<div class="log-comment">"${r.review}"</div>` : ''}
-          <div class="log-meta">${fmtLogDate(r.created_at)}</div>
-        </div>
-        <div class="log-actions">
-          <button class="log-btn" title="Edit" onclick="editRatingFromLog(${r.talent_id})">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
-          </button>
-          <button class="log-btn del" title="Delete" onclick="deleteRating(${r.id}, ${r.talent_id})">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
-        </div>
-      </div>
-    `).join('');
-  } catch(e){
-    el.innerHTML = '<div class="log-empty">Could not load your ratings</div>';
-  }
-}
-
-function editRatingFromLog(talentId){
-  const t = talentsById[talentId];
-  if(!t){ toast('Could not find that talent'); return; }
-  selectTalent(t); // sets selectedTalent + resets, then restoreForTalent patch below fills it in
-}
-
-async function deleteRating(ratingId, talentId){
-  if(!confirm('Delete this rating? This cannot be undone.')) return;
-  try{
-    await api('/rest/v1/talent_ratings?id=eq.'+ratingId, 'DELETE');
-    localStorage.removeItem(ratingKey(talentId));
-    // If that talent is currently open in the form, clear the edit state
-    if(selectedTalent && selectedTalent.id === talentId){
-      currentRatingId = null;
-      starValue = 0;
-      renderStars();
-      document.getElementById('star-label').textContent = 'Tap a star to rate';
-      document.getElementById('review-text').value = '';
-      document.getElementById('submit-btn').disabled = true;
-      document.getElementById('submit-btn').textContent = 'Submit Rating';
-    }
-    // Remove the "rated" star badge from the talent card
-    const card = document.getElementById('tc-'+talentId);
-    const badge = card && card.querySelector('.rated-badge');
-    if(badge) badge.remove();
-    document.getElementById('log-'+ratingId)?.remove();
-    toast('Rating deleted');
-    loadRatingsLog();
-  } catch(e){
-    toast('Error: '+e.message);
-  }
-}
-
-// Patch loadTalents to call restoreSavedRatings after render
-const _origLoadTalents = loadTalents;
-loadTalents = async function(){
-  await _origLoadTalents();
-  restoreSavedRatings();
-};
-
-// Patch selectTalent to restore saved rating after selection
-const _origSelectTalent = selectTalent;
-selectTalent = function(t){
-  _origSelectTalent(t);
-  restoreForTalent(t);
-};
-
-loadTalents();
-loadRatingsLog();
+init();
 </script>
 </body>
 </html>
