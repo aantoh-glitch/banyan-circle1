@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.14);--bg:#f3eee8;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB;--star:#C8A84B}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:var(--bg)}
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
@@ -16,42 +16,45 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .hdr-info{flex:1}
 .hdr-name{font-size:15px;font-weight:500}
 .hdr-prop{font-size:12px;color:var(--muted)}
-.pg{padding:20px 16px 60px;flex:1}
-.pg-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
-.pg-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
-
-/* Each talent is its own inline review block, stacked one after another */
-.team-item{padding:22px 0;border-top:1px solid var(--border)}
-.team-item:first-child{border-top:none;padding-top:0}
-.team-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.team-avatar{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
-.team-name{font-size:15px;font-weight:600}
-.team-role{font-size:13px;color:var(--muted);margin-top:1px}
-
-.fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px}
-.req{color:var(--r)}
-
-.stars-input{display:flex;gap:6px;margin:0 0 18px}
-.star-btn{font-size:30px;background:none;border:none;cursor:pointer;color:var(--border);transition:color .1s,transform .1s;line-height:1;padding:2px}
-.star-btn.lit{color:var(--star)}
-.star-btn:hover{transform:scale(1.15)}
-
-.comment-fc{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);background:transparent;outline:none;resize:none;min-height:80px;line-height:1.6;transition:border-color .15s}
-.comment-fc:focus{border-color:var(--br)}
+.pg{padding:18px 16px 32px}
+.pg-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:5px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
 .fg{margin-bottom:16px}
+.fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.fl span{color:var(--br);margin-left:2px}
+.fc{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;transition:border-color .15s}
+.fc:focus{border-color:var(--br)}
+textarea.fc{resize:none;min-height:90px;line-height:1.6}
+.fc::placeholder{color:rgba(0,0,0,.28)}
 
-.team-actions{display:flex;gap:8px;margin-top:18px}
-.btn-sub{flex:1;padding:14px;background:var(--br);color:var(--bg);border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-sub:disabled{opacity:.55;cursor:not-allowed}
-.btn-sub:hover:not(:disabled){background:#712B13}
-.btn-del{width:48px;flex-shrink:0;border:1px solid var(--border);background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s,border-color .15s}
-.btn-del:hover{background:var(--r-l);color:var(--r);border-color:var(--r-l)}
-.btn-del.armed{background:var(--r);color:#fff;border-color:var(--r)}
+/* Star rating — radio based, same pattern as staff-review.html */
+.stars{display:flex;gap:6px;flex-direction:row-reverse;justify-content:flex-end}
+.stars input{display:none}
+.stars label{cursor:pointer;font-size:32px;color:#d1cfc9;transition:color .15s}
+.stars label:hover,.stars label:hover~label,.stars input:checked~label{color:#E8A020}
 
-.team-meta{font-size:11px;color:var(--muted);margin-top:10px}
+/* Talent card */
+.talent-card{background:var(--white);border-radius:12px;padding:16px;margin-bottom:14px}
+.talent-card-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--br);flex-shrink:0}
+.talent-name{font-size:15px;font-weight:500}
+.talent-cat{font-size:12px;color:var(--muted);margin-top:1px}
 
-.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-.log-empty{text-align:center;padding:28px 20px;color:var(--muted);font-size:13px}
+/* Per-card submit */
+.card-actions{display:flex;gap:8px;margin-top:12px}
+.btn-card-sub{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;background:var(--br);color:var(--bg)}
+.btn-card-sub:disabled{opacity:.6;cursor:not-allowed}
+
+/* Submitted state */
+.submitted-banner{background:var(--g-l);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-top:4px}
+.submitted-banner svg{width:18px;height:18px;stroke:var(--g);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.submitted-banner-text{flex:1;font-size:13px;color:#2d5a0e;font-weight:500}
+.submitted-banner-stars{font-size:15px;letter-spacing:1px;margin-left:auto}
+.submitted-actions{display:flex;gap:8px;margin-top:8px}
+.btn-edit-sub{flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;background:var(--white);color:var(--muted)}
+.btn-remove-sub{flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;background:#fff5f3;color:#c0392b}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -64,231 +67,210 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 </div>
 
-<div class="pg" id="pg-rate">
+<div class="pg" id="review-wrap">
   <div class="pg-title">Rate Your Experience</div>
   <div class="pg-sub">Share how your session went — your feedback goes directly to the talent.</div>
-
-  <div id="talent-list"><div class="log-empty">Loading talents…</div></div>
+  <div id="talent-list"><div style="font-size:13px;color:var(--muted);padding:10px 0">Loading talents…</div></div>
 </div>
 
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-const SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
-const KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
+var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
+var KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
-async function api(path, method, body) {
-  const h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
-  const r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
-  if(r.status===204) return null;
-  const json=await r.json().catch(()=>null);
+var inIframe = (window.self !== window.top);
+if (inIframe) document.getElementById('page-hdr').style.display = 'none';
+
+var me = JSON.parse(localStorage.getItem('bc_me') || 'null');
+if (!me) { location.href = '/index.html'; throw new Error(); }
+
+// Prop comes from URL param (passed by guest.html iframe) or fallback to me.prop
+var urlProp = new URLSearchParams(window.location.search).get('prop') || me.prop || me.property_name || null;
+
+if (document.getElementById('hdr-name')) document.getElementById('hdr-name').textContent = me.name || 'Guest';
+if (document.getElementById('hdr-prop')) document.getElementById('hdr-prop').textContent = urlProp || 'Banyan Circle';
+
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(function(){t.style.display='none';},2500); }
+
+async function api(path, method, body){
+  var h={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Accept:'application/json',Prefer:'return=representation'};
+  var r=await fetch(SB+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined});
+  if(r.status===204)return null;
+  var json=await r.json().catch(function(){return null;});
   if(!r.ok) throw new Error((json&&(json.message||json.hint||json.error))||('HTTP '+r.status));
   return json;
 }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
-const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
 
-// Auth
-const me = JSON.parse(localStorage.getItem('bc_me')||'null');
-if(!me){ location.href='/index.html'; throw new Error('No auth'); }
+var ini = function(n){ return (n||'').split(' ').map(function(x){return x[0];}).join('').slice(0,2).toUpperCase()||'?'; };
+function starStr(n){ var s=''; for(var i=0;i<5;i++) s+=(i<n?'★':'☆'); return s; }
+if (document.getElementById('hdr-av')) document.getElementById('hdr-av').textContent = ini(me.name||'G');
 
-const urlProp = new URLSearchParams(location.search).get('prop');
-const myProp = urlProp || me.prop || me.property_name || '';
+var talentData = [];
 
-const inIframe = (window.self !== window.top);
-if(inIframe) document.getElementById('page-hdr').style.display='none';
+// ── Persistent review store (survives refresh) — same approach as staff-review.html ──
+var STORE_KEY = 'bc_talent_ratings_' + (urlProp || 'global') + '_' + (me.id || me.name || 'guest');
 
-if(document.getElementById('hdr-name')) document.getElementById('hdr-name').textContent = me.name || 'Guest';
-if(document.getElementById('hdr-prop')) document.getElementById('hdr-prop').textContent = myProp || 'Banyan Circle';
-if(document.getElementById('hdr-av'))  document.getElementById('hdr-av').textContent  = ini(me.name||'G');
-
-const talentsById = {};
-const ratingsByTalent = {}; // talent_id -> {id, rating, review, created_at}
-const starValues = {};      // talent_id -> currently selected star value (in-memory, per card)
-
-async function fetchTalents(){
-  const rows = await api('/rest/v1/talents?select=id,name,venues,category&order=name') || [];
-  const norm = s => (s||'').trim().toLowerCase();
-  const guestProp = (myProp||'').trim();
-  const guestPropNorm = norm(guestProp);
-  return guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.some(v=>norm(v)===guestPropNorm)) : rows;
+function getSubmitted() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function setSubmitted(obj) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch(e) {}
+}
+function getSubmittedById(id) { return getSubmitted()[String(id)] || null; }
+function saveSubmittedById(id, val) {
+  var obj = getSubmitted(); obj[String(id)] = val; setSubmitted(obj);
+}
+function deleteSubmittedById(id) {
+  var obj = getSubmitted(); delete obj[String(id)]; setSubmitted(obj);
 }
 
-async function fetchMyRatings(){
-  if(!me.id) return [];
-  return await api('/rest/v1/talent_ratings?guest_id=eq.'+me.id+'&order=created_at.desc') || [];
-}
-
-async function init(){
-  const el = document.getElementById('talent-list');
-  try{
-    const [talents, ratings] = await Promise.all([fetchTalents(), fetchMyRatings()]);
-
-    ratings.forEach(r => { ratingsByTalent[r.talent_id] = r; });
-
-    if(!talents.length){
-      el.innerHTML = (myProp||'').trim()
-        ? '<div class="log-empty">No talents are currently assigned to '+myProp+'.</div>'
-        : '<div class="log-empty">No talents found</div>';
-      return;
-    }
-
-    talents.forEach(t => {
-      talentsById[t.id] = t;
-      starValues[t.id] = ratingsByTalent[t.id] ? ratingsByTalent[t.id].rating : 0;
-    });
-
-    renderList(talents);
-  } catch(e){
-    el.innerHTML = '<div class="log-empty">Could not load talents</div>';
-  }
-}
-
-function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
-
-function starsHtml(talentId){
-  const v = starValues[talentId] || 0;
-  let html = '';
-  for(let i=1;i<=5;i++){
-    html += `<button type="button" class="star-btn${i<=v?' lit':''}" data-v="${i}" onclick="setStar(${talentId},${i})">★</button>`;
-  }
-  return html;
-}
-
-function renderList(talents){
-  const el = document.getElementById('talent-list');
-  el.innerHTML = talents.map(t => {
-    const rated = ratingsByTalent[t.id];
-    const roleSub = t.category ? `<div class="team-role">${t.category}</div>` : '';
-    const metaLine = rated ? `<div class="team-meta">Last updated ${fmtDate(rated.updated_at || rated.created_at)}</div>` : '';
-    const delBtn = rated ? `
-      <button type="button" class="btn-del" title="Delete rating" onclick="deleteRating(${t.id})">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      </button>` : '';
-
-    return `
-      <div class="team-item" id="ti-${t.id}">
-        <div class="team-head">
-          <div class="team-avatar">${ini(t.name)}</div>
-          <div>
-            <div class="team-name">${t.name}</div>
-            ${roleSub}
-          </div>
-        </div>
-
-        <label class="fl">Your rating <span class="req">*</span></label>
-        <div class="stars-input" id="stars-${t.id}">${starsHtml(t.id)}</div>
-
-        <div class="fg">
-          <label class="fl">Comment <span style="font-weight:400">(optional)</span></label>
-          <textarea class="comment-fc" id="review-${t.id}" placeholder="What stood out about ${t.name}?">${rated && rated.review ? rated.review : ''}</textarea>
-        </div>
-
-        <div class="team-actions">
-          <button class="btn-sub" id="submit-${t.id}" onclick="submitRating(${t.id})" ${starValues[t.id] ? '' : 'disabled'}>${rated ? 'Update review' : 'Submit review'}</button>
-          ${delBtn}
-        </div>
-        ${metaLine}
-      </div>`;
-  }).join('');
-}
-
-function setStar(talentId, v){
-  starValues[talentId] = v;
-  document.querySelectorAll('#stars-'+talentId+' .star-btn').forEach(btn=>{
-    btn.classList.toggle('lit', +btn.dataset.v <= v);
-  });
-  const btn = document.getElementById('submit-'+talentId);
-  if(btn) btn.disabled = false;
-}
-
-async function submitRating(talentId){
-  const t = talentsById[talentId];
-  const starValue = starValues[talentId];
-  if(!t || !starValue){ toast('Please choose a star rating'); return; }
-  const btn = document.getElementById('submit-'+talentId);
-  const rated = ratingsByTalent[talentId];
-  const isEdit = !!rated;
-  btn.disabled = true; btn.textContent = isEdit ? 'Updating…' : 'Submitting…';
-  const review = (document.getElementById('review-'+talentId).value || '').trim() || null;
-  try{
-    let savedId = rated ? rated.id : null;
-    let createdAt = rated ? rated.created_at : new Date().toISOString();
-    const updatedAt = new Date().toISOString();
-    if(isEdit){
-      await api('/rest/v1/talent_ratings?id=eq.'+rated.id,'PATCH',{
-        rating: starValue,
-        review,
-        updated_at: updatedAt
+async function loadTalents(){
+  try {
+    var rows = await api('/rest/v1/talents?select=id,name,venues,category&order=name') || [];
+    // If we know the guest's property, only show talents assigned to it
+    if (urlProp) {
+      var norm = function(s){ return (s||'').trim().toLowerCase(); };
+      var propNorm = norm(urlProp);
+      rows = rows.filter(function(t){
+        return Array.isArray(t.venues) && t.venues.some(function(v){ return norm(v)===propNorm; });
       });
-    } else {
-      const inserted = await api('/rest/v1/talent_ratings','POST',{
-        talent_id: t.id,
-        talent_name: t.name,
-        guest_name: me.name,
-        guest_id: me.id||null,
-        property_name: me.prop||null,
-        rating: starValue,
-        review,
-        created_at: createdAt
-      });
-      savedId = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
     }
-    ratingsByTalent[talentId] = {
-      id: savedId, talent_id: talentId, talent_name: t.name,
-      rating: starValue, review, created_at: createdAt, updated_at: updatedAt
-    };
-    renderList(Object.values(talentsById));
-    toast(isEdit ? `Updated your review for ${t.name}` : `Saved your review for ${t.name}`);
+    talentData = rows;
+    renderAll();
   } catch(e){
-    toast('Error: '+e.message);
-    btn.disabled=false; btn.textContent = isEdit ? 'Update review' : 'Submit review';
+    document.getElementById('talent-list').innerHTML = '<div style="font-size:13px;color:var(--muted)">Could not load talents: ' + (e.message||'Please try again') + '</div>';
   }
 }
 
-async function deleteRating(talentId){
-  const rated = ratingsByTalent[talentId];
-  if(!rated) return;
-  const btn = document.querySelector('#ti-'+talentId+' .btn-del');
-
-  // Native confirm() dialogs are frequently suppressed inside embedded
-  // webviews/iframes, which silently blocks the delete. Use an inline
-  // two-tap confirm instead: first tap arms it, second tap (within 4s) deletes.
-  if(btn && btn.dataset.armed !== 'true'){
-    btn.dataset.armed = 'true';
-    btn.classList.add('armed');
-    btn.title = 'Tap again to confirm delete';
-    clearTimeout(btn._armTimer);
-    btn._armTimer = setTimeout(()=>{
-      btn.dataset.armed = 'false';
-      btn.classList.remove('armed');
-      btn.title = 'Delete rating';
-    }, 4000);
-    toast('Tap the delete icon again to confirm');
+function renderAll(){
+  var el = document.getElementById('talent-list');
+  if(!talentData.length){
+    el.innerHTML='<div style="font-size:13px;color:var(--muted)">' + (urlProp ? 'No talents are currently assigned to ' + urlProp + '.' : 'No talents found.') + '</div>';
     return;
   }
-  if(btn){
-    clearTimeout(btn._armTimer);
-    btn.disabled = true;
+  el.innerHTML = talentData.map(function(t){ return renderCard(t); }).join('');
+}
+
+function renderCard(t){
+  var initials = ini(t.name);
+  var firstName = t.name ? t.name.split(' ')[0] : 'them';
+  var sub = getSubmittedById(t.id);
+
+  var cardTop = '<div class="talent-card" id="card-' + t.id + '">' +
+    '<div class="talent-card-hdr">' +
+      '<div class="avatar">' + initials + '</div>' +
+      '<div><div class="talent-name">' + t.name + '</div>' + (t.category ? '<div class="talent-cat">' + t.category + '</div>' : '') + '</div>' +
+    '</div>';
+
+  if(sub){
+    // Submitted view — show summary + edit / remove
+    return cardTop +
+      '<div class="submitted-banner">' +
+        '<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>' +
+        '<div class="submitted-banner-text">Rating submitted</div>' +
+        '<div class="submitted-banner-stars" style="color:#E8A020">' + starStr(sub.rating) + '</div>' +
+      '</div>' +
+      (sub.review ? '<div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;font-style:italic">"' + sub.review + '"</div>' : '') +
+      '<div class="submitted-actions">' +
+        '<button class="btn-edit-sub" onclick="editCard(\'' + t.id + '\')">Edit</button>' +
+        '<button class="btn-remove-sub" onclick="removeCard(\'' + t.id + '\')">Remove</button>' +
+      '</div>' +
+    '</div>';
   }
-  try{
-    await api('/rest/v1/talent_ratings?id=eq.'+rated.id, 'DELETE');
-    delete ratingsByTalent[talentId];
-    starValues[talentId] = 0;
-    renderList(Object.values(talentsById));
-    toast('Rating deleted');
+
+  // Unsubmitted form view
+  var stars = [5,4,3,2,1].map(function(v){
+    return '<input type="radio" name="star-' + t.id + '" id="s' + t.id + '-' + v + '" value="' + v + '"/>' +
+           '<label for="s' + t.id + '-' + v + '" title="' + v + ' star' + (v>1?'s':'') + '">&#9733;</label>';
+  }).join('');
+
+  return cardTop +
+    '<div class="fg" style="margin-bottom:10px">' +
+      '<label class="fl">Your rating<span>*</span></label>' +
+      '<div class="stars" id="stars-' + t.id + '">' + stars + '</div>' +
+    '</div>' +
+    '<div class="fg" style="margin-bottom:0">' +
+      '<label class="fl">Comment <span style="color:var(--muted);font-weight:400">(optional)</span></label>' +
+      '<textarea class="fc" id="comment-' + t.id + '" placeholder="What stood out about ' + firstName + '?"></textarea>' +
+    '</div>' +
+    '<div class="card-actions">' +
+      '<button class="btn-card-sub" id="cbtn-' + t.id + '" onclick="submitCard(\'' + t.id + '\')">Submit rating</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function reRenderCard(id){
+  var t = talentData.find(function(x){ return String(x.id)===String(id); });
+  if(!t) return;
+  var existing = document.getElementById('card-' + id);
+  if(!existing) return;
+  existing.outerHTML = renderCard(t);
+}
+
+async function submitCard(id){
+  var checked = document.querySelector('input[name="star-' + id + '"]:checked');
+  if(!checked){ toast('Please select a star rating'); return; }
+  var rating  = parseInt(checked.value);
+  var review = (document.getElementById('comment-' + id).value||'').trim() || null;
+  var t = talentData.find(function(x){ return String(x.id)===String(id); });
+
+  var btn = document.getElementById('cbtn-' + id);
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  try {
+    var entry = {
+      talent_id:     t.id,
+      talent_name:   t.name,
+      rating:        rating,
+      review:        review,
+      guest_name:    me.name,
+      guest_id:      me.id||null,
+      property_name: urlProp || null,
+      created_at:    new Date().toISOString()
+    };
+    var result = await api('/rest/v1/talent_ratings', 'POST', entry);
+    var ratingId = result && result[0] && result[0].id;
+    saveSubmittedById(id, { rating: rating, review: review, ratingId: ratingId });
+    reRenderCard(id);
+    toast('Rating saved!');
   } catch(e){
-    toast('Could not delete: '+e.message);
-    if(btn){
-      btn.disabled = false;
-      btn.dataset.armed = 'false';
-      btn.classList.remove('armed');
-    }
+    btn.disabled = false; btn.textContent = 'Submit rating';
+    toast('Error: ' + (e.message||'Please try again'));
   }
 }
 
-init();
+function editCard(id){
+  // Restore form pre-filled with previous values
+  var sub = getSubmittedById(id);
+  deleteSubmittedById(id);
+  reRenderCard(id);
+  // Pre-fill stars
+  if(sub && sub.rating){
+    var radio = document.getElementById('s' + id + '-' + sub.rating);
+    if(radio) radio.checked = true;
+  }
+  // Pre-fill comment
+  if(sub && sub.review){
+    var ta = document.getElementById('comment-' + id);
+    if(ta) ta.value = sub.review;
+  }
+}
+
+async function removeCard(id){
+  var sub = getSubmittedById(id);
+  if(sub && sub.ratingId){
+    try {
+      await api('/rest/v1/talent_ratings?id=eq.' + sub.ratingId, 'DELETE');
+    } catch(e){ /* ignore if already gone */ }
+  }
+  deleteSubmittedById(id);
+  reRenderCard(id);
+  toast('Rating removed');
+}
+
+loadTalents();
 </script>
 </body>
 </html>
