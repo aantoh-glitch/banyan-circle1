@@ -132,8 +132,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .calendar-container{background:var(--bg);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;margin-bottom:12px}
 .calendar-header{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px 24px;border-bottom:1px solid var(--border)}
 .calendar-header-row1{display:flex;align-items:center;justify-content:space-between;width:100%}
-.cal-nav-btn{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s}
-.cal-nav-btn:hover{background:var(--bg);border-color:var(--br);color:var(--br)}
+.cal-nav-btn{width:32px;height:32px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-nav-btn:hover{background:var(--bg);color:var(--br)}
 .cal-month-label{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:var(--text)}
 .calendar-legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
@@ -149,9 +149,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .day-cell.busy{background:#FCEBEB;color:#A32D2D}
 .day-cell.available{background:var(--g-l);color:#27500A}
 .day-cell.today-ring{background:var(--br);color:#fff}
-.day-cell.today-ring .day-num,.day-cell.today-ring .day-status-lbl{color:#fff}
+.day-cell.today-ring .day-num{color:#fff}
 .day-num{font-size:13px;font-weight:500}
-.day-status-lbl{font-size:8px;font-weight:500}
 
 /* MODAL SHEET */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
@@ -317,8 +316,8 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
       </div>
       <div class="calendar-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#FCEBEB;border:1px solid #E57373"></div>Busy</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--g-l);border:1px solid #86C860"></div>Available</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--white);border:1px solid var(--border)"></div>Unmarked</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a8dfc0;border:1px solid #145c37"></div>Booked</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
       </div>
     </div>
     <div class="calendar-grid">
@@ -680,8 +679,7 @@ async function renderSchedule(){
     const e=scheduleData[ds];const st=(e&&e.status)||'';
     const cls='day-cell'+(st==='booked'?' booked':st==='busy'?' busy':st==='available'?' available':'');
     const isT=ds===today;
-    let lbl=(st==='booked')?'<div class="day-status-lbl">Booked</div>':(st==='busy')?'<div class="day-status-lbl">Busy</div>':st==='available'?'<div class="day-status-lbl">Free</div>':'';
-    h+='<div class="'+cls+(isT?' today-ring':'')+'" onclick="openDayModal(\''+ds+'\')"><div class="day-num">'+d+'</div>'+lbl+'</div>';
+    h+='<div class="'+cls+(isT?' today-ring':'')+'" onclick="openDayModal(\''+ds+'\')"><div class="day-num">'+d+'</div></div>';
   }
   grid.innerHTML=h;
 }
