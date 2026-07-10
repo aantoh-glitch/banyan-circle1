@@ -34,9 +34,9 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;just
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.key{height:64px;border-radius:14px;border:1.5px solid var(--border);background:var(--white);font-size:24px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
-.key:active,.key:focus{background:var(--br-l);border-color:var(--br);transform:scale(.95);outline:none}
-.key.ghost{border:none;background:none;cursor:default;pointer-events:none}
+.key{height:64px;border-radius:14px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);background:var(--bg);font-size:24px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
+.key:active,.key:focus{background:var(--br-l);transform:scale(.95);outline:none}
+.key.ghost{border:none;box-shadow:none;background:none;cursor:default;pointer-events:none}
 
 .pin-err{font-size:13px;color:#A32D2D;margin-top:16px;min-height:18px;transition:opacity .2s}
 .pin-err:empty{opacity:0}
