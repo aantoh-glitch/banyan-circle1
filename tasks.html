@@ -48,7 +48,7 @@ body.staff-mode .staff-shell{display:flex}
 .pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
 
 /* ── Cards / Tables ── */
-.card{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card{background:var(--white);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:20px;margin-bottom:16px}
 .card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
@@ -61,7 +61,7 @@ body.staff-mode .staff-shell{display:flex}
 .btn-p{padding:10px 18px;background:var(--br);color:#f3eee8;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:hover{background:#712B13}
 .btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{border-color:var(--br);color:var(--br)}
 .btn-del{padding:5px 11px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
@@ -83,20 +83,20 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 /* ── Preset chips ── */
 .preset-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.preset-chip{padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
+.preset-chip{padding:5px 12px;border-radius:999px;font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
 .preset-chip:hover{border-color:var(--br);color:var(--br);background:var(--br-l)}
 .preset-chip.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
 .preset-chip.preset-bundle{border-color:var(--br);color:var(--br)}
 
 /* ── KPI row ── */
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-.kpi{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px 20px}
+.kpi{background:var(--white);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:16px 20px}
 .kpi-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .kpi-value{font-size:28px;font-weight:500;font-family:'Playfair Display',serif}
 
 /* ── Filters bar ── */
 .filters-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.filter-chip{padding:6px 14px;border-radius:999px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
+.filter-chip{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
 .filter-chip:hover{border-color:var(--br);color:var(--br)}
 .filter-chip.on{background:#222;color:#f3eee8;border-color:#222}
 .filter-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
@@ -122,7 +122,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .bundle-progress{font-size:11px;color:var(--muted);margin-top:2px}
 
 /* ── Staff task cards (mobile/staff view) ── */
-.task-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
+.task-card{background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:12px;padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
 .task-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
 .task-card.pri-high::before{background:#e74c3c}
 .task-card.pri-medium::before{background:#f39c12}
@@ -411,7 +411,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:22px;letter-spacing:8px;text-align:center;font-family:inherit;outline:none;color:var(--text)"/>
     <div id="pin-error" style="color:var(--r);font-size:12px;margin-top:6px;display:none">Incorrect PIN. Try again.</div>
     <div style="display:flex;gap:10px;margin-top:18px">
-      <button onclick="closePinModal()" style="flex:1;padding:12px;background:var(--white);border:1px solid var(--border);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="closePinModal()" style="flex:1;padding:12px;background:var(--white);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit">Cancel</button>
       <button onclick="confirmPin()" style="flex:1;padding:12px;background:var(--r);color:#f3eee8;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Delete</button>
     </div>
   </div>
