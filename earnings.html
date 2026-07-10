@@ -119,6 +119,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   font-size:12px;font-weight:500;
   background:var(--bg);color:var(--text);
   border:none;border-radius:999px;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);
   padding:7px 14px;cursor:pointer;font-family:inherit;
   white-space:nowrap;margin:0 20px 16px;
   width:fit-content;
@@ -470,14 +471,6 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
     <input type="date" id="range-to" onchange="onCustomChange()" min=""/>
   </div>
 
-  <!-- DOWNLOAD -->
-  <div style="display:flex;align-items:center;gap:8px;margin:0 20px 16px;">
-    <span style="font-size:12px;font-weight:500;color:var(--text);font-family:inherit;">Download PDF</span>
-    <button class="dl-btn" onclick="downloadPDF()" style="margin:0;padding:5px 7px;">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    </button>
-  </div>
-
   <!-- KPI ROW -->
   <div class="kpi-row">
     <div class="kpi-card positive">
@@ -501,6 +494,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
       <button class="ftab" id="ftab-positive" onclick="setFilter('positive')">Income</button>
       <button class="ftab" id="ftab-negative" onclick="setFilter('negative')">Expense</button>
     </div>
+    <button class="dl-btn" onclick="downloadPDF()" style="margin:0;padding:8px;border-radius:50%;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
     <button class="add-btn" id="add-entry-btn" onclick="openAddSheet()" style="display:none">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Entry
