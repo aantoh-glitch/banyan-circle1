@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB;--star:#C8A84B}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.14);--bg:#f3eee8;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB;--star:#C8A84B}
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 .hdr{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
@@ -16,56 +16,41 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .hdr-info{flex:1}
 .hdr-name{font-size:15px;font-weight:500}
 .hdr-prop{font-size:12px;color:var(--muted)}
-.pg{padding:20px 16px 80px;flex:1}
+.pg{padding:20px 16px 60px;flex:1}
 .pg-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
-.pg-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
-.card{background:var(--white);border-radius:12px;padding:18px;margin-bottom:14px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+
+/* Each talent is its own inline review block, stacked one after another */
+.team-item{padding:22px 0;border-top:1px solid var(--border)}
+.team-item:first-child{border-top:none;padding-top:0}
+.team-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.team-avatar{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
+.team-name{font-size:15px;font-weight:600}
+.team-role{font-size:13px;color:var(--muted);margin-top:1px}
+
 .fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px}
-.fc{width:100%;padding:12px 14px;border:none;border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;transition:border-color .15s}
-.fc:focus{border-color:var(--br)}
-textarea.fc{resize:none;min-height:90px;line-height:1.6}
-.fg{margin-bottom:16px}
+.req{color:var(--r)}
 
-/* Talent list — doubles as the review list once rated (staff-review style boxes) */
-.talent-card{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--white);border:none;border-radius:12px;cursor:pointer;transition:all .15s;margin-bottom:10px}
-.talent-card:hover{background:var(--br-l)}
-.talent-card.selected{background:var(--br-l)}
-.talent-av{width:38px;height:38px;border-radius:50%;background:var(--br-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--br);flex-shrink:0}
-.talent-info{flex:1;min-width:0}
-.talent-name{font-size:14px;font-weight:600}
-.talent-cat{font-size:12px;color:var(--muted);margin-top:1px}
-.card-stars{font-size:14px;letter-spacing:1px;color:var(--star);margin-top:6px}
-.card-review{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic;line-height:1.5}
-.card-meta{font-size:11px;color:var(--muted);margin-top:5px}
-.card-hint{font-size:12px;color:var(--muted);margin-top:6px}
-
-/* Trailing icon area on each card */
-.card-trailing{flex-shrink:0;display:flex;align-items:center}
-.log-btn{width:28px;height:28px;border-radius:8px;border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s}
-.log-btn:hover{background:var(--br-l);color:var(--br)}
-.log-btn.del:hover{background:var(--r-l);color:var(--r)}
-
-/* Star rating */
-.stars-input{display:flex;gap:6px;margin:4px 0 8px}
-.star-btn{font-size:34px;background:none;border:none;cursor:pointer;color:var(--border);transition:color .1s,transform .1s;line-height:1;padding:2px}
+.stars-input{display:flex;gap:6px;margin:0 0 18px}
+.star-btn{font-size:30px;background:none;border:none;cursor:pointer;color:var(--border);transition:color .1s,transform .1s;line-height:1;padding:2px}
 .star-btn.lit{color:var(--star)}
 .star-btn:hover{transform:scale(1.15)}
-.star-label{font-size:13px;color:var(--muted);margin-top:4px;min-height:18px}
 
-/* Submit */
-.btn-sub{width:100%;padding:15px;background:var(--br);color:var(--bg);border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-sub:disabled{opacity:.6;cursor:not-allowed}
+.comment-fc{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);background:transparent;outline:none;resize:none;min-height:80px;line-height:1.6;transition:border-color .15s}
+.comment-fc:focus{border-color:var(--br)}
+.fg{margin-bottom:16px}
+
+.team-actions{display:flex;gap:8px;margin-top:18px}
+.btn-sub{flex:1;padding:14px;background:var(--br);color:var(--bg);border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-sub:disabled{opacity:.55;cursor:not-allowed}
 .btn-sub:hover:not(:disabled){background:#712B13}
+.btn-del{width:48px;flex-shrink:0;border:1px solid var(--border);background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)}
+.btn-del:hover{background:var(--r-l);color:var(--r);border-color:var(--r-l)}
 
-/* Success */
-.success{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center}
-.s-icon{width:72px;height:72px;border-radius:50%;background:var(--g-l);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-.s-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px}
-.s-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto 24px}
-.btn-again{padding:11px 26px;background:var(--white);border:none;border-radius:999px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--muted)}
+.team-meta{font-size:11px;color:var(--muted);margin-top:10px}
 
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap}
-.log-empty{text-align:center;padding:28px 20px;color:var(--muted);font-size:13px;background:var(--white);border-radius:12px}
+.log-empty{text-align:center;padding:28px 20px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -80,46 +65,9 @@ textarea.fc{resize:none;min-height:90px;line-height:1.6}
 
 <div class="pg" id="pg-rate">
   <div class="pg-title">Rate Your Experience</div>
-  <div class="pg-sub">Share how your session went — your feedback goes directly to the talent. Already rated someone? Tap their card to edit, or use the delete icon.</div>
+  <div class="pg-sub">Share how your session went — your feedback goes directly to the talent.</div>
 
-  <!-- Talent list: shows the rating inline once given -->
-  <div class="fg">
-    <label class="fl">Who did you work with?</label>
-    <div id="talent-list"><div class="log-empty">Loading talents…</div></div>
-  </div>
-
-  <!-- Star rating form (shown after tapping a card) -->
-  <div id="rating-section" style="display:none">
-    <div class="card">
-      <div style="font-size:14px;font-weight:500;margin-bottom:14px" id="rating-talent-name">Rate your session</div>
-      <div class="fg">
-        <label class="fl">Overall rating</label>
-        <div class="stars-input" id="stars-input">
-          <button class="star-btn" data-v="1" onclick="setStar(1)">★</button>
-          <button class="star-btn" data-v="2" onclick="setStar(2)">★</button>
-          <button class="star-btn" data-v="3" onclick="setStar(3)">★</button>
-          <button class="star-btn" data-v="4" onclick="setStar(4)">★</button>
-          <button class="star-btn" data-v="5" onclick="setStar(5)">★</button>
-        </div>
-        <div class="star-label" id="star-label">Tap a star to rate</div>
-      </div>
-      <div class="fg">
-        <label class="fl">Your review <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-        <textarea class="fc" id="review-text" placeholder="How was the experience? What stood out?"></textarea>
-      </div>
-      <button class="btn-sub" id="submit-btn" onclick="submitRating()" disabled>Submit Rating</button>
-    </div>
-  </div>
-</div>
-
-<!-- SUCCESS STATE -->
-<div class="pg success" id="pg-success" style="display:none">
-  <div class="s-icon">
-    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
-  </div>
-  <div class="s-title">Thank you!</div>
-  <div class="s-sub" id="success-msg">Your rating has been submitted. It helps us celebrate our talent.</div>
-  <button class="btn-again" onclick="resetForm()">Back to the list</button>
+  <div id="talent-list"><div class="log-empty">Loading talents…</div></div>
 </div>
 
 </div>
@@ -139,20 +87,14 @@ async function api(path, method, body) {
 }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2400); }
 const ini=n=>(n||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
-function starStr(n){ let s=''; for(let i=0;i<5;i++) s += i<n ? '★' : '☆'; return s; }
-function fmtLogDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
 
 // Auth
 const me = JSON.parse(localStorage.getItem('bc_me')||'null');
 if(!me){ location.href='/index.html'; throw new Error('No auth'); }
 
-// The parent (guest.html) passes the guest's property via ?prop= when opening this
-// sheet in an iframe. Prefer that over localStorage since storage isn't guaranteed
-// to be shared/available inside the iframe context.
 const urlProp = new URLSearchParams(location.search).get('prop');
 const myProp = urlProp || me.prop || me.property_name || '';
 
-// Iframe-aware: hide internal header when inside the sheet
 const inIframe = (window.self !== window.top);
 if(inIframe) document.getElementById('page-hdr').style.display='none';
 
@@ -160,13 +102,10 @@ if(document.getElementById('hdr-name')) document.getElementById('hdr-name').text
 if(document.getElementById('hdr-prop')) document.getElementById('hdr-prop').textContent = myProp || 'Banyan Circle';
 if(document.getElementById('hdr-av'))  document.getElementById('hdr-av').textContent  = ini(me.name||'G');
 
-let selectedTalent = null;
-let starValue = 0;
-let currentRatingId = null; // supabase row id of the rating being edited, if any
 const talentsById = {};
 const ratingsByTalent = {}; // talent_id -> {id, rating, review, created_at}
+const starValues = {};      // talent_id -> currently selected star value (in-memory, per card)
 
-// --- Data loading ---
 async function fetchTalents(){
   const rows = await api('/rest/v1/talents?select=id,name,venues,category&order=name') || [];
   const norm = s => (s||'').trim().toLowerCase();
@@ -185,7 +124,6 @@ async function init(){
   try{
     const [talents, ratings] = await Promise.all([fetchTalents(), fetchMyRatings()]);
 
-    Object.keys(ratingsByTalent).forEach(k=>delete ratingsByTalent[k]);
     ratings.forEach(r => { ratingsByTalent[r.talent_id] = r; });
 
     if(!talents.length){
@@ -195,106 +133,98 @@ async function init(){
       return;
     }
 
-    Object.keys(talentsById).forEach(k=>delete talentsById[k]);
-    talents.forEach(t => talentsById[t.id] = t);
+    talents.forEach(t => {
+      talentsById[t.id] = t;
+      starValues[t.id] = ratingsByTalent[t.id] ? ratingsByTalent[t.id].rating : 0;
+    });
 
-    renderTalentList(talents);
+    renderList(talents);
   } catch(e){
     el.innerHTML = '<div class="log-empty">Could not load talents</div>';
   }
 }
 
-function renderTalentList(talents){
+function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+
+function starsHtml(talentId){
+  const v = starValues[talentId] || 0;
+  let html = '';
+  for(let i=1;i<=5;i++){
+    html += `<button type="button" class="star-btn${i<=v?' lit':''}" data-v="${i}" onclick="setStar(${talentId},${i})">★</button>`;
+  }
+  return html;
+}
+
+function renderList(talents){
   const el = document.getElementById('talent-list');
   el.innerHTML = talents.map(t => {
     const rated = ratingsByTalent[t.id];
-    const catSub = t.category ? `<div class="talent-cat">${t.category}</div>` : '';
-
-    const body = rated
-      ? `${catSub}
-         <div class="card-stars">${starStr(rated.rating||0)}</div>
-         ${rated.review ? `<div class="card-review">"${rated.review}"</div>` : ''}
-         <div class="card-meta">Rated ${fmtLogDate(rated.created_at)} · tap to edit</div>`
-      : `${catSub}<div class="card-hint">Tap to rate</div>`;
-
-    const trailing = rated
-      ? `<button class="log-btn del" title="Delete rating" onclick="event.stopPropagation(); deleteRating(${rated.id}, ${t.id})">
-           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-         </button>`
-      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="check-${t.id}"><polyline points="20,6 9,17 4,12"/></svg>`;
+    const roleSub = t.category ? `<div class="team-role">${t.category}</div>` : '';
+    const metaLine = rated ? `<div class="team-meta">Last updated ${fmtDate(rated.updated_at || rated.created_at)}</div>` : '';
+    const delBtn = rated ? `
+      <button type="button" class="btn-del" title="Delete rating" onclick="deleteRating(${t.id})">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>` : '';
 
     return `
-      <div class="talent-card" id="tc-${t.id}" onclick="selectTalent(${JSON.stringify(t).replace(/"/g,'&quot;')})">
-        <div class="talent-av">${ini(t.name)}</div>
-        <div class="talent-info">
-          <div class="talent-name">${t.name}</div>
-          ${body}
+      <div class="team-item" id="ti-${t.id}">
+        <div class="team-head">
+          <div class="team-avatar">${ini(t.name)}</div>
+          <div>
+            <div class="team-name">${t.name}</div>
+            ${roleSub}
+          </div>
         </div>
-        <div class="card-trailing">${trailing}</div>
+
+        <label class="fl">Your rating <span class="req">*</span></label>
+        <div class="stars-input" id="stars-${t.id}">${starsHtml(t.id)}</div>
+
+        <div class="fg">
+          <label class="fl">Comment <span style="font-weight:400">(optional)</span></label>
+          <textarea class="comment-fc" id="review-${t.id}" placeholder="What stood out about ${t.name}?">${rated && rated.review ? rated.review : ''}</textarea>
+        </div>
+
+        <div class="team-actions">
+          <button class="btn-sub" id="submit-${t.id}" onclick="submitRating(${t.id})" ${starValues[t.id] ? '' : 'disabled'}>${rated ? 'Update review' : 'Submit review'}</button>
+          ${delBtn}
+        </div>
+        ${metaLine}
       </div>`;
   }).join('');
 }
 
-function selectTalent(t){
-  document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('tc-'+t.id)?.classList.add('selected');
-
-  selectedTalent = t;
-  currentRatingId = null;
-  starValue = 0;
-
-  document.getElementById('rating-talent-name').textContent = 'Rate your session with ' + t.name;
-  document.getElementById('rating-section').style.display = '';
-  document.getElementById('review-text').value = '';
-  document.getElementById('submit-btn').disabled = true;
-  document.getElementById('submit-btn').textContent = 'Submit Rating';
-
-  const rated = ratingsByTalent[t.id];
-  if(rated){
-    currentRatingId = rated.id;
-    starValue = rated.rating;
-    document.getElementById('review-text').value = rated.review||'';
-    document.getElementById('submit-btn').disabled = false;
-    document.getElementById('submit-btn').textContent = 'Update Rating';
-  }
-  renderStars();
-  document.getElementById('star-label').textContent = starValue ? STAR_LABELS[starValue] : 'Tap a star to rate';
-  document.getElementById('rating-section').scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-const STAR_LABELS = ['','Poor','Fair','Good','Very Good','Excellent'];
-function setStar(v){
-  starValue = v;
-  renderStars();
-  document.getElementById('star-label').textContent = STAR_LABELS[v]||'';
-  document.getElementById('submit-btn').disabled = false;
-}
-function renderStars(){
-  document.querySelectorAll('.star-btn').forEach(btn=>{
-    btn.classList.toggle('lit', +btn.dataset.v <= starValue);
+function setStar(talentId, v){
+  starValues[talentId] = v;
+  document.querySelectorAll('#stars-'+talentId+' .star-btn').forEach(btn=>{
+    btn.classList.toggle('lit', +btn.dataset.v <= v);
   });
+  const btn = document.getElementById('submit-'+talentId);
+  if(btn) btn.disabled = false;
 }
 
-async function submitRating(){
-  if(!selectedTalent || !starValue){ toast('Please select a talent and rating'); return; }
-  const btn = document.getElementById('submit-btn');
-  const isEdit = !!currentRatingId;
-  btn.disabled=true; btn.textContent = isEdit ? 'Updating…' : 'Submitting…';
-  const review = document.getElementById('review-text').value.trim()||null;
+async function submitRating(talentId){
+  const t = talentsById[talentId];
+  const starValue = starValues[talentId];
+  if(!t || !starValue){ toast('Please choose a star rating'); return; }
+  const btn = document.getElementById('submit-'+talentId);
+  const rated = ratingsByTalent[talentId];
+  const isEdit = !!rated;
+  btn.disabled = true; btn.textContent = isEdit ? 'Updating…' : 'Submitting…';
+  const review = (document.getElementById('review-'+talentId).value || '').trim() || null;
   try{
-    let savedId = currentRatingId;
-    let createdAt = new Date().toISOString();
+    let savedId = rated ? rated.id : null;
+    let createdAt = rated ? rated.created_at : new Date().toISOString();
+    const updatedAt = new Date().toISOString();
     if(isEdit){
-      await api('/rest/v1/talent_ratings?id=eq.'+currentRatingId,'PATCH',{
+      await api('/rest/v1/talent_ratings?id=eq.'+rated.id,'PATCH',{
         rating: starValue,
         review,
-        updated_at: new Date().toISOString()
+        updated_at: updatedAt
       });
-      createdAt = (ratingsByTalent[selectedTalent.id] && ratingsByTalent[selectedTalent.id].created_at) || createdAt;
     } else {
       const inserted = await api('/rest/v1/talent_ratings','POST',{
-        talent_id: selectedTalent.id,
-        talent_name: selectedTalent.name,
+        talent_id: t.id,
+        talent_name: t.name,
         guest_name: me.name,
         guest_id: me.id||null,
         property_name: me.prop||null,
@@ -304,56 +234,31 @@ async function submitRating(){
       });
       savedId = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
     }
-    // Update in-memory cache so the card reflects it immediately
-    ratingsByTalent[selectedTalent.id] = {
-      id: savedId, talent_id: selectedTalent.id, talent_name: selectedTalent.name,
-      rating: starValue, review, created_at: createdAt
+    ratingsByTalent[talentId] = {
+      id: savedId, talent_id: talentId, talent_name: t.name,
+      rating: starValue, review, created_at: createdAt, updated_at: updatedAt
     };
-    document.getElementById('success-msg').textContent = isEdit
-      ? `Your rating for ${selectedTalent.name} has been updated. Thank you!`
-      : `Your ${starValue}-star rating for ${selectedTalent.name} has been saved. Thank you!`;
-    document.getElementById('pg-rate').style.display='none';
-    document.getElementById('pg-success').style.display='flex';
-    renderTalentList(Object.values(talentsById));
+    renderList(Object.values(talentsById));
+    toast(isEdit ? `Updated your review for ${t.name}` : `Saved your review for ${t.name}`);
   } catch(e){
     toast('Error: '+e.message);
-    btn.disabled=false; btn.textContent = isEdit ? 'Update Rating' : 'Submit Rating';
+    btn.disabled=false; btn.textContent = isEdit ? 'Update review' : 'Submit review';
   }
 }
 
-async function deleteRating(ratingId, talentId){
+async function deleteRating(talentId){
+  const rated = ratingsByTalent[talentId];
+  if(!rated) return;
   if(!confirm('Delete this rating? This cannot be undone.')) return;
   try{
-    await api('/rest/v1/talent_ratings?id=eq.'+ratingId, 'DELETE');
+    await api('/rest/v1/talent_ratings?id=eq.'+rated.id, 'DELETE');
     delete ratingsByTalent[talentId];
-    if(selectedTalent && selectedTalent.id === talentId){
-      currentRatingId = null;
-      starValue = 0;
-      renderStars();
-      document.getElementById('star-label').textContent = 'Tap a star to rate';
-      document.getElementById('review-text').value = '';
-      document.getElementById('submit-btn').disabled = true;
-      document.getElementById('submit-btn').textContent = 'Submit Rating';
-    }
-    renderTalentList(Object.values(talentsById));
+    starValues[talentId] = 0;
+    renderList(Object.values(talentsById));
     toast('Rating deleted');
   } catch(e){
     toast('Error: '+e.message);
   }
-}
-
-function resetForm(){
-  selectedTalent = null;
-  currentRatingId = null;
-  starValue = 0;
-  renderStars();
-  document.getElementById('review-text').value='';
-  document.getElementById('submit-btn').disabled=true;
-  document.getElementById('submit-btn').textContent='Submit Rating';
-  document.getElementById('rating-section').style.display='none';
-  document.querySelectorAll('.talent-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('pg-rate').style.display='';
-  document.getElementById('pg-success').style.display='none';
 }
 
 init();
