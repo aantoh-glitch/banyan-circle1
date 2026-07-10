@@ -44,8 +44,9 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .btn-sub{flex:1;padding:14px;background:var(--br);color:var(--bg);border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-sub:disabled{opacity:.55;cursor:not-allowed}
 .btn-sub:hover:not(:disabled){background:#712B13}
-.btn-del{width:48px;flex-shrink:0;border:1px solid var(--border);background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)}
+.btn-del{width:48px;flex-shrink:0;border:1px solid var(--border);background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:background .15s,color .15s,border-color .15s}
 .btn-del:hover{background:var(--r-l);color:var(--r);border-color:var(--r-l)}
+.btn-del.armed{background:var(--r);color:#fff;border-color:var(--r)}
 
 .team-meta{font-size:11px;color:var(--muted);margin-top:10px}
 
@@ -249,7 +250,28 @@ async function submitRating(talentId){
 async function deleteRating(talentId){
   const rated = ratingsByTalent[talentId];
   if(!rated) return;
-  if(!confirm('Delete this rating? This cannot be undone.')) return;
+  const btn = document.querySelector('#ti-'+talentId+' .btn-del');
+
+  // Native confirm() dialogs are frequently suppressed inside embedded
+  // webviews/iframes, which silently blocks the delete. Use an inline
+  // two-tap confirm instead: first tap arms it, second tap (within 4s) deletes.
+  if(btn && btn.dataset.armed !== 'true'){
+    btn.dataset.armed = 'true';
+    btn.classList.add('armed');
+    btn.title = 'Tap again to confirm delete';
+    clearTimeout(btn._armTimer);
+    btn._armTimer = setTimeout(()=>{
+      btn.dataset.armed = 'false';
+      btn.classList.remove('armed');
+      btn.title = 'Delete rating';
+    }, 4000);
+    toast('Tap the delete icon again to confirm');
+    return;
+  }
+  if(btn){
+    clearTimeout(btn._armTimer);
+    btn.disabled = true;
+  }
   try{
     await api('/rest/v1/talent_ratings?id=eq.'+rated.id, 'DELETE');
     delete ratingsByTalent[talentId];
@@ -257,7 +279,12 @@ async function deleteRating(talentId){
     renderList(Object.values(talentsById));
     toast('Rating deleted');
   } catch(e){
-    toast('Error: '+e.message);
+    toast('Could not delete: '+e.message);
+    if(btn){
+      btn.disabled = false;
+      btn.dataset.armed = 'false';
+      btn.classList.remove('armed');
+    }
   }
 }
 
