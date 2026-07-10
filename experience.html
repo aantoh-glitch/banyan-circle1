@@ -120,6 +120,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .entry-card.open .entry-detail{display:block}
 .entry-card.open .entry-preview{display:none}
 .entry-card .entry-content{white-space:pre-wrap}
+.entry-card.single-line{cursor:default}
+.entry-card.single-line .entry-chev{display:none}
 
 /* ── CONFIRM DIALOG ── */
 .confirm-overlay{
@@ -348,7 +350,7 @@ async function loadSection(section) {
     return;
   }
   el.innerHTML = data.map(e => `
-    <div class="entry-card" onclick="this.classList.toggle('open')">
+    <div class="entry-card" onclick="if(!this.classList.contains('single-line'))this.classList.toggle('open')">
       <div class="entry-top">
         <div class="entry-preview">${esc(e.content || '')}</div>
         <span class="entry-chev">▾</span>
@@ -362,6 +364,12 @@ async function loadSection(section) {
       </div>
     </div>
   `).join('');
+  el.querySelectorAll('.entry-card:not(.empty-state)').forEach(card => {
+    const preview = card.querySelector('.entry-preview');
+    if (preview && preview.scrollWidth <= preview.clientWidth + 1) {
+      card.classList.add('single-line');
+    }
+  });
 }
 
 // ── SUBMIT ENTRY ──

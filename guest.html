@@ -94,6 +94,8 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .exp-entry-detail{display:none;margin-top:8px;line-height:1.6;white-space:pre-wrap}
 .exp-entry.open .exp-entry-detail{display:block}
 .exp-entry.open .exp-entry-preview{display:none}
+.exp-entry.single-line{cursor:default}
+.exp-entry.single-line .exp-entry-chev{display:none}
 .exp-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
 .exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
 @keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -641,7 +643,7 @@ async function expLoadSection(section) {
       el.innerHTML = '<div class="exp-empty">No entries yet.</div>';
     } else {
       el.innerHTML = data.map(function(e){
-        return '<div class="exp-entry" onclick="this.classList.toggle(\'open\')">' +
+        return '<div class="exp-entry" onclick="if(!this.classList.contains(\'single-line\'))this.classList.toggle(\'open\')">' +
           '<div class="exp-entry-top">' +
             '<div class="exp-entry-preview">' + expEsc(e.content||'') + '</div>' +
             '<span class="exp-entry-chev">▾</span>' +
@@ -649,6 +651,12 @@ async function expLoadSection(section) {
           '<div class="exp-entry-detail">' + expEsc(e.content||'') + '</div>' +
         '</div>';
       }).join('');
+      el.querySelectorAll('.exp-entry').forEach(function(card){
+        var preview = card.querySelector('.exp-entry-preview');
+        if (preview && preview.scrollWidth <= preview.clientWidth + 1) {
+          card.classList.add('single-line');
+        }
+      });
     }
   } catch(e) {
     el.innerHTML = '<div class="exp-empty">Could not load entries.</div>';
