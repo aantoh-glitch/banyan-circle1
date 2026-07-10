@@ -41,7 +41,7 @@ textarea.fc{resize:none;min-height:0;height:auto;overflow:hidden;line-height:1.6
 .add-form{background:var(--bg);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:none}
 .add-form.visible{display:block}
 .rule-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0}
-.rule-num{width:22px;height:22px;border-radius:50%;background:var(--br-l);color:var(--br-d);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.rule-num{color:var(--text);font-size:13px;font-weight:600;flex-shrink:0}
 .rule-text{flex:1;font-size:13px;line-height:1.55;color:var(--text)}
 .contact-item{display:flex;align-items:center;gap:10px;padding:11px 0}
 .contact-item:last-child{padding-bottom:0}
@@ -207,7 +207,7 @@ async function renderRules(){
   if(!rules.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>No rules added yet.</div>';return;}
   el.innerHTML=rules.map(function(r,i){
     var delBtn=isAdmin?'<button class="btn-del" data-action="delete-rule" data-id="'+esc(r.id)+'">✕</button>':'';
-    return '<div class="rule-item"><div class="rule-num">'+(i+1)+'</div><div class="rule-text">'+esc(r.rule_text)+'</div>'+delBtn+'</div>';
+    return '<div class="rule-item"><div class="rule-num">'+(i+1)+'.</div><div class="rule-text">'+esc(r.rule_text)+'</div>'+delBtn+'</div>';
   }).join('');
 }
 
