@@ -47,7 +47,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .tbl th{text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg)}
 .tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
-.tbl tr:hover td{background:#fafafa}
 .sl{color:var(--muted);font-size:12px;width:40px}
 .item-name{font-weight:500}
 .qty{font-variant-numeric:tabular-nums}
@@ -61,9 +60,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 
 /* Photo cell wrapper */
 .photo-cell{display:flex;flex-direction:column;align-items:center;gap:5px}
-.dl-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;border:none;background:var(--white);color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;text-decoration:none;box-shadow:0 2px 12px rgba(0,0,0,.07)}
-.dl-btn:hover{border-color:var(--br);color:var(--br)}
-.dl-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
 /* Remove button */
 .btn-remove{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -95,11 +91,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .photo-placeholder:hover{border-color:var(--br)}
 .photo-placeholder svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .photo-placeholder span{font-size:11px;color:var(--muted)}
-
-/* Lightbox */
-.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;cursor:zoom-out}
-.lightbox.on{display:flex}
-.lightbox img{max-width:90vw;max-height:88vh;border-radius:12px;object-fit:contain}
 
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;z-index:999;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
@@ -236,11 +227,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
   </div>
 </div>
 
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <img id="lightbox-img" src="" alt="asset photo"/>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -349,11 +335,7 @@ async function loadAssets() {
         <td>
           ${a.photo_url
             ? `<div class="photo-cell">
-                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>
-                <button class="dl-btn" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')">
-                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Save
-                </button>
+                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')"/>
                </div>`
             : IS_ADMIN
               ? `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.name)}')">
@@ -398,11 +380,7 @@ async function loadRemoved() {
         <td>
           ${a.photo_url
             ? `<div class="photo-cell">
-                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="openLightbox('${a.photo_url}')"/>
-                <button class="dl-btn" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')">
-                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Save
-                </button>
+                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')"/>
                </div>`
             : '<span style="font-size:11px;color:var(--muted)">—</span>'}
         </td>
@@ -535,15 +513,6 @@ async function confirmRemove() {
 
   btn.disabled = false;
   btn.textContent = 'Remove';
-}
-
-// ── Lightbox ──
-function openLightbox(url) {
-  document.getElementById('lightbox-img').src = url;
-  document.getElementById('lightbox').classList.add('on');
-}
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('on');
 }
 
 // ── Helpers ──
