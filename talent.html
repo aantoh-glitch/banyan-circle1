@@ -102,6 +102,8 @@ html,body{height:100%;overscroll-behavior-y:auto;font-family:'DM Sans',sans-seri
 /* FORM ELEMENTS */
 .fc{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;-webkit-appearance:none}
 .fc:focus{border-color:var(--br);outline:none}
+#profile-edit .fc{background:var(--bg);border:none;border-bottom:1.5px solid var(--border);border-radius:0}
+#profile-edit .fc:focus{border-bottom-color:var(--br)}
 textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .fl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .fg{margin-bottom:14px}
@@ -130,7 +132,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 /* SCHEDULE CALENDAR — matches booking.html calendar */
 .calendar-container{background:var(--bg);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden;margin-bottom:12px}
-.calendar-header{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px 24px;border-bottom:1px solid var(--border)}
+.calendar-header{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px 24px}
 .calendar-header-row1{display:flex;align-items:center;justify-content:space-between;width:100%}
 .cal-nav-btn{width:32px;height:32px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s}
 .cal-nav-btn:hover{background:var(--bg);color:var(--br)}
@@ -160,9 +162,9 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
 .time-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .status-toggle{display:flex;gap:8px;margin-bottom:16px}
-.stgl-btn{flex:1;padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
-.stgl-btn.busy-on{background:#FCEBEB;border-color:#E57373;color:#A32D2D}
-.stgl-btn.avail-on{background:var(--g-l);border-color:#86C860;color:#27500A}
+.stgl-btn{flex:1;padding:12px;border-radius:10px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.stgl-btn.busy-on{background:#F3B9B9;color:#8B1F1F}
+.stgl-btn.avail-on{background:var(--g-l);color:#27500A}
 .modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 
 /* MESSAGES */
@@ -867,7 +869,7 @@ showPanel(VALID_PANELS.includes(_hashPanel)?_hashPanel:'profile');
       <div style="font-size:13px;color:var(--muted);text-align:center;padding:20px">Loading…</div>
     </div>
     <div style="margin-top:16px">
-      <button class="btn-sec" onclick="closeDocsModal()">Close</button>
+      <button class="btn-sec" onclick="closeDocsModal()" style="box-shadow:0 2px 12px rgba(0,0,0,.07)">Close</button>
     </div>
   </div>
 </div>
