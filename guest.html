@@ -1390,8 +1390,9 @@ function openRevSheet(sheetId, frameId, title, src) {
   var frame = document.getElementById(frameId);
   // Pass guest's property into staff-review / rating so they can filter by assignment
   var finalSrc = src;
-  if ((frameId === 'staff-frame' || frameId === 'rating-frame') && me && me.prop) {
-    finalSrc = src + '?prop=' + encodeURIComponent(me.prop);
+  var guestProp = me && (me.prop || me.property_name);
+  if ((frameId === 'staff-frame' || frameId === 'rating-frame') && guestProp) {
+    finalSrc = src + '?prop=' + encodeURIComponent(guestProp);
   }
   if (frame.getAttribute('data-src') !== finalSrc) {
     frame.src = finalSrc;
