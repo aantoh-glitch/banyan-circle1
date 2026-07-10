@@ -513,7 +513,6 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
   </div>
 
   <!-- LOG -->
-  <div class="section-lbl" id="log-lbl">Earnings Log</div>
   <div class="log-wrap" id="log-wrap">
     <div class="log-empty">Loading…</div>
   </div>
@@ -1138,11 +1137,6 @@ function renderLog() {
       wrap.parentNode.insertBefore(banner, wrap);
     }
   }
-
-  const lbl = document.getElementById('log-lbl');
-  const fName = currentFilter === 'all' ? 'All Entries' :
-                currentFilter === 'positive' ? 'Income Entries' : 'Expense Entries';
-  lbl.textContent = fName + ' — ' + periodLabel();
 
   if (!entries.length) {
     wrap.innerHTML = '<div class="log-empty">No entries for this period.</div>';
