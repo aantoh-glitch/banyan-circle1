@@ -11,7 +11,7 @@
   --br: #993C1D; --br-l: #FAECE7; --br-dark: #712B13;
   --text: #2C2C2A; --muted: #5F5E5A; --border: rgba(0,0,0,0.1);
   --bg: #f3eee8; --white: #f3eee8;
-  --airbnb: #FF5A5F; --booking: #003580; --blocked: #fde8e8; --blocked-text: #c0392b;
+  --airbnb: #FF5A5F; --booking: #003580; --blocked: #f5a3a3; --blocked-text: #7a1f1f;
   --radius: 12px;
 }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
@@ -71,9 +71,9 @@ body.admin-view .pg-sub { font-size: 13px; color: var(--muted); margin-bottom: 2
 .day-cell:hover:not(.empty):not(.today-cell) { background: var(--bg); }
 .day-cell.empty { cursor: default; pointer-events: none; }
 .day-cell.today-cell { background: var(--br); color: #fff; font-weight: 600; }
-.day-cell.booked { background: #e6f7ef; color: #2d9e6b; font-weight: 600; }
+.day-cell.booked { background: #a8dfc0; color: #145c37; font-weight: 600; }
 .day-cell.blocked { background: var(--blocked); color: var(--blocked-text); font-weight: 500; }
-.day-cell.manual-booked { background: #e6f7ef; color: #2d9e6b; font-weight: 600; }
+.day-cell.manual-booked { background: #a8dfc0; color: #145c37; font-weight: 600; }
 .top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0; align-items: start; }
 .top-row .calendar-container { height: 100%; }
 .top-row .bookings-list { height: 100%; overflow-y: auto; max-height: 520px; }
@@ -160,7 +160,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
 .drp-day-start.drp-day-end { border-radius:6px !important; }
 .drp-hint { font-size:11px; color:var(--muted); margin-top:10px; text-align:center; }
 .drp-footer { display:flex; gap:8px; margin-top:12px; justify-content:flex-end; }
-.drp-day-blocked { background:#fde8e8 !important; color:#c0392b !important; cursor:not-allowed !important; pointer-events:none !important; }
+.drp-day-blocked { background:#f5a3a3 !important; color:#7a1f1f !important; cursor:not-allowed !important; pointer-events:none !important; }
 </style>
 </head>
 <body>
@@ -201,7 +201,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
             </div>
           </div>
           <div class="calendar-legend">
-            <div class="legend-item"><div class="legend-dot" style="background:#e6f7ef;border:1px solid #2d9e6b"></div>Booked</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a8dfc0;border:1px solid #145c37"></div>Booked</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--blocked)"></div>Blocked</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--br)"></div>Today</div>
           </div>
