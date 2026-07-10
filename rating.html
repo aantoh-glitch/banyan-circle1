@@ -157,11 +157,13 @@ async function loadTalents(){
     const el = document.getElementById('talent-list');
     if(!rows.length){ el.innerHTML='<div style="font-size:13px;color:var(--muted)">No talents found</div>'; return; }
     // Filter by guest's property if available; fallback to all
+    const norm = s => (s||'').trim().toLowerCase();
     const guestProp = (myProp||'').trim();
-    const filtered = guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.includes(guestProp)) : rows;
+    const guestPropNorm = norm(guestProp);
+    const filtered = guestProp ? rows.filter(t => Array.isArray(t.venues) && t.venues.some(v=>norm(v)===guestPropNorm)) : rows;
     const display = guestProp ? filtered : rows;
     if(guestProp && !filtered.length){
-      el.innerHTML = '';
+      el.innerHTML = '<div style="font-size:13px;color:var(--muted)">No talents are currently assigned to '+guestProp+'.</div>';
       return;
     }
     el.innerHTML = display.map(t => {
