@@ -86,7 +86,14 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .exp-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .exp-section-title{font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:400;color:var(--text)}
 .exp-entries{display:flex;flex-direction:column;gap:8px}
-.exp-entry{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:13px 15px;font-size:14px;color:var(--text);line-height:1.6}
+.exp-entry{background:var(--white);border-radius:10px;padding:13px 15px;font-size:14px;color:var(--text);line-height:1.6;box-shadow:0 2px 12px rgba(0,0,0,.07);cursor:pointer}
+.exp-entry-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.exp-entry-preview{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.exp-entry-chev{font-size:10px;color:var(--muted);flex-shrink:0;margin-top:3px;transition:transform .2s ease;transform:rotate(0deg);width:14px;text-align:center}
+.exp-entry.open .exp-entry-chev{transform:rotate(180deg)}
+.exp-entry-detail{display:none;margin-top:8px;line-height:1.6;white-space:pre-wrap}
+.exp-entry.open .exp-entry-detail{display:block}
+.exp-entry.open .exp-entry-preview{display:none}
 .exp-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 16px;border:1.5px dashed var(--border);border-radius:10px;background:var(--white)}
 .exp-skeleton{height:52px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;border-radius:10px;animation:expShimmer 1.2s infinite}
 @keyframes expShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -633,7 +640,15 @@ async function expLoadSection(section) {
     if (!data.length) {
       el.innerHTML = '<div class="exp-empty">No entries yet.</div>';
     } else {
-      el.innerHTML = data.map(function(e){ return '<div class="exp-entry">' + expEsc(e.content||'') + '</div>'; }).join('');
+      el.innerHTML = data.map(function(e){
+        return '<div class="exp-entry" onclick="this.classList.toggle(\'open\')">' +
+          '<div class="exp-entry-top">' +
+            '<div class="exp-entry-preview">' + expEsc(e.content||'') + '</div>' +
+            '<span class="exp-entry-chev">▾</span>' +
+          '</div>' +
+          '<div class="exp-entry-detail">' + expEsc(e.content||'') + '</div>' +
+        '</div>';
+      }).join('');
     }
   } catch(e) {
     el.innerHTML = '<div class="exp-empty">Could not load entries.</div>';
