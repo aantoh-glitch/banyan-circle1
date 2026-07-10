@@ -134,6 +134,7 @@ var ini = function(n){ return (n||'').split(' ').map(function(x){return x[0];}).
 function starStr(n){ var s=''; for(var i=0;i<5;i++) s+=(i<n?'★':'☆'); return s; }
 
 var staffData = [];
+var editingOrig = {}; // staff_id -> the previously-submitted {rating, comment, reviewId} while a card is being edited
 
 // ── Persistent review store (survives refresh) ──────────────────────────────
 var STORE_KEY = 'bc_staff_reviews_' + (urlProp || 'global');
@@ -215,21 +216,21 @@ function renderCard(s){
 
   // Unsubmitted form view
   var stars = [5,4,3,2,1].map(function(v){
-    return '<input type="radio" name="star-' + s.id + '" id="s' + s.id + '-' + v + '" value="' + v + '"/>' +
+    return '<input type="radio" name="star-' + s.id + '" id="s' + s.id + '-' + v + '" value="' + v + '" onclick="starClick(\'' + s.id + '\',' + v + ')"/>' +
            '<label for="s' + s.id + '-' + v + '" title="' + v + ' star' + (v>1?'s':'') + '">&#9733;</label>';
   }).join('');
 
   return cardTop +
     '<div class="fg" style="margin-bottom:10px">' +
       '<label class="fl">Your rating<span>*</span></label>' +
-      '<div class="stars" id="stars-' + s.id + '">' + stars + '</div>' +
+      '<div class="stars" id="stars-' + s.id + '" data-current="0">' + stars + '</div>' +
     '</div>' +
     '<div class="fg" style="margin-bottom:0">' +
       '<label class="fl">Comment <span style="color:var(--muted);font-weight:400">(optional)</span></label>' +
       '<textarea class="fc" id="comment-' + s.id + '" placeholder="What stood out about ' + firstName + '?"></textarea>' +
     '</div>' +
     (!isOps ? '<div class="card-actions">' +
-      '<button class="btn-card-sub" id="cbtn-' + s.id + '" onclick="submitCard(\'' + s.id + '\')">Submit review</button>' +
+      '<button class="btn-card-sub" id="cbtn-' + s.id + '" onclick="submitCard(\'' + s.id + '\')" disabled>Submit review</button>' +
     '</div>' : '') +
   '</div>';
 }
@@ -240,6 +241,37 @@ function reRenderCard(id){
   var existing = document.getElementById('card-' + id);
   if(!existing) return;
   existing.outerHTML = renderCard(s);
+}
+
+function starClick(id, value){
+  var container = document.getElementById('stars-' + id);
+  if(!container) return;
+  var current = parseInt(container.dataset.current || '0');
+  if(current === value){
+    // Clicking the already-selected star again — treat as "no rating" and clear/delete it
+    document.querySelectorAll('input[name="star-' + id + '"]').forEach(function(r){ r.checked = false; });
+    container.dataset.current = '0';
+    var btn = document.getElementById('cbtn-' + id);
+    if(btn) btn.disabled = true;
+    clearRating(id);
+  } else {
+    container.dataset.current = String(value);
+    var btn2 = document.getElementById('cbtn-' + id);
+    if(btn2) btn2.disabled = false;
+  }
+}
+
+async function clearRating(id){
+  var orig = editingOrig[id];
+  if(orig && orig.reviewId){
+    try {
+      await api('/rest/v1/staff_reviews?id=eq.' + orig.reviewId, 'DELETE');
+      toast('Review removed');
+    } catch(e){ /* ignore if already gone */ }
+    delete editingOrig[id];
+  }
+  var ta = document.getElementById('comment-' + id);
+  if(ta) ta.value = '';
 }
 
 async function submitCard(id){
@@ -266,6 +298,12 @@ async function submitCard(id){
     var result = await api('/rest/v1/staff_reviews', 'POST', entry);
     var reviewId = result && result[0] && result[0].id;
     saveSubmittedById(id, { rating: rating, comment: comment, reviewId: reviewId });
+    // If this submit followed an edit, delete the old row it replaced
+    var orig = editingOrig[id];
+    if(orig && orig.reviewId && orig.reviewId !== reviewId){
+      try { await api('/rest/v1/staff_reviews?id=eq.' + orig.reviewId, 'DELETE'); } catch(e){ /* ignore */ }
+    }
+    delete editingOrig[id];
     reRenderCard(id);
     toast('Review saved!');
   } catch(e){
@@ -277,12 +315,17 @@ async function submitCard(id){
 function editCard(id){
   // Restore form pre-filled with previous values
   var sub = getSubmittedById(id);
+  editingOrig[id] = sub; // remember it so clearing the stars can delete the remote row
   deleteSubmittedById(id);
   reRenderCard(id);
   // Pre-fill stars
   if(sub && sub.rating){
     var radio = document.getElementById('s' + id + '-' + sub.rating);
     if(radio) radio.checked = true;
+    var container = document.getElementById('stars-' + id);
+    if(container) container.dataset.current = String(sub.rating);
+    var btn = document.getElementById('cbtn-' + id);
+    if(btn) btn.disabled = false;
   }
   // Pre-fill comment
   if(sub && sub.comment){
