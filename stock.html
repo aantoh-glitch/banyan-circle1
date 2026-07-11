@@ -66,8 +66,8 @@ body.desktop .fc:focus{box-shadow:0 0 0 2px var(--teal)}
 body.desktop .btn-p{padding:10px 18px;background:var(--teal);color:#f3eee8;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 body.desktop .btn-p:hover{background:#0a5548}
 body.desktop .btn-p:disabled{opacity:.6;cursor:not-allowed}
-body.desktop .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-body.desktop .btn-sec:hover{border-color:var(--teal);color:var(--teal)}
+body.desktop .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+body.desktop .btn-sec:hover{color:var(--teal)}
 body.desktop .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .refund-section{display:none;padding:12px;background:var(--bg);border-radius:8px;margin-top:4px}
 
@@ -118,7 +118,7 @@ body.mobile .fc:focus{box-shadow:0 0 0 2px var(--teal)}
 body.mobile .btn-p{padding:14px 18px;background:var(--teal);color:#f3eee8;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;width:100%}
 body.mobile .btn-p:active{background:#0a5548}
 body.mobile .btn-p:disabled{opacity:.6;cursor:not-allowed}
-body.mobile .btn-sec{padding:13px 18px;background:var(--white);color:var(--text);border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit;width:100%}
+body.mobile .btn-sec{padding:13px 18px;background:var(--white);color:var(--text);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:10px;font-size:15px;cursor:pointer;font-family:inherit;width:100%}
 body.mobile .btn-sec:active{background:var(--bg)}
 body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px;margin-top:4px;display:none}
 </style>
@@ -409,7 +409,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     <div id="d-add-step1">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item:</div>
       <input class="fc" id="d-add-search" type="text" placeholder="Search items…" oninput="filterAddItems('d')" style="margin-bottom:12px"/>
-      <div id="d-add-items-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:320px;overflow-y:auto">
+      <div id="d-add-items-list" style="border-radius:8px;overflow:hidden;max-height:320px;overflow-y:auto">
         <div class="empty">Loading items…</div>
       </div>
     </div>
@@ -445,7 +445,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     <div id="d-use-step1">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Inventory for: <strong id="d-use-prop-label" style="color:var(--teal)"></strong></div>
       <input class="fc" id="d-use-search" type="text" placeholder="Search items…" oninput="filterUseItems('d')" style="margin:10px 0 12px"/>
-      <div id="d-use-items-list" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;max-height:340px;overflow-y:auto">
+      <div id="d-use-items-list" style="border-radius:8px;overflow:hidden;max-height:340px;overflow-y:auto">
         <div class="empty">Loading inventory…</div>
       </div>
     </div>
@@ -481,7 +481,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     <div id="m-add-step1">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Select an item to add stock to:</div>
       <input class="fc" id="m-add-search" type="text" placeholder="Search items…" oninput="filterAddItems('m')" style="margin-bottom:12px"/>
-      <div id="m-add-items-list" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
+      <div id="m-add-items-list" style="border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
         <div class="empty">Loading items…</div>
       </div>
     </div>
@@ -517,7 +517,7 @@ body.mobile .refund-section{padding:12px;background:var(--bg);border-radius:10px
     <div id="m-use-step1">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Inventory for: <strong id="m-use-prop-label" style="color:var(--teal)"></strong></div>
       <input class="fc" id="m-use-search" type="text" placeholder="Search items…" oninput="filterUseItems('m')" style="margin:10px 0 12px"/>
-      <div id="m-use-items-list" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
+      <div id="m-use-items-list" style="border-radius:10px;overflow:hidden;max-height:300px;overflow-y:auto">
         <div class="empty">Loading inventory…</div>
       </div>
     </div>
@@ -1137,7 +1137,7 @@ function renderAddStockList(prefix, items){
   listEl.innerHTML = '';
   items.forEach(item=>{
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .1s';
     row.onmouseenter=()=>row.style.background='var(--bg)';
     row.onmouseleave=()=>row.style.background='';
     row.innerHTML=`
@@ -1269,7 +1269,7 @@ function renderUseStockList(prefix, items){
   items.forEach(item=>{
     const isLow = item.crit!=null ? item.qty<=item.crit : item.qty<=3;
     const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s';
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .1s';
     row.onmouseenter=()=>row.style.background='var(--bg)';
     row.onmouseleave=()=>row.style.background='';
     row.innerHTML=`
