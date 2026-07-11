@@ -28,7 +28,7 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .pg.on{display:block}
 .pg-title{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin-bottom:5px}
 .pg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-.pg-head-frozen{position:sticky;top:64px;background:var(--bg);z-index:40;margin:-18px -16px 20px;padding:18px 16px 14px}
+.pg-head-frozen{position:sticky;top:var(--hdr-h,64px);background:var(--bg);z-index:40;margin:-18px -16px 20px;padding:18px 16px 14px}
 .pg-head-frozen .pg-title{margin-bottom:5px}
 .pg-head-frozen .pg-sub{margin-bottom:0}
 .sec-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
@@ -523,6 +523,16 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
+(function(){
+  function setHdrH(){
+    var h = document.querySelector('.hdr');
+    if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
+  }
+  setHdrH();
+  window.addEventListener('resize', setHdrH);
+  window.addEventListener('load', setHdrH);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setHdrH);
+})();
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
