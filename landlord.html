@@ -38,6 +38,13 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 }
 
 /* ─── TOP HEADER ─── */
+.app-topbar{
+  display:none;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:14px 16px 10px;background:var(--bg);flex-shrink:0;
+}
+.app-topbar.on{display:flex}
+.app-topbar-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:#2C2C2A}
+.app-topbar-sub{font-size:13px;color:var(--muted);margin-top:2px}
 .top-signout{
   display:inline-flex;align-items:center;justify-content:center;
   background:none;border:1px solid var(--border);cursor:pointer;
@@ -49,11 +56,10 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 
 /* ─── SCROLLABLE CONTENT ─── */
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px;border:none;outline:none}
-.pg{display:none;padding:0 16px 24px;animation:fadeUp .22s ease both}
+.pg{display:none;padding:14px 16px 24px;animation:fadeUp .22s ease both}
 .pg.on{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.pg-head{margin-bottom:20px;position:sticky;top:0;z-index:20;background:var(--bg);margin-left:-16px;margin-right:-16px;padding:14px 16px 10px}
 .pg-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:#2C2C2A}
 .pg-sub{font-size:12px;color:var(--faint);letter-spacing:.2px}
 
@@ -305,29 +311,30 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 .modal-actions .btn-p{width:auto}
 
-/* ─── ASSETS PAGE HEADER ─── */
-.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-
 </style>
 </head>
 <body>
 <div class="app">
+<!-- PERSISTENT TOP HEADER (outside scroll area — cannot move) -->
+<div class="app-topbar on" id="app-topbar">
+  <div>
+    <div class="app-topbar-title" id="app-topbar-title">Home</div>
+    <div class="app-topbar-sub" id="app-topbar-sub" style="display:none"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="top-signout" onclick="clearCacheAndReload()" title="Clear cache &amp; refresh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+    <button class="top-signout" onclick="signOut()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+</div>
 <!-- SCROLLABLE CONTENT -->
 <div class="content">
 
 <!-- ── DESCRIPTION ── -->
 <div class="pg on" id="pg-description">
-  <div class="pg-head">
-    <div class="pg-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:#2C2C2A">Home</div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button class="top-signout" onclick="clearCacheAndReload()" title="Clear cache &amp; refresh">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      </button>
-      <button class="top-signout" onclick="signOut()">
-        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </button>
-    </div>
-  </div>
   <div id="desc-hero">
     <div class="card"><div class="empty"><div class="empty-icon">&#127969;</div>Loading property&hellip;</div></div>
   </div>
@@ -354,10 +361,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- ── MESSAGES ── -->
 <div class="pg" id="pg-messages">
-  <div class="pg-head">
-    <div class="pg-title">Messages</div>
-    <div class="pg-sub">Thread with Manager &amp; Office</div>
-  </div>
   <div class="card" style="padding-bottom:14px">
     <div id="msgs-list" style="max-height:420px;overflow-y:auto;padding-bottom:4px">
       <div class="empty"><div class="empty-icon">💬</div>Loading messages…</div>
@@ -371,9 +374,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 <!-- ── UTILITY PAYMENTS ── -->
 <div class="pg" id="pg-payments">
-  <div class="pg-head" style="margin-bottom:14px">
-    <div class="pg-title" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:#2C2C2A">Bills</div>
-  </div>
   <div class="card" style="padding:14px">
     <div class="tbl-wrap" id="util-full-table"><div class="empty"><div class="empty-icon">🧾</div>Loading…</div></div>
   </div>
@@ -639,6 +639,23 @@ function goPage(id, btn) {
   document.querySelectorAll('.tray-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   if (btn) btn.classList.add('on');
+  // Persistent topbar title/subtitle — only for pages that use it; iframe/tray pages manage their own header
+  var TOPBAR_TITLES = {
+    description: { title: 'Home', sub: null },
+    messages:    { title: 'Messages', sub: 'Thread with Manager & Office' },
+    payments:    { title: 'Bills', sub: null }
+  };
+  var topbar = document.getElementById('app-topbar');
+  var tb = TOPBAR_TITLES[id];
+  if (tb) {
+    document.getElementById('app-topbar-title').textContent = tb.title;
+    var subEl = document.getElementById('app-topbar-sub');
+    if (tb.sub) { subEl.textContent = tb.sub; subEl.style.display = 'block'; }
+    else { subEl.style.display = 'none'; }
+    topbar.classList.add('on');
+  } else {
+    topbar.classList.remove('on');
+  }
   // If a tray page is active, highlight Others button
   if (TRAY_PAGES.has(id)) {
     document.getElementById('nb-others').classList.add('on');
