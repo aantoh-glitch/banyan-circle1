@@ -36,6 +36,8 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
 .fl span{color:var(--br);margin-left:2px}
 .fc{width:100%;padding:12px 4px;border:none;border-bottom:1.5px solid var(--border);border-radius:0;font-size:15px;font-family:inherit;color:var(--text);background:transparent;outline:none;appearance:none;transition:border-color .15s}
+.fc-btn{width:100%;padding:12px 14px;border:none;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;appearance:none;cursor:pointer;transition:box-shadow .15s}
+.fc-btn:focus{box-shadow:0 2px 12px rgba(0,0,0,.07),0 0 0 1.5px var(--br)}
 .fc:focus{border-bottom-color:var(--br)}
 textarea.fc{resize:none;min-height:80px;line-height:1.6}
 .fc::placeholder{color:rgba(0,0,0,.28)}
@@ -262,12 +264,12 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="fg"><label class="fl">Arrived from<span>*</span></label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
     <div class="fg"><label class="fl">Proceeding to<span>*</span></label><input class="fc" id="ci-to" type="text" placeholder="Next destination"/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Arrival Date<span>*</span></label><input class="fc" id="ci-arr-date" type="date"/></div>
-      <div class="fg"><label class="fl">Arrival Time<span>*</span></label><input class="fc" id="ci-arr-time" type="time"/></div>
+      <div class="fg"><label class="fl">Arrival Date<span>*</span></label><input class="fc-btn" id="ci-arr-date" type="date" onclick="this.showPicker&&this.showPicker()"/></div>
+      <div class="fg"><label class="fl">Arrival Time<span>*</span></label><input class="fc-btn" id="ci-arr-time" type="time" onclick="this.showPicker&&this.showPicker()"/></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">Departure Date<span>*</span></label><input class="fc" id="ci-dep-date" type="date"/></div>
-      <div class="fg"><label class="fl">Departure Time<span>*</span></label><input class="fc" id="ci-dep-time" type="time" oninput="checkLateCheckout()"/></div>
+      <div class="fg"><label class="fl">Departure Date<span>*</span></label><input class="fc-btn" id="ci-dep-date" type="date" onclick="this.showPicker&&this.showPicker()"/></div>
+      <div class="fg"><label class="fl">Departure Time<span>*</span></label><input class="fc-btn" id="ci-dep-time" type="time" oninput="checkLateCheckout()" onclick="this.showPicker&&this.showPicker()"/></div>
     </div>
     <div class="late-checkout-banner" id="late-checkout-banner">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
