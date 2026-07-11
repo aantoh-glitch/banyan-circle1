@@ -83,10 +83,10 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 /* ── Preset chips ── */
 .preset-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.preset-chip{padding:5px 12px;border-radius:999px;font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
-.preset-chip:hover{border-color:var(--br);color:var(--br);background:var(--br-l)}
-.preset-chip.on{background:var(--br-l);border-color:#D85A30;color:var(--br);font-weight:500}
-.preset-chip.preset-bundle{border-color:var(--br);color:var(--br)}
+.preset-chip{padding:5px 12px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
+.preset-chip:hover{color:var(--br);background:var(--br-l)}
+.preset-chip.on{background:var(--br-l);color:var(--br);font-weight:500}
+.preset-chip.preset-bundle{color:var(--br)}
 
 /* ── KPI row ── */
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
@@ -96,15 +96,15 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 /* ── Filters bar ── */
 .filters-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.filter-chip{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
-.filter-chip:hover{border-color:var(--br);color:var(--br)}
-.filter-chip.on{background:#222;color:#f3eee8;border-color:#222}
+.filter-chip{padding:6px 14px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;font-family:inherit}
+.filter-chip:hover{color:var(--br)}
+.filter-chip.on{background:#222;color:#f3eee8}
 .filter-sep{width:1px;height:22px;background:var(--border);flex-shrink:0}
 
 /* ── Modal ── */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
 .modal.on{display:flex}
-.modal-card{background:var(--white);border-radius:14px;padding:26px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-card{background:var(--white);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);padding:26px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
 .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:20px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -403,7 +403,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 <!-- Admin PIN Modal -->
 <div id="modal-pin" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--white);border-radius:14px;padding:24px;max-width:340px;width:100%">
+  <div style="background:var(--white);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);padding:24px;max-width:340px;width:100%">
     <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:8px">Confirm Delete</div>
     <p id="pin-desc" style="font-size:13px;color:var(--muted);margin-bottom:18px"></p>
     <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:5px">Enter Admin PIN</label>
