@@ -20,7 +20,7 @@
 }
 html,body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
 .wrap{padding:16px 16px 32px}
-.doc-hdr-frozen{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;position:sticky;top:-16px;z-index:20;background:var(--bg);margin:-16px -16px 16px;padding:16px 16px 0}
+.doc-hdr-frozen{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;position:sticky;top:-16px;z-index:20;background:var(--bg);margin:-16px -16px 10px;padding:14px 16px 0}
 
 /* fields */
 .fg{margin-bottom:13px}
@@ -70,12 +70,6 @@ select.fc{cursor:pointer}
 .upload-bar{height:4px;border-radius:2px;background:var(--br-mid);margin-top:10px;display:none;overflow:hidden}
 .upload-bar-fill{height:100%;background:var(--br);width:0%;transition:width .3s ease;border-radius:2px}
 
-/* readonly notice */
-.readonly-notice{
-  display:flex;align-items:center;gap:8px;
-  background:var(--a-l);border:1px solid #E8D0AA;border-radius:var(--radius-sm);
-  padding:9px 13px;margin-bottom:14px;font-size:12px;color:#5A3006;
-}
 </style>
 </head>
 <body>
@@ -89,12 +83,6 @@ select.fc{cursor:pointer}
     <select id="prop-select" onchange="switchProp(this.value)" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-family:inherit;background:#f3eee8;color:var(--text);outline:none">
       <option value="">Select property…</option>
     </select>
-  </div>
-
-  <!-- READ-ONLY NOTICE for landlord -->
-  <div class="readonly-notice" id="readonly-notice" style="display:none">
-    <span style="font-size:16px">🔒</span>
-    <span>View-only — documents are managed by Office</span>
   </div>
 
   <!-- ADD BUTTON — shown only to admin -->
@@ -185,8 +173,6 @@ if (IS_ADMIN) {
     document.getElementById('prop-banner').style.display = 'flex';
     loadPropSelect();
   }
-} else {
-  document.getElementById('readonly-notice').style.display = 'flex';
 }
 
 // ── Helpers ──
