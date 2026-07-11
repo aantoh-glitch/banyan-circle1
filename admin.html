@@ -548,7 +548,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <style>
       /* ── Guest Log scoped styles ── */
       #g-log-view { font-family:'DM Sans',sans-serif; }
-      .gl-topbar { background:#5b8db8; border-radius:12px 12px 0 0; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+      .gl-topbar { background:#222; border-radius:12px 12px 0 0; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
       .gl-topbar-title { font-family:'Playfair Display',serif; font-size:20px; color:#fff; }
       .gl-date-nav { display:flex; align-items:center; gap:8px; }
       .gl-date-btn { width:32px; height:32px; border-radius:7px; border:1.5px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.1); color:#fff; font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -562,26 +562,26 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       .gl-filter-bar::-webkit-scrollbar { display:none; }
       .gl-filter-label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-weight:600; flex-shrink:0; }
       .gl-prop-chip { padding:5px 12px; border-radius:20px; font-size:12px; font-weight:500; cursor:pointer; flex-shrink:0; border:none; box-shadow:0 2px 12px rgba(0,0,0,.07); background:var(--bg); color:var(--muted); transition:all .15s; }
-      .gl-prop-chip:hover { color:#5b8db8; }
-      .gl-prop-chip.active { background:#5b8db8; color:#fff; }
+      .gl-prop-chip:hover { color:var(--text); }
+      .gl-prop-chip.active { background:#222; color:#fff; }
       .gl-prop-chip.gl-all.active { background:#222; }
 
       .gl-summary-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:18px 24px 0; }
       .gl-summary-card { background:var(--white); border:none; box-shadow:0 2px 12px rgba(0,0,0,.07); border-radius:10px; padding:14px 18px; cursor:pointer; transition:all .15s; position:relative; overflow:hidden; }
       .gl-summary-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
-      .gl-summary-card.gl-ci::before { background:#2d9e6b; }
-      .gl-summary-card.gl-co::before { background:#d97706; }
-      .gl-summary-card.gl-st::before { background:#4a90d9; }
+      .gl-summary-card.gl-ci::before { background:var(--muted); }
+      .gl-summary-card.gl-co::before { background:var(--muted); }
+      .gl-summary-card.gl-st::before { background:var(--muted); }
       .gl-summary-card:hover { box-shadow:0 3px 12px rgba(0,0,0,.08); transform:translateY(-1px); }
-      .gl-summary-card.gl-active { box-shadow:0 0 0 2.5px #5b8db8,0 2px 12px rgba(0,0,0,.07); }
-      .gl-summary-card.gl-ci.gl-active  { box-shadow:0 0 0 2.5px #2d9e6b,0 2px 12px rgba(0,0,0,.07); }
-      .gl-summary-card.gl-co.gl-active  { box-shadow:0 0 0 2.5px #d97706,0 2px 12px rgba(0,0,0,.07); }
-      .gl-summary-card.gl-st.gl-active  { box-shadow:0 0 0 2.5px #4a90d9,0 2px 12px rgba(0,0,0,.07); }
+      .gl-summary-card.gl-active { box-shadow:0 0 0 2.5px #222,0 2px 12px rgba(0,0,0,.07); }
+      .gl-summary-card.gl-ci.gl-active  { box-shadow:0 0 0 2.5px #222,0 2px 12px rgba(0,0,0,.07); }
+      .gl-summary-card.gl-co.gl-active  { box-shadow:0 0 0 2.5px #222,0 2px 12px rgba(0,0,0,.07); }
+      .gl-summary-card.gl-st.gl-active  { box-shadow:0 0 0 2.5px #222,0 2px 12px rgba(0,0,0,.07); }
       .gl-card-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
       .gl-card-dot { width:7px; height:7px; border-radius:50%; }
-      .gl-card-label.gl-ci  { color:#1a6b3c; }
-      .gl-card-label.gl-co  { color:#92400e; }
-      .gl-card-label.gl-st  { color:#1e3a5f; }
+      .gl-card-label.gl-ci  { color:var(--text); }
+      .gl-card-label.gl-co  { color:var(--text); }
+      .gl-card-label.gl-st  { color:var(--text); }
       .gl-card-count { font-family:'Playfair Display',serif; font-size:36px; line-height:1; color:var(--text); }
       .gl-card-sub { font-size:11px; color:var(--muted); margin-top:3px; }
 
@@ -589,20 +589,20 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       .gl-section { background:var(--white); border-radius:10px; border:none; box-shadow:0 2px 12px rgba(0,0,0,.07); overflow:hidden; }
       .gl-section-hdr { padding:13px 18px; display:flex; align-items:center; justify-content:space-between; }
       .gl-section-title { font-size:14px; font-weight:500; display:flex; align-items:center; gap:8px; }
-      .gl-section-bdg { padding:2px 9px; border-radius:10px; font-size:11px; font-weight:600; }
-      .gl-bdg-ci { background:#edf7f0; color:#1a6b3c; }
-      .gl-bdg-co { background:#fef3e8; color:#92400e; }
-      .gl-bdg-st { background:#eef4fb; color:#1e3a5f; }
+      .gl-section-bdg { padding:2px 9px; border-radius:10px; font-size:11px; font-weight:600; background:var(--bg); color:var(--muted); }
+      .gl-bdg-ci { background:var(--bg); color:var(--muted); }
+      .gl-bdg-co { background:var(--bg); color:var(--muted); }
+      .gl-bdg-st { background:var(--bg); color:var(--muted); }
       .gl-guest-row { padding:12px 18px; display:flex; align-items:center; gap:14px; transition:background .12s; }
       .gl-guest-row:hover { background:var(--bg); }
-      .gl-avatar { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#fff; }
+      .gl-avatar { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#fff; background:var(--muted); }
       .gl-guest-name { font-size:13px; font-weight:500; color:var(--text); }
       .gl-guest-dates { font-size:11px; color:var(--muted); margin-top:2px; }
-      .gl-guest-prop { margin-left:auto; font-size:11px; font-weight:600; padding:3px 9px; border-radius:6px; background:rgba(91,141,184,.1); color:#4a7aa3; white-space:nowrap; }
-      .gl-src { padding:3px 7px; border-radius:5px; font-size:10px; font-weight:600; }
-      .gl-src-airbnb   { background:#fff0f0; color:#FF5A5F; }
-      .gl-src-booking  { background:#e8f0fc; color:#003580; }
-      .gl-src-manual   { background:#fff0e0; color:#d97706; }
+      .gl-guest-prop { margin-left:auto; font-size:11px; font-weight:600; padding:3px 9px; border-radius:6px; background:var(--bg); color:var(--muted); white-space:nowrap; }
+      .gl-src { padding:3px 7px; border-radius:5px; font-size:10px; font-weight:600; background:var(--bg); color:var(--muted); }
+      .gl-src-airbnb   { background:var(--bg); color:var(--muted); }
+      .gl-src-booking  { background:var(--bg); color:var(--muted); }
+      .gl-src-manual   { background:var(--bg); color:var(--muted); }
       .gl-empty { padding:28px; text-align:center; color:var(--muted); font-size:13px; }
     </style>
 
@@ -628,17 +628,17 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <!-- Summary cards -->
       <div class="gl-summary-row">
         <div class="gl-summary-card gl-ci" id="gl-card-ci" onclick="glToggleSection('checkin')">
-          <div class="gl-card-label gl-ci"><div class="gl-card-dot" style="background:#2d9e6b"></div>Check-ins Today</div>
+          <div class="gl-card-label gl-ci"><div class="gl-card-dot" style="background:var(--muted)"></div>Check-ins Today</div>
           <div class="gl-card-count" id="gl-count-ci">—</div>
           <div class="gl-card-sub">arriving guests</div>
         </div>
         <div class="gl-summary-card gl-co" id="gl-card-co" onclick="glToggleSection('checkout')">
-          <div class="gl-card-label gl-co"><div class="gl-card-dot" style="background:#d97706"></div>Check-outs Today</div>
+          <div class="gl-card-label gl-co"><div class="gl-card-dot" style="background:var(--muted)"></div>Check-outs Today</div>
           <div class="gl-card-count" id="gl-count-co">—</div>
           <div class="gl-card-sub">departing guests</div>
         </div>
         <div class="gl-summary-card gl-st" id="gl-card-st" onclick="glToggleSection('staying')">
-          <div class="gl-card-label gl-st"><div class="gl-card-dot" style="background:#4a90d9"></div>Staying On</div>
+          <div class="gl-card-label gl-st"><div class="gl-card-dot" style="background:var(--muted)"></div>Staying On</div>
           <div class="gl-card-count" id="gl-count-st">—</div>
           <div class="gl-card-sub">mid-stay guests</div>
         </div>
@@ -1612,7 +1612,7 @@ function glRender(){
 
 function glGuestRow(g,type){
   const prop = glProps.find(p=>p.id===g.property_name);
-  const color = prop?prop.color:'#9898b8';
+  const color = 'var(--muted)'; void prop;
   const initial = (g.guest||'?').charAt(0).toUpperCase();
   const srcClass = {airbnb:'gl-src-airbnb',booking:'gl-src-booking',manual:'gl-src-manual'}[g.source]||'gl-src-manual';
   const srcLabel = g.platform || ({airbnb:'Airbnb',booking:'Booking',manual:'Direct'}[g.source]||'Direct');
