@@ -137,11 +137,13 @@ body.admin-view .pg-sub { font-size: 13px; color: var(--muted); margin-bottom: 2
 .toggle-btn[aria-pressed="true"] .toggle-knob { transform:translateX(18px); }
 
 /* ── Landlord mobile view ── */
-body.landlord-view { background: var(--bg); }
+body.landlord-view { background: var(--bg); height: 100vh; height: 100dvh; overflow: hidden; }
+body.landlord-view .app { height: 100%; overflow: hidden; }
 body.landlord-view .prop-subbar { display: none; }
 body.landlord-view .stats-row { display: none; }
-body.landlord-view .main { padding: 16px; }
-body.landlord-view .mobile-hdg-frozen { position: sticky; top: -16px; z-index: 20; background: var(--bg); margin: -16px -16px 24px; padding: 14px 16px 0; }
+body.landlord-view .main { padding: 16px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+body.landlord-view .mobile-hdg-frozen { flex: 0 0 auto; background: var(--bg); margin-bottom: 18px; }
+body.landlord-view .lm-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 body.landlord-view .top-row { display: block; }
 body.landlord-view .calendar-container { margin-bottom: 20px !important; height: auto; }
 body.landlord-view .bookings-list { height: auto; max-height: none; overflow-y: visible; margin-bottom: 14px; }
@@ -490,9 +492,14 @@ if (_viewerParam === 'landlord') {
       // Remove from current positions
       topRow.remove();
       if (bottomRow) bottomRow.remove();
-      // Append calendar and bookings only
-      mainEl.appendChild(calContainer);
-      mainEl.appendChild(bookingsList);
+      // Wrap calendar + bookings in their own scroll region so only this
+      // area scrolls — the heading above stays fixed and the gap below it
+      // never changes, and scrolling starts right at the top of the calendar
+      const scrollWrap = document.createElement('div');
+      scrollWrap.className = 'lm-scroll';
+      scrollWrap.appendChild(calContainer);
+      scrollWrap.appendChild(bookingsList);
+      mainEl.appendChild(scrollWrap);
     }
   });
 }
