@@ -2120,6 +2120,17 @@ async function acSaveExp() {
       // If Utility + Paid → also write to utility_payments (new expense only)
       if (category === 'Utility' && status === 'Paid') {
         const syncMonth = (billDate || new Date().toISOString().slice(0,10)).slice(0,7);
+        // Delete any existing row for this property+type+month first — a Paid utility
+        // expense may already have written one (e.g. a prior entry for the same bill),
+        // and utility_payments has a unique constraint on (property, type, month).
+        try {
+          await acApi(
+            '/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(utilityProp)
+            +'&utility_type=eq.'+encodeURIComponent(utilityType)
+            +'&month=eq.'+encodeURIComponent(syncMonth),
+            'DELETE'
+          );
+        } catch(_) {}
         const upBody = {
           property_name: utilityProp,
           utility_type:  utilityType,
@@ -2162,7 +2173,26 @@ async function syncTdsExpense(expBody) {
 
 async function acDelExp(id) {
   if(!confirm('Delete this expense?')) return;
-  try { await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE'); acToast('Deleted'); await acLoadExp(); }
+  try {
+    // Look up the record first so we know if it's a Utility bill we also need to clean up
+    const rec = (_acExpenses || []).find(e => String(e.id) === String(id));
+
+    await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE');
+
+    if (rec && rec.category === 'Utility' && rec.property_name && rec.utility_type) {
+      const syncMonth = (rec.bill_date || rec.date || rec.created_at || '').slice(0,7);
+      try {
+        await acApi(
+          '/rest/v1/utility_payments?property_name=eq.'+encodeURIComponent(rec.property_name)
+          +'&utility_type=eq.'+encodeURIComponent(rec.utility_type)
+          +'&month=eq.'+encodeURIComponent(syncMonth),
+          'DELETE'
+        );
+      } catch(_) {}
+    }
+
+    acToast('Deleted'); await acLoadExp();
+  }
   catch(e){ alert('Error: '+e.message); }
 }
 
