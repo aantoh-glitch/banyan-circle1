@@ -26,8 +26,11 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .bnt.on{color:var(--br)}
 .pg{display:none;padding:18px 16px 100px}
 .pg.on{display:block}
-.pg-title{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin-bottom:5px;position:sticky;top:64px;background:var(--bg);z-index:40;padding-top:2px}
-.pg-sub{font-size:13px;color:var(--muted);margin-bottom:20px;position:sticky;top:97px;background:var(--bg);z-index:40;padding-bottom:4px}
+.pg-title{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin-bottom:5px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.pg-head-frozen{position:sticky;top:64px;background:var(--bg);z-index:40;margin:-18px -16px 20px;padding:18px 16px 14px}
+.pg-head-frozen .pg-title{margin-bottom:5px}
+.pg-head-frozen .pg-sub{margin-bottom:0}
 .sec-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .fg{margin-bottom:14px}
 .fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
@@ -378,8 +381,10 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <div class="pg" id="pg-reviews">
-  <div class="pg-title">Reviews</div>
-  <div class="pg-sub">Share your experience</div>
+  <div class="pg-head-frozen">
+    <div class="pg-title">Reviews</div>
+    <div class="pg-sub">Share your experience</div>
+  </div>
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer;border:none" onclick="openRevSheet('rating-sheet','rating-frame','Rate a Talent','rating.html')">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
@@ -404,8 +409,10 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <div class="pg" id="pg-finalbill">
-  <div class="pg-title">Final Bill</div>
-  <div class="pg-sub">Your stay summary &amp; charges</div>
+  <div class="pg-head-frozen">
+    <div class="pg-title">Final Bill</div>
+    <div class="pg-sub">Your stay summary &amp; charges</div>
+  </div>
   <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
   <div id="bill-content" style="display:none">
     <!-- Guest / stay header -->
@@ -452,8 +459,10 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <div class="pg" id="pg-experience">
-  <div class="pg-title">Experience</div>
-  <div class="pg-sub">Curated notes &amp; highlights for your stay</div>
+  <div class="pg-head-frozen">
+    <div class="pg-title">Experience</div>
+    <div class="pg-sub">Curated notes &amp; highlights for your stay</div>
+  </div>
   <div class="exp-section">
     <div class="exp-section-head"><div class="exp-section-title">Property</div></div>
     <div class="exp-entries" id="exp-entries-property"><div class="exp-skeleton"></div></div>
