@@ -10,8 +10,12 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-.shell{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.hdr{background:var(--bg);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.shell{max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.hdr{background:var(--bg);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.pg-head-static{background:var(--bg);flex-shrink:0;padding:18px 16px 14px}
+.pg-head-static .pg-title{margin-bottom:5px}
+.pg-head-static .pg-sub{margin-bottom:0}
 .hdr-logo{width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--br);display:flex;align-items:center;justify-content:center}
 .hdr-logo img{width:36px;height:36px;object-fit:contain}
 .hdr-info{flex:1}
@@ -28,9 +32,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .pg.on{display:block}
 .pg-title{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin-bottom:5px}
 .pg-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-.pg-head-frozen{position:sticky;top:var(--hdr-h,64px);background:var(--bg);z-index:40;margin:-18px -16px 20px;padding:18px 16px 14px}
-.pg-head-frozen .pg-title{margin-bottom:5px}
-.pg-head-frozen .pg-sub{margin-bottom:0}
 .sec-hdr{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .fg{margin-bottom:14px}
 .fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
@@ -169,6 +170,14 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
   </button>
 </div>
+
+<!-- PERSISTENT PAGE HEADING for Reviews/Final Bill/Experience — outside scroll area, cannot move -->
+<div class="pg-head-static" id="pg-head-static" style="display:none">
+  <div class="pg-title" id="pg-head-static-title"></div>
+  <div class="pg-sub" id="pg-head-static-sub"></div>
+</div>
+
+<div class="content" id="content">
 
 <div class="pg on" id="pg-checkin">
   <div class="pg-title">Check-in</div>
@@ -383,10 +392,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <div class="pg" id="pg-reviews">
-  <div class="pg-head-frozen">
-    <div class="pg-title">Reviews</div>
-    <div class="pg-sub">Share your experience</div>
-  </div>
   <div class="card" style="padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;cursor:pointer;border:none" onclick="openRevSheet('rating-sheet','rating-frame','Rate a Talent','rating.html')">
     <div style="width:44px;height:44px;border-radius:12px;background:var(--a-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--a)" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
@@ -411,10 +416,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <div class="pg" id="pg-finalbill">
-  <div class="pg-head-frozen">
-    <div class="pg-title">Final Bill</div>
-    <div class="pg-sub">Your stay summary &amp; charges</div>
-  </div>
   <div id="bill-loading" style="font-size:13px;color:var(--muted);padding:20px 0">Loading your bill…</div>
   <div id="bill-content" style="display:none">
     <!-- Guest / stay header -->
@@ -461,10 +462,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 </div>
 
 <div class="pg" id="pg-experience">
-  <div class="pg-head-frozen">
-    <div class="pg-title">Experience</div>
-    <div class="pg-sub">Curated notes &amp; highlights for your stay</div>
-  </div>
   <div class="exp-section">
     <div class="exp-section-head"><div class="exp-section-title">Property</div></div>
     <div class="exp-entries" id="exp-entries-property"><div class="exp-skeleton"></div></div>
@@ -478,6 +475,8 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="exp-entries" id="exp-entries-banyan_circle"><div class="exp-skeleton"></div></div>
   </div>
 </div>
+
+</div><!-- /content -->
 
 <nav class="bnav" id="bnav">
   <button class="bnt on" onclick="goPage('checkin',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Check-in</button>
@@ -525,16 +524,6 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
 <div class="toast" id="toast"></div>
 
 <script>
-(function(){
-  function setHdrH(){
-    var h = document.querySelector('.hdr');
-    if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px');
-  }
-  setHdrH();
-  window.addEventListener('resize', setHdrH);
-  window.addEventListener('load', setHdrH);
-  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setHdrH);
-})();
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
@@ -578,6 +567,24 @@ function goPage(id, btn) {
   if(id==='finalbill') loadFinalBill();
   /* Show header only on check-in page */
   document.querySelector('.hdr').style.display = (id === 'checkin') ? 'flex' : 'none';
+  /* Persistent heading (outside scroll area) for Reviews / Final Bill / Experience */
+  var STATIC_HEADS = {
+    reviews:    { title: 'Reviews', sub: 'Share your experience' },
+    finalbill:  { title: 'Final Bill', sub: 'Your stay summary & charges' },
+    experience: { title: 'Experience', sub: 'Curated notes & highlights for your stay' }
+  };
+  var staticHead = document.getElementById('pg-head-static');
+  var sh = STATIC_HEADS[id];
+  if (sh) {
+    document.getElementById('pg-head-static-title').textContent = sh.title;
+    document.getElementById('pg-head-static-sub').textContent = sh.sub;
+    staticHead.style.display = 'block';
+  } else {
+    staticHead.style.display = 'none';
+  }
+  /* Reset scroll position of the actual scrolling container */
+  var contentEl = document.getElementById('content');
+  if (contentEl) contentEl.scrollTop = 0;
   /* Push a new history entry so back button navigates between tabs */
   if (_currentPageId !== id) {
     history.pushState({page: id}, '', '#' + id);
@@ -614,6 +621,22 @@ window.addEventListener('popstate', function(e) {
     if(oc.indexOf("'"+page+"'") !== -1 || oc.indexOf('"'+page+'"') !== -1) b.classList.add('on');
   });
   document.querySelector('.hdr').style.display = (page === 'checkin') ? 'flex' : 'none';
+  var STATIC_HEADS_POP = {
+    reviews:    { title: 'Reviews', sub: 'Share your experience' },
+    finalbill:  { title: 'Final Bill', sub: 'Your stay summary & charges' },
+    experience: { title: 'Experience', sub: 'Curated notes & highlights for your stay' }
+  };
+  var staticHeadPop = document.getElementById('pg-head-static');
+  var shPop = STATIC_HEADS_POP[page];
+  if (shPop) {
+    document.getElementById('pg-head-static-title').textContent = shPop.title;
+    document.getElementById('pg-head-static-sub').textContent = shPop.sub;
+    staticHeadPop.style.display = 'block';
+  } else {
+    staticHeadPop.style.display = 'none';
+  }
+  var contentElPop = document.getElementById('content');
+  if (contentElPop) contentElPop.scrollTop = 0;
   if (page === 'finalbill') loadFinalBill();
   if (typeof closeMessagingPanel === 'function') closeMessagingPanel();
 });
@@ -693,11 +716,15 @@ function openPne() {
   document.getElementById('pne-backdrop').classList.add('open');
   document.getElementById('pne-sheet').classList.add('open');
   document.body.style.overflow = 'hidden';
+  var _contentEl = document.getElementById('content');
+  if (_contentEl) _contentEl.style.overflow = 'hidden';
 }
 function closePne() {
   document.getElementById('pne-backdrop').classList.remove('open');
   document.getElementById('pne-sheet').classList.remove('open');
   document.body.style.overflow = '';
+  var _contentEl2 = document.getElementById('content');
+  if (_contentEl2) _contentEl2.style.overflow = '';
 }
 
 async function api(path, method, body) {
@@ -1498,6 +1525,8 @@ function closeRevSheet(sheetId, backdropId) {
     panel.style.transform='translateY(0)';
     panelOpen=true;
     document.body.style.overflow='hidden';
+    var _cEl = document.getElementById('content');
+    if (_cEl) _cEl.style.overflow = 'hidden';
   };
 
   window.closeMessagingPanel=function(){
@@ -1506,6 +1535,8 @@ function closeRevSheet(sheetId, backdropId) {
     panel.style.transform='translateY(102%)';
     panelOpen=false;
     document.body.style.overflow='';
+    var _cEl2 = document.getElementById('content');
+    if (_cEl2) _cEl2.style.overflow = '';
     /* Hide overlay after transition completes (matches 300ms CSS transition) */
     setTimeout(function(){
       document.getElementById('msg-panel-overlay').style.display='none';
