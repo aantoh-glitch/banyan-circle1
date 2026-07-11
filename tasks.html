@@ -51,8 +51,8 @@ body.staff-mode .staff-shell{display:flex}
 .card{background:var(--white);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:20px;margin-bottom:16px}
 .card-ttl{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:10px;vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:#fafaf8}
 .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
@@ -61,8 +61,8 @@ body.staff-mode .staff-shell{display:flex}
 .btn-p{padding:10px 18px;background:var(--br);color:#f3eee8;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-p:hover{background:#712B13}
 .btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.btn-sec:hover{border-color:var(--br);color:var(--br)}
+.btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sec:hover{color:var(--br)}
 .btn-del{padding:5px 11px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-edit:hover{background:var(--br-l);color:var(--br)}
@@ -106,7 +106,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .modal.on{display:flex}
 .modal-card{background:var(--white);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);padding:26px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
 .modal-ttl{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:20px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:16px}
 .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 
 
@@ -129,7 +129,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .task-card.pri-low::before{background:#95a5a6}
 .task-card-work{font-size:15px;font-weight:500;margin-bottom:6px;padding-left:8px;line-height:1.4}
 .task-card-meta{font-size:11px;color:var(--muted);padding-left:8px;margin-bottom:12px}
-.task-card-ack{display:flex;align-items:center;justify-content:space-between;padding-left:8px;padding-top:10px;border-top:1px solid var(--border);margin-top:4px}
+.task-card-ack{display:flex;align-items:center;justify-content:space-between;padding-left:8px;padding-top:10px;margin-top:4px}
 .task-card-ack-label{font-size:12px;color:var(--muted)}
 .task-card.is-completed{opacity:0.6;background:#f5faf0}
 
@@ -411,7 +411,7 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:22px;letter-spacing:8px;text-align:center;font-family:inherit;outline:none;color:var(--text)"/>
     <div id="pin-error" style="color:var(--r);font-size:12px;margin-top:6px;display:none">Incorrect PIN. Try again.</div>
     <div style="display:flex;gap:10px;margin-top:18px">
-      <button onclick="closePinModal()" style="flex:1;padding:12px;background:var(--white);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="closePinModal()" style="flex:1;padding:12px;background:var(--white);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit">Cancel</button>
       <button onclick="confirmPin()" style="flex:1;padding:12px;background:var(--r);color:#f3eee8;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Delete</button>
     </div>
   </div>
@@ -1193,7 +1193,7 @@ function startEditPreset(type, indexOrName){
     <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:18px">${titleText}</div>
     <div class="fg"><label class="fl">Name</label>
     <input class="fc" id="iep-val" value="${escHtml(currentVal)}" style="width:100%"/></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px">
       <button class="btn-sec" onclick="document.getElementById('inline-edit-overlay').remove()">Cancel</button>
       <button class="btn-p" onclick="saveInlineEdit()">Save</button>
     </div>
@@ -1212,7 +1212,7 @@ function startEditBundleTask(bundleName, taskIdx){
     <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;margin-bottom:18px">Edit Task</div>
     <div class="fg"><label class="fl">Task Description</label>
     <textarea class="fc" id="iep-val" rows="3" style="width:100%">${escHtml(currentVal)}</textarea></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;padding-top:14px">
       <button class="btn-sec" onclick="document.getElementById('inline-edit-overlay').remove()">Cancel</button>
       <button class="btn-p" onclick="saveInlineEdit()">Save</button>
     </div>
@@ -1591,7 +1591,7 @@ function staffCard(t){
       <span class="task-card-ack-label">Information Acknowledged</span>
       ${ackWidget(t.id, 'acknowledged', t.acknowledged, 'staff')}
     </div>
-    <div class="task-card-ack" style="border-top:1px solid var(--border);padding-top:10px">
+    <div class="task-card-ack" style="padding-top:10px">
       <span class="task-card-ack-label" style="font-weight:500;color:var(--text)">Task Completed</span>
       ${ackWidget(t.id, 'completed', t.completed, 'staff')}
     </div>
