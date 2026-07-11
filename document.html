@@ -18,9 +18,10 @@
   --radius:14px;--radius-sm:9px;
   --shadow:0 2px 12px rgba(0,0,0,.07);
 }
-html,body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100%}
-.wrap{padding:16px 16px 32px}
-.doc-hdr-frozen{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;position:sticky;top:-16px;z-index:20;background:var(--bg);margin:-16px -16px 24px;padding:14px 16px 0}
+html,body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;height:100%;overflow:hidden}
+.wrap{padding:16px;display:flex;flex-direction:column;height:100%;overflow:hidden}
+.doc-hdr-frozen{font-family:'Playfair Display',serif;font-size:22px;font-weight:400;flex:0 0 auto;background:var(--bg);margin-bottom:18px}
+.doc-scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:32px}
 
 /* fields */
 .fg{margin-bottom:13px}
@@ -77,8 +78,10 @@ select.fc{cursor:pointer}
 
   <div class="doc-hdr-frozen">Documents</div>
 
+  <div class="doc-scroll">
+
   <!-- Property selector — shown only when admin has no property in session/URL -->
-  <div id="prop-banner" style="display:none;background:var(--br);padding:12px 16px;margin:-16px -16px 16px;align-items:center;gap:10px">
+  <div id="prop-banner" style="display:none;background:var(--br);padding:12px 16px;margin:0 0 16px;align-items:center;gap:10px;border-radius:var(--radius-sm)">
     <span style="font-size:13px;color:#fff;font-weight:500;flex-shrink:0">Property:</span>
     <select id="prop-select" onchange="switchProp(this.value)" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:14px;font-family:inherit;background:#f3eee8;color:var(--text);outline:none">
       <option value="">Select property…</option>
@@ -130,6 +133,7 @@ select.fc{cursor:pointer}
     <div class="empty"><div class="empty-icon">📄</div>Loading documents…</div>
   </div>
 
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
