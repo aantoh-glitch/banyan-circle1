@@ -463,7 +463,7 @@ var TOPICS = {
 /* ────────────────────────────────
    STATE
 ──────────────────────────────── */
-var me = null, allMessages = [], currentFilter = 'all', currentThread = null;
+var me = null, allMessages = [], currentFilter = 'all', currentThread = null, _inboxEverRendered = false;
 var selectedRecipType = null, selectedRecipName = null;
 var currentAdminRoleFilter = 'all';
 function isAdmin(){ return me && (me.role === 'admin' || me.role === 'office'); }
@@ -602,9 +602,14 @@ async function refreshInbox(btn){
   }
 }
 async function loadInbox(){
-  /* Show skeleton rows while fetching */
-  var skeletonRow = '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0"></div><div style="flex:1"><div style="background:var(--bg);border-radius:6px;height:13px;width:55%;margin-bottom:7px;animation:skPulse 1.2s ease infinite"></div><div style="background:var(--bg);border-radius:6px;height:11px;width:80%;animation:skPulse 1.2s ease infinite"></div></div></div>';
-  document.getElementById('inbox-list').innerHTML = skeletonRow.repeat(5);
+  /* Show skeleton rows only on the very first load. On subsequent
+     refreshes, keep the current list visible/clickable in place so a
+     tap in progress doesn't get its target element yanked out from
+     under it mid-gesture (which was silently swallowing the first tap). */
+  if(!_inboxEverRendered){
+    var skeletonRow = '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0"></div><div style="flex:1"><div style="background:var(--bg);border-radius:6px;height:13px;width:55%;margin-bottom:7px;animation:skPulse 1.2s ease infinite"></div><div style="background:var(--bg);border-radius:6px;height:11px;width:80%;animation:skPulse 1.2s ease infinite"></div></div></div>';
+    document.getElementById('inbox-list').innerHTML = skeletonRow.repeat(5);
+  }
   try{
     var q;
     if(isAdmin()){
@@ -616,6 +621,7 @@ async function loadInbox(){
     }
     allMessages = await api('GET', q);
     renderInbox();
+    _inboxEverRendered = true;
   } catch(e){
     document.getElementById('inbox-list').innerHTML =
       '<div class="inbox-empty">Could not load messages.<br><small style="color:var(--r)">'+esc(e.message)+'</small></div>';
