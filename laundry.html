@@ -42,9 +42,9 @@ body.desktop{font-family:'DM Sans',sans-serif}
 .ptab{padding:8px 16px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
 .ptab.on{background:var(--br-l);color:var(--br);font-weight:500}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
-.tbl td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}
+.tbl th{text-align:left;padding:10px;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
+.tbl td{padding:12px 10px;vertical-align:middle}
+.tbl tbody tr:nth-child(4n+1),.tbl tbody tr:nth-child(4n+2){background:var(--bg)}
 .btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-edit:hover{background:var(--br-l);color:var(--br)}
 
@@ -464,7 +464,7 @@ async function loadList(){
         </tr>
         <tr id="detail-${r.id}" style="display:none">
           <td colspan="7" style="padding:0">
-            <div style="background:var(--bg);border-top:1px solid var(--border);padding:16px 20px;font-size:13px">
+            <div style="background:var(--bg);padding:16px 20px;font-size:13px">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
                 <div>
                   <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Items Sent</div>
@@ -480,7 +480,7 @@ async function loadList(){
                   `:`<div style="color:var(--muted);font-size:13px;padding-top:4px"><em>Awaiting collection</em></div>`}
                 </div>
               </div>
-              ${r.notes?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--muted)">${r.notes}</div>`:''}
+              ${r.notes?`<div style="margin-top:14px;padding-top:2px;color:var(--muted)">${r.notes}</div>`:''}
             </div>
           </td>
         </tr>`).join('')}
@@ -491,7 +491,7 @@ async function loadList(){
 function renderItemsSent(items){
   if(!items||!items.length) return '<em style="color:var(--muted)">No items recorded</em>';
   return items.filter(i=>i.qty>0).map(i=>`
-    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;justify-content:space-between;padding:4px 0">
       <span>${i.name}</span><b>${i.qty}</b>
     </div>`).join('')||'<em style="color:var(--muted)">No items recorded</em>';
 }
@@ -499,7 +499,7 @@ function renderItemsReturn(items){
   if(!items||!items.length) return '';
   const rows = items.filter(i=>i.qty>0).map(i=>{
     const c=i.condition, cls=c==='good'?'bdg-g':c==='bad'?'bdg-a':'bdg-r';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0">
       <span>${i.name} ×${i.qty}</span>
       <span class="bdg ${cls}" style="font-size:10px">${c==='good'?'Good':c==='bad'?'Bad Condition':'Missing'}</span>
     </div>`;
