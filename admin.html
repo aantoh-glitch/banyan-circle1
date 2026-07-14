@@ -57,7 +57,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:var(--b-l);color:#0C447C}
 .prop-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .ptab{padding:8px 16px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.ptab.on{background:var(--br-l);color:var(--br);font-weight:500}
+.ptab.on{background:var(--text);color:var(--white);font-weight:500}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
 .modal.on{display:flex}
 .modal-card{background:var(--white);border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);padding:24px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
@@ -365,18 +365,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="dash-section-title">Guests · Today</div>
   <div class="dash-grid-3" style="margin-bottom:28px">
     <div class="dash-tile tile-ci" onclick="goPage('guests', document.querySelector('.sb-btn[onclick*=guests]'))">
-      <div class="dash-tile-icon icon-ci">
-        <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-      </div>
       <div class="dash-tile-label">Check-ins</div>
       <div class="dash-tile-value loading" id="dash-checkins">…</div>
       <div class="dash-tile-sub">guests arriving today</div>
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-co" onclick="goPage('guests', document.querySelector('.sb-btn[onclick*=guests]'))">
-      <div class="dash-tile-icon icon-co">
-        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </div>
       <div class="dash-tile-label">Check-outs</div>
       <div class="dash-tile-value loading" id="dash-checkouts">…</div>
       <div class="dash-tile-sub">guests departing today</div>
@@ -384,9 +378,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <!-- ↓ Occupancy moved here from Team & Operations -->
     <div class="dash-tile tile-staff" style="cursor:default">
-      <div class="dash-tile-icon icon-ci">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      </div>
       <div class="dash-tile-label">Occupancy</div>
       <div class="dash-tile-value loading" id="dash-occupancy">…</div>
       <div class="dash-tile-sub" id="dash-occupancy-sub">of properties occupied</div>
@@ -397,9 +388,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <div class="dash-grid-3">
     <!-- ↓ Team Present moved here from Guests · Today -->
     <div class="dash-tile tile-staff" onclick="goPage('staff', document.querySelector('.sb-btn[onclick*=staff]'))">
-      <div class="dash-tile-icon icon-staff">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
       <div class="dash-tile-label">Team Present</div>
       <div class="dash-tile-value loading" id="dash-staff">…</div>
       <div class="dash-tile-sub">clocked in today</div>
@@ -407,18 +395,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-leave" onclick="goPage('leave', this)">
-      <div class="dash-tile-icon icon-leave">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
       <div class="dash-tile-label">On Leave</div>
       <div class="dash-tile-value loading" id="dash-leave">…</div>
       <div class="dash-tile-sub">today</div>
       <div class="dash-tile-nav">→</div>
     </div>
     <div class="dash-tile tile-tasks" onclick="goPage('tasks', document.querySelector('.sb-btn[onclick*=tasks]'))">
-      <div class="dash-tile-icon icon-tasks">
-        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </div>
       <div class="dash-tile-label">Tasks Pending</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px">
         <div style="background:var(--r-l);border-radius:8px;padding:8px 10px;text-align:center">
@@ -437,9 +419,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-laundry" onclick="goPage('laundry', document.querySelector('.sb-btn[onclick*=laundry]'))">
-      <div class="dash-tile-icon icon-laundry">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-      </div>
       <div class="dash-tile-label">Laundry</div>
       <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
         <div class="dash-tile-value loading" id="dash-laundry-count" style="font-size:36px">…</div>
@@ -449,18 +428,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-repairs" onclick="goPage('maint', document.querySelector('.sb-btn[onclick*=maint]'))">
-      <div class="dash-tile-icon icon-repairs">
-        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94L7.5 19.5a2.12 2.12 0 0 1-3-3l6.03-6.03a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      </div>
       <div class="dash-tile-label">Repairs</div>
       <div class="dash-tile-value loading" id="dash-repairs" style="padding-top:4px">…</div>
       <div class="dash-tile-sub">open repair tickets</div>
       <span class="dash-tile-nav">›</span>
     </div>
     <div class="dash-tile tile-stock" onclick="goPage('stock', document.querySelector('.sb-btn[onclick*=stock]'))">
-      <div class="dash-tile-icon icon-stock">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
-      </div>
       <div class="dash-tile-label">Stock</div>
       <div class="dash-tile-value loading" id="dash-stock">…</div>
       <div class="dash-tile-sub" id="dash-stock-sub">below critical level</div>
@@ -1499,7 +1472,7 @@ async function loadGuests(){
   const data=await api('/rest/v1/guest_profiles?select=*&order=check_in.desc')||[];
   const el=document.getElementById('guests-list');
   if(!data.length){el.innerHTML='<div class="empty">No guest profiles yet</div>';return;}
-  el.innerHTML=`<table class="tbl"><thead><tr><th>Name</th><th>Property</th><th>Mobile</th><th>Platform</th><th>Check-in</th><th>Check-out</th><th>PIN</th><th></th></tr></thead><tbody>
+  el.innerHTML=`<table class="tbl"><thead><tr><th style="font-weight:700">Name</th><th style="font-weight:700">Property</th><th style="font-weight:700">Mobile</th><th style="font-weight:700">Platform</th><th style="font-weight:700">Check-in</th><th style="font-weight:700">Check-out</th><th style="font-weight:700">PIN</th><th></th></tr></thead><tbody>
     ${data.map(g=>`<tr><td><span style="font-family:'Playfair Display',serif;font-size:15px;font-weight:500;color:var(--text)">${g.name}</span></td><td>${g.property_name||'—'}</td><td>${g.mobile||'—'}</td><td>${g.platform||'—'}</td><td>${fmtDate(g.check_in)}</td><td>${fmtDate(g.check_out)}</td><td>••••</td>
     <td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick='editGuest(${JSON.stringify(g).replace(/'/g,"&#39;")})'>Edit</button> <button class="btn-del" onclick="deleteGuest('${g.id}','${(g.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`).join('')}
   </tbody></table>`;
