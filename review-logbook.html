@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB;--pur:#5B21B6;--pur-l:#EDE9FE}
+:root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--bg-d:#e7e0d5;--white:var(--bg);--r:#A32D2D;--r-l:#FCEBEB;--pur:#5B21B6;--pur-l:#EDE9FE}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:block;min-height:100vh}
 .sidebar{width:230px;background:var(--white);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
@@ -45,9 +45,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
 /* ── Tabs ── */
 .log-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.ltab{padding:9px 18px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
-.ltab.on{background:var(--br-l);color:var(--br)}
-.ltab:hover:not(.on){background:var(--bg);color:var(--text)}
+.ltab{padding:9px 18px;border-radius:999px;border:1.5px solid transparent;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.ltab.on{background:var(--br-l);color:var(--br);border-color:transparent}
+.ltab:hover:not(.on){background:var(--bg-d);color:var(--text)}
 
 /* ── Toolbar ── */
 .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
@@ -59,11 +59,11 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .filter-select:focus{box-shadow:0 0 0 2px var(--br)}
 
 /* ── Date range picker ── */
-.date-range{display:flex;align-items:center;gap:6px;padding:7px 12px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;background:var(--white);cursor:pointer;font-size:13px;color:var(--text);transition:all .15s;position:relative}
-.date-range:hover{color:var(--br)}
+.date-range{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid transparent;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;background:var(--white);cursor:pointer;font-size:13px;color:var(--text);transition:all .15s;position:relative}
+.date-range:hover{background:var(--bg-d);color:var(--br)}
 .date-range svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .date-range span{white-space:nowrap}
-.date-range.active{background:var(--br-l);color:var(--br)}
+.date-range.active{background:var(--br-l);color:var(--br);border-color:transparent}
 .date-range.active svg{stroke:var(--br)}
 .dp-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--white);border:none;border-radius:12px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:400;min-width:300px}
 .dp-dropdown.on{display:block}
@@ -72,9 +72,9 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 .dp-input{width:100%;padding:8px 10px;border:none;box-shadow:0 1px 5px rgba(0,0,0,.10);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none}
 .dp-input:focus{box-shadow:0 0 0 2px var(--br)}
 .dp-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.dp-preset{padding:5px 11px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
-.dp-preset:hover{background:var(--br-l);color:var(--br)}
-.dp-preset.on{background:var(--br-l);color:var(--br);font-weight:500}
+.dp-preset{padding:5px 11px;border-radius:999px;border:1.5px solid transparent;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;transition:all .15s}
+.dp-preset:hover{background:var(--bg-d);color:var(--br)}
+.dp-preset.on{background:var(--br-l);color:var(--br);border-color:transparent;font-weight:500}
 .dp-actions{display:flex;gap:8px;justify-content:flex-end}
 .dp-clear{padding:7px 14px;background:var(--white);color:var(--muted);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit}
 .dp-clear:hover{color:var(--r)}
@@ -84,9 +84,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 /* ── Action buttons ── */
 .action-btn{padding:9px 14px;background:var(--white);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
 .action-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.action-btn:hover{color:var(--br)}
-.action-btn.excel{background:var(--g-l);color:#27500A}
-.action-btn.excel:hover{background:#d4ecb4;color:#1c3a06}
+.action-btn:hover{background:var(--bg-d);color:var(--br)}
 .action-btn.spinning svg{animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .record-count{font-size:12px;color:var(--muted);margin-left:auto}
@@ -162,7 +160,7 @@ html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);
 
   <!-- Main -->
   <main class="main">
-    <div style="font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px">Reviews</div>
+    <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:4px">Reviews</div>
     <div class="pg-sub" id="pg-sub-text">Loading entries from Supabase…</div>
 
     <!-- KPIs -->
