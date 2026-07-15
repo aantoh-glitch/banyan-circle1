@@ -864,6 +864,17 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 </div><!-- /ac-pane-bc -->
 
+<!-- ── BILL LOG DETAIL MODAL ── -->
+<div class="modal" id="bill-detail-modal" onclick="if(event.target===this) closeBillDetail()">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-ttl">Bill Details</div>
+    <div id="bill-detail-body"></div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeBillDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── EXPENSE MODAL ── -->
 <div class="modal" id="ac-modal-exp">
   <div class="modal-card">
@@ -3255,15 +3266,8 @@ function renderBills(data) {
   if (!data.length) { el.innerHTML = '<div class="empty">No bills match your filters</div>'; return; }
 
   el.innerHTML = '<table class="tbl"><thead><tr>' +
-    '<th>Billed To</th><th>Item</th><th>Sub Item</th><th>Property</th><th>Date</th>' +
-    '<th style="text-align:right">Taxable</th>' +
-    '<th style="text-align:right">CGST</th>' +
-    '<th style="text-align:right">SGST</th>' +
-    '<th style="text-align:right">BC Amt</th>' +
-    '<th style="text-align:right">Rent Amt</th>' +
-    '<th style="text-align:right">Add-ons Amt</th>' +
+    '<th>Billed To</th><th>Item</th><th>Property</th>' +
     '<th style="text-align:right">Total</th>' +
-    '<th>Description</th>' +
     '<th>Status</th><th></th>' +
     '</tr></thead><tbody>' +
     data.map(function(b){
@@ -3273,42 +3277,75 @@ function renderBills(data) {
         var statusLbl = (b.payment_status==='paid'
           ? 'Received' + methodStr
           : 'Receivable') + hiddenTag;
-        var items = b.items || [];
-        var itemSummary = items.slice(0,2).map(function(i){return i.name;}).join(', ') + (items.length>2?' +' + (items.length-2) + ' more':'');
-        var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
-        var tax = calcBillTax(items);
-        var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
-        var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '<span style="color:var(--border)">—</span>';
-        var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '<span style="color:var(--border)">—</span>';
         var billedTo = b.guest_name || '—';
         // Item = first distinct item name across all rows
         var itemNames = [...new Set((b.items||[]).map(function(i){ return i.name||''; }).filter(Boolean))];
         var itemCol = itemNames.length ? itemNames.join(', ') : '—';
-        var subItemCol = b.sub_item || '';
         var billProp = b.property_name || '';
-        return '<tr>' +
+        var bJson = JSON.stringify(b).replace(/'/g,"&#39;");
+        return '<tr class="bill-row" onclick=\'showBillDetail(' + bJson + ')\' style="cursor:pointer">' +
           '<td style="font-weight:500">' + esc(billedTo) + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
-          '<td style="color:var(--muted);font-size:13px">' + (subItemCol ? esc(subItemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:13px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
-          '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
-          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + fmtF(taxable) + '</td>' +
-          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + cgstStr + '</td>' +
-          '<td style="text-align:right;font-size:13px;color:var(--muted)">' + sgstStr + '</td>' +
-          '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.bc_amount ? fmtF(b.bc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
-          '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.acc_amount ? fmtF(b.acc_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
-          '<td style="text-align:right;font-size:12px;color:var(--muted)">' + (b.addon_amount ? fmtF(b.addon_amount) : '<span style="color:var(--border)">&mdash;</span>') + '</td>' +
           '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:13px">' + fmtF(b.amount) + '</td>' +
-          '<td style="font-size:12px;color:var(--muted);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (b.remarks ? esc(b.remarks) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
-          '<td style="text-align:right;white-space:nowrap">' +
-            '<button class="btn-edit" onclick=\'editBill(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\' style="margin-right:4px">Edit</button>' +
+          '<td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">' +
+            '<button class="btn-edit" onclick=\'editBill(' + bJson + ')\' style="margin-right:4px">Edit</button>' +
             '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px">Remove</button>' +
-            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + JSON.stringify(b).replace(/'/g,"&#39;") + ')\'>PDF</button>' +
+            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + bJson + ')\'>PDF</button>' +
           '</td>' +
         '</tr>';
       }).join('') +
       '</tbody></table>';
+}
+
+// ── Bill Log row → detail popup ──
+function showBillDetail(b) {
+  var items = b.items || [];
+  var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
+  var tax = calcBillTax(items);
+  var taxable = (parseFloat(b.amount)||0) - tax.cgst - tax.sgst;
+  var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '—';
+  var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '—';
+  var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
+  var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+  var hiddenTag = (b.payment_method==='aggregator' && b.hide_from_guest) ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:9px;vertical-align:middle">Hidden from guest</span>' : '';
+  var statusLbl = (b.payment_status==='paid' ? 'Received' + methodStr : 'Receivable') + hiddenTag;
+  var itemNames = [...new Set(items.map(function(i){ return i.name||''; }).filter(Boolean))];
+  var itemCol = itemNames.length ? itemNames.join(', ') : '—';
+
+  var rows = [
+    ['Billed To', esc(b.guest_name || '—')],
+    ['Item', itemCol ? esc(itemCol) : '—'],
+    ['Sub Item', b.sub_item ? esc(b.sub_item) : '—'],
+    ['Property', b.property_name ? esc(b.property_name) : '—'],
+    ['Date', displayDate],
+    ['Taxable', fmtF(taxable)],
+    ['CGST', cgstStr],
+    ['SGST', sgstStr],
+    ['BC Amt', b.bc_amount ? fmtF(b.bc_amount) : '—'],
+    ['Rent Amt', b.acc_amount ? fmtF(b.acc_amount) : '—'],
+    ['Add-ons Amt', b.addon_amount ? fmtF(b.addon_amount) : '—'],
+    ['Total', fmtF(b.amount)],
+    ['Description', b.remarks ? esc(b.remarks) : '—'],
+  ];
+
+  var html = rows.map(function(r){
+    return '<div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:12px;color:var(--muted)">' + r[0] + '</span>' +
+      '<span style="font-size:13px;font-weight:500;text-align:right">' + r[1] + '</span>' +
+    '</div>';
+  }).join('') +
+  '<div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0">' +
+    '<span style="font-size:12px;color:var(--muted)">Status</span>' +
+    '<span class="bdg ' + statusCls + '">' + statusLbl + '</span>' +
+  '</div>';
+
+  document.getElementById('bill-detail-body').innerHTML = html;
+  document.getElementById('bill-detail-modal').classList.add('on');
+}
+function closeBillDetail() {
+  document.getElementById('bill-detail-modal').classList.remove('on');
 }
 
 async function deleteBill(id, name) {
