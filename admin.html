@@ -45,8 +45,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{background:rgba(0,0,0,.06);border-color:var(--border);color:var(--text)}
-.btn-del{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-del{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;box-shadow:0 2px 12px rgba(0,0,0,.07)}
 .btn-edit:hover{background:rgba(0,0,0,.06);color:var(--text)}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
@@ -189,9 +189,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .btn-p:hover{background:#712B13}.btn-p:disabled{opacity:.6;cursor:not-allowed}
 .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .btn-sec:hover{background:rgba(0,0,0,.06);border-color:var(--border);color:var(--text)}
-.btn-del{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-del{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;box-shadow:0 2px 12px rgba(0,0,0,.07)}
 .btn-del:hover{background:rgba(0,0,0,.06);color:var(--text)}
-.btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-edit{padding:5px 11px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;box-shadow:0 2px 12px rgba(0,0,0,.07)}
 .btn-edit:hover{background:rgba(0,0,0,.06);color:var(--text)}
 .btn-pdf{padding:5px 11px;background:var(--b-l);color:var(--b);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-pdf:hover{background:rgba(0,0,0,.06);color:var(--text)}
@@ -1871,7 +1871,7 @@ async function loadMaintPage(){
         <td style="white-space:nowrap;font-size:12px">${fmtDateTime(m.created_at)}</td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
           <button class="btn-edit" style="font-size:11px;padding:4px 8px" onclick='editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")})'>Edit</button>
-          <button onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px;transition:background .15s,color .15s" onmouseover="this.style.background='rgba(0,0,0,.06)';this.style.color='var(--text)'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">×</button>
+          <button onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))' style="background:var(--bg);border:none;cursor:pointer;color:var(--muted);padding:4px 8px;font-size:16px;line-height:1;border-radius:6px;transition:background .15s,color .15s;box-shadow:0 2px 12px rgba(0,0,0,.07)" onmouseover="this.style.background='rgba(0,0,0,.06)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'">×</button>
         </td>
       </tr>
       <tr class="maint-log-row" id="maint-log-${m.id}" style="display:none">
