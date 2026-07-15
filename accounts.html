@@ -48,8 +48,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .tbl td{padding:12px 10px;vertical-align:middle}
 .tbl tbody tr:nth-child(odd){background:var(--bg)}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:#000;color:#f3eee8}.bdg-a{background:var(--a-l);color:#633806}
-.bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:#000;color:#f3eee8}
+.bdg-g{background:var(--bg);color:var(--text)}.bdg-a{background:var(--bg);color:var(--text)}
+.bdg-r{background:var(--r-l);color:#791F1F}.bdg-b{background:var(--bg);color:var(--text)}
 .prop-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .ptab{padding:8px 16px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
 .ptab.on{background:#000;box-shadow:0 2px 12px rgba(0,0,0,.07);color:#f3eee8;font-weight:500}
@@ -158,7 +158,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 .tbl td{padding:12px 10px;vertical-align:middle}
 .tbl tbody tr:nth-child(odd){background:var(--bg)}
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.bdg-g{background:#000;color:#f3eee8}.bdg-a{background:var(--a-l);color:#633806}
+.bdg-g{background:var(--bg);color:var(--text)}.bdg-a{background:var(--bg);color:var(--text)}
 .guest-info-box{background:var(--white);border-radius:10px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
 .guest-info-name{font-family:'Cormorant Garamond',serif;font-size:17px;margin-bottom:4px}
 .guest-info-addr{font-size:13px;color:var(--muted);line-height:1.65}
@@ -3973,12 +3973,12 @@ function bcPaneRender() {
     var isBcCat = e.category === 'Banyan Circle';
     var primaryCell = isBcCat ? esc(e.item||'—') : esc(e.recipient||'—');
     var typeLabel = isBcCat ? 'BC Expense' : 'Payout';
-    return '<tr style="background:var(--r-l)">' +
-      '<td style="font-weight:500;color:var(--r)">' + primaryCell + '</td>' +
+    return '<tr>' +
+      '<td style="font-weight:500">' + primaryCell + '</td>' +
       '<td style="font-size:12px;color:var(--muted)">' + (isBcCat ? '—' : esc(e.recipient||'—')) + '</td>' +
       '<td style="font-size:12px;color:var(--muted)">Banyan Circle</td>' +
       '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + displayDate + '</td>' +
-      '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;color:var(--r)">−' + fmtF(amt) + '</td>' +
+      '<td style="text-align:right;font-family:\'DM Sans\',sans-serif">−' + fmtF(amt) + '</td>' +
       '<td style="font-size:11px;color:var(--muted)">' + typeLabel + '</td>' +
       '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
       '</tr>';
