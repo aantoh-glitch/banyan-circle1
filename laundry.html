@@ -103,7 +103,7 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .card-vendor{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{font-size:11px;color:var(--muted);margin-top:3px}
 .card-right{flex-shrink:0}
-.btn-collect{padding:9px 14px;background:var(--bg);color:var(--text);border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-collect{padding:9px 14px;background:var(--white);color:var(--text);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
 .btn-collect:active{background:rgba(0,0,0,.08)}
 
 /* mobile modal — bottom sheet */
@@ -459,9 +459,9 @@ async function loadList(){
           <td><span class="bdg" style="background:var(--bg);color:var(--text)">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
           <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
             ${r.status!=='collected'
-              ? `<button class="btn-edit" style="font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`
+              ? `<button class="btn-edit" style="font-size:12px;padding:6px 14px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.10)" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`
               : `<span style="font-size:11px;color:var(--muted)">✓ Done</span>`}
-            <button onclick='requirePin("Delete log",()=>deleteLog("${r.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px">×</button>
+            <button onclick='requirePin("Delete log",()=>deleteLog("${r.id}"))' style="background:var(--white);border:none;cursor:pointer;color:var(--muted);padding:4px 8px;font-size:16px;line-height:1;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.10)">×</button>
           </td>
         </tr>
         <tr id="detail-${r.id}" style="display:none">
