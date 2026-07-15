@@ -30,12 +30,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   .top-row .bookings-list { height: auto; max-height: none; overflow-y: visible; }
   .block-panel .block-form { grid-template-columns: 1fr; }
 }
-.pill-bar { display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow-x: auto; }
+.pill-bar { display: flex; align-items: center; gap: 14px; flex-wrap: nowrap; overflow-x: auto; }
 .prop-subbar { background: #f3eee8; padding: 0 32px; height: 44px; display: flex; align-items: center; overflow: hidden; }
 .prop-pill { padding: 6px 14px; border-radius: 999px; border: none; font-size: 13px; cursor: pointer; background: var(--white); color: var(--muted); font-family: inherit; transition: all .15s; white-space: nowrap; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
 .prop-pill:hover { background: rgba(0,0,0,.06); color: var(--text); }
 .prop-pill.active { background: #000; border-color: #000; color: #fff; font-weight: 500; }
-.pill-edit-btn { padding: 4px 8px; background: var(--bg); border: none; border-radius: 6px; font-size: 11px; cursor: pointer; color: var(--muted); font-family: inherit; transition: all .15s; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+.pill-edit-btn { width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--bg); border: none; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--muted); font-family: inherit; transition: all .15s; box-shadow: 0 2px 12px rgba(0,0,0,.07); flex-shrink: 0; }
 .pill-edit-btn:hover { background: rgba(0,0,0,.06); color: var(--text); }
 .topbar-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: auto; }
 .main { flex: 1; padding: 24px 32px; }
@@ -618,7 +618,7 @@ function getBookingForDate(dateS) {
 function renderPills() {
   const bar = document.getElementById('pillBar');
   const propPills = properties.map(p =>
-    '<span style="display:inline-flex;align-items:center;gap:3px;">' +
+    '<span style="display:inline-flex;align-items:center;gap:6px;">' +
     '<button class="prop-pill ' + (activeProperty===p.id?'active':'') + '" onclick="setActiveProperty(\'' + p.id + '\')">' + p.name + '</button>' +
     '<button class="pill-edit-btn" onclick="openEditProperty(\'' + p.id + '\')" title="Edit iCal URLs">&#9998;</button>' +
     '</span>'
