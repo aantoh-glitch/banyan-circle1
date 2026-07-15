@@ -1857,23 +1857,23 @@ async function loadMaintPage(){
     <tbody>${data.map(m=>`
       <tr class="maint-row" style="cursor:pointer" onclick="toggleMaintLog(this,'${m.id}')">
         <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${m.property_name||'—'}</td>
-        <td style="max-width:240px">${m.issue}</td>
+        <td style="max-width:240px;font-size:12px">${m.issue}</td>
         <td><span style="font-size:12px">${m.priority||'normal'}</span></td>
-        <td><span class="bdg" style="background:var(--bg);color:var(--text)">${(m.status||'open').replace('_',' ')}</span></td>
+        <td><span class="bdg" style="background:var(--bg);color:var(--text);font-size:12px">${(m.status||'open').replace('_',' ')}</span></td>
         <td onclick="event.stopPropagation()">
           <button class="btn-edit" style="font-size:12px;padding:6px 14px;font-weight:600;letter-spacing:.3px" onclick='requirePin("Log update",()=>openMaintUpdate("${m.id}","${(m.issue||'').replace(/"/g,'&quot;').replace(/'/g,"&#39;")}","${m.status||'open'}"))'>Update Status</button>
         </td>
         <td style="white-space:nowrap;font-size:12px">${fmtDateTime(m.created_at)}</td>
         <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
-          <button class="btn-edit" style="font-size:11px;padding:4px 8px" onclick='editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")})'>Edit</button>
-          <button onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))' style="background:var(--bg);border:none;cursor:pointer;color:var(--muted);padding:4px 8px;font-size:16px;line-height:1;border-radius:6px;transition:background .15s,color .15s;box-shadow:0 2px 12px rgba(0,0,0,.07)" onmouseover="this.style.background='rgba(0,0,0,.06)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'">×</button>
+          <button class="btn-edit" style="font-size:12px;padding:4px 8px" onclick='editMaint(${JSON.stringify(m).replace(/'/g,"&#39;")})'>Edit</button>
+          <button onclick='requirePin("Delete issue",()=>deleteMaint("${m.id}"))' style="background:var(--bg);border:none;cursor:pointer;color:var(--muted);padding:4px 8px;font-size:12px;line-height:1;border-radius:6px;transition:background .15s,color .15s;box-shadow:0 2px 12px rgba(0,0,0,.07)" onmouseover="this.style.background='rgba(0,0,0,.06)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'">×</button>
         </td>
       </tr>
       <tr class="maint-log-row" id="maint-log-${m.id}" style="display:none">
         <td colspan="7" style="padding:0">
-          <div style="background:var(--bg);padding:14px 20px;font-size:13px">
-            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Update Log</div>
-            <div id="maint-log-entries-${m.id}" style="color:var(--muted);font-size:13px">Loading…</div>
+          <div style="background:var(--bg);padding:14px 20px;font-size:12px">
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:10px">Update Log</div>
+            <div id="maint-log-entries-${m.id}" style="color:var(--muted);font-size:12px">Loading…</div>
           </div>
         </td>
       </tr>`).join('')}
@@ -1907,8 +1907,8 @@ async function toggleMaintLog(row, id){
     entriesEl.innerHTML = logs.map(l=>`
       <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start">
         <div style="white-space:nowrap;color:var(--muted);font-size:12px;min-width:160px">${fmtDateTime(l.created_at)}</div>
-        <div style="flex:1">${l.note}</div>
-        ${l.new_status?`<span class="bdg ${l.new_status==='resolved'?'bdg-g':l.new_status==='in_progress'?'bdg-a':'bdg-r'}" style="flex-shrink:0">${l.new_status.replace('_',' ')}</span>`:''}
+        <div style="flex:1;font-size:12px">${l.note}</div>
+        ${l.new_status?`<span class="bdg ${l.new_status==='resolved'?'bdg-g':l.new_status==='in_progress'?'bdg-a':'bdg-r'}" style="flex-shrink:0;font-size:12px">${l.new_status.replace('_',' ')}</span>`:''}
         <div style="font-size:12px;color:var(--muted);white-space:nowrap">${l.updated_by||''}</div>
       </div>`).join('');
   } catch(e){ entriesEl.innerHTML='<em>Could not load updates.</em>'; }
