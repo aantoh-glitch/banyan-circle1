@@ -60,7 +60,7 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-status-wrap{padding:12px 24px 4px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 .m-status-wrap::-webkit-scrollbar{display:none}
 .stab{padding:7px 14px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit;white-space:nowrap;flex-shrink:0}
-.stab.on{background:var(--br-l);color:var(--br);font-weight:500;box-shadow:0 0 0 1.5px var(--br) inset,0 2px 12px rgba(0,0,0,.07)}
+.stab.on{background:#000;color:#f3eee8;font-weight:500;box-shadow:0 2px 12px rgba(0,0,0,.07)}
 .m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 24px 8px}
 .m-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .lf-card{background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:14px;padding:16px;position:relative}
@@ -75,8 +75,8 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .lf-card-logged{font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px}
 .lf-card-actions{display:flex;gap:8px;margin-top:12px}
 .lf-act-btn{flex:1;padding:10px;border:none;border-radius:10px;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.08);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
-.lf-act-btn.active-informed{background:var(--b-l);color:#0C447C;box-shadow:0 0 0 1.5px #185FA5 inset}
-.lf-act-btn.active-collected{background:var(--g-l);color:#27500A;box-shadow:0 0 0 1.5px #3B6D11 inset}
+.lf-act-btn.active-informed{background:#000;color:#f3eee8;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.lf-act-btn.active-collected{background:#000;color:#f3eee8;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .lf-act-btn:active{opacity:.7}
 /* mobile modal — bottom sheet */
 body.mobile .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
@@ -101,9 +101,9 @@ body.mobile .btn-sec:active{background:var(--bg)}
 
 /* shared */
 .bdg{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500}
-.s-pending{background:var(--a-l);color:#633806}
-.s-informed{background:var(--b-l);color:#0C447C}
-.s-collected{background:var(--g-l);color:#27500A}
+.s-pending{background:var(--bg);color:var(--text)}
+.s-informed{background:var(--bg);color:var(--text)}
+.s-collected{background:var(--bg);color:var(--text)}
 .sm-toggle{position:relative;display:inline-block;width:36px;height:20px}
 .sm-toggle input{opacity:0;width:0;height:0}
 .sm-toggle-s{position:absolute;cursor:pointer;inset:0;background:#ddd;border-radius:999px;transition:.2s}
@@ -491,7 +491,7 @@ function renderDesktop() {
       <td><label class="sm-toggle"><input type="checkbox" ${i.status==='collected'?'checked':''} onchange="toggleCollected('${i.id}',this.checked)"/><span class="sm-toggle-s"></span></label></td>
       <td style="text-align:right;white-space:nowrap">
         <button style="padding:5px 10px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;margin-right:4px" onmouseover="this.style.background='var(--br-l)';this.style.color='var(--br)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'" onclick="openEditModal('${i.id}')">Edit</button>
-        <button style="padding:5px 10px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit" onclick="deleteItem('${i.id}')">Delete</button>
+        <button style="padding:5px 10px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit" onmouseover="this.style.background='var(--br-l)';this.style.color='var(--br)'" onmouseout="this.style.background='var(--bg)';this.style.color='var(--muted)'" onclick="deleteItem('${i.id}')">Delete</button>
       </td>
     </tr>`).join('');
 }
