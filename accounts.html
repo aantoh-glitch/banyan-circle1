@@ -396,9 +396,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <table class="tbl">
       <thead><tr>
-        <th>Item</th><th>Category</th><th>Payout Type</th><th>Recipient</th><th>Property</th><th>Description</th><th>Pre-tax</th><th>TDS</th><th>Amount</th><th>Status</th><th>Date</th><th>Receipt</th><th></th>
+        <th>Item</th><th>Recipient</th><th>Property</th><th style="text-align:right">Amount</th><th></th>
       </tr></thead>
-      <tbody id="ac-exp-tbody"><tr><td colspan="14" class="empty">Loading…</td></tr></tbody>
+      <tbody id="ac-exp-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </div><!-- /ac-pane-expenses -->
@@ -867,7 +867,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <!-- ── BILL LOG DETAIL MODAL ── -->
 <div class="modal" id="bill-detail-modal" onclick="if(event.target===this) closeBillDetail()">
   <div class="modal-card" style="max-width:440px">
-    <div class="modal-ttl">Bill Details</div>
+    <div class="modal-ttl" id="bill-detail-ttl">Details</div>
     <div id="bill-detail-body"></div>
     <div class="modal-actions">
       <button class="btn-sec" onclick="closeBillDetail()">Close</button>
@@ -1218,43 +1218,73 @@ function acRenderExp() {
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
-  if(!d.length){ tb.innerHTML='<tr><td colspan="14" class="empty">No expenses found.</td></tr>'; return; }
+  if(!d.length){ tb.innerHTML='<tr><td colspan="5" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
     const dash = '<span style="color:var(--border)">—</span>';
-    const payoutTypeLbl = e.payout_type || dash;
     const recipientLbl  = e.recipient   || dash;
     const propertyLbl   = e.property_name || dash;
-    const descLbl       = e.description ? `<span style="font-size:12px;color:var(--muted)">${e.description}</span>` : dash;
-    // Utility type badge shown in Payout Type column for Utility rows
-    const payoutTypeCell = e.category==='Utility' && e.utility_type
-      ? `<span class="bdg bdg-b" style="font-size:10px">${e.utility_type}</span>`
-      : (e.payout_type ? `<span style="font-size:12px">${e.payout_type}</span>` : dash);
+    const eJson = JSON.stringify(e).replace(/'/g,"&#39;");
     return `
-    <tr>
+    <tr class="bill-row" onclick='acShowExpDetail(${eJson})' style="cursor:pointer">
       <td style="font-weight:500">${e.item||'—'}</td>
-      <td><span class="bdg bdg-b">${e.category||'—'}</span></td>
-      <td>${payoutTypeCell}</td>
       <td style="font-size:12px;color:var(--muted)">${recipientLbl}</td>
       <td style="font-size:12px;color:var(--muted)">${propertyLbl}</td>
-      <td>${descLbl}</td>
-      <td style="color:var(--muted);font-size:12px">${e.pretax_amount ? acFmt(e.pretax_amount) : dash}</td>
-      <td style="font-size:12px">${e.tds_amount ? '<span style="color:#A32D2D">-'+acFmt(e.tds_amount)+'</span>'+(e.tds_pct?'<br/><span style="font-size:10px;color:var(--muted)">'+e.tds_pct+'%</span>':'') : dash}</td>
-      <td style="font-weight:500">${acFmt(e.amount)}</td>
-      <td>${
-        e.status==='Paid'             ? '<span class="bdg bdg-g">Paid</span>' :
-        e.status==='Pending'          ? '<span class="bdg bdg-a">Pending</span>' :
-        e.status==='To be paid to landlord' ? '<span class="bdg bdg-tobepaid">To be paid to landlord</span>' :
-        e.status==='Paid to landlord' ? '<span class="bdg bdg-paidlandlord">Paid to landlord</span>' :
-        '<span class="bdg bdg-a">'+e.status+'</span>'
-      }</td>
-      <td style="color:var(--muted);font-size:12px">${(e.date||e.created_at||'').slice(0,10)||'—'}</td>
-      <td>${e.file_url?`<a href="${e.file_url}" target="_blank" style="color:var(--br);font-size:12px">View ↗</a>`:'<span style="color:var(--muted);font-size:12px">—</span>'}</td>
-      <td style="white-space:nowrap">
-        <button class="btn-edit" onclick='acEditExp(${JSON.stringify(e).replace(/'/g,"&#39;")})'>Edit</button>
+      <td style="text-align:right;font-weight:500">${acFmt(e.amount)}</td>
+      <td style="white-space:nowrap" onclick="event.stopPropagation()">
+        <button class="btn-edit" onclick='acEditExp(${eJson})'>Edit</button>
         <button class="btn-del"  onclick="acDelExp('${e.id}')">Delete</button>
       </td>
     </tr>`;
   }).join('');
+}
+
+// ── Expenses row → detail popup ──
+function acShowExpDetail(e) {
+  const dash = '—';
+  const payoutTypeCell = e.category==='Utility' && e.utility_type
+    ? e.utility_type
+    : (e.payout_type || dash);
+  const statusLbl =
+    e.status==='Paid'                   ? 'Paid' :
+    e.status==='Pending'                ? 'Pending' :
+    e.status==='To be paid to landlord' ? 'To be paid to landlord' :
+    e.status==='Paid to landlord'       ? 'Paid to landlord' :
+    (e.status || dash);
+  const statusCls =
+    e.status==='Paid'                   ? 'bdg-g' :
+    e.status==='Pending'                ? 'bdg-a' :
+    e.status==='To be paid to landlord' ? 'bdg-tobepaid' :
+    e.status==='Paid to landlord'       ? 'bdg-paidlandlord' :
+    'bdg-a';
+  const tdsCell = e.tds_amount ? '-'+acFmt(e.tds_amount)+(e.tds_pct?' ('+e.tds_pct+'%)':'') : dash;
+
+  const rows = [
+    ['Item', e.item || dash],
+    ['Category', e.category || dash],
+    ['Payout Type', payoutTypeCell],
+    ['Recipient', e.recipient || dash],
+    ['Property', e.property_name || dash],
+    ['Description', e.description || dash],
+    ['Pre-tax', e.pretax_amount ? acFmt(e.pretax_amount) : dash],
+    ['TDS', tdsCell],
+    ['Amount', acFmt(e.amount)],
+    ['Date', (e.date||e.created_at||'').slice(0,10) || dash],
+    ['Receipt', e.file_url ? `<a href="${e.file_url}" target="_blank" style="color:var(--br)">View ↗</a>` : dash],
+  ];
+
+  const html = rows.map(r => `
+    <div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">${r[0]}</span>
+      <span style="font-size:13px;font-weight:500;text-align:right">${r[1]}</span>
+    </div>`).join('') +
+    `<div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0">
+      <span style="font-size:12px;color:var(--muted)">Status</span>
+      <span class="bdg ${statusCls}">${statusLbl}</span>
+    </div>`;
+
+  document.getElementById('bill-detail-ttl').textContent = 'Expense Details';
+  document.getElementById('bill-detail-body').innerHTML = html;
+  document.getElementById('bill-detail-modal').classList.add('on');
 }
 
 function acFilterCat(btn) {
@@ -3341,6 +3371,7 @@ function showBillDetail(b) {
     '<span class="bdg ' + statusCls + '">' + statusLbl + '</span>' +
   '</div>';
 
+  document.getElementById('bill-detail-ttl').textContent = 'Bill Details';
   document.getElementById('bill-detail-body').innerHTML = html;
   document.getElementById('bill-detail-modal').classList.add('on');
 }
