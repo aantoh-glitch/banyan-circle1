@@ -40,13 +40,14 @@ body.desktop{font-family:'DM Sans',sans-serif}
 .pg-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
 .card{background:var(--white);border-radius:12px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:20px;margin-bottom:16px}
 .ptab{padding:8px 16px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:13px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.ptab.on{background:var(--br-l);color:var(--br);font-weight:500}
+.ptab.on{background:#000;color:#fff;font-weight:500;border:none}
+.ptab:hover:not(.on){background:rgba(0,0,0,.06)}
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;padding:10px;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg)}
 .tbl td{padding:12px 10px;vertical-align:middle}
 .tbl tbody tr:nth-child(4n+1),.tbl tbody tr:nth-child(4n+2){background:var(--bg)}
 .btn-edit{padding:6px 12px;background:var(--bg);color:var(--muted);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
-.btn-edit:hover{background:var(--br-l);color:var(--br)}
+.btn-edit:hover{background:rgba(0,0,0,.06);color:var(--text)}
 
 /* desktop modal — centered */
 body.desktop .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;align-items:center;justify-content:center;padding:20px}
@@ -65,7 +66,7 @@ body.desktop .btn-p{padding:10px 18px;background:var(--br);color:#fff;border:non
 body.desktop .btn-p:hover{background:#712B13}
 body.desktop .btn-p:disabled{opacity:.6;cursor:not-allowed}
 body.desktop .btn-sec{padding:9px 16px;background:var(--white);color:var(--text);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-body.desktop .btn-sec:hover{border-color:var(--br);color:var(--br)}
+body.desktop .btn-sec:hover{background:rgba(0,0,0,.06);color:var(--text)}
 body.desktop .row-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 body.desktop .item-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px}
 body.desktop .item-row{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:8px;padding:8px 10px}
@@ -92,7 +93,8 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .m-btn-log:active{background:#712B13}
 .m-status-wrap{padding:12px 24px 4px;display:flex;gap:8px}
 .stab{padding:7px 14px;border-radius:999px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);font-size:12px;cursor:pointer;background:var(--white);color:var(--muted);font-family:inherit}
-.stab.on{background:var(--br-l);color:var(--br);font-weight:500}
+.stab.on{background:#000;color:#fff;font-weight:500;border:none}
+.stab:hover:not(.on){background:rgba(0,0,0,.06)}
 .m-sec-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 24px 8px}
 .m-cards{padding:0 16px;display:flex;flex-direction:column;gap:10px}
 .log-card{background:var(--white);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
@@ -101,8 +103,8 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .card-vendor{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{font-size:11px;color:var(--muted);margin-top:3px}
 .card-right{flex-shrink:0}
-.btn-collect{padding:9px 14px;background:var(--g-l);color:var(--g);border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
-.btn-collect:active{background:#c8e8aa}
+.btn-collect{padding:9px 14px;background:var(--bg);color:var(--text);border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-collect:active{background:rgba(0,0,0,.08)}
 
 /* mobile modal — bottom sheet */
 body.mobile .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
@@ -431,7 +433,7 @@ async function loadList(){
         </div>
         <div class="card-right">
           ${isDone
-            ? `<span class="bdg bdg-g">✓ Collected Back</span>`
+            ? `<span class="bdg" style="background:var(--bg);color:var(--text)">✓ Collected Back</span>`
             : `<button class="btn-collect" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`}
         </div>
       </div>`;
@@ -454,10 +456,10 @@ async function loadList(){
           <td style="font-size:12px;white-space:nowrap">${fmtDT(r.sent_at)}</td>
           <td style="font-size:12px;white-space:nowrap">${r.promised_return_at?fmtDT(r.promised_return_at):'—'}</td>
           <td style="font-size:12px">${r.staff_handled||'—'}</td>
-          <td><span class="bdg ${r.status==='collected'?'bdg-g':'bdg-a'}">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
+          <td><span class="bdg" style="background:var(--bg);color:var(--text)">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
           <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
             ${r.status!=='collected'
-              ? `<button class="btn-edit" style="background:var(--g-l);color:var(--g);font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`
+              ? `<button class="btn-edit" style="font-size:12px;padding:6px 14px;font-weight:600" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`
               : `<span style="font-size:11px;color:var(--muted)">✓ Done</span>`}
             <button onclick='requirePin("Delete log",()=>deleteLog("${r.id}"))' style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;font-size:16px;line-height:1;border-radius:6px">×</button>
           </td>
