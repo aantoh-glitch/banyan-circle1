@@ -3303,7 +3303,7 @@ function renderBills(data) {
     data.map(function(b){
         var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
         var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
-        var hiddenTag = (b.payment_method==='aggregator' && b.hide_from_guest) ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:9px;vertical-align:middle">Hidden from guest</span>' : '';
+        var hiddenTag = (b.payment_method==='aggregator' && b.hide_from_guest) ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:12px;vertical-align:middle">Hidden from guest</span>' : '';
         var statusLbl = (b.payment_status==='paid'
           ? 'Received' + methodStr
           : 'Receivable') + hiddenTag;
@@ -3315,14 +3315,14 @@ function renderBills(data) {
         var bJson = JSON.stringify(b).replace(/'/g,"&#39;");
         return '<tr class="bill-row" onclick=\'showBillDetail(' + bJson + ')\' style="cursor:pointer">' +
           '<td style="font-weight:500">' + esc(billedTo) + '</td>' +
-          '<td style="color:var(--muted);font-size:13px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
-          '<td style="color:var(--muted);font-size:13px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
-          '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:13px">' + fmtF(b.amount) + '</td>' +
-          '<td><span class="bdg ' + statusCls + '">' + statusLbl + '</span></td>' +
+          '<td style="color:var(--muted);font-size:12px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
+          '<td style="color:var(--muted);font-size:12px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
+          '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:12px">' + fmtF(b.amount) + '</td>' +
+          '<td><span class="bdg ' + statusCls + '" style="font-size:12px">' + statusLbl + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">' +
-            '<button class="btn-edit" onclick=\'editBill(' + bJson + ')\' style="margin-right:4px">Edit</button>' +
-            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px">Remove</button>' +
-            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + bJson + ')\'>PDF</button>' +
+            '<button class="btn-edit" onclick=\'editBill(' + bJson + ')\' style="margin-right:4px;font-size:12px">Edit</button>' +
+            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px;font-size:12px">Remove</button>' +
+            '<button class="btn-pdf" onclick=\'downloadBillPdf(' + bJson + ')\' style="font-size:12px">PDF</button>' +
           '</td>' +
         '</tr>';
       }).join('') +
