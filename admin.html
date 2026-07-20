@@ -706,19 +706,32 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
 <!-- TALENTS PAGE -->
 <div class="pg" id="pg-talents">
-  <div class="pg-title">Talents</div>
-  <div class="pg-sub">Performers and facilitators — click a talent to open their portal</div>
-  <div class="card">
-    <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;gap:8px">
-        <button class="btn-sec" onclick="openTalentDocModal()" style="display:flex;align-items:center;gap:6px">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          Add Talent Documents
-        </button>
-        <button class="btn-p" onclick="openTalentModal()">+ Add talent</button>
+  <div id="talent-selector">
+    <div class="pg-title">Talents</div>
+    <div class="pg-sub">Performers and facilitators — click a talent to open their portal</div>
+    <div class="card">
+      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:8px">
+          <button class="btn-sec" onclick="openTalentDocModal()" style="display:flex;align-items:center;gap:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Add Talent Documents
+          </button>
+          <button class="btn-p" onclick="openTalentModal()">+ Add talent</button>
+        </div>
       </div>
+      <div id="talents-list">Loading…</div>
     </div>
-    <div id="talents-list">Loading…</div>
+  </div>
+  <!-- Inline talent portal iframe -->
+  <div id="talent-iframe-view" style="display:none;flex-direction:column;height:calc(100vh - 80px)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <button onclick="closeTalentPortalView()" class="btn-sec" style="display:flex;align-items:center;gap:6px;font-size:13px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+        Back
+      </button>
+      <span id="talent-portal-label" style="font-family:'Playfair Display',serif;font-size:18px"></span>
+    </div>
+    <iframe id="talent-portal-frame" src="" style="flex:1;width:100%;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:12px;background:var(--white)"></iframe>
   </div>
 </div>
 
@@ -2155,8 +2168,17 @@ function deleteTalent(id,name){
   });
 }
 function openTalentPortal(id,name,pin){
-  // Admin goes directly to talent schedule — no PIN prompt
-  window.open('talent.html?id='+encodeURIComponent(id)+'&name='+encodeURIComponent(name)+'&admin=1','_blank');
+  // Admin goes directly to talent schedule — no PIN prompt, opens inline as iframe
+  document.getElementById('talent-selector').style.display='none';
+  const view=document.getElementById('talent-iframe-view');
+  view.style.display='flex';
+  document.getElementById('talent-portal-label').textContent=name;
+  document.getElementById('talent-portal-frame').src='talent.html?id='+encodeURIComponent(id)+'&name='+encodeURIComponent(name)+'&admin=1';
+}
+function closeTalentPortalView(){
+  document.getElementById('talent-portal-frame').src='';
+  document.getElementById('talent-iframe-view').style.display='none';
+  document.getElementById('talent-selector').style.display='';
 }
 
 
