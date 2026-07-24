@@ -121,6 +121,16 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .bundle-sub-row.hidden{display:none}
 .bundle-progress{font-size:12px;color:var(--muted);margin-top:2px}
 
+/* ── Expandable task detail (single-task rows) ── */
+.task-row{cursor:pointer}
+.task-toggle-icon{width:16px;height:16px;border-radius:5px;background:var(--bg);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:transform .2s;margin-top:2px}
+.task-toggle-icon.open{transform:rotate(90deg)}
+.task-detail-row td{background:#f3eee8;border-left:3px solid var(--br-l)}
+.task-detail-row.hidden{display:none}
+.task-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px 18px;padding:6px 4px}
+.task-detail-item-label{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:3px}
+.task-detail-item-value{font-size:12px;color:var(--text)}
+
 /* ── Staff task cards (mobile/staff view) ── */
 .task-card{background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:12px;padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
 .task-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
@@ -810,9 +820,8 @@ function renderAdminTable(tasks){
     let rows = '';
     groups.forEach(g => { rows += g.type==='single' ? adminRow(g.data) : bundleRow(g.data); });
     el.innerHTML = '<table class="tbl"><thead><tr>'
-      + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
-      + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
-      + '<th style="font-size:12px">Created</th><th style="font-size:12px">Ack\'d At</th><th style="font-size:12px">Done At</th>'
+      + '<th style="width:30%">Task</th><th>Assigned To</th><th>Acknowledged</th><th>Completed</th>'
+      + '<th style="font-size:12px">Ack\'d At</th><th style="font-size:12px">Done At</th>'
       + '<th></th>'
       + '</tr></thead><tbody>' + rows + '</tbody></table>';
   }
@@ -845,9 +854,8 @@ function renderAdminTable(tasks){
     let cRows = '';
     cGroups.forEach(g => { cRows += g.type==='single' ? adminRow(g.data) : bundleRow(g.data); });
     if(logList) logList.innerHTML = '<table class="tbl"><thead><tr>'
-      + '<th style="width:24%">Task</th><th>Assigned To</th><th>Property</th>'
-      + '<th>Type</th><th>Priority</th><th>Due</th><th>Acknowledged</th><th>Completed</th>'
-      + '<th style="font-size:12px">Created</th><th style="font-size:12px">Ack\'d At</th><th style="font-size:12px">Done At</th>'
+      + '<th style="width:30%">Task</th><th>Assigned To</th><th>Acknowledged</th><th>Completed</th>'
+      + '<th style="font-size:12px">Ack\'d At</th><th style="font-size:12px">Done At</th>'
       + '<th></th>'
       + '</tr></thead><tbody>' + cRows + '</tbody></table>';
   }
@@ -869,10 +877,11 @@ function bundleRow(b){
   const staffCell = b.staff_name
     ? '<div style="display:flex;align-items:center;gap:8px"><div class="staff-avatar">'+initials+'</div><span>'+escHtml(b.staff_name)+'</span></div>'
     : '<span style="color:var(--muted)">—</span>';
-  const due = b.due_date
-    ? new Date(b.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
-    : '<span style="color:var(--muted)">—</span>';
   const bid = 'bundle-' + b.bundle_id.replace(/-/g,'');
+  const first = b.tasks[0] || {};
+  const dueTxt = b.due_date
+    ? new Date(b.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
+    : '—';
 
   let html = '<tr class="bundle-row" onclick="toggleBundle(\''+bid+'\',this)">'
     + '<td><div class="bundle-toggle">'
@@ -882,25 +891,35 @@ function bundleRow(b){
     + '<div class="bundle-progress">' + done + '/' + total + ' completed · ' + ackd + '/' + total + ' acknowledged</div>'
     + '</td>'
     + '<td>' + staffCell + '</td>'
-    + '<td>' + (b.tasks[0]&&b.tasks[0].property_name ? '<span style="font-size:12px;font-weight:500;background:var(--br-l);color:var(--br);padding:2px 8px;border-radius:6px">'+escHtml(b.tasks[0].property_name)+'</span>' : '<span style="color:var(--muted)">—</span>') + '</td>'
-    + '<td>' + (b.tasks[0]&&b.tasks[0].task_type ? taskTypeBadge(b.tasks[0].task_type) : '<span style="color:var(--muted)">—</span>') + '</td>'
-    + '<td>' + priorityBadge(b.priority) + '</td>'
-    + '<td style="font-size:12px">' + due + '</td>'
     + '<td id="bundle-ack-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + ackd + '/' + total + '</td>'
     + '<td id="bundle-done-'+b.bundle_id+'" style="color:var(--muted);font-size:12px">' + done + '/' + total + '</td>'
-    + '<td></td><td></td><td></td>'
+    + '<td></td><td></td>'
     + '<td style="text-align:right;white-space:nowrap"><button class="btn-edit" onclick="event.stopPropagation();editBundle(\''+b.bundle_id+'\')">Edit</button> <button class="btn-del" onclick="event.stopPropagation();deleteBundleTasks(\''+b.bundle_id+'\')">Delete all</button></td>'
     + '</tr>';
 
-  // Sub-rows (hidden by default)
+  // Shared bundle details (Property / Type / Priority / Due) — revealed on expand,
+  // right above the individual tasks in the bundle.
+  html += `<tr class="bundle-sub-row hidden" id="sub-${bid}">
+    <td colspan="7">
+      <div class="task-detail-grid">
+        <div><div class="task-detail-item-label">Property</div><div class="task-detail-item-value">${first.property_name?escHtml(first.property_name):'—'}</div></div>
+        <div><div class="task-detail-item-label">Type</div><div class="task-detail-item-value">${first.task_type?escHtml(first.task_type):'—'}</div></div>
+        <div><div class="task-detail-item-label">Priority</div><div class="task-detail-item-value" style="text-transform:capitalize">${b.priority||'medium'}</div></div>
+        <div><div class="task-detail-item-label">Due</div><div class="task-detail-item-value">${dueTxt}</div></div>
+      </div>
+    </td>
+  </tr>`;
+
+  // Sub-rows (hidden by default) — one per task in the bundle
   tasks.forEach(t => {
     const tJson = JSON.stringify(t).replace(/'/g,"&#39;");
     html += `<tr class="bundle-sub-row hidden" id="sub-${bid}">
-      <td><div style="font-size:12px;line-height:1.4;color:var(--text)">${escHtml(t.work)}</div></td>
-      <td></td><td></td><td></td><td></td><td></td>
+      <td colspan="2">
+        <div style="font-size:12px;line-height:1.4;color:var(--text)">${escHtml(t.work)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Created ${fmtTsPlain(t.created_at)}</div>
+      </td>
       <td>${ackWidget(t.id,'acknowledged',t.acknowledged,'admin')}</td>
       <td>${ackWidget(t.id,'completed',t.completed,'admin')}</td>
-      <td>${fmtTs(t.created_at)}</td>
       <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
       <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
       <td style="text-align:right;white-space:nowrap">
@@ -941,34 +960,52 @@ function fmtTs(val){
   return `<span style="font-size:12px;color:var(--muted)">${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}<br>${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}</span>`;
 }
 
+// Plain single-line timestamp, used inside detail panels (no wrapping markup)
+function fmtTsPlain(val){
+  if(!val) return '—';
+  const d = new Date(val);
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + ' · ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+
 function adminRow(t){
   const ackOn = t.acknowledged;
   const initials = (t.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const staffCell = t.staff_name
     ? `<div style="display:flex;align-items:center;gap:8px"><div class="staff-avatar">${initials}</div><span>${escHtml(t.staff_name)}</span></div>`
     : '<span style="color:var(--muted)">—</span>';
-  const due = t.due_date
-    ? new Date(t.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
-    : '<span style="color:var(--muted)">—</span>';
   const notes = t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:3px">${escHtml(t.notes)}</div>` : '';
-  const propCell = t.property_name ? `<span style="font-size:12px;font-weight:500;background:var(--bg);color:var(--text);padding:2px 8px;border-radius:6px">${escHtml(t.property_name)}</span>` : '<span style="color:var(--muted)">—</span>';
-  return `<tr id="row-${t.id}">
-    <td><div style="font-weight:500;line-height:1.4">${escHtml(t.work)}</div>${notes}</td>
+  return `<tr class="task-row" id="row-${t.id}" onclick="toggleTaskDetail('${t.id}')">
+    <td><div style="display:flex;align-items:flex-start;gap:8px"><span class="task-toggle-icon" id="icon-${t.id}">›</span><div><div style="font-weight:500;line-height:1.4">${escHtml(t.work)}</div>${notes}</div></div></td>
     <td>${staffCell}</td>
-    <td>${propCell}</td>
-    <td>${taskTypeBadge(t.task_type)}</td>
-    <td>${priorityBadge(t.priority)}</td>
-    <td style="font-size:12px">${due}</td>
     <td>${ackWidget(t.id, 'acknowledged', ackOn, 'admin')}</td>
     <td>${ackWidget(t.id, 'completed', t.completed, 'admin')}</td>
-    <td>${fmtTs(t.created_at)}</td>
     <td id="ts-ack-${t.id}">${fmtTs(t.acknowledged_at)}</td>
     <td id="ts-done-${t.id}">${fmtTs(t.completed_at)}</td>
     <td style="text-align:right;white-space:nowrap">
-      <button class="btn-edit" onclick='editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
+      <button class="btn-edit" onclick='event.stopPropagation();editTask(${JSON.stringify(t).replace(/'/g,"&#39;")})'>Edit</button>
       <button class="btn-del" onclick="event.stopPropagation();deleteTask('${t.id}')">Delete</button>
     </td>
+  </tr>
+  <tr class="task-detail-row hidden" id="detail-${t.id}">
+    <td colspan="7">
+      <div class="task-detail-grid">
+        <div><div class="task-detail-item-label">Property</div><div class="task-detail-item-value">${t.property_name?escHtml(t.property_name):'—'}</div></div>
+        <div><div class="task-detail-item-label">Type</div><div class="task-detail-item-value">${t.task_type?escHtml(t.task_type):'—'}</div></div>
+        <div><div class="task-detail-item-label">Priority</div><div class="task-detail-item-value" style="text-transform:capitalize">${t.priority||'medium'}</div></div>
+        <div><div class="task-detail-item-label">Due</div><div class="task-detail-item-value">${t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—'}</div></div>
+        <div><div class="task-detail-item-label">Created</div><div class="task-detail-item-value">${fmtTsPlain(t.created_at)}</div></div>
+      </div>
+    </td>
   </tr>`;
+}
+
+function toggleTaskDetail(id){
+  const icon   = document.getElementById('icon-'+id);
+  const detail = document.getElementById('detail-'+id);
+  if(!detail) return;
+  const isHidden = detail.classList.contains('hidden');
+  if(isHidden){ detail.classList.remove('hidden'); if(icon) icon.classList.add('open'); }
+  else { detail.classList.add('hidden'); if(icon) icon.classList.remove('open'); }
 }
 
 // ── Modal ──────────────────────────────────────────────────────────
@@ -1721,7 +1758,7 @@ function staffCard(t){
 // ════════════════════════════════════════════════════════════════════
 function ackWidget(id, field, isOn, view){
   const on = isOn === true || isOn === 'true';
-  return `<label class="ack-toggle" data-id="${id}" data-field="${field}" data-view="${view}" data-on="${on}" onclick="handleAckClick(this)">
+  return `<label class="ack-toggle" data-id="${id}" data-field="${field}" data-view="${view}" data-on="${on}" onclick="event.stopPropagation();handleAckClick(this)">
     <div class="ack-track ${on?'on':''}"><div class="ack-knob"></div></div>
     <span class="ack-text">${on?'Yes':'No'}</span>
   </label>`;
