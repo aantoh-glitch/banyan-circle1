@@ -1064,7 +1064,7 @@ function editTask(t){
   document.getElementById('modal-task').classList.add('on');
 }
 
-function closeModal(){ document.getElementById('modal-task').classList.remove('on'); }
+function closeModal(){ document.getElementById('modal-task').classList.remove('on'); resetMultiTaskInputs(false); _bundleEditTaskIds = []; }
 
 // ════════════════════════════════════════════════════════════════════
 //  PRESETS MANAGER
@@ -1366,6 +1366,19 @@ async function saveTask(){
       await api('/rest/v1/tasks?bundle_id=eq.'+bundleId, 'PATCH', patch);
       // Update local array
       ALL_TASKS.forEach(t => { if(t.bundle_id === bundleId) Object.assign(t, patch); });
+
+      // Persist any edits made to each task's own description box.
+      const boxWorks = [document.getElementById('t-work').value.trim(), ...getExtraTaskValues()];
+      for(let i=0; i<_bundleEditTaskIds.length && i<boxWorks.length; i++){
+        const taskId = _bundleEditTaskIds[i];
+        const newWork = boxWorks[i];
+        const existing = ALL_TASKS.find(t=>t.id===taskId);
+        if(newWork && existing && existing.work !== newWork){
+          await api('/rest/v1/tasks?id=eq.'+taskId, 'PATCH', {work:newWork});
+          existing.work = newWork;
+        }
+      }
+
       closeModal(); toast('Bundle updated ✓'); await loadAdminTasks();
     } catch(e){ toast('Update failed: '+e.message); }
     finally{ btn.disabled=false; btn.textContent='Update All Tasks'; }
@@ -1541,13 +1554,15 @@ function downloadReport(){
   toast('Report downloaded ✓');
 }
 
+let _bundleEditTaskIds = [];
+
 function editBundle(bundleId){
   const tasks = ALL_TASKS.filter(t => t.bundle_id === bundleId);
   if(!tasks.length) return;
   const first = tasks[0];
   // Populate modal with bundle's shared fields
   document.getElementById('t-id').value = '__bundle__' + bundleId;
-  document.getElementById('t-work').value = first.bundle_name || '';
+  document.getElementById('t-work').value = first.work || '';
   document.getElementById('t-staff').value = first.staff_id || '';
   document.getElementById('t-priority').value = first.priority || 'medium';
   document.getElementById('t-due').value = first.due_date || '';
@@ -1559,6 +1574,23 @@ function editBundle(bundleId){
   // Hide preset chips — not relevant for bundle edit
   document.getElementById('preset-chips').innerHTML = '';
   document.getElementById('preset-bundle-note').style.display = 'none';
+
+  // Show each remaining task's own text in its own box (first task already
+  // sits in the main box above) instead of leaving stale boxes from a
+  // previous Add Task session.
+  resetMultiTaskInputs(false);
+  _bundleEditTaskIds = tasks.map(t=>t.id);
+  tasks.slice(1).forEach(t=>{
+    addExtraTaskRow();
+    const rows = document.querySelectorAll('#t-work-container .t-work-extra-row');
+    const lastRow = rows[rows.length-1];
+    const ta = lastRow.querySelector('textarea');
+    ta.value = t.work || '';
+    ta.style.opacity = '1';
+    lastRow.querySelector('.t-work-remove').style.display = '';
+  });
+  addExtraTaskRow(); // trailing empty box in case another task should be added to the bundle
+
   document.getElementById('modal-task').classList.add('on');
 }
 
