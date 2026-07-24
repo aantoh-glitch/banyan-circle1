@@ -301,7 +301,10 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
     <div class="fg">
       <label class="fl">Work / Task Description <span style="color:var(--r)">*</span></label>
-      <textarea class="fc" id="t-work" placeholder="Describe the task…" rows="3"></textarea>
+      <div id="t-work-container">
+        <textarea class="fc" id="t-work" placeholder="Describe the task…" rows="3"></textarea>
+      </div>
+      <div id="t-work-hint" style="font-size:11px;color:var(--muted);margin-top:6px;display:none">Each filled-in box below becomes its own task — all assigned together.</div>
       <div style="margin-top:8px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:500">Quick presets</div>
         <div class="preset-wrap" id="preset-chips"></div>
@@ -986,7 +989,60 @@ function openAddModal(){
   document.getElementById('task-modal-ttl').textContent = 'New Task';
   document.getElementById('btn-save-task').textContent = 'Save Task';
   renderPresets('');
+  resetMultiTaskInputs(true);
   document.getElementById('modal-task').classList.add('on');
+}
+
+// ── Multi-task entry (Add Task modal) ─────────────────────────────────
+// Shows a dimmed "next task" box under the description. Typing into the
+// last box reveals another dimmed box beneath it, so several tasks can
+// be entered in one go — each becomes its own task on save.
+function resetMultiTaskInputs(withExtra){
+  const container = document.getElementById('t-work-container');
+  container.querySelectorAll('.t-work-extra-row').forEach(r=>r.remove());
+  const hint = document.getElementById('t-work-hint');
+  if(hint) hint.style.display = 'none';
+  if(withExtra) addExtraTaskRow();
+}
+
+function addExtraTaskRow(){
+  const container = document.getElementById('t-work-container');
+  const row = document.createElement('div');
+  row.className = 't-work-extra-row';
+  row.style.cssText = 'margin-top:8px;position:relative';
+  row.innerHTML = '<textarea class="fc t-work-extra" placeholder="Add another task…" rows="2" style="opacity:.45;transition:opacity .15s"></textarea>'
+    + '<button type="button" class="t-work-remove" onclick="removeExtraTaskRow(this)" title="Remove" '
+    + 'style="display:none;position:absolute;top:6px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px">✕</button>';
+  container.appendChild(row);
+  const ta = row.querySelector('textarea');
+  const removeBtn = row.querySelector('.t-work-remove');
+  ta.addEventListener('focus', ()=>{ ta.style.opacity = '1'; });
+  ta.addEventListener('blur', ()=>{ if(!ta.value.trim()) ta.style.opacity = '.45'; });
+  ta.addEventListener('input', ()=>{
+    const hasText = !!ta.value.trim();
+    removeBtn.style.display = hasText ? '' : 'none';
+    const hint = document.getElementById('t-work-hint');
+    const rows = container.querySelectorAll('.t-work-extra-row');
+    const isLast = row === rows[rows.length-1];
+    if(hasText && isLast) addExtraTaskRow();
+    if(hint) hint.style.display = container.querySelectorAll('.t-work-extra-row').length > 0 ? 'block' : 'none';
+  });
+}
+
+function removeExtraTaskRow(btn){
+  const container = document.getElementById('t-work-container');
+  btn.closest('.t-work-extra-row').remove();
+  const rows = Array.from(container.querySelectorAll('.t-work-extra-row'));
+  const last = rows[rows.length-1];
+  if(!last || last.querySelector('textarea').value.trim()) addExtraTaskRow();
+  const hint = document.getElementById('t-work-hint');
+  if(hint) hint.style.display = container.querySelectorAll('.t-work-extra-row').length > 1 ? 'block' : 'none';
+}
+
+function getExtraTaskValues(){
+  return Array.from(document.querySelectorAll('.t-work-extra'))
+    .map(t=>t.value.trim())
+    .filter(v=>v);
 }
 
 function editTask(t){
@@ -1004,6 +1060,7 @@ function editTask(t){
   document.getElementById('task-modal-ttl').textContent = 'Edit Task';
   document.getElementById('btn-save-task').textContent = 'Update Task';
   renderPresets(t.work||'');
+  resetMultiTaskInputs(false);
   document.getElementById('modal-task').classList.add('on');
 }
 
@@ -1324,6 +1381,37 @@ async function saveTask(){
   const notes       = document.getElementById('t-notes').value.trim() || null;
   const task_type    = document.getElementById('t-type').value || null;
   if(!staffId) { alert('Please select a staff member.'); return; }
+
+  // Multiple tasks entered via the dimmed "add another task" boxes —
+  // create one task per filled-in box, grouped so they can each be
+  // acknowledged/completed independently.
+  const extraWorks = (!id && !bundleName) ? getExtraTaskValues() : [];
+  if(!id && !bundleName && extraWorks.length){
+    const allWorks = [work, ...extraWorks].filter(Boolean);
+    if(!allWorks.length){ alert('Please enter a task description.'); return; }
+    const staff = ALL_STAFF.find(s=>s.id===staffId);
+    const property_name = document.getElementById('t-property').value || null;
+    const btn = document.getElementById('btn-save-task');
+    btn.disabled = true; btn.textContent = 'Creating tasks…';
+    try {
+      const bundleId = crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+      for(const w of allWorks){
+        await api('/rest/v1/tasks','POST',{
+          work: w, staff_id:staffId, staff_name:staff?staff.name:null,
+          priority, due_date, notes, acknowledged:false, completed:false,
+          bundle_id: bundleId, bundle_name: null,
+          property_name, task_type,
+          created_at: new Date().toISOString()
+        });
+      }
+      closeModal();
+      toast(allWorks.length + ' tasks created ✓');
+      await loadAdminTasks();
+    } catch(e){ toast('Save failed: '+e.message); }
+    finally{ btn.disabled=false; btn.textContent='Save Task'; }
+    return;
+  }
+
   // Bundle preset — create one task per checklist item
   if(!id && bundleName && PRESET_BUNDLES[bundleName]){
     const btn = document.getElementById('btn-save-task');
