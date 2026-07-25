@@ -1272,9 +1272,11 @@ function acShowExpDetail(e) {
     'bdg-a';
   const tdsCell = e.tds_amount ? '-'+acFmt(e.tds_amount)+(e.tds_pct?' ('+e.tds_pct+'%)':'') : dash;
 
+  const categoryCell = (e.category === 'Others') ? (e.item || dash) : (e.category || dash);
+
   const rows = [
     ['Item', e.item || dash],
-    ['Category', e.category || dash],
+    ['Category', categoryCell],
     ['Payout Type', payoutTypeCell],
     ['Recipient', e.recipient || dash],
     ['Property', e.property_name || dash],
@@ -3606,7 +3608,7 @@ function downloadExpensesXlsx() {
     detailRows.push([
       (e.date||e.created_at||'').slice(0,10),
       e.item||'',
-      e.category||'',
+      (e.category === 'Others' ? (e.item||'') : (e.category||'')),
       e.payout_type||'',
       e.recipient||'',
       e.pan||'',
