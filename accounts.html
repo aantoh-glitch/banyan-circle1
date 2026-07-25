@@ -875,6 +875,20 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- ── BILL PDF PREVIEW MODAL ── -->
+<div class="modal" id="pdf-preview-modal" onclick="if(event.target===this) closePdfPreview()">
+  <div class="modal-card" style="max-width:900px;width:94vw;height:92vh;display:flex;flex-direction:column;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="modal-ttl" id="pdf-preview-ttl" style="margin-bottom:0">Bill</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sec" onclick="document.getElementById('pdf-preview-frame').contentWindow.print()">Print</button>
+        <button class="btn-sec" onclick="closePdfPreview()">Close</button>
+      </div>
+    </div>
+    <iframe id="pdf-preview-frame" style="flex:1;width:100%;border:none;border-radius:8px;background:#fff"></iframe>
+  </div>
+</div>
+
 <!-- ── EXPENSE MODAL ── -->
 <div class="modal" id="ac-modal-exp">
   <div class="modal-card">
@@ -3504,11 +3518,38 @@ function downloadBillPdf(b) {
     (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
     '<div class="note">Thank you for staying with Properties By Heritance.</div>' +
     '</div></div>' +
-    '<script>window.onload=function(){document.title="' + ref + '";window.print();}<\/script>' +
+    '<script>window.onload=function(){document.title="' + ref + '";}<\/script>' +
     '</body></html>';
 
   var blob = new Blob([html], {type:'text/html'});
-  window.open(URL.createObjectURL(blob), '_blank');
+  var url  = URL.createObjectURL(blob);
+
+  var frame = document.getElementById('pdf-preview-frame');
+  var ttl   = document.getElementById('pdf-preview-ttl');
+  var modal = document.getElementById('pdf-preview-modal');
+  if (frame && modal) {
+    if (frame.dataset.blobUrl) URL.revokeObjectURL(frame.dataset.blobUrl);
+    frame.dataset.blobUrl = url;
+    frame.src = url;
+    if (ttl) ttl.textContent = ref;
+    modal.classList.add('on');
+  } else {
+    // Fallback if modal markup isn't present
+    window.open(url, '_blank');
+  }
+}
+
+function closePdfPreview() {
+  var frame = document.getElementById('pdf-preview-frame');
+  var modal = document.getElementById('pdf-preview-modal');
+  if (modal) modal.classList.remove('on');
+  if (frame) {
+    frame.src = 'about:blank';
+    if (frame.dataset.blobUrl) {
+      URL.revokeObjectURL(frame.dataset.blobUrl);
+      delete frame.dataset.blobUrl;
+    }
+  }
 }
 
 function esc(s) {
