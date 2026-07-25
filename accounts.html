@@ -373,6 +373,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt status-paid on" data-val="all" onclick="acFilterSt(this)">All</button>
         <button class="pill-opt status-paid" data-val="Paid" onclick="acFilterSt(this)">Paid</button>
         <button class="pill-opt status-pending" data-val="Pending" onclick="acFilterSt(this)">Pending</button>
+        <button class="pill-opt status-partpayment" data-val="Part Payment" onclick="acFilterSt(this)">Part Payment</button>
         <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" onclick="acFilterSt(this)">To be paid to landlord</button>
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" onclick="acFilterSt(this)">Paid to landlord</button>
       </div>
@@ -396,9 +397,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <table class="tbl">
       <thead><tr>
-        <th>Item</th><th>Recipient</th><th>Property</th><th style="text-align:right">Amount</th><th></th>
+        <th>Item</th><th>Recipient</th><th>Property</th><th style="text-align:right">Amount</th><th>Status</th><th></th>
       </tr></thead>
-      <tbody id="ac-exp-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      <tbody id="ac-exp-tbody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </div><!-- /ac-pane-expenses -->
@@ -614,12 +615,25 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="method-btn" id="m-upi" onclick="setPayMethod('upi')">UPI / Net transfer</button>
       <button class="method-btn" id="m-aggregator" onclick="setPayMethod('aggregator')">Aggregator</button>
       <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Receivable</button>
+      <button class="method-btn" id="m-part_payment" onclick="setPayMethod('part_payment')">Part Payment</button>
     </div>
     <div id="hide-guest-opts" style="margin-top:10px;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
         <input type="checkbox" id="agg-hide-guest" style="width:16px;height:16px;cursor:pointer;accent-color:var(--br)"/>
         Do not display this bill to guest
       </label>
+    </div>
+    <div id="bill-part-payment-opts" style="display:none;margin-top:10px;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+      <div class="row-grid" style="gap:10px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Paid</label>
+          <input class="fc" id="bill-paid-amount" type="number" min="0" value="0" oninput="billOnPaidAmountChange()"/>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Pending</label>
+          <input class="fc" id="bill-pending-amount" type="number" min="0" value="0"/>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -665,6 +679,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="pill-group" id="filter-status-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
         <button class="pill-opt on" data-val="" onclick="filterBillStatus(this)">All</button>
         <button class="pill-opt" data-val="paid" onclick="filterBillStatus(this)">Received</button>
+        <button class="pill-opt" data-val="part_payment" onclick="filterBillStatus(this)">Part Payment</button>
         <button class="pill-opt" data-val="pending" onclick="filterBillStatus(this)">Receivables</button>
       </div>
     </div>
@@ -1087,10 +1102,23 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="pill-group" id="ac-st-pills">
         <button class="pill-opt status-paid" data-val="Paid" id="ac-st-paid" onclick="acPickSt(this)">Paid</button>
         <button class="pill-opt status-pending" data-val="Pending" id="ac-st-pending" onclick="acPickSt(this)">Pending</button>
+        <button class="pill-opt status-partpayment" data-val="Part Payment" id="ac-st-partpayment" onclick="acPickSt(this)">Part Payment</button>
         <button class="pill-opt status-tobepaid" data-val="To be paid to landlord" id="ac-st-tobepaid" onclick="acPickSt(this)" style="display:none">To be paid to landlord</button>
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" id="ac-st-paidlandlord" onclick="acPickSt(this)" style="display:none">Paid to landlord</button>
       </div>
       <input type="hidden" id="ac-exp-status"/>
+      <div class="fg" id="ac-part-payment-opts" style="display:none;margin-top:10px;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+        <div class="row-grid" style="gap:10px">
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">Paid</label>
+            <input class="fc" id="ac-exp-paid-amount" type="number" min="0" value="0" oninput="acOnPaidAmountChange()"/>
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">Pending</label>
+            <input class="fc" id="ac-exp-pending-amount" type="number" min="0" value="0"/>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="fg">
@@ -1210,11 +1238,39 @@ function acRenderKPIs(filtered) {
   // If filtered array passed, use it; else fall back to all
   var d = filtered || _acExpenses;
   const tot  = d.reduce((s,e)=>s+Number(e.amount||0),0);
-  const paid = d.filter(e=>e.status==='Paid'||e.status==='Paid to landlord').reduce((s,e)=>s+Number(e.amount||0),0);
-  const pend = d.filter(e=>e.status==='Pending'||e.status==='To be paid to landlord').reduce((s,e)=>s+Number(e.amount||0),0);
+  const paid = d.reduce((s,e)=>{
+    if (e.status==='Paid'||e.status==='Paid to landlord') return s+Number(e.amount||0);
+    if (e.status==='Part Payment') return s+Number(e.paid_amount||0);
+    return s;
+  },0);
+  const pend = d.reduce((s,e)=>{
+    if (e.status==='Pending'||e.status==='To be paid to landlord') return s+Number(e.amount||0);
+    if (e.status==='Part Payment') return s+Number(e.pending_amount||0);
+    return s;
+  },0);
   document.getElementById('ac-kpi-total').textContent   = acFmt(tot);
   document.getElementById('ac-kpi-paid').textContent    = acFmt(paid);
   document.getElementById('ac-kpi-pending').textContent = acFmt(pend);
+}
+
+// Shared status label + badge class for an expense record
+function acExpStatusInfo(e) {
+  const dash = '—';
+  const statusLbl =
+    e.status==='Paid'                   ? 'Paid' :
+    e.status==='Pending'                ? 'Pending' :
+    e.status==='Part Payment'           ? 'Part paid (' + acFmt(e.paid_amount) + ' of ' + acFmt(e.amount) + ')' :
+    e.status==='To be paid to landlord' ? 'To be paid to landlord' :
+    e.status==='Paid to landlord'       ? 'Paid to landlord' :
+    (e.status || dash);
+  const statusCls =
+    e.status==='Paid'                   ? 'bdg-g' :
+    e.status==='Pending'                ? 'bdg-a' :
+    e.status==='Part Payment'           ? 'bdg-a' :
+    e.status==='To be paid to landlord' ? 'bdg-tobepaid' :
+    e.status==='Paid to landlord'       ? 'bdg-paidlandlord' :
+    'bdg-a';
+  return { label: statusLbl, cls: statusCls };
 }
 
 function acRenderExp() {
@@ -1232,18 +1288,20 @@ function acRenderExp() {
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
-  if(!d.length){ tb.innerHTML='<tr><td colspan="5" class="empty">No expenses found.</td></tr>'; return; }
+  if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
     const dash = '<span style="color:var(--border)">—</span>';
     const recipientLbl  = e.recipient   || dash;
     const propertyLbl   = e.property_name || dash;
     const eJson = JSON.stringify(e).replace(/'/g,"&#39;");
+    const stInfo = acExpStatusInfo(e);
     return `
     <tr class="bill-row" onclick='acShowExpDetail(${eJson})' style="cursor:pointer">
       <td style="font-weight:500">${e.item||'—'}</td>
       <td style="font-size:12px;color:var(--muted)">${recipientLbl}</td>
       <td style="font-size:12px;color:var(--muted)">${propertyLbl}</td>
       <td style="text-align:right;font-weight:500">${acFmt(e.amount)}</td>
+      <td><span class="bdg ${stInfo.cls}" style="font-size:12px">${stInfo.label}</span></td>
       <td style="white-space:nowrap" onclick="event.stopPropagation()">
         <button class="btn-edit" onclick='acEditExp(${eJson})'>Edit</button>
         <button class="btn-del"  onclick="acDelExp('${e.id}')">Delete</button>
@@ -1258,18 +1316,9 @@ function acShowExpDetail(e) {
   const payoutTypeCell = e.category==='Utility' && e.utility_type
     ? e.utility_type
     : (e.payout_type || dash);
-  const statusLbl =
-    e.status==='Paid'                   ? 'Paid' :
-    e.status==='Pending'                ? 'Pending' :
-    e.status==='To be paid to landlord' ? 'To be paid to landlord' :
-    e.status==='Paid to landlord'       ? 'Paid to landlord' :
-    (e.status || dash);
-  const statusCls =
-    e.status==='Paid'                   ? 'bdg-g' :
-    e.status==='Pending'                ? 'bdg-a' :
-    e.status==='To be paid to landlord' ? 'bdg-tobepaid' :
-    e.status==='Paid to landlord'       ? 'bdg-paidlandlord' :
-    'bdg-a';
+  const stInfo = acExpStatusInfo(e);
+  const statusLbl = stInfo.label;
+  const statusCls = stInfo.cls;
   const tdsCell = e.tds_amount ? '-'+acFmt(e.tds_amount)+(e.tds_pct?' ('+e.tds_pct+'%)':'') : dash;
 
   const categoryCell = (e.category === 'Others') ? (e.item || dash) : (e.category || dash);
@@ -1422,6 +1471,10 @@ function acOpenExpModal() {
   var _tobepaid = document.getElementById('ac-st-tobepaid');
   if (_tobepaid) _tobepaid.style.display = 'none';
   document.getElementById('ac-st-paidlandlord').style.display = 'none';
+  var _partOptsReset = document.getElementById('ac-part-payment-opts');
+  if (_partOptsReset) _partOptsReset.style.display = 'none';
+  document.getElementById('ac-exp-paid-amount').value = '0';
+  document.getElementById('ac-exp-pending-amount').value = '0';
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
   document.getElementById('ac-file-input').value='';
@@ -1470,6 +1523,17 @@ function acEditExp(e) {
   document.getElementById('ac-st-paidlandlord').style.display = (isTobePaid || isPaidLandlord) ? '' : 'none';
   // Now highlight the matching pill
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.status));
+
+  // Restore Part Payment paid/pending fields
+  var partOptsEdit = document.getElementById('ac-part-payment-opts');
+  var isPartPayment = e.status === 'Part Payment';
+  if (partOptsEdit) {
+    partOptsEdit.style.display = isPartPayment ? 'block' : 'none';
+    if (isPartPayment) {
+      document.getElementById('ac-exp-paid-amount').value    = (e.paid_amount    != null ? Number(e.paid_amount)    : 0).toFixed(2);
+      document.getElementById('ac-exp-pending-amount').value = (e.pending_amount != null ? Number(e.pending_amount) : 0).toFixed(2);
+    }
+  }
 
   // Restore utility sub-section if applicable
   document.getElementById('ac-exp-utility-property').value='';
@@ -1811,6 +1875,34 @@ function acPickSt(btn) {
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('ac-exp-status').value = btn.dataset.val;
+
+  var partOpts = document.getElementById('ac-part-payment-opts');
+  if (partOpts) {
+    var isPart = btn.dataset.val === 'Part Payment';
+    partOpts.style.display = isPart ? 'block' : 'none';
+    if (isPart) {
+      var total = acGetExpenseTotal();
+      document.getElementById('ac-exp-paid-amount').value = 0;
+      document.getElementById('ac-exp-pending-amount').value = total.toFixed(2);
+    }
+  }
+}
+
+// Total amount for the expense currently being entered (post-tax if TDS is on, else pretax).
+function acGetExpenseTotal() {
+  var amtEl = document.getElementById('ac-exp-amount');
+  var pretaxEl = document.getElementById('ac-exp-pretax');
+  var v = (amtEl && amtEl.value) ? parseFloat(amtEl.value) : (pretaxEl ? parseFloat(pretaxEl.value) : 0);
+  return v || 0;
+}
+
+// Paid amount changes → pending auto-adjusts from the expense total.
+// Pending stays independently editable after that (per-request behavior).
+function acOnPaidAmountChange() {
+  var total = acGetExpenseTotal();
+  var paid  = parseFloat(document.getElementById('ac-exp-paid-amount').value) || 0;
+  var pendingEl = document.getElementById('ac-exp-pending-amount');
+  if (pendingEl) pendingEl.value = Math.max(total - paid, 0).toFixed(2);
 }
 
 // ── TDS toggle ──
@@ -1842,6 +1934,13 @@ function acCalcPostTax() {
   } else {
     // No TDS — amount = pretax
     document.getElementById('ac-exp-amount').value = pretax ? pretax.toFixed(2) : '';
+  }
+  var statusEl = document.getElementById('ac-exp-status');
+  if (statusEl && statusEl.value === 'Part Payment') {
+    var total = acGetExpenseTotal();
+    var paidEl = document.getElementById('ac-exp-paid-amount');
+    var pendingEl = document.getElementById('ac-exp-pending-amount');
+    if (paidEl && pendingEl) pendingEl.value = Math.max(total - (parseFloat(paidEl.value)||0), 0).toFixed(2);
   }
 }
 
@@ -2097,7 +2196,9 @@ async function acSaveExp() {
     utility_type:  category === 'Utility' ? utilityType : null,
     pretax_amount: category === 'Payout' && pretax ? pretax : null,
     tds_pct:       category === 'Payout' && tdsOn ? tdsPct : null,
-    tds_amount:    category === 'Payout' && tdsOn ? tdsAmt : null
+    tds_amount:    category === 'Payout' && tdsOn ? tdsAmt : null,
+    paid_amount:    status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-paid-amount').value) || 0) : null,
+    pending_amount: status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-pending-amount').value) || 0) : null
   };
 
   try {
@@ -2775,6 +2876,14 @@ function calcTotal() {
   var sum = 0;
   totals.forEach(function(t){ sum += parseFloat(t.value) || 0; });
   document.getElementById('grand-total').textContent = fmtF(sum);
+  if (typeof payMethod !== 'undefined' && payMethod === 'part_payment') {
+    var paidEl = document.getElementById('bill-paid-amount');
+    var pendingEl = document.getElementById('bill-pending-amount');
+    if (paidEl && pendingEl) {
+      var paid = parseFloat(paidEl.value) || 0;
+      pendingEl.value = Math.max(sum - paid, 0).toFixed(2);
+    }
+  }
   return sum;
 }
 
@@ -2892,6 +3001,25 @@ function setPayMethod(m) {
   // defaults to checked when Aggregator is picked, unchecked otherwise.
   var hideGuestCb = document.getElementById('agg-hide-guest');
   if (hideGuestCb) hideGuestCb.checked = (m === 'aggregator');
+
+  var partOpts = document.getElementById('bill-part-payment-opts');
+  if (partOpts) {
+    partOpts.style.display = (m === 'part_payment') ? 'block' : 'none';
+    if (m === 'part_payment') {
+      var total = calcTotal();
+      document.getElementById('bill-paid-amount').value = 0;
+      document.getElementById('bill-pending-amount').value = total.toFixed(2);
+    }
+  }
+}
+
+// Paid amount changes → pending auto-adjusts from the bill's grand total.
+// Pending stays independently editable after that (per-request behavior).
+function billOnPaidAmountChange() {
+  var total = calcTotal();
+  var paid  = parseFloat(document.getElementById('bill-paid-amount').value) || 0;
+  var pendingEl = document.getElementById('bill-pending-amount');
+  if (pendingEl) pendingEl.value = Math.max(total - paid, 0).toFixed(2);
 }
 
 // ── Save ──
@@ -2920,7 +3048,7 @@ async function saveBill() {
   var otherPropertySel = document.getElementById('other-bill-property');
   var otherPropertyVal = otherPropertySel ? otherPropertySel.value : '';
 
-  var payStatus = payMethod === 'pending' ? 'pending' : 'paid';
+  var payStatus = payMethod === 'pending' ? 'pending' : (payMethod === 'part_payment' ? 'part_payment' : 'paid');
   var billSource = IS_NAMED ? 'Others' : null;
   // Collect sub_item: sub-item names from ALL rows (BC, accommodation, add-on, free-type), comma-separated if multiple
   var allSubItems = items.map(function(i){ return i.sub_item; }).filter(Boolean);
@@ -2957,6 +3085,8 @@ async function saveBill() {
     payment_status   : payStatus,
     payment_method   : payMethod !== 'pending' ? payMethod : null,
     hide_from_guest  : !!document.getElementById('agg-hide-guest').checked,
+    paid_amount      : payMethod === 'part_payment' ? (parseFloat(document.getElementById('bill-paid-amount').value) || 0) : null,
+    pending_amount   : payMethod === 'part_payment' ? (parseFloat(document.getElementById('bill-pending-amount').value) || 0) : null,
     remarks          : document.getElementById('bill-remarks').value.trim()||null,
     bill_date        : billDate,
     bc_amount        : bcAmount || null,
@@ -3154,6 +3284,12 @@ function editBill(bill) {
     // Payment method
     if (bill.payment_method) setPayMethod(bill.payment_method);
     else setPayMethod('pending');
+    if (bill.payment_method === 'part_payment') {
+      var paidEditEl = document.getElementById('bill-paid-amount');
+      var pendingEditEl = document.getElementById('bill-pending-amount');
+      if (paidEditEl)    paidEditEl.value    = (bill.paid_amount    != null ? Number(bill.paid_amount)    : 0).toFixed(2);
+      if (pendingEditEl) pendingEditEl.value = (bill.pending_amount != null ? Number(bill.pending_amount) : 0).toFixed(2);
+    }
     var aggCbEdit = document.getElementById('agg-hide-guest');
     if (aggCbEdit) aggCbEdit.checked = !!bill.hide_from_guest;
 
@@ -3300,8 +3436,16 @@ function renderBills(data) {
 
   // ── Top KPI row reflects filtered data ──
   var kpiTotal    = data.reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var kpiReceived = data.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
-  var kpiPending  = data.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s + (parseFloat(b.amount)||0); }, 0);
+  var kpiReceived = data.reduce(function(s,b){
+    if (b.payment_status==='paid') return s + (parseFloat(b.amount)||0);
+    if (b.payment_status==='part_payment') return s + (parseFloat(b.paid_amount)||0);
+    return s;
+  }, 0);
+  var kpiPending  = data.reduce(function(s,b){
+    if (b.payment_status==='paid') return s;
+    if (b.payment_status==='part_payment') return s + (parseFloat(b.pending_amount)||0);
+    return s + (parseFloat(b.amount)||0);
+  }, 0);
   var kpiTotalEl  = document.getElementById('bl-kpi-total');
   var kpiRcvEl    = document.getElementById('bl-kpi-received');
   var kpiPndEl    = document.getElementById('bl-kpi-receivables');
@@ -3317,12 +3461,14 @@ function renderBills(data) {
     '<th>Status</th><th></th>' +
     '</tr></thead><tbody>' +
     data.map(function(b){
-        var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
-        var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+        var statusCls = b.payment_status==='paid' ? 'bdg-g' : (b.payment_status==='part_payment' ? 'bdg-a' : 'bdg-a');
+        var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
         var hiddenTag = b.hide_from_guest ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:12px;vertical-align:middle">Hidden from guest</span>' : '';
         var statusLbl = (b.payment_status==='paid'
           ? 'Received' + methodStr
-          : 'Receivable') + hiddenTag;
+          : b.payment_status==='part_payment'
+            ? 'Part paid (' + fmtF(b.paid_amount) + ' of ' + fmtF(b.amount) + ')'
+            : 'Receivable') + hiddenTag;
         var billedTo = b.guest_name || '—';
         // Item = first distinct item name across all rows
         var itemNames = [...new Set((b.items||[]).map(function(i){ return i.name||''; }).filter(Boolean))];
@@ -3354,9 +3500,13 @@ function showBillDetail(b) {
   var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '—';
   var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '—';
   var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
-  var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+  var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
   var hiddenTag = b.hide_from_guest ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:9px;vertical-align:middle">Hidden from guest</span>' : '';
-  var statusLbl = (b.payment_status==='paid' ? 'Received' + methodStr : 'Receivable') + hiddenTag;
+  var statusLbl = (b.payment_status==='paid'
+    ? 'Received' + methodStr
+    : b.payment_status==='part_payment'
+      ? 'Part paid (' + fmtF(b.paid_amount) + ' paid · ' + fmtF(b.pending_amount) + ' pending)'
+      : 'Receivable') + hiddenTag;
   var itemNames = [...new Set(items.map(function(i){ return i.name||''; }).filter(Boolean))];
   var itemCol = itemNames.length ? itemNames.join(', ') : '—';
 
@@ -3448,9 +3598,10 @@ function downloadBillPdf(b) {
     });
   });
 
-  var methodStr = b.payment_method ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
-  // Only show status pill when paid
+  var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+  // Only show status pill when paid (or partially paid)
   var showPaidPill = b.payment_status === 'paid';
+  var showPartPill = b.payment_status === 'part_payment';
   var statusColor = '#27500A';
   var statusBg    = '#EAF3DE';
 
@@ -3517,6 +3668,7 @@ function downloadBillPdf(b) {
     '<hr/>' +
     '<div style="font-size:11px;color:#888;margin-top:4px">GST No: <span style="color:#2C2C2A">ABSPW9671N1ZG</span></div>' +
     (showPaidPill ? '<div class="status-pill">Paid' + methodStr + '</div>' : '') +
+    (showPartPill ? '<div class="status-pill">Partially Paid — ₹' + Number(b.paid_amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + ' received, ₹' + Number(b.pending_amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + ' due</div>' : '') +
     (b.remarks ? '<div class="remarks">Note: ' + esc(b.remarks) + '</div>' : '') +
     '<div class="note">Thank you for staying with Properties By Heritance.</div>' +
     '</div></div>' +
@@ -3583,7 +3735,11 @@ function downloadExpensesXlsx() {
 
   // Summary sheet
   var total  = data.reduce(function(s,e){ return s+(parseFloat(e.amount)||0); },0);
-  var paid   = data.filter(function(e){ return e.status==='Paid'||e.status==='Paid to landlord'; }).reduce(function(s,e){ return s+(parseFloat(e.amount)||0); },0);
+  var paid   = data.reduce(function(s,e){
+    if (e.status==='Paid'||e.status==='Paid to landlord') return s+(parseFloat(e.amount)||0);
+    if (e.status==='Part Payment') return s+(parseFloat(e.paid_amount)||0);
+    return s;
+  },0);
   var pend   = total - paid;
 
   var wb   = XLSX.utils.book_new();
@@ -3603,8 +3759,9 @@ function downloadExpensesXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Detail sheet —
-  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','Amount (₹)','Status','Property','Utility Type','Description','Receipt URL']];
+  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','Amount (₹)','Status','Paid (₹)','Pending (₹)','Property','Utility Type','Description','Receipt URL']];
   data.forEach(function(e){
+    var isPart = e.status === 'Part Payment';
     detailRows.push([
       (e.date||e.created_at||'').slice(0,10),
       e.item||'',
@@ -3617,6 +3774,8 @@ function downloadExpensesXlsx() {
       e.tds_amount!=null    ? parseFloat(e.tds_amount)||0     : '',
       parseFloat(e.amount)||0,
       e.status||'',
+      isPart ? (parseFloat(e.paid_amount)||0) : '',
+      isPart ? (parseFloat(e.pending_amount)||0) : '',
       e.property_name||'',
       e.utility_type||'',
       e.description||'',
@@ -3624,7 +3783,7 @@ function downloadExpensesXlsx() {
     ]);
   });
   var wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
-  applyColWidths(wsDetail, [14,28,12,12,24,14,14,8,16,14,22,24,14,34,40]);
+  applyColWidths(wsDetail, [14,28,12,12,24,14,14,8,16,14,22,12,12,24,14,34,40]);
   XLSX.utils.book_append_sheet(wb, wsDetail, 'Expenses');
 
   var today = new Date().toISOString().slice(0,10);
@@ -3637,7 +3796,11 @@ function downloadBillsXlsx() {
   if (!data.length) { alert('No bills to export.'); return; }
 
   var total    = data.reduce(function(s,b){ return s+(parseFloat(b.amount)||0); },0);
-  var received = data.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.amount)||0); },0);
+  var received = data.reduce(function(s,b){
+    if (b.payment_status==='paid') return s+(parseFloat(b.amount)||0);
+    if (b.payment_status==='part_payment') return s+(parseFloat(b.paid_amount)||0);
+    return s;
+  },0);
   var pending  = total - received;
 
   var wb = XLSX.utils.book_new();
@@ -3657,7 +3820,7 @@ function downloadBillsXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Bills detail sheet —
-  var billRows = [['Date','Source','Item','Sub Item','Property','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Method','Remarks']];
+  var billRows = [['Date','Source','Item','Sub Item','Property','Taxable (₹)','CGST (₹)','SGST (₹)','Total (₹)','Status','Paid (₹)','Pending (₹)','Method','Remarks']];
   data.forEach(function(b){
     var items = b.items||[];
     var tax   = calcBillTax(items);
@@ -3667,6 +3830,7 @@ function downloadBillsXlsx() {
     var itemNames = [...new Set(items.map(function(i){ return i.name||''; }).filter(Boolean))].join(', ');
     var subItemCol = b.sub_item || '';
     var propCol   = b.property_name||'';
+    var isPartB = b.payment_status === 'part_payment';
     billRows.push([
       (b.bill_date||b.created_at||'').slice(0,10),
       sourceCol,
@@ -3677,13 +3841,15 @@ function downloadBillsXlsx() {
       Math.round(tax.cgst*100)/100,
       Math.round(tax.sgst*100)/100,
       parseFloat(b.amount)||0,
-      b.payment_status==='paid' ? 'Received' : 'Receivable',
+      b.payment_status==='paid' ? 'Received' : (isPartB ? 'Part Payment' : 'Receivable'),
+      isPartB ? (parseFloat(b.paid_amount)||0) : '',
+      isPartB ? (parseFloat(b.pending_amount)||0) : '',
       b.payment_method||'',
       b.remarks||''
     ]);
   });
   var wsBills = XLSX.utils.aoa_to_sheet(billRows);
-  applyColWidths(wsBills, [14,22,22,22,20,14,12,12,14,12,14,30]);
+  applyColWidths(wsBills, [14,22,22,22,20,14,12,12,14,12,12,12,14,30]);
   XLSX.utils.book_append_sheet(wb, wsBills, 'Bills');
 
   // — Items detail sheet —
@@ -3770,12 +3936,16 @@ function smRender() {
     if (toV   && dt > toV)   return false;
     return true;
   });
-  var totalPayable = filteredExp
-    .filter(function(e){ return e.status==='Pending' || e.status==='To be paid to landlord'; })
-    .reduce(function(s,e){ return s + (parseFloat(e.amount)||0); }, 0);
-  var totalPaid = filteredExp
-    .filter(function(e){ return e.status==='Paid' || e.status==='Paid to landlord'; })
-    .reduce(function(s,e){ return s + (parseFloat(e.amount)||0); }, 0);
+  var totalPayable = filteredExp.reduce(function(s,e){
+    if (e.status==='Pending' || e.status==='To be paid to landlord') return s + (parseFloat(e.amount)||0);
+    if (e.status==='Part Payment') return s + (parseFloat(e.pending_amount)||0);
+    return s;
+  }, 0);
+  var totalPaid = filteredExp.reduce(function(s,e){
+    if (e.status==='Paid' || e.status==='Paid to landlord') return s + (parseFloat(e.amount)||0);
+    if (e.status==='Part Payment') return s + (parseFloat(e.paid_amount)||0);
+    return s;
+  }, 0);
   var totalExpenses = totalPayable + totalPaid;
 
   // ── Billing ──
@@ -3786,8 +3956,16 @@ function smRender() {
     if (toV   && dt > toV)   return false;
     return true;
   });
-  var totalReceived   = filteredBills.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.amount)||0); }, 0);
-  var totalReceivable = filteredBills.filter(function(b){ return b.payment_status!=='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.amount)||0); }, 0);
+  var totalReceived   = filteredBills.reduce(function(s,b){
+    if (b.payment_status==='paid') return s+(parseFloat(b.amount)||0);
+    if (b.payment_status==='part_payment') return s+(parseFloat(b.paid_amount)||0);
+    return s;
+  }, 0);
+  var totalReceivable = filteredBills.reduce(function(s,b){
+    if (b.payment_status==='paid') return s;
+    if (b.payment_status==='part_payment') return s+(parseFloat(b.pending_amount)||0);
+    return s+(parseFloat(b.amount)||0);
+  }, 0);
   var totalBilled     = totalReceived + totalReceivable;
 
   // ── Profit ──
@@ -3965,7 +4143,15 @@ function bcPaneRender() {
 
   // KPIs — incoming from bills, outgoing from expenses (payout_type = Talent)
   var total    = filtered.reduce(function(s,b){ return s + (parseFloat(b.bc_amount)||0); }, 0);
-  var incoming = filtered.filter(function(b){ return b.payment_status==='paid'; }).reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); }, 0);
+  var incoming = filtered.reduce(function(s,b){
+    if (b.payment_status==='paid') return s+(parseFloat(b.bc_amount)||0);
+    if (b.payment_status==='part_payment') {
+      // Prorate the paid share against bc_amount using the bill's overall paid ratio
+      var ratio = (parseFloat(b.amount)||0) > 0 ? (parseFloat(b.paid_amount)||0) / parseFloat(b.amount) : 0;
+      return s + (parseFloat(b.bc_amount)||0) * ratio;
+    }
+    return s;
+  }, 0);
 
   // Outgoing = talent payouts + Banyan Circle category expenses, filtered by date + property
   var expenses = _acExpenses || [];
@@ -4015,7 +4201,12 @@ function bcPaneRender() {
   }
   if (kpiOut) kpiOut.textContent = fmt(outgoing);
   if (kpiOutSub) {
-    var paidOut = filteredExp.filter(function(e){ return e.status==='Paid'||e.status==='Paid to landlord'; }).reduce(function(s,e){ return s+(parseFloat(e.pretax_amount)||parseFloat(e.amount)||0); }, 0);
+    var paidOut = filteredExp.reduce(function(s,e){
+      var amt = parseFloat(e.pretax_amount)||parseFloat(e.amount)||0;
+      if (e.status==='Paid'||e.status==='Paid to landlord') return s+amt;
+      if (e.status==='Part Payment') return s+(parseFloat(e.paid_amount)||0);
+      return s;
+    }, 0);
     var pendingOut = outgoing - paidOut;
     kpiOutSub.textContent = 'Paid: ' + fmt(paidOut) + '  ·  Pending: ' + fmt(pendingOut);
   }
@@ -4026,7 +4217,7 @@ function bcPaneRender() {
     var talentNames = bcItems.map(function(i){ return i.sub_item||'—'; }).join(', ');
     var displayDate = b.bill_date ? fmtDate(b.bill_date) : fmtDate(b.created_at);
     var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
-    var statusLbl = b.payment_status==='paid' ? 'Received' : 'Receivable';
+    var statusLbl = b.payment_status==='paid' ? 'Received' : (b.payment_status==='part_payment' ? 'Part paid' : 'Receivable');
     return '<tr>' +
       '<td style="font-weight:500">' + esc(b.guest_name||'—') + '</td>' +
       '<td style="font-size:12px;color:var(--muted)">' + esc(talentNames) + '</td>' +
@@ -4043,7 +4234,7 @@ function bcPaneRender() {
     var displayDate = fmtDate(e.date || e.created_at);
     var amt = parseFloat(e.pretax_amount)||parseFloat(e.amount)||0;
     var statusCls = (e.status==='Paid' || e.status==='Paid to landlord') ? 'bdg-g' : 'bdg-a';
-    var statusLbl = (e.status==='Paid' || e.status==='Paid to landlord') ? 'Paid' : 'Pending';
+    var statusLbl = (e.status==='Paid' || e.status==='Paid to landlord') ? 'Paid' : (e.status==='Part Payment' ? 'Part paid' : 'Pending');
     var isBcCat = e.category === 'Banyan Circle';
     var primaryCell = isBcCat ? esc(e.item||'—') : esc(e.recipient||'—');
     var typeLabel = isBcCat ? 'BC Expense' : 'Payout';
