@@ -758,6 +758,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <input class="fc" id="sm-to" type="date" onchange="smOnToChange();smRender()"/>
       </div>
     </div>
+    <div class="pill-group" id="sm-quick-pills" style="margin-top:12px">
+      <button class="pill-opt" onclick="smSetQuarter(1,this)">Q1 (Apr–Jun)</button>
+      <button class="pill-opt" onclick="smSetQuarter(2,this)">Q2 (Jul–Sep)</button>
+      <button class="pill-opt" onclick="smSetQuarter(3,this)">Q3 (Oct–Dec)</button>
+      <button class="pill-opt" onclick="smSetQuarter(4,this)">Q4 (Jan–Mar)</button>
+      <button class="pill-opt" onclick="smSetCurrentFY(this)">Current FY</button>
+    </div>
   </div>
 
   <!-- Billing Row -->
@@ -1146,7 +1153,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 
     <div class="modal-actions" id="ac-exp-modal-actions" style="display:none">
       <button class="btn-sec" onclick="acCloseExpModal()">Cancel</button>
-      <button class="btn-p" onclick="acSaveExp()">Save</button>
+      <button class="btn-p" id="ac-exp-save-btn" onclick="acSaveExp()">Save</button>
     </div>
     <!-- Always-visible cancel for when no category is selected yet -->
     <div id="ac-exp-cancel-only" style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px">
@@ -1275,7 +1282,7 @@ function acExpStatusInfo(e) {
 
 // Shared category label for an expense record (Others shows the specific item instead)
 function acExpCategoryLabel(e) {
-  return (e.category === 'Others') ? (e.item || '—') : (e.category || '—');
+  return e.category || '—';
 }
 
 function acRenderExp() {
@@ -1291,6 +1298,7 @@ function acRenderExp() {
   const toV    = toEl   ? toEl.value   : '';
   if(fromV) d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt>=fromV; });
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
+  d.sort(function(a,b){ return new Date(b.created_at||0) - new Date(a.created_at||0); });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
   if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No expenses found.</td></tr>'; return; }
@@ -2140,7 +2148,9 @@ function acAddBcCustomItem() {
   input.focus();
 }
 
+let _acExpSaving = false;
 async function acSaveExp() {
+  if (_acExpSaving) return; // guard against double-click / double-submit
   const id          = document.getElementById('ac-exp-id').value;
   const item        = document.getElementById('ac-exp-item').value.trim();
   const category    = document.getElementById('ac-exp-cat').value;
@@ -2206,6 +2216,10 @@ async function acSaveExp() {
     paid_amount:    status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-paid-amount').value) || 0) : null,
     pending_amount: status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-pending-amount').value) || 0) : null
   };
+
+  _acExpSaving = true;
+  const saveBtn = document.getElementById('ac-exp-save-btn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
   try {
     if(id) {
@@ -2290,6 +2304,10 @@ async function acSaveExp() {
 
     acCloseExpModal(); acToast('Saved ✓'); await acLoadExp();
   } catch(e) { alert('Error: '+e.message); }
+  finally {
+    _acExpSaving = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+  }
 }
 
 // ── Auto-create TDS expense when a Payout with TDS is saved ──
@@ -3029,7 +3047,9 @@ function billOnPaidAmountChange() {
 }
 
 // ── Save ──
+let _billSaving = false;
 async function saveBill() {
+  if (_billSaving) return; // guard against double-click / double-submit
   var topSel = document.getElementById('bill-guest-select').value;
   if (!topSel) { toast('Please select Guests or Others'); return; }
   var IS_NAMED = (topSel === '__other__');
@@ -3104,19 +3124,21 @@ async function saveBill() {
   };
 
   var btn = document.getElementById('save-btn');
+  _billSaving = true;
   btn.disabled = true;
   btn.textContent = 'Saving…';
   try {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
       await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
+      await syncGstExpense(body, EDIT_BILL.bill_id || EDIT_BILL.id);
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
       body.bill_id = newBillId;
       var created = await api('/rest/v1/bills', 'POST', body);
       await syncToRevenue(body, newBillId);
-      await syncGstExpense(body);
+      await syncGstExpense(body, newBillId);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -3124,6 +3146,7 @@ async function saveBill() {
   } catch(e) {
     toast('Error: ' + e.message);
   }
+  _billSaving = false;
   btn.disabled = false;
   btn.textContent = EDIT_BILL ? 'Update Bill' : 'Create Bill';
 }
@@ -3154,13 +3177,27 @@ function cancelEdit() {
   document.getElementById('bill-remarks').value = '';
 }
 
-// ── Auto-create GST expense when a new bill is generated ──
-async function syncGstExpense(billBody) {
+// ── Auto-create/sync the GST expense whenever a bill is created OR edited ──
+// Always recomputes from the full items array (all sections: main, BC, accommodation, add-ons)
+// so adding more items later correctly updates the previously-synced GST expense instead of
+// leaving it stuck at whatever the first save calculated.
+async function syncGstExpense(billBody, billId) {
   try {
     var items = billBody.items || [];
     var tax = calcBillTax(items);
-    var gstTotal = (tax.cgst || 0) + (tax.sgst || 0);
-    if (gstTotal <= 0) return; // no tax on this bill, skip
+    var gstTotal = Math.round(((tax.cgst || 0) + (tax.sgst || 0)) * 100) / 100;
+    var marker = 'Auto — GST from bill ' + (billId || '');
+
+    // Remove any previously-synced GST expense for this bill first, to avoid duplicates
+    // and to keep it accurate when items are added/removed/edited.
+    if (billId) {
+      try {
+        await api('/rest/v1/expenses?description=eq.' + encodeURIComponent(marker), 'DELETE');
+      } catch(_) {}
+    }
+
+    if (gstTotal <= 0) return; // no tax on this bill (anymore) — nothing further to sync
+
     var expBody = {
       item:          'GST',
       amount:        gstTotal,
@@ -3169,7 +3206,7 @@ async function syncGstExpense(billBody) {
       recipient:     billBody.guest_name || null,
       property_name: billBody.property_name || null,
       date:          billBody.bill_date || new Date().toISOString().slice(0,10),
-      description:   'Auto — GST from bill ' + (billBody.bill_id || ''),
+      description:   marker,
       created_at:    new Date().toISOString()
     };
     await api('/rest/v1/expenses', 'POST', expBody);
@@ -3406,6 +3443,7 @@ function filterBills() {
     if (toQ   && billD > toQ)   return false;
     return true;
   });
+  filtered.sort(function(a,b){ return new Date(b.created_at||0) - new Date(a.created_at||0); });
   renderBills(filtered);
 }
 
@@ -3489,7 +3527,7 @@ function renderBills(data) {
           '<td><span class="bdg ' + statusCls + '" style="font-size:12px">' + statusLbl + '</span></td>' +
           '<td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">' +
             '<button class="btn-edit" onclick=\'editBill(' + bJson + ')\' style="margin-right:4px;font-size:12px">Edit</button>' +
-            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\')" style="margin-right:4px;font-size:12px">Remove</button>' +
+            '<button class="btn-del" onclick="deleteBill(\'' + b.id + '\',\'' + esc(b.guest_name||'Bill') + '\',\'' + (b.bill_id||'') + '\')" style="margin-right:4px;font-size:12px">Remove</button>' +
             '<button class="btn-pdf" onclick=\'downloadBillPdf(' + bJson + ')\' style="font-size:12px">PDF</button>' +
           '</td>' +
         '</tr>';
@@ -3551,11 +3589,14 @@ function closeBillDetail() {
   document.getElementById('bill-detail-modal').classList.remove('on');
 }
 
-async function deleteBill(id, name) {
+async function deleteBill(id, name, billId) {
   requirePin('PIN required to remove bill', async function() {
     if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
     try {
       await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
+      if (billId) {
+        try { await api('/rest/v1/expenses?description=eq.' + encodeURIComponent('Auto — GST from bill ' + billId), 'DELETE'); } catch(_) {}
+      }
       toast(name + ' bill removed');
       loadBills();
     } catch(e) { toast('Error: ' + e.message); }
@@ -3771,7 +3812,7 @@ function downloadExpensesXlsx() {
     detailRows.push([
       (e.date||e.created_at||'').slice(0,10),
       e.item||'',
-      (e.category === 'Others' ? (e.item||'') : (e.category||'')),
+      (e.category||''),
       e.payout_type||'',
       e.recipient||'',
       e.pan||'',
@@ -3896,6 +3937,47 @@ function downloadBillsXlsx() {
 // ── SUMMARY TAB ──────────────────────────────────────────────
 var _smReady = false;
 
+// Indian Financial Year runs Apr 1 – Mar 31. Returns the calendar year in which the
+// current FY *starts* (e.g. for any date Apr 2026–Mar 2027, returns 2026).
+function smCurrentFyStartYear() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = now.getMonth(); // 0 = Jan ... 11 = Dec
+  return (m >= 3) ? y : y - 1; // Apr(3) onward → FY starts this year, else previous year
+}
+
+function smApplyRange(fromStr, toStr, btn) {
+  var today = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('sm-from');
+  var toEl   = document.getElementById('sm-to');
+  if (!fromEl || !toEl) return;
+  fromEl.value = fromStr;
+  toEl.value   = (toStr > today) ? today : toStr; // never show future dates
+  fromEl.max = today;
+  toEl.max   = today;
+  toEl.min   = fromStr;
+  document.querySelectorAll('#sm-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  smRender();
+}
+
+function smSetQuarter(q, btn) {
+  var fyStart = smCurrentFyStartYear();
+  var ranges = {
+    1: [fyStart+'-04-01', fyStart+'-06-30'],
+    2: [fyStart+'-07-01', fyStart+'-09-30'],
+    3: [fyStart+'-10-01', fyStart+'-12-31'],
+    4: [(fyStart+1)+'-01-01', (fyStart+1)+'-03-31']
+  };
+  var r = ranges[q];
+  smApplyRange(r[0], r[1], btn);
+}
+
+function smSetCurrentFY(btn) {
+  var fyStart = smCurrentFyStartYear();
+  smApplyRange(fyStart+'-04-01', (fyStart+1)+'-03-31', btn);
+}
+
 function smInit() {
   if (!_smReady) {
     _smReady = true;
@@ -3918,6 +4000,7 @@ function smOnFromChange() {
   toEl.min   = fromEl.value || '';
   toEl.max   = today;
   fromEl.max = today;
+  document.querySelectorAll('#sm-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
 }
 
 function smOnToChange() {
@@ -3928,6 +4011,7 @@ function smOnToChange() {
   if (toEl.value && fromEl.value && fromEl.value > toEl.value) fromEl.value = toEl.value;
   fromEl.max = toEl.value || today;
   toEl.max   = today;
+  document.querySelectorAll('#sm-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
 }
 
 function smRender() {
