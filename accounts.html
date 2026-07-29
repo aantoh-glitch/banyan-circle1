@@ -339,10 +339,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <!-- ── EXPENSES PANE ── -->
 <div class="ac-pane" id="ac-pane-expenses">
 
-  <div class="kpi-row" style="margin-bottom:20px">
+  <div class="kpi-row" style="margin-bottom:20px;grid-template-columns:repeat(4,1fr)">
     <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="ac-kpi-total">₹ —</div></div>
     <div class="kpi"><div class="kpi-label">Paid</div><div class="kpi-value" style="color:#27500A" id="ac-kpi-paid">₹ —</div></div>
     <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value" style="color:#854F0B" id="ac-kpi-pending">₹ —</div></div>
+    <div class="kpi"><div class="kpi-label">Total GST</div><div class="kpi-value" style="color:#1F5AA3" id="ac-kpi-gst">₹ —</div></div>
   </div>
 
   <div class="card">
@@ -992,6 +993,28 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
 
+    <!-- GST — applicable to ALL expense categories (unlike TDS, which is Payout-only) -->
+    <div class="fg" id="ac-gst-fg">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">GST Applicable</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Goods &amp; Services Tax on this expense</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <span style="font-size:12px;color:var(--muted)" id="ac-gst-lbl">Off</span>
+          <div style="position:relative;width:40px;height:22px" onclick="acToggleGst()">
+            <input type="checkbox" id="ac-gst-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
+            <div id="ac-gst-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
+            <div id="ac-gst-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#f3eee8;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
+          </div>
+        </label>
+      </div>
+      <div id="ac-gst-pct-row" style="display:none;margin-top:8px">
+        <label class="fl">GST % <span style="font-size:11px;color:var(--muted)">(default 18%)</span></label>
+        <input class="fc" id="ac-gst-pct" type="number" min="0" max="100" step="0.01" value="18" placeholder="18" oninput="acCalcGst()"/>
+      </div>
+    </div>
+
     <!-- Utility fields — shown only when Utility is selected -->
     <div id="ac-utility-fg" style="display:none">
       <div class="fg">
@@ -1095,6 +1118,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <div class="fg">
         <label class="fl">Post-tax Amount <span style="font-size:11px;color:var(--muted)">(saved as Amount)</span></label>
         <input class="fc" id="ac-exp-amount" type="number" readonly tabindex="-1" style="background:var(--bg);color:#3B6D11;font-weight:500" placeholder="0.00"/>
+      </div>
+    </div>
+    <!-- GST breakdown row — shown when GST is on. Tracked as a separate metric; does not alter the saved Amount. -->
+    <div class="row-grid" id="ac-gst-breakdown" style="display:none">
+      <div class="fg">
+        <label class="fl">GST Amount <span style="font-size:11px;color:var(--muted)">(tracked separately)</span></label>
+        <input class="fc" id="ac-exp-gst-amt" type="number" min="0" style="color:#1F5AA3;font-weight:500" placeholder="0.00"/>
       </div>
     </div>
     <!-- When TDS off: amount = pretax, show as plain field below -->
@@ -1255,9 +1285,12 @@ function acRenderKPIs(filtered) {
     if (e.status==='Part Payment') return s+Number(e.pending_amount||0);
     return s;
   },0);
+  const gst = d.reduce((s,e)=>s+Number(e.gst_amount||0),0);
   document.getElementById('ac-kpi-total').textContent   = acFmt(tot);
   document.getElementById('ac-kpi-paid').textContent    = acFmt(paid);
   document.getElementById('ac-kpi-pending').textContent = acFmt(pend);
+  const gstEl = document.getElementById('ac-kpi-gst');
+  if (gstEl) gstEl.textContent = acFmt(gst);
 }
 
 // Shared status label + badge class for an expense record
@@ -1334,6 +1367,7 @@ function acShowExpDetail(e) {
   const statusLbl = stInfo.label;
   const statusCls = stInfo.cls;
   const tdsCell = e.tds_amount ? '-'+acFmt(e.tds_amount)+(e.tds_pct?' ('+e.tds_pct+'%)':'') : dash;
+  const gstCell = e.gst_amount ? '+'+acFmt(e.gst_amount)+(e.gst_pct?' ('+e.gst_pct+'%)':'') : dash;
 
   const categoryCell = acExpCategoryLabel(e);
 
@@ -1346,6 +1380,7 @@ function acShowExpDetail(e) {
     ['Description', e.description || dash],
     ['Pre-tax', e.pretax_amount ? acFmt(e.pretax_amount) : dash],
     ['TDS', tdsCell],
+    ['GST', gstCell],
     ['Amount', acFmt(e.amount)],
     ['Date', (e.date||e.created_at||'').slice(0,10) || dash],
     ['Receipt', e.file_url ? `<a href="${e.file_url}" target="_blank" style="color:var(--br)">View ↗</a>` : dash],
@@ -1468,6 +1503,16 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-pretax').value='';
   document.getElementById('ac-exp-tds-amt').value='';
   document.getElementById('ac-exp-amount').value='';
+  // Reset GST
+  const _gstToggle = document.getElementById('ac-gst-toggle');
+  if(_gstToggle){ _gstToggle.checked=false; }
+  document.getElementById('ac-gst-track').style.background='#ccc';
+  document.getElementById('ac-gst-thumb').style.transform='translateX(0)';
+  document.getElementById('ac-gst-lbl').textContent='Off';
+  document.getElementById('ac-gst-pct-row').style.display='none';
+  document.getElementById('ac-gst-breakdown').style.display='none';
+  document.getElementById('ac-gst-pct').value='18';
+  document.getElementById('ac-exp-gst-amt').value='';
   // reset utility
   document.getElementById('ac-exp-utility-property').value='';
   document.getElementById('ac-exp-utility-property').innerHTML='<option value="">— select property —</option>';
@@ -1522,6 +1567,19 @@ function acEditExp(e) {
   document.getElementById('ac-exp-pretax').value = pretaxVal;
   document.getElementById('ac-exp-tds-amt').value = e.tds_amount || '';
   document.getElementById('ac-exp-amount').value = e.amount||'';
+  // Restore GST fields
+  const _editGstToggle = document.getElementById('ac-gst-toggle');
+  const hasGst = !!e.gst_applicable || (e.gst_amount && e.gst_amount > 0);
+  if (_editGstToggle) {
+    _editGstToggle.checked = hasGst;
+    document.getElementById('ac-gst-track').style.background = hasGst ? 'var(--br)' : '#ccc';
+    document.getElementById('ac-gst-thumb').style.transform  = hasGst ? 'translateX(18px)' : 'translateX(0)';
+    document.getElementById('ac-gst-lbl').textContent = hasGst ? 'On' : 'Off';
+    document.getElementById('ac-gst-pct-row').style.display  = hasGst ? '' : 'none';
+    document.getElementById('ac-gst-breakdown').style.display= hasGst ? '' : 'none';
+    document.getElementById('ac-gst-pct').value = e.gst_pct || 18;
+    document.getElementById('ac-exp-gst-amt').value = e.gst_amount || '';
+  }
   document.getElementById('ac-exp-desc').value=e.description||'';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.category));
   document.getElementById('ac-exp-cat').value=e.category||'';
@@ -1936,6 +1994,34 @@ function acToggleTds() {
   acCalcPostTax();
 }
 
+// ── GST toggle — available for every expense category. Tracked as its own metric
+// (gst_pct / gst_amount) and does NOT alter the saved expense Amount. ──
+function acToggleGst() {
+  const cb    = document.getElementById('ac-gst-toggle');
+  const track = document.getElementById('ac-gst-track');
+  const thumb = document.getElementById('ac-gst-thumb');
+  const lbl   = document.getElementById('ac-gst-lbl');
+  const pctRow= document.getElementById('ac-gst-pct-row');
+  const breakdown = document.getElementById('ac-gst-breakdown');
+  const on = cb.checked;
+  track.style.background = on ? 'var(--br)' : '#ccc';
+  thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
+  lbl.textContent = on ? 'On' : 'Off';
+  pctRow.style.display = on ? '' : 'none';
+  breakdown.style.display = on ? '' : 'none';
+  acCalcGst();
+}
+
+function acCalcGst() {
+  const gstOn = document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked;
+  const amtEl = document.getElementById('ac-exp-gst-amt');
+  if (!amtEl) return;
+  if (!gstOn) { amtEl.value = ''; return; }
+  const base   = parseFloat(document.getElementById('ac-exp-pretax').value) || 0;
+  const gstPct = parseFloat(document.getElementById('ac-gst-pct').value) || 0;
+  amtEl.value = (Math.round(base * gstPct / 100 * 100) / 100).toFixed(2);
+}
+
 function acCalcPostTax() {
   const pretax = parseFloat(document.getElementById('ac-exp-pretax').value) || 0;
   const tdsOn  = document.getElementById('ac-tds-toggle') && document.getElementById('ac-tds-toggle').checked;
@@ -1956,6 +2042,7 @@ function acCalcPostTax() {
     var pendingEl = document.getElementById('ac-exp-pending-amount');
     if (paidEl && pendingEl) pendingEl.value = Math.max(total - (parseFloat(paidEl.value)||0), 0).toFixed(2);
   }
+  acCalcGst();
 }
 
 function acPickUtilityType(btn) {
@@ -2214,7 +2301,10 @@ async function acSaveExp() {
     tds_pct:       category === 'Payout' && tdsOn ? tdsPct : null,
     tds_amount:    category === 'Payout' && tdsOn ? tdsAmt : null,
     paid_amount:    status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-paid-amount').value) || 0) : null,
-    pending_amount: status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-pending-amount').value) || 0) : null
+    pending_amount: status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-pending-amount').value) || 0) : null,
+    gst_applicable: !!(document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked),
+    gst_pct:        (document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked) ? (parseFloat(document.getElementById('ac-gst-pct').value) || 0) : null,
+    gst_amount:     (document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked) ? (parseFloat(document.getElementById('ac-exp-gst-amt').value) || 0) : null
   };
 
   _acExpSaving = true;
@@ -2444,6 +2534,30 @@ function generateBillId() {
            pad(now.getSeconds());
   BILL_SEQ++;
   return ts + pad(BILL_SEQ, 3);
+}
+
+// ── Sequential bill reference number: YYMM0001, resets to 0001 each new month ──
+// e.g. first bill in July 2026 → 26070001, next → 26070002, first bill in Aug 2026 → 26080001
+// Hardened: the actual increment happens atomically inside Postgres via the next_bill_ref()
+// RPC (an UPSERT on a counters table), so two people saving a bill at the same instant
+// cannot be handed the same number. A unique constraint on bills.bill_ref is the backstop —
+// if the RPC's counter and the bills table ever fell out of sync, insert would fail loudly
+// (via the retry below) rather than silently create a duplicate reference.
+async function generateBillRef() {
+  var attempts = 0;
+  var lastErr;
+  while (attempts < 3) {
+    attempts++;
+    try {
+      var ref = await api('/rest/v1/rpc/next_bill_ref', 'POST', {});
+      if (ref) return ref;
+    } catch(e) {
+      lastErr = e;
+    }
+  }
+  // RPC unavailable/failing after retries — surface the error rather than silently
+  // fall back to a scheme that could collide under concurrent saves.
+  throw new Error('Could not generate bill reference number: ' + (lastErr ? lastErr.message : 'unknown error'));
 }
 
 // ── PIN ──
@@ -3135,7 +3249,8 @@ async function saveBill() {
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
-      body.bill_id = newBillId;
+      body.bill_id  = newBillId;
+      body.bill_ref = await generateBillRef();
       var created = await api('/rest/v1/bills', 'POST', body);
       await syncToRevenue(body, newBillId);
       await syncGstExpense(body, newBillId);
@@ -3520,7 +3635,7 @@ function renderBills(data) {
         var billProp = b.property_name || '';
         var bJson = JSON.stringify(b).replace(/'/g,"&#39;");
         return '<tr class="bill-row" onclick=\'showBillDetail(' + bJson + ')\' style="cursor:pointer">' +
-          '<td style="font-weight:500">' + esc(billedTo) + '</td>' +
+          '<td style="font-weight:500">' + esc(billedTo) + (b.bill_ref ? '<div style="font-weight:400;font-size:11px;color:var(--muted);margin-top:2px">' + esc(b.bill_ref) + '</div>' : '') + '</td>' +
           '<td style="color:var(--muted);font-size:12px">' + (itemCol ? esc(itemCol) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="color:var(--muted);font-size:12px">' + (billProp ? esc(billProp) : '<span style="color:var(--border)">—</span>') + '</td>' +
           '<td style="text-align:right;font-family:\'DM Sans\',sans-serif;font-size:12px">' + fmtF(b.amount) + '</td>' +
@@ -3555,6 +3670,7 @@ function showBillDetail(b) {
   var itemCol = itemNames.length ? itemNames.join(', ') : '—';
 
   var rows = [
+    ['Ref', esc(b.bill_ref || '—')],
     ['Billed To', esc(b.guest_name || '—')],
     ['Item', itemCol ? esc(itemCol) : '—'],
     ['Sub Item', b.sub_item ? esc(b.sub_item) : '—'],
@@ -3610,7 +3726,7 @@ function downloadBillPdf(b) {
   var items = b.items || [];
   var name  = b.guest_name || 'Guest';
   var dt    = new Date(b.bill_date || b.created_at || Date.now());
-  var ref   = name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,'');
+  var ref   = b.bill_ref || (name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,''));
 
   // ── Item rows grouped by type with section labels ──
   var typeOrder = ['banyan','banyan_general','accommodation','addon',''];
@@ -3806,7 +3922,7 @@ function downloadExpensesXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Detail sheet —
-  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','Amount (₹)','Status','Paid (₹)','Pending (₹)','Property','Utility Type','Description','Receipt URL']];
+  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','GST %','GST Amount (₹)','Amount (₹)','Status','Paid (₹)','Pending (₹)','Property','Utility Type','Description','Receipt URL']];
   data.forEach(function(e){
     var isPart = e.status === 'Part Payment';
     detailRows.push([
@@ -3819,6 +3935,8 @@ function downloadExpensesXlsx() {
       e.pretax_amount!=null ? parseFloat(e.pretax_amount)||0 : '',
       e.tds_pct!=null       ? parseFloat(e.tds_pct)||0       : '',
       e.tds_amount!=null    ? parseFloat(e.tds_amount)||0     : '',
+      e.gst_pct!=null       ? parseFloat(e.gst_pct)||0       : '',
+      e.gst_amount!=null    ? parseFloat(e.gst_amount)||0     : '',
       parseFloat(e.amount)||0,
       e.status||'',
       isPart ? (parseFloat(e.paid_amount)||0) : '',
@@ -3830,7 +3948,7 @@ function downloadExpensesXlsx() {
     ]);
   });
   var wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
-  applyColWidths(wsDetail, [14,28,12,12,24,14,14,8,16,14,22,12,12,24,14,34,40]);
+  applyColWidths(wsDetail, [14,28,12,12,24,14,14,8,16,8,16,14,22,12,12,24,14,34,40]);
   XLSX.utils.book_append_sheet(wb, wsDetail, 'Expenses');
 
   var today = new Date().toISOString().slice(0,10);
