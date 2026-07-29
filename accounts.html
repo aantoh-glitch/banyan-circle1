@@ -343,7 +343,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="ac-kpi-total">₹ —</div></div>
     <div class="kpi"><div class="kpi-label">Paid</div><div class="kpi-value" style="color:#27500A" id="ac-kpi-paid">₹ —</div></div>
     <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value" style="color:#854F0B" id="ac-kpi-pending">₹ —</div></div>
-    <div class="kpi"><div class="kpi-label">Total GST</div><div class="kpi-value" style="color:#1F5AA3" id="ac-kpi-gst">₹ —</div></div>
+    <div class="kpi"><div class="kpi-label">GST Expensed</div><div class="kpi-value" style="color:#1F5AA3" id="ac-kpi-gst">₹ —</div></div>
   </div>
 
   <div class="card">
@@ -993,12 +993,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
 
-    <!-- GST — applicable to ALL expense categories (unlike TDS, which is Payout-only) -->
+    <!-- GST Expensed — GST paid on this purchase/expense. Distinct from "GST Payable", the
+         auto-synced expense created from billing (output tax owed to the government).
+         Applicable to ALL expense categories (unlike TDS, which is Payout-only). -->
     <div class="fg" id="ac-gst-fg">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
         <div>
-          <div style="font-size:13px;font-weight:500;color:var(--text)">GST Applicable</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">Goods &amp; Services Tax on this expense</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">GST Expensed</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">GST paid on this purchase/expense — separate from GST Payable synced from billing</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
           <span style="font-size:12px;color:var(--muted)" id="ac-gst-lbl">Off</span>
@@ -1010,7 +1012,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </label>
       </div>
       <div id="ac-gst-pct-row" style="display:none;margin-top:8px">
-        <label class="fl">GST % <span style="font-size:11px;color:var(--muted)">(default 18%)</span></label>
+        <label class="fl">GST Expensed % <span style="font-size:11px;color:var(--muted)">(default 18%)</span></label>
         <input class="fc" id="ac-gst-pct" type="number" min="0" max="100" step="0.01" value="18" placeholder="18" oninput="acCalcGst()"/>
       </div>
     </div>
@@ -1123,7 +1125,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <!-- GST breakdown row — shown when GST is on. Tracked as a separate metric; does not alter the saved Amount. -->
     <div class="row-grid" id="ac-gst-breakdown" style="display:none">
       <div class="fg">
-        <label class="fl">GST Amount <span style="font-size:11px;color:var(--muted)">(tracked separately)</span></label>
+        <label class="fl">GST Expensed <span style="font-size:11px;color:var(--muted)">(tracked separately)</span></label>
         <input class="fc" id="ac-exp-gst-amt" type="number" min="0" style="color:#1F5AA3;font-weight:500" placeholder="0.00"/>
       </div>
     </div>
@@ -1380,7 +1382,7 @@ function acShowExpDetail(e) {
     ['Description', e.description || dash],
     ['Pre-tax', e.pretax_amount ? acFmt(e.pretax_amount) : dash],
     ['TDS', tdsCell],
-    ['GST', gstCell],
+    ['GST Expensed', gstCell],
     ['Amount', acFmt(e.amount)],
     ['Date', (e.date||e.created_at||'').slice(0,10) || dash],
     ['Receipt', e.file_url ? `<a href="${e.file_url}" target="_blank" style="color:var(--br)">View ↗</a>` : dash],
@@ -3301,7 +3303,7 @@ async function syncGstExpense(billBody, billId) {
     var items = billBody.items || [];
     var tax = calcBillTax(items);
     var gstTotal = Math.round(((tax.cgst || 0) + (tax.sgst || 0)) * 100) / 100;
-    var marker = 'Auto — GST from bill ' + (billId || '');
+    var marker = 'Auto — GST Payable from bill ' + (billId || '');
 
     // Remove any previously-synced GST expense for this bill first, to avoid duplicates
     // and to keep it accurate when items are added/removed/edited.
@@ -3314,7 +3316,7 @@ async function syncGstExpense(billBody, billId) {
     if (gstTotal <= 0) return; // no tax on this bill (anymore) — nothing further to sync
 
     var expBody = {
-      item:          'GST',
+      item:          'GST Payable',
       amount:        gstTotal,
       category:      'Tax',
       status:        'Pending',
@@ -3711,7 +3713,7 @@ async function deleteBill(id, name, billId) {
     try {
       await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
       if (billId) {
-        try { await api('/rest/v1/expenses?description=eq.' + encodeURIComponent('Auto — GST from bill ' + billId), 'DELETE'); } catch(_) {}
+        try { await api('/rest/v1/expenses?description=eq.' + encodeURIComponent('Auto — GST Payable from bill ' + billId), 'DELETE'); } catch(_) {}
       }
       toast(name + ' bill removed');
       loadBills();
@@ -3922,7 +3924,7 @@ function downloadExpensesXlsx() {
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
   // — Detail sheet —
-  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','GST %','GST Amount (₹)','Amount (₹)','Status','Paid (₹)','Pending (₹)','Property','Utility Type','Description','Receipt URL']];
+  var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','GST Expensed %','GST Expensed (₹)','Amount (₹)','Status','Paid (₹)','Pending (₹)','Property','Utility Type','Description','Receipt URL']];
   data.forEach(function(e){
     var isPart = e.status === 'Part Payment';
     detailRows.push([
