@@ -65,6 +65,22 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .btn-remove{padding:6px 12px;background:var(--r-l);color:var(--r);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
 .btn-remove:hover{background:#f5d0d0}
 
+/* Edit button */
+.btn-edit{padding:6px 12px;background:var(--br-l);color:var(--br);border:none;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-edit:hover{background:#f3d9cd}
+
+/* Expandable row */
+.asset-row{cursor:pointer}
+.asset-row:hover td{background:rgba(0,0,0,.02)}
+.expand-chevron{display:inline-block;margin-left:6px;font-size:10px;color:var(--muted);transition:transform .15s}
+.expand-row{display:none}
+.expand-row.on{display:table-row}
+.expand-row.on .expand-chevron{transform:rotate(180deg)}
+.expand-content{display:flex;align-items:center;gap:16px;padding:6px 0;cursor:default}
+.expand-photo-wrap{flex-shrink:0}
+.expand-actions{display:flex;gap:8px;margin-left:auto}
+.expand-meta{font-size:12px;color:var(--muted)}
+
 /* Removed log */
 .removed-badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:500;background:var(--r-l);color:var(--r)}
 .removed-date{font-size:12px;color:var(--muted)}
@@ -311,35 +327,53 @@ async function loadAssets() {
       <th style="width:44px">SL</th>
       <th>Item</th>
       <th style="width:80px">Qty</th>
-      <th style="width:90px">Owner</th>
-      <th style="width:70px">Photo</th>
-      ${IS_ADMIN ? '<th style="width:90px"></th>' : ''}
+      <th style="width:110px">Owner</th>
     </tr></thead>
     <tbody>
-      ${data.map((a, i) => `<tr>
+      ${data.map((a, i) => {
+        const aJson = JSON.stringify(a).replace(/'/g,"&#39;");
+        const nameEsc = esc(a.name).replace(/'/g,"\\'");
+        return `
+      <tr class="asset-row" onclick="toggleExpand('${a.id}')">
         <td class="sl">${i + 1}</td>
-        <td class="item-name">${esc(a.name)}</td>
+        <td class="item-name">${esc(a.name)} <span class="expand-chevron" id="chev-${a.id}">▾</span></td>
         <td class="qty">${a.quantity ?? 1}</td>
         <td style="font-size:12px;color:var(--muted)">${a.owner ? esc(a.owner) : '—'}</td>
-        <td>
-          ${a.photo_url
-            ? `<div class="photo-cell">
-                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')"/>
-               </div>`
-            : IS_ADMIN
-              ? `<div class="no-photo" title="No photo" onclick="openEditPhotoModal('${a.id}','${esc(a.name)}')">
-                  <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                 </div>`
-              : '<span style="font-size:11px;color:var(--muted)">—</span>'
-          }
+      </tr>
+      <tr class="expand-row" id="expand-${a.id}">
+        <td colspan="4">
+          <div class="expand-content" onclick="event.stopPropagation()">
+            <div class="expand-photo-wrap">
+              ${a.photo_url
+                ? `<div class="photo-cell">
+                    <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')"/>
+                   </div>`
+                : IS_ADMIN
+                  ? `<div class="no-photo" title="Add photo" onclick='openEditModal(${aJson})'>
+                      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                     </div>`
+                  : '<span class="expand-meta">No photo</span>'
+              }
+            </div>
+            ${IS_ADMIN ? `
+            <div class="expand-actions">
+              <button class="btn-edit" onclick='if(confirm("Edit this asset?")) openEditModal(${aJson})'>Edit</button>
+              <button class="btn-remove" onclick="if(confirm('Remove ${nameEsc}? This will be logged in the removal history.')) openRemoveModal('${a.id}','${nameEsc}')">Remove</button>
+            </div>` : ''}
+          </div>
         </td>
-        ${IS_ADMIN ? `<td style="text-align:right">
-          <button class="btn-remove" onclick="openRemoveModal('${a.id}','${esc(a.name).replace(/'/g,"\\'")}')">Remove</button>
-        </td>` : ''}
-      </tr>`).join('')}
+      </tr>`;
+      }).join('')}
     </tbody>
   </table>`;
   notifyResize();
+}
+
+// ── Expand / collapse a row to reveal photo + admin actions ──
+function toggleExpand(id) {
+  const row = document.getElementById('expand-' + id);
+  if (!row) return;
+  row.classList.toggle('on');
 }
 
 // ── Load removed log ──
@@ -356,26 +390,32 @@ async function loadRemoved() {
       <th style="width:44px">SL</th>
       <th>Item</th>
       <th style="width:80px">Qty</th>
-      <th style="width:70px">Photo</th>
-      <th style="width:90px">Owner</th>
-      <th>Removed on</th>
-      <th>Reason</th>
+      <th style="width:110px">Owner</th>
     </tr></thead>
     <tbody>
-      ${data.map((a, i) => `<tr>
+      ${data.map((a, i) => `
+      <tr class="asset-row" onclick="toggleExpand('rm-${a.id}')">
         <td class="sl">${i + 1}</td>
-        <td class="item-name" style="color:var(--muted);text-decoration:line-through">${esc(a.name)}</td>
+        <td class="item-name" style="color:var(--muted);text-decoration:line-through">${esc(a.name)} <span class="expand-chevron" id="chev-rm-${a.id}">▾</span></td>
         <td class="qty">${a.quantity ?? 1}</td>
-        <td>
-          ${a.photo_url
-            ? `<div class="photo-cell">
-                <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')"/>
-               </div>`
-            : '<span style="font-size:11px;color:var(--muted)">—</span>'}
-        </td>
         <td style="font-size:12px;color:var(--muted)">${a.owner ? esc(a.owner) : '—'}</td>
-        <td class="removed-date">${a.removed_at ? fmtDate(a.removed_at) : '—'}</td>
-        <td class="removed-reason">${a.removed_reason ? esc(a.removed_reason) : '—'}</td>
+      </tr>
+      <tr class="expand-row" id="expand-rm-${a.id}">
+        <td colspan="4">
+          <div class="expand-content" onclick="event.stopPropagation()">
+            <div class="expand-photo-wrap">
+              ${a.photo_url
+                ? `<div class="photo-cell">
+                    <img class="asset-photo" src="${a.photo_url}" alt="photo" onclick="downloadPhoto('${a.photo_url}','${esc(a.name)}')"/>
+                   </div>`
+                : '<span class="expand-meta">No photo</span>'}
+            </div>
+            <div class="expand-meta">
+              <div><strong>Removed on:</strong> ${a.removed_at ? fmtDate(a.removed_at) : '—'}</div>
+              <div><strong>Reason:</strong> ${a.removed_reason ? esc(a.removed_reason) : '—'}</div>
+            </div>
+          </div>
+        </td>
       </tr>`).join('')}
     </tbody>
   </table>`;
@@ -396,13 +436,21 @@ function openAddModal() {
   openModal('modal-add');
 }
 
-function openEditPhotoModal(id, item) {
-  document.getElementById('edit-id').value = id;
-  document.getElementById('modal-add-title').textContent = 'Add Photo — ' + item;
-  document.getElementById('add-item').value = item;
+function openEditModal(a) {
+  document.getElementById('edit-id').value = a.id;
+  document.getElementById('modal-add-title').textContent = 'Edit Asset';
+  document.getElementById('add-item').value = a.name || '';
+  document.getElementById('add-qty').value = a.quantity ?? 1;
+  document.getElementById('add-owner').value = a.owner || '';
   document.getElementById('add-photo-input').value = '';
-  document.getElementById('add-photo-preview').style.display = 'none';
-  document.getElementById('add-photo-placeholder').style.display = 'flex';
+  if (a.photo_url) {
+    document.getElementById('add-photo-preview').src = a.photo_url;
+    document.getElementById('add-photo-preview').style.display = 'block';
+    document.getElementById('add-photo-placeholder').style.display = 'none';
+  } else {
+    document.getElementById('add-photo-preview').style.display = 'none';
+    document.getElementById('add-photo-placeholder').style.display = 'flex';
+  }
   photoFile = null;
   openModal('modal-add');
 }
@@ -447,7 +495,7 @@ async function saveAsset() {
 
   try {
     if (editId) {
-      const body = {};
+      const body = { name: item, quantity: qty, owner: owner || null };
       if (photoUrl) body.photo_url = photoUrl;
       await api(`/rest/v1/assets?id=eq.${editId}`, 'PATCH', body);
     } else {
