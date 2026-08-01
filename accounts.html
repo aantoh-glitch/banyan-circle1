@@ -8,6 +8,10 @@
 <style>
 
 *{box-sizing:border-box;margin:0;padding:0}
+/* No up/down spinner arrows on number inputs — plain text-entry look */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
 :root{--br:#993C1D;--br-l:#FAECE7;--g:#3B6D11;--g-l:#EAF3DE;--a:#854F0B;--a-l:#FAEEDA;--b:#185FA5;--b-l:#E6F1FB;--text:#2C2C2A;--muted:#5F5E5A;--border:rgba(0,0,0,0.1);--bg:#f3eee8;--white:#f3eee8;--r:#A32D2D;--r-l:#FCEBEB}
 html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:flex;min-height:100vh}
@@ -1064,7 +1068,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
       <div id="ac-gst-pct-row" style="display:none;margin-top:8px">
         <label class="fl">GST Expensed % <span style="font-size:11px;color:var(--muted)">(default 18%)</span></label>
-        <input class="fc" id="ac-gst-pct" type="number" min="0" max="100" step="0.01" value="18" placeholder="18" oninput="acCalcGst()"/>
+        <input class="fc" id="ac-gst-pct" type="number" min="0" max="100" step="0.01" value="18" placeholder="18" oninput="acCalcGst('gst')"/>
       </div>
     </div>
 
@@ -1173,11 +1177,17 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <input class="fc" id="ac-exp-amount" type="number" readonly tabindex="-1" style="background:var(--bg);color:#3B6D11;font-weight:500" placeholder="0.00"/>
       </div>
     </div>
-    <!-- GST breakdown row — shown when GST is on. Tracked as a separate metric; does not alter the saved Amount. -->
+    <!-- GST breakdown row — shown when GST is on. Tracked as a separate metric; does not alter
+         the saved Amount. Two-way: edit Amount (without GST) or Total (incl. GST) directly —
+         GST % fills in whichever side isn't currently the source of truth. -->
     <div class="row-grid" id="ac-gst-breakdown" style="display:none">
       <div class="fg">
         <label class="fl">GST Expensed <span style="font-size:11px;color:var(--muted)">(tracked separately)</span></label>
         <input class="fc" id="ac-exp-gst-amt" type="number" min="0" style="color:#1F5AA3;font-weight:500" placeholder="0.00"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Total <span style="font-size:11px;color:var(--muted)">(Amount + GST)</span></label>
+        <input class="fc" id="ac-exp-gst-total" type="number" min="0" oninput="acCalcGst('total')" style="color:#1F5AA3;font-weight:500" placeholder="0.00"/>
       </div>
     </div>
     <!-- When TDS off: amount = pretax, show as plain field below -->
@@ -1567,6 +1577,8 @@ function acOpenExpModal() {
   document.getElementById('ac-gst-breakdown').style.display='none';
   document.getElementById('ac-gst-pct').value='18';
   document.getElementById('ac-exp-gst-amt').value='';
+  document.getElementById('ac-exp-gst-total').value='';
+  _acGstLastEdited='amount';
   // reset utility
   document.getElementById('ac-exp-utility-property').value='';
   document.getElementById('ac-exp-utility-property').innerHTML='<option value="">— select property —</option>';
@@ -1633,6 +1645,9 @@ function acEditExp(e) {
     document.getElementById('ac-gst-breakdown').style.display= hasGst ? '' : 'none';
     document.getElementById('ac-gst-pct').value = e.gst_pct || 18;
     document.getElementById('ac-exp-gst-amt').value = e.gst_amount || '';
+    const _editBase = e.pretax_amount != null ? Number(e.pretax_amount) : Number(pretaxVal) || 0;
+    document.getElementById('ac-exp-gst-total').value = hasGst ? (_editBase + (Number(e.gst_amount)||0)).toFixed(2) : '';
+    _acGstLastEdited = 'amount';
   }
   document.getElementById('ac-exp-desc').value=e.description||'';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.category));
@@ -2063,20 +2078,45 @@ function acToggleGst() {
   lbl.textContent = on ? 'On' : 'Off';
   pctRow.style.display = on ? '' : 'none';
   breakdown.style.display = on ? '' : 'none';
-  acCalcGst();
+  _acGstLastEdited = 'amount';
+  acCalcGst('amount');
 }
 
-function acCalcGst() {
+// Tracks which field is currently the "source of truth" for the GST calc:
+// 'amount' (base Amount without GST drives GST Amount + Total) or
+// 'total' (Total incl. GST drives base Amount + GST Amount) — mirrors the
+// Rate <-> Total pattern used for bill items.
+var _acGstLastEdited = 'amount';
+
+function acCalcGst(src) {
   const gstOn = document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked;
-  const amtEl = document.getElementById('ac-exp-gst-amt');
-  if (!amtEl) return;
-  if (!gstOn) { amtEl.value = ''; return; }
-  const base   = parseFloat(document.getElementById('ac-exp-pretax').value) || 0;
+  const gstAmtEl = document.getElementById('ac-exp-gst-amt');
+  const gstTotEl = document.getElementById('ac-exp-gst-total');
+  if (!gstAmtEl) return;
+  if (!gstOn) { gstAmtEl.value = ''; if (gstTotEl) gstTotEl.value = ''; return; }
+
   const gstPct = parseFloat(document.getElementById('ac-gst-pct').value) || 0;
-  amtEl.value = (Math.round(base * gstPct / 100 * 100) / 100).toFixed(2);
+  const baseEl = document.getElementById('ac-exp-pretax');
+  const driveFromTotal = gstTotEl && ((src === 'total') || (src === 'gst' && _acGstLastEdited === 'total'));
+
+  if (driveFromTotal) {
+    _acGstLastEdited = 'total';
+    const tot = parseFloat(gstTotEl.value) || 0;
+    const denom = 1 + gstPct / 100;
+    const base = denom > 0 ? tot / denom : 0;
+    baseEl.value = base.toFixed(2);
+    gstAmtEl.value = (tot - base).toFixed(2);
+    acCalcPostTax(true); // refresh TDS-derived Amount from the new base, without looping back into GST calc
+  } else {
+    _acGstLastEdited = 'amount';
+    const base = parseFloat(baseEl.value) || 0;
+    const gstAmt = Math.round(base * gstPct / 100 * 100) / 100;
+    gstAmtEl.value = gstAmt.toFixed(2);
+    if (gstTotEl) gstTotEl.value = (base + gstAmt).toFixed(2);
+  }
 }
 
-function acCalcPostTax() {
+function acCalcPostTax(skipGst) {
   const pretax = parseFloat(document.getElementById('ac-exp-pretax').value) || 0;
   const tdsOn  = document.getElementById('ac-tds-toggle') && document.getElementById('ac-tds-toggle').checked;
   const tdsPct = parseFloat(document.getElementById('ac-tds-pct').value) || 0;
@@ -2096,7 +2136,7 @@ function acCalcPostTax() {
     var pendingEl = document.getElementById('ac-exp-pending-amount');
     if (paidEl && pendingEl) pendingEl.value = Math.max(total - (parseFloat(paidEl.value)||0), 0).toFixed(2);
   }
-  acCalcGst();
+  if (!skipGst) acCalcGst('amount');
 }
 
 function acPickUtilityType(btn) {
@@ -3287,7 +3327,6 @@ async function saveBill() {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
       await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
-      await syncGstExpense(body, EDIT_BILL.bill_id || EDIT_BILL.id);
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
@@ -3295,7 +3334,6 @@ async function saveBill() {
       body.bill_ref = await generateBillRef();
       var created = await api('/rest/v1/bills', 'POST', body);
       await syncToRevenue(body, newBillId);
-      await syncGstExpense(body, newBillId);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -3334,43 +3372,9 @@ function cancelEdit() {
   document.getElementById('bill-remarks').value = '';
 }
 
-// ── Auto-create/sync the GST expense whenever a bill is created OR edited ──
-// Always recomputes from the full items array (all sections: main, BC, accommodation, add-ons)
-// so adding more items later correctly updates the previously-synced GST expense instead of
-// leaving it stuck at whatever the first save calculated.
-async function syncGstExpense(billBody, billId) {
-  try {
-    var items = billBody.items || [];
-    var tax = calcBillTax(items);
-    var gstTotal = Math.round(((tax.cgst || 0) + (tax.sgst || 0)) * 100) / 100;
-    var marker = 'Auto — GST Payable from bill ' + (billId || '');
-
-    // Remove any previously-synced GST expense for this bill first, to avoid duplicates
-    // and to keep it accurate when items are added/removed/edited.
-    if (billId) {
-      try {
-        await api('/rest/v1/expenses?description=eq.' + encodeURIComponent(marker), 'DELETE');
-      } catch(_) {}
-    }
-
-    if (gstTotal <= 0) return; // no tax on this bill (anymore) — nothing further to sync
-
-    var expBody = {
-      item:          'GST Payable',
-      amount:        gstTotal,
-      category:      'Tax',
-      status:        'Pending',
-      recipient:     billBody.guest_name || null,
-      property_name: billBody.property_name || null,
-      date:          billBody.bill_date || new Date().toISOString().slice(0,10),
-      description:   marker,
-      created_at:    new Date().toISOString()
-    };
-    await api('/rest/v1/expenses', 'POST', expBody);
-  } catch(e) {
-    console.warn('GST expense sync failed:', e.message);
-  }
-}
+// NOTE: bill GST used to auto-create a "GST Payable" expense on every save (syncGstExpense).
+// That auto-sync has been removed — GST Payable is now computed live from bills' CGST+SGST
+// in the GST tab (see gstInit/gstRender below) instead of being written into the expenses log.
 async function syncToRevenue(billBody, billId) {
   if (!billId) return;
   try {
@@ -3752,9 +3756,6 @@ async function deleteBill(id, name, billId) {
     if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
     try {
       await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
-      if (billId) {
-        try { await api('/rest/v1/expenses?description=eq.' + encodeURIComponent('Auto — GST Payable from bill ' + billId), 'DELETE'); } catch(_) {}
-      }
       toast(name + ' bill removed');
       loadBills();
     } catch(e) { toast('Error: ' + e.message); }
@@ -4521,19 +4522,18 @@ function bcPaneRender() {
   if (listEl) listEl.innerHTML = billSection + expSection;
 }
 
-// ── GST tab: GST Payable (from billing, via the auto-synced 'GST Payable' expense)
-//    and GST Expensed (from individual expenses with the GST toggle on) ──
-var _gstPayable = [], _gstExpensed = [];
+// ── GST tab: GST Payable is computed live from bills' CGST+SGST per item — it is
+//    NOT auto-written into the expenses log anymore (that auto-sync was removed).
+//    GST Expensed still comes from individual expenses with the GST toggle on. ──
+var _gstBills = [], _gstExpensed = [];
 
 async function gstInit() {
-  var fromEl = document.getElementById('gst-from');
-  var toEl   = document.getElementById('gst-to');
   try {
     var results = await Promise.all([
-      api('/rest/v1/expenses?item=eq.' + encodeURIComponent('GST Payable') + '&order=created_at.desc&select=*'),
+      api('/rest/v1/bills?select=*&order=bill_date.desc'),
       api('/rest/v1/expenses?gst_applicable=eq.true&order=created_at.desc&select=*')
     ]);
-    _gstPayable  = results[0] || [];
+    _gstBills    = results[0] || [];
     _gstExpensed = results[1] || [];
   } catch(e) {
     document.getElementById('gst-payable-list').innerHTML  = '<div class="empty">' + e.message + '</div>';
@@ -4554,10 +4554,25 @@ function gstRender() {
     return true;
   }
 
-  var payable  = _gstPayable.filter(inRange);
+  // GST Payable: derive per-bill CGST+SGST from each bill's items (same calc the PDF uses)
+  var payable = _gstBills
+    .filter(function(b){ return (b.bill_date||b.created_at||'').slice(0,10); })
+    .filter(function(b){
+      var dt = (b.bill_date || b.created_at || '').slice(0,10);
+      if (fromV && dt < fromV) return false;
+      if (toV   && dt > toV)   return false;
+      return true;
+    })
+    .map(function(b){
+      var tax = calcBillTax(b.items||[]);
+      var gstAmt = Math.round(((tax.cgst||0) + (tax.sgst||0)) * 100) / 100;
+      return { bill: b, gstAmt: gstAmt };
+    })
+    .filter(function(r){ return r.gstAmt > 0; });
+
   var expensed = _gstExpensed.filter(inRange);
 
-  var payableTotal  = payable.reduce(function(s,e){ return s + (parseFloat(e.amount)||0); }, 0);
+  var payableTotal  = payable.reduce(function(s,r){ return s + r.gstAmt; }, 0);
   var expensedTotal = expensed.reduce(function(s,e){ return s + (parseFloat(e.gst_amount)||0); }, 0);
   var net = payableTotal - expensedTotal;
 
@@ -4572,13 +4587,14 @@ function gstRender() {
   if (!payable.length) {
     payableEl.innerHTML = '<div class="empty">No GST Payable entries in this range</div>';
   } else {
-    var payableRows = payable.map(function(e){
+    var payableRows = payable.map(function(r){
+      var b = r.bill;
       return '<tr>' +
-        '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + esc((e.date||e.created_at||'').slice(0,10)) + '</td>' +
-        '<td style="font-size:12px;color:var(--muted)">' + esc(e.recipient||'—') + '</td>' +
-        '<td style="font-size:12px;color:var(--muted)">' + esc(e.property_name||'—') + '</td>' +
-        '<td style="font-size:12px;color:var(--muted)">' + esc((e.description||'').replace('Auto — GST Payable from bill ', '')) + '</td>' +
-        '<td style="text-align:right;font-weight:500;color:var(--r)">' + acFmt(e.amount) + '</td>' +
+        '<td style="font-size:12px;color:var(--muted);white-space:nowrap">' + esc((b.bill_date||b.created_at||'').slice(0,10)) + '</td>' +
+        '<td style="font-size:12px;color:var(--muted)">' + esc(b.guest_name||'—') + '</td>' +
+        '<td style="font-size:12px;color:var(--muted)">' + esc(b.property_name||'—') + '</td>' +
+        '<td style="font-size:12px;color:var(--muted)">' + esc(b.bill_ref||'—') + '</td>' +
+        '<td style="text-align:right;font-weight:500;color:var(--r)">' + acFmt(r.gstAmt) + '</td>' +
       '</tr>';
     }).join('');
     payableEl.innerHTML = '<table class="tbl"><thead><tr>' +
