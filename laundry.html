@@ -105,6 +105,8 @@ body.mobile{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif}
 .card-right{flex-shrink:0}
 .btn-collect{padding:9px 14px;background:var(--white);color:var(--text);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
 .btn-collect:active{background:rgba(0,0,0,.08)}
+.btn-icon-edit{background:var(--white);border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:10px;width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);cursor:pointer;font-family:inherit}
+.btn-icon-edit:active{background:rgba(0,0,0,.08)}
 
 /* mobile modal — bottom sheet */
 body.mobile .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-end;justify-content:center}
@@ -208,7 +210,8 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
 <!-- Log Laundry -->
 <div class="modal" id="modal-create"><div class="modal-card" style="max-width:600px">
   <div class="modal-handle"></div>
-  <div class="modal-ttl">Log Laundry</div>
+  <div class="modal-ttl" id="modal-create-ttl">Log Laundry</div>
+  <input type="hidden" id="c-id"/>
   <div class="fg"><label class="fl">Property</label><select class="fc" id="c-prop"></select></div>
   <div class="row-grid">
     <div class="fg"><label class="fl">Date Sent</label><input class="fc" type="date" id="c-date"/></div>
@@ -224,7 +227,7 @@ body.mobile .key:active{background:var(--br-l);border-color:var(--br);transform:
   <div class="fg"><label class="fl">Notes</label><textarea class="fc" id="c-notes" placeholder="Any additional notes…"></textarea></div>
   <div class="modal-actions">
     <button class="btn-sec" onclick="closeModal('modal-create')">Cancel</button>
-    <button class="btn-p" onclick="saveCreate()">Save Log</button>
+    <button class="btn-p" id="c-save-btn" onclick="saveCreate()">Save Log</button>
   </div>
 </div></div>
 
@@ -431,7 +434,8 @@ async function loadList(){
           <div class="card-vendor">${r.vendor_name||'—'}</div>
           <div class="card-meta">Sent ${fmtDTmob(r.sent_at)}${r.promised_return_at?' · Return '+fmtD(r.promised_return_at):''}</div>
         </div>
-        <div class="card-right">
+        <div class="card-right" style="display:flex;align-items:center;gap:8px">
+          <button class="btn-icon-edit" title="Edit" onclick='openEditModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>✎</button>
           ${isDone
             ? `<span class="bdg" style="background:var(--bg);color:var(--text)">✓ Collected Back</span>`
             : `<button class="btn-collect" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`}
@@ -458,6 +462,7 @@ async function loadList(){
           <td style="font-size:12px">${r.staff_handled||'—'}</td>
           <td><span class="bdg" style="background:var(--bg);color:var(--text)">${r.status==='collected'?'Collected Back':'At Vendor'}</span></td>
           <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">
+            <button class="btn-edit" style="font-size:12px;padding:6px 14px" onclick='openEditModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Edit</button>
             ${r.status!=='collected'
               ? `<button class="btn-edit" style="font-size:12px;padding:6px 14px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.10)" onclick='openCollectModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Collect Back</button>`
               : `<span style="font-size:11px;color:var(--muted)">✓ Done</span>`}
@@ -514,8 +519,8 @@ function toggleDetail(row, id){
   dr.style.display=dr.style.display==='none'?'':'none';
 }
 
-/* ── Create Modal ── */
-async function openCreateModal(){
+/* ── Create / Edit Modal (shared form) ── */
+async function prepareLogForm(){
   try{ await loadProps(); }catch(e){}
   try{ await loadStaff(); }catch(e){}
 
@@ -545,6 +550,19 @@ async function openCreateModal(){
     staffSel.disabled = false;
   }
 
+  document.getElementById('c-items-grid').innerHTML = LAUNDRY_ITEMS.map(name=>`
+    <div class="item-row">
+      <span class="item-label">${name}</span>
+      <input class="item-qty" type="text" inputmode="numeric" pattern="[0-9]*" data-item="${name}"/>
+    </div>`).join('');
+}
+
+async function openCreateModal(){
+  await prepareLogForm();
+  document.getElementById('c-id').value = '';
+  document.getElementById('modal-create-ttl').textContent = 'Log Laundry';
+  document.getElementById('c-save-btn').textContent = 'Save Log';
+
   const now = new Date();
   document.getElementById('c-date').value = now.toISOString().slice(0,10);
   document.getElementById('c-time').value = now.toTimeString().slice(0,5);
@@ -552,15 +570,41 @@ async function openCreateModal(){
   document.getElementById('c-return-time').value = '';
   document.getElementById('c-vendor').value = '';
   document.getElementById('c-notes').value = '';
-  document.getElementById('c-items-grid').innerHTML = LAUNDRY_ITEMS.map(name=>`
-    <div class="item-row">
-      <span class="item-label">${name}</span>
-      <input class="item-qty" type="text" inputmode="numeric" pattern="[0-9]*" data-item="${name}"/>
-    </div>`).join('');
+  openModal('modal-create');
+}
+
+async function openEditModal(record){
+  await prepareLogForm();
+  document.getElementById('c-id').value = record.id;
+  document.getElementById('modal-create-ttl').textContent = 'Edit Laundry Log';
+  document.getElementById('c-save-btn').textContent = 'Save Changes';
+
+  document.getElementById('c-prop').value = record.property_name || '';
+  document.getElementById('c-vendor').value = record.vendor_name || '';
+  const sentDate = record.sent_at ? new Date(record.sent_at) : null;
+  document.getElementById('c-date').value = sentDate ? sentDate.toISOString().slice(0,10) : '';
+  document.getElementById('c-time').value = sentDate ? sentDate.toTimeString().slice(0,5) : '';
+  const retDate = record.promised_return_at ? new Date(record.promised_return_at) : null;
+  document.getElementById('c-return-date').value = retDate ? retDate.toISOString().slice(0,10) : '';
+  document.getElementById('c-return-time').value = retDate ? retDate.toTimeString().slice(0,5) : '';
+  if(!document.getElementById('c-staff').disabled) document.getElementById('c-staff').value = record.staff_handled || '';
+  else {
+    // Mobile view locks this field to the current user by default — but when editing an
+    // existing log, preserve who actually handled it rather than silently reassigning it.
+    const staffSel = document.getElementById('c-staff');
+    const original = record.staff_handled || _me.name;
+    staffSel.innerHTML = `<option value="${original}">${original}</option>`;
+  }
+  document.getElementById('c-notes').value = record.notes || '';
+  (record.items_sent||[]).forEach(i=>{
+    const inp = document.querySelector('#c-items-grid [data-item="'+(i.name||'').replace(/"/g,'&quot;')+'"]');
+    if(inp) inp.value = i.qty || '';
+  });
   openModal('modal-create');
 }
 
 async function saveCreate(){
+  const id=document.getElementById('c-id').value;
   const prop=document.getElementById('c-prop').value;
   const vendor=document.getElementById('c-vendor').value.trim();
   const date=document.getElementById('c-date').value;
@@ -576,13 +620,20 @@ async function saveCreate(){
   }).filter(i=>i.qty>0);
   const sent_at=date&&time?new Date(date+'T'+time).toISOString():new Date(date).toISOString();
   const promised_return_at=retDate?new Date(retDate+'T'+(retTime||'00:00')).toISOString():null;
-  await api('/rest/v1/laundry_log','POST',{
+  const payload = {
     property_name:prop, vendor_name:vendor, sent_at, promised_return_at,
-    staff_handled:staff||null, items_sent, notes:notes||null,
-    status:'at_vendor', created_at:new Date().toISOString()
-  });
+    staff_handled:staff||null, items_sent, notes:notes||null
+  };
+  if(id){
+    await api('/rest/v1/laundry_log?id=eq.'+id,'PATCH',payload);
+    toast('Laundry log updated ✓');
+  } else {
+    payload.status='at_vendor';
+    payload.created_at=new Date().toISOString();
+    await api('/rest/v1/laundry_log','POST',payload);
+    toast('Laundry log created ✓');
+  }
   closeModal('modal-create');
-  toast('Laundry log created ✓');
   loadList();
 }
 
