@@ -402,6 +402,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
       <button class="filter-clear" onclick="acClearDateFilter()">Clear</button>
     </div>
+    <div class="pill-group" id="ac-quick-pills" style="margin-bottom:12px">
+      <button class="pill-opt" onclick="acSetQuarter(1,this)">Q1</button>
+      <button class="pill-opt" onclick="acSetQuarter(2,this)">Q2</button>
+      <button class="pill-opt" onclick="acSetQuarter(3,this)">Q3</button>
+      <button class="pill-opt" onclick="acSetQuarter(4,this)">Q4</button>
+      <button class="pill-opt" onclick="acSetCurrentFY(this)">Current FY</button>
+    </div>
     <table class="tbl">
       <thead><tr>
         <th>Item</th><th>Category</th><th>Recipient</th><th>Property</th><th style="text-align:right">Amount</th><th>Status</th><th></th>
@@ -703,6 +710,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       if(ft){ ft.max = today; }
     })();
     </script>
+    <div class="pill-group" id="bill-quick-pills" style="width:100%">
+      <button class="pill-opt" onclick="billSetQuarter(1,this)">Q1</button>
+      <button class="pill-opt" onclick="billSetQuarter(2,this)">Q2</button>
+      <button class="pill-opt" onclick="billSetQuarter(3,this)">Q3</button>
+      <button class="pill-opt" onclick="billSetQuarter(4,this)">Q4</button>
+      <button class="pill-opt" onclick="billSetCurrentFY(this)">Current FY</button>
+    </div>
     <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
   </div>
   <div id="bill-log">Loading…</div>
@@ -762,10 +776,10 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
     </div>
     <div class="pill-group" id="sm-quick-pills" style="margin-top:12px">
-      <button class="pill-opt" onclick="smSetQuarter(1,this)">Q1 (Apr–Jun)</button>
-      <button class="pill-opt" onclick="smSetQuarter(2,this)">Q2 (Jul–Sep)</button>
-      <button class="pill-opt" onclick="smSetQuarter(3,this)">Q3 (Oct–Dec)</button>
-      <button class="pill-opt" onclick="smSetQuarter(4,this)">Q4 (Jan–Mar)</button>
+      <button class="pill-opt" onclick="smSetQuarter(1,this)">Q1</button>
+      <button class="pill-opt" onclick="smSetQuarter(2,this)">Q2</button>
+      <button class="pill-opt" onclick="smSetQuarter(3,this)">Q3</button>
+      <button class="pill-opt" onclick="smSetQuarter(4,this)">Q4</button>
       <button class="pill-opt" onclick="smSetCurrentFY(this)">Current FY</button>
     </div>
   </div>
@@ -894,15 +908,22 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   <!-- Date Range -->
   <div class="card" style="margin-bottom:20px">
     <div class="card-header" style="margin-bottom:12px"><span class="card-ttl">Date Range</span></div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
       <div class="fg" style="margin-bottom:0;min-width:140px">
         <label class="fl">From</label>
-        <input class="fc" id="gst-from" type="date" onchange="gstRender()"/>
+        <input class="fc" id="gst-from" type="date" onchange="gstOnDateChange()"/>
       </div>
       <div class="fg" style="margin-bottom:0;min-width:140px">
         <label class="fl">To</label>
-        <input class="fc" id="gst-to" type="date" onchange="gstRender()"/>
+        <input class="fc" id="gst-to" type="date" onchange="gstOnDateChange()"/>
       </div>
+    </div>
+    <div class="pill-group" id="gst-quick-pills">
+      <button class="pill-opt" onclick="gstSetQuarter(1,this)">Q1</button>
+      <button class="pill-opt" onclick="gstSetQuarter(2,this)">Q2</button>
+      <button class="pill-opt" onclick="gstSetQuarter(3,this)">Q3</button>
+      <button class="pill-opt" onclick="gstSetQuarter(4,this)">Q4</button>
+      <button class="pill-opt" onclick="gstSetCurrentFY(this)">Current FY</button>
     </div>
   </div>
 
@@ -1495,6 +1516,7 @@ function acOnFilterFromChange() {
   if (fromEl.value && toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
   toEl.min = fromEl.value || '';
   toEl.max = today;
+  document.querySelectorAll('#ac-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
 }
 function acOnFilterToChange() {
   var today = new Date().toISOString().slice(0,10);
@@ -1503,6 +1525,39 @@ function acOnFilterToChange() {
   if (toEl.value > today) toEl.value = today;
   if (toEl.value && fromEl.value && fromEl.value > toEl.value) fromEl.value = toEl.value;
   fromEl.max = toEl.value || today;
+  document.querySelectorAll('#ac-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+}
+
+function acApplyDateRange(fromStr, toStr, btn) {
+  var today = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('ac-filter-from');
+  var toEl   = document.getElementById('ac-filter-to');
+  if (!fromEl || !toEl) return;
+  fromEl.value = fromStr;
+  toEl.value   = (toStr > today) ? today : toStr;
+  fromEl.max = today;
+  toEl.max   = today;
+  toEl.min   = fromStr;
+  document.querySelectorAll('#ac-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  acRenderExp();
+}
+
+function acSetQuarter(q, btn) {
+  var fyStart = smCurrentFyStartYear();
+  var ranges = {
+    1: [fyStart+'-04-01', fyStart+'-06-30'],
+    2: [fyStart+'-07-01', fyStart+'-09-30'],
+    3: [fyStart+'-10-01', fyStart+'-12-31'],
+    4: [(fyStart+1)+'-01-01', (fyStart+1)+'-03-31']
+  };
+  var r = ranges[q];
+  acApplyDateRange(r[0], r[1], btn);
+}
+
+function acSetCurrentFY(btn) {
+  var fyStart = smCurrentFyStartYear();
+  acApplyDateRange(fyStart+'-04-01', (fyStart+1)+'-03-31', btn);
 }
 function acClearDateFilter() {
   var today = new Date().toISOString().slice(0,10);
@@ -1513,6 +1568,7 @@ function acClearDateFilter() {
   if(fromEl){ fromEl.value = monthStart; fromEl.max = today; fromEl.min = ''; }
   if(toEl)  { toEl.value = today; toEl.max = today; toEl.min = ''; }
   if(propEl){ propEl.value = ''; }
+  document.querySelectorAll('#ac-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
   // reset cat and status pills too
   _acCatF = 'all';
   _acStF  = 'all';
@@ -3217,6 +3273,7 @@ function onFilterFromChange() {
   }
   toEl.min = fromEl.value || '';
   toEl.max = today;
+  document.querySelectorAll('#bill-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
 }
 function onFilterToChange() {
   var today  = new Date().toISOString().slice(0,10);
@@ -3229,6 +3286,39 @@ function onFilterToChange() {
     fromEl.value = toEl.value;
   }
   fromEl.max = toEl.value || today;
+  document.querySelectorAll('#bill-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+}
+
+function billApplyDateRange(fromStr, toStr, btn) {
+  var today = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('filter-from');
+  var toEl   = document.getElementById('filter-to');
+  if (!fromEl || !toEl) return;
+  fromEl.value = fromStr;
+  toEl.value   = (toStr > today) ? today : toStr;
+  fromEl.max = today;
+  toEl.max   = today;
+  toEl.min   = fromStr;
+  document.querySelectorAll('#bill-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  filterBills();
+}
+
+function billSetQuarter(q, btn) {
+  var fyStart = smCurrentFyStartYear();
+  var ranges = {
+    1: [fyStart+'-04-01', fyStart+'-06-30'],
+    2: [fyStart+'-07-01', fyStart+'-09-30'],
+    3: [fyStart+'-10-01', fyStart+'-12-31'],
+    4: [(fyStart+1)+'-01-01', (fyStart+1)+'-03-31']
+  };
+  var r = ranges[q];
+  billApplyDateRange(r[0], r[1], btn);
+}
+
+function billSetCurrentFY(btn) {
+  var fyStart = smCurrentFyStartYear();
+  billApplyDateRange(fyStart+'-04-01', (fyStart+1)+'-03-31', btn);
 }
 
 // ── Payment ──
@@ -3643,6 +3733,7 @@ function clearFilters() {
   if (allPill) allPill.classList.add('on');
   // Reset source pills
   document.querySelectorAll('#filter-source-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('#bill-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
   filterBills();
 }
 
@@ -4547,6 +4638,48 @@ function bcPaneRender() {
 //    GST Expensed still comes from individual expenses with the GST toggle on. ──
 var _gstBills = [], _gstExpensed = [];
 
+var _gstReady = false;
+
+function gstOnDateChange() {
+  var today  = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('gst-from');
+  var toEl   = document.getElementById('gst-to');
+  if (fromEl.value > today) fromEl.value = today;
+  if (toEl.value > today) toEl.value = today;
+  if (fromEl.value && toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
+  document.querySelectorAll('#gst-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  gstRender();
+}
+
+function gstApplyRange(fromStr, toStr, btn) {
+  var today = new Date().toISOString().slice(0,10);
+  var fromEl = document.getElementById('gst-from');
+  var toEl   = document.getElementById('gst-to');
+  if (!fromEl || !toEl) return;
+  fromEl.value = fromStr;
+  toEl.value   = (toStr > today) ? today : toStr; // never show future dates
+  document.querySelectorAll('#gst-quick-pills .pill-opt').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  gstRender();
+}
+
+function gstSetQuarter(q, btn) {
+  var fyStart = smCurrentFyStartYear();
+  var ranges = {
+    1: [fyStart+'-04-01', fyStart+'-06-30'],
+    2: [fyStart+'-07-01', fyStart+'-09-30'],
+    3: [fyStart+'-10-01', fyStart+'-12-31'],
+    4: [(fyStart+1)+'-01-01', (fyStart+1)+'-03-31']
+  };
+  var r = ranges[q];
+  gstApplyRange(r[0], r[1], btn);
+}
+
+function gstSetCurrentFY(btn) {
+  var fyStart = smCurrentFyStartYear();
+  gstApplyRange(fyStart+'-04-01', (fyStart+1)+'-03-31', btn);
+}
+
 async function gstInit() {
   try {
     var results = await Promise.all([
@@ -4558,6 +4691,12 @@ async function gstInit() {
   } catch(e) {
     document.getElementById('gst-payable-list').innerHTML  = '<div class="empty">' + e.message + '</div>';
     document.getElementById('gst-expensed-list').innerHTML = '<div class="empty">' + e.message + '</div>';
+    return;
+  }
+  if (!_gstReady) {
+    _gstReady = true;
+    var fyBtn = document.querySelector('#gst-quick-pills .pill-opt:last-child');
+    gstSetCurrentFY(fyBtn); // defaults to Current FY on first load; also renders
     return;
   }
   gstRender();
