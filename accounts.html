@@ -8,6 +8,7 @@
 <style>
 
 *{box-sizing:border-box;margin:0;padding:0}
+.gst-dim{opacity:.42;transition:opacity .15s}
 /* No up/down spinner arrows on number inputs — plain text-entry look */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
@@ -1044,34 +1045,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
       <div id="ac-tds-pct-row" style="display:none;margin-top:8px">
         <label class="fl">TDS % <span style="font-size:11px;color:var(--muted)">(default 10%)</span></label>
-        <input class="fc" id="ac-tds-pct" type="number" min="0" max="100" step="0.01" value="10" placeholder="10"/>
+        <input class="fc" id="ac-tds-pct" type="number" min="0" max="100" step="0.01" value="10" placeholder=""/>
       </div>
     </div>
 
     <!-- GST Expensed — GST paid on this purchase/expense. Distinct from "GST Payable", the
          auto-synced expense created from billing (output tax owed to the government).
          Applicable to ALL expense categories (unlike TDS, which is Payout-only). -->
-    <div class="fg" id="ac-gst-fg">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
-        <div>
-          <div style="font-size:13px;font-weight:500;color:var(--text)">GST Expensed</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">GST paid on this purchase/expense — separate from GST Payable synced from billing</div>
-        </div>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <span style="font-size:12px;color:var(--muted)" id="ac-gst-lbl">Off</span>
-          <div style="position:relative;width:40px;height:22px" onclick="acToggleGst()">
-            <input type="checkbox" id="ac-gst-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
-            <div id="ac-gst-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
-            <div id="ac-gst-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#f3eee8;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
-          </div>
-        </label>
-      </div>
-      <div id="ac-gst-pct-row" style="display:none;margin-top:8px">
-        <label class="fl">GST Expensed % <span style="font-size:11px;color:var(--muted)">(default 18%)</span></label>
-        <input class="fc" id="ac-gst-pct" type="number" min="0" max="100" step="0.01" value="18" placeholder="18" oninput="acCalcGst('gst')"/>
-      </div>
-    </div>
-
     <!-- Utility fields — shown only when Utility is selected -->
     <div id="ac-utility-fg" style="display:none">
       <div class="fg">
@@ -1163,31 +1143,49 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       </div>
       <div class="fg" id="ac-pretax-fg">
         <label class="fl" id="ac-pretax-lbl">Amount <span class="req">*</span></label>
-        <input class="fc" id="ac-exp-pretax" type="number" min="0" placeholder="0.00" oninput="acCalcPostTax()"/>
+        <input class="fc" id="ac-exp-pretax" type="number" min="0" placeholder="" oninput="acCalcPostTax()"/>
       </div>
     </div>
     <!-- TDS breakdown row — shown when TDS is on -->
     <div class="row-grid" id="ac-tds-breakdown" style="display:none">
       <div class="fg">
         <label class="fl">TDS Deducted</label>
-        <input class="fc" id="ac-exp-tds-amt" type="number" readonly tabindex="-1" style="background:var(--bg);color:#A32D2D;font-weight:500" placeholder="0.00"/>
+        <input class="fc" id="ac-exp-tds-amt" type="number" readonly tabindex="-1" style="background:var(--bg);color:#A32D2D;font-weight:500" placeholder=""/>
       </div>
       <div class="fg">
         <label class="fl">Post-tax Amount <span style="font-size:11px;color:var(--muted)">(saved as Amount)</span></label>
-        <input class="fc" id="ac-exp-amount" type="number" readonly tabindex="-1" style="background:var(--bg);color:#3B6D11;font-weight:500" placeholder="0.00"/>
+        <input class="fc" id="ac-exp-amount" type="number" readonly tabindex="-1" style="background:var(--bg);color:#3B6D11;font-weight:500" placeholder=""/>
       </div>
     </div>
-    <!-- GST breakdown row — shown when GST is on. Tracked as a separate metric; does not alter
-         the saved Amount. Two-way: edit Amount (without GST) or Total (incl. GST) directly —
-         GST % fills in whichever side isn't currently the source of truth. -->
-    <div class="row-grid" id="ac-gst-breakdown" style="display:none">
+    <!-- GST Expensed toggle — moved next to the amount fields it controls. Applicable to
+         every expense category (unlike TDS, which is Payout-only). -->
+    <div class="fg" id="ac-gst-fg" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+      <div style="font-size:13px;font-weight:500;color:var(--text)">GST Expensed</div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <span style="font-size:12px;color:var(--muted)" id="ac-gst-lbl">Off</span>
+        <div style="position:relative;width:40px;height:22px" onclick="acToggleGst()">
+          <input type="checkbox" id="ac-gst-toggle" style="opacity:0;position:absolute;width:100%;height:100%;margin:0;cursor:pointer;z-index:1"/>
+          <div id="ac-gst-track" style="position:absolute;inset:0;border-radius:999px;background:#ccc;transition:background .2s"></div>
+          <div id="ac-gst-thumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#f3eee8;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s"></div>
+        </div>
+      </label>
+    </div>
+    <!-- GST %, GST Amount, and Total sit together. % and Amount are two ways of specifying the
+         same thing — clicking one makes it editable and dims the other; the dimmed one just
+         displays the computed value until you tap into it. Total stays independently editable
+         (edits back-calculate the base Amount). -->
+    <div class="row-grid" id="ac-gst-breakdown" style="display:none;grid-template-columns:repeat(3,1fr)">
       <div class="fg">
-        <label class="fl">GST Expensed <span style="font-size:11px;color:var(--muted)">(tracked separately)</span></label>
-        <input class="fc" id="ac-exp-gst-amt" type="number" min="0" style="color:#1F5AA3;font-weight:500" placeholder="0.00"/>
+        <label class="fl">GST %</label>
+        <input class="fc" id="ac-gst-pct" type="number" min="0" max="100" step="0.01" value="18" placeholder="" style="color:#1F5AA3;font-weight:500" onfocus="acSetGstActiveField('pct')" oninput="acCalcGst('pct')"/>
       </div>
       <div class="fg">
-        <label class="fl">Total <span style="font-size:11px;color:var(--muted)">(Amount + GST)</span></label>
-        <input class="fc" id="ac-exp-gst-total" type="number" min="0" oninput="acCalcGst('total')" style="color:#1F5AA3;font-weight:500" placeholder="0.00"/>
+        <label class="fl">GST Amount</label>
+        <input class="fc" id="ac-exp-gst-amt" type="number" min="0" style="color:#1F5AA3;font-weight:500" placeholder="" onfocus="acSetGstActiveField('amt')" oninput="acCalcGst('amt')"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Total</label>
+        <input class="fc" id="ac-exp-gst-total" type="number" min="0" oninput="acCalcGst('total')" style="color:#1F5AA3;font-weight:500" placeholder=""/>
       </div>
     </div>
     <!-- When TDS off: amount = pretax, show as plain field below -->
@@ -1573,12 +1571,15 @@ function acOpenExpModal() {
   document.getElementById('ac-gst-track').style.background='#ccc';
   document.getElementById('ac-gst-thumb').style.transform='translateX(0)';
   document.getElementById('ac-gst-lbl').textContent='Off';
-  document.getElementById('ac-gst-pct-row').style.display='none';
   document.getElementById('ac-gst-breakdown').style.display='none';
   document.getElementById('ac-gst-pct').value='18';
   document.getElementById('ac-exp-gst-amt').value='';
   document.getElementById('ac-exp-gst-total').value='';
-  _acGstLastEdited='amount';
+  document.getElementById('ac-gst-pct').classList.remove('gst-dim');
+  document.getElementById('ac-exp-gst-amt').classList.remove('gst-dim');
+  document.getElementById('ac-gst-pct').readOnly = false;
+  document.getElementById('ac-exp-gst-amt').readOnly = false;
+  _acGstActiveField='pct';
   // reset utility
   document.getElementById('ac-exp-utility-property').value='';
   document.getElementById('ac-exp-utility-property').innerHTML='<option value="">— select property —</option>';
@@ -1641,13 +1642,12 @@ function acEditExp(e) {
     document.getElementById('ac-gst-track').style.background = hasGst ? 'var(--br)' : '#ccc';
     document.getElementById('ac-gst-thumb').style.transform  = hasGst ? 'translateX(18px)' : 'translateX(0)';
     document.getElementById('ac-gst-lbl').textContent = hasGst ? 'On' : 'Off';
-    document.getElementById('ac-gst-pct-row').style.display  = hasGst ? '' : 'none';
     document.getElementById('ac-gst-breakdown').style.display= hasGst ? '' : 'none';
     document.getElementById('ac-gst-pct').value = e.gst_pct || 18;
     document.getElementById('ac-exp-gst-amt').value = e.gst_amount || '';
     const _editBase = e.pretax_amount != null ? Number(e.pretax_amount) : Number(pretaxVal) || 0;
     document.getElementById('ac-exp-gst-total').value = hasGst ? (_editBase + (Number(e.gst_amount)||0)).toFixed(2) : '';
-    _acGstLastEdited = 'amount';
+    if (hasGst) acSetGstActiveField('pct'); else _acGstActiveField = 'pct';
   }
   document.getElementById('ac-exp-desc').value=e.description||'';
   document.querySelectorAll('#ac-cat-pills .pill-opt').forEach(b=>b.classList.toggle('on',b.dataset.val===e.category));
@@ -2070,47 +2070,67 @@ function acToggleGst() {
   const track = document.getElementById('ac-gst-track');
   const thumb = document.getElementById('ac-gst-thumb');
   const lbl   = document.getElementById('ac-gst-lbl');
-  const pctRow= document.getElementById('ac-gst-pct-row');
   const breakdown = document.getElementById('ac-gst-breakdown');
   const on = cb.checked;
   track.style.background = on ? 'var(--br)' : '#ccc';
   thumb.style.transform  = on ? 'translateX(18px)' : 'translateX(0)';
   lbl.textContent = on ? 'On' : 'Off';
-  pctRow.style.display = on ? '' : 'none';
   breakdown.style.display = on ? '' : 'none';
-  _acGstLastEdited = 'amount';
-  acCalcGst('amount');
+  if (on) acSetGstActiveField('pct');
+  acCalcGst('pct');
 }
 
-// Tracks which field is currently the "source of truth" for the GST calc:
-// 'amount' (base Amount without GST drives GST Amount + Total) or
-// 'total' (Total incl. GST drives base Amount + GST Amount) — mirrors the
-// Rate <-> Total pattern used for bill items.
-var _acGstLastEdited = 'amount';
+// Which of GST % / GST Amount is currently the editable "source of truth" — clicking into
+// either field activates it (full opacity, editable) and dims the other (opacity, read-only)
+// until it's tapped. Total sits alongside but stays independently editable.
+var _acGstActiveField = 'pct';
+
+function acSetGstActiveField(field) {
+  _acGstActiveField = field;
+  const pctEl = document.getElementById('ac-gst-pct');
+  const amtEl = document.getElementById('ac-exp-gst-amt');
+  const activeEl = field === 'pct' ? pctEl : amtEl;
+  const dimEl    = field === 'pct' ? amtEl : pctEl;
+  if (!activeEl || !dimEl) return;
+  activeEl.readOnly = false;
+  activeEl.classList.remove('gst-dim');
+  dimEl.readOnly = true;
+  dimEl.classList.add('gst-dim');
+}
 
 function acCalcGst(src) {
   const gstOn = document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked;
+  const pctEl = document.getElementById('ac-gst-pct');
   const gstAmtEl = document.getElementById('ac-exp-gst-amt');
   const gstTotEl = document.getElementById('ac-exp-gst-total');
   if (!gstAmtEl) return;
-  if (!gstOn) { gstAmtEl.value = ''; if (gstTotEl) gstTotEl.value = ''; return; }
+  if (!gstOn) { pctEl.value = ''; gstAmtEl.value = ''; if (gstTotEl) gstTotEl.value = ''; return; }
 
-  const gstPct = parseFloat(document.getElementById('ac-gst-pct').value) || 0;
   const baseEl = document.getElementById('ac-exp-pretax');
-  const driveFromTotal = gstTotEl && ((src === 'total') || (src === 'gst' && _acGstLastEdited === 'total'));
+  const base = parseFloat(baseEl.value) || 0;
 
-  if (driveFromTotal) {
-    _acGstLastEdited = 'total';
+  if (src === 'total') {
     const tot = parseFloat(gstTotEl.value) || 0;
-    const denom = 1 + gstPct / 100;
-    const base = denom > 0 ? tot / denom : 0;
-    baseEl.value = base.toFixed(2);
-    gstAmtEl.value = (tot - base).toFixed(2);
+    const pct = parseFloat(pctEl.value) || 0;
+    const denom = 1 + pct / 100;
+    const newBase = denom > 0 ? tot / denom : 0;
+    baseEl.value = newBase.toFixed(2);
+    gstAmtEl.value = (tot - newBase).toFixed(2);
     acCalcPostTax(true); // refresh TDS-derived Amount from the new base, without looping back into GST calc
+    return;
+  }
+
+  const activeField = (src === 'pct' || src === 'amt') ? src : _acGstActiveField;
+
+  if (activeField === 'amt') {
+    // GST Amount is the source of truth — back into the % for display, keep Total in sync
+    const gstAmt = parseFloat(gstAmtEl.value) || 0;
+    pctEl.value = base > 0 ? (gstAmt / base * 100).toFixed(2) : '0';
+    if (gstTotEl) gstTotEl.value = (base + gstAmt).toFixed(2);
   } else {
-    _acGstLastEdited = 'amount';
-    const base = parseFloat(baseEl.value) || 0;
-    const gstAmt = Math.round(base * gstPct / 100 * 100) / 100;
+    // GST % is the source of truth — compute the amount, keep Total in sync
+    const pct = parseFloat(pctEl.value) || 0;
+    const gstAmt = Math.round(base * pct / 100 * 100) / 100;
     gstAmtEl.value = gstAmt.toFixed(2);
     if (gstTotEl) gstTotEl.value = (base + gstAmt).toFixed(2);
   }
@@ -2136,7 +2156,7 @@ function acCalcPostTax(skipGst) {
     var pendingEl = document.getElementById('ac-exp-pending-amount');
     if (paidEl && pendingEl) pendingEl.value = Math.max(total - (parseFloat(paidEl.value)||0), 0).toFixed(2);
   }
-  if (!skipGst) acCalcGst('amount');
+  if (!skipGst) acCalcGst(_acGstActiveField);
 }
 
 function acPickUtilityType(btn) {
