@@ -975,6 +975,36 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- ── MANAGE PRESET ITEMS MODAL (Others category) ── -->
+<div class="modal" id="ac-manage-items-modal" style="z-index:10000" onclick="if(event.target===this) acCloseManageItems()">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-ttl">Manage Preset Items</div>
+    <div id="ac-manage-items-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="ac-new-item-input" type="text" placeholder="New item name…" style="flex:1;padding:8px 11px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none" onkeydown="if(event.key==='Enter'){acAddCustomItem();}"/>
+      <button onclick="acAddCustomItem()" style="padding:8px 14px;background:var(--br);color:#f3eee8;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap">+ Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="acCloseManageItems()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MANAGE PRESET ITEMS MODAL (Banyan Circle category) ── -->
+<div class="modal" id="ac-bc-manage-items-modal" style="z-index:10000" onclick="if(event.target===this) acCloseBcManageItems()">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-ttl">Manage Preset Items</div>
+    <div id="ac-bc-manage-items-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="ac-bc-new-item-input" type="text" placeholder="New item name…" style="flex:1;padding:8px 11px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none" onkeydown="if(event.key==='Enter'){acAddBcCustomItem();}"/>
+      <button onclick="acAddBcCustomItem()" style="padding:8px 14px;background:var(--br);color:#f3eee8;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap">+ Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="acCloseBcManageItems()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── BILL PDF PREVIEW MODAL ── -->
 <div class="modal" id="pdf-preview-modal" onclick="if(event.target===this) closePdfPreview()">
   <div class="modal-card" style="max-width:900px;width:94vw;height:92vh;display:flex;flex-direction:column;padding:16px">
@@ -1110,16 +1140,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </button>
       </div>
       <div class="pill-group" id="ac-others-pills" style="flex-wrap:wrap;gap:6px"></div>
-
-      <!-- Manage Items Panel -->
-      <div id="ac-manage-items-panel" style="display:none;margin-top:10px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:10px;padding:14px">
-        <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Manage Preset Items</div>
-        <div id="ac-manage-items-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="ac-new-item-input" type="text" placeholder="New item name…" style="flex:1;padding:8px 11px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none" onkeydown="if(event.key==='Enter'){acAddCustomItem();}"/>
-          <button onclick="acAddCustomItem()" style="padding:8px 14px;background:var(--br);color:#f3eee8;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap">+ Add</button>
-        </div>
-      </div>
     </div>
 
     <!-- Others: property picker -->
@@ -1140,15 +1160,6 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </button>
       </div>
       <div class="pill-group" id="ac-bc-cat-pills" style="flex-wrap:wrap;gap:6px"></div>
-      <!-- Manage Items Panel -->
-      <div id="ac-bc-manage-items-panel" style="display:none;margin-top:10px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:10px;padding:14px">
-        <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Manage Preset Items</div>
-        <div id="ac-bc-manage-items-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="ac-bc-new-item-input" type="text" placeholder="New item name…" style="flex:1;padding:8px 11px;border:none;box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:7px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none" onkeydown="if(event.key==='Enter'){acAddBcCustomItem();}"/>
-          <button onclick="acAddBcCustomItem()" style="padding:8px 14px;background:var(--br);color:#f3eee8;border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap">+ Add</button>
-        </div>
-      </div>
     </div>
 
     <!-- Banyan Circle: property picker -->
@@ -1416,7 +1427,7 @@ function acRenderExp() {
   const toV    = toEl   ? toEl.value   : '';
   if(fromV) d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt>=fromV; });
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
-  d.sort(function(a,b){ return new Date(b.created_at||0) - new Date(a.created_at||0); });
+  d.sort(function(a,b){ return new Date(b.date||b.created_at||0) - new Date(a.date||a.created_at||0); });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
   if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No expenses found.</td></tr>'; return; }
@@ -2291,11 +2302,13 @@ function acRenderManageList() {
 }
 
 function acToggleManageItems() {
-  var panel = document.getElementById('ac-manage-items-panel');
-  if (!panel) return;
-  var open = panel.style.display !== 'none';
-  panel.style.display = open ? 'none' : 'block';
-  if (!open) { acRenderManageList(); document.getElementById('ac-new-item-input').focus(); }
+  acRenderManageList();
+  document.getElementById('ac-manage-items-modal').classList.add('on');
+  document.getElementById('ac-new-item-input').focus();
+}
+
+function acCloseManageItems() {
+  document.getElementById('ac-manage-items-modal').classList.remove('on');
 }
 
 function acAddCustomItem() {
@@ -2385,11 +2398,13 @@ function acRenderBcManageList() {
 }
 
 function acToggleBcManageItems() {
-  var panel = document.getElementById('ac-bc-manage-items-panel');
-  if (!panel) return;
-  var open = panel.style.display !== 'none';
-  panel.style.display = open ? 'none' : 'block';
-  if (!open) { acRenderBcManageList(); document.getElementById('ac-bc-new-item-input').focus(); }
+  acRenderBcManageList();
+  document.getElementById('ac-bc-manage-items-modal').classList.add('on');
+  document.getElementById('ac-bc-new-item-input').focus();
+}
+
+function acCloseBcManageItems() {
+  document.getElementById('ac-bc-manage-items-modal').classList.remove('on');
 }
 
 function acAddBcCustomItem() {
@@ -2461,6 +2476,7 @@ async function acSaveExp() {
   else if (category === 'Banyan Circle') propertyToSave = bcProperty || 'Banyan Circle';
   else if (category === 'Payout' && payoutType === 'Talent') propertyToSave = talentProperty || null;
   else if (category === 'Payout' && payoutType === 'Team') propertyToSave = teamAssigned || null;
+  else if (category === 'Payout' && payoutType === 'Landlords') propertyToSave = recipient || null;
 
   const body = {
     item, amount: Number(amount), category, status,
@@ -3719,7 +3735,7 @@ function filterBills() {
     if (toQ   && billD > toQ)   return false;
     return true;
   });
-  filtered.sort(function(a,b){ return new Date(b.created_at||0) - new Date(a.created_at||0); });
+  filtered.sort(function(a,b){ return new Date(b.bill_date||b.created_at||0) - new Date(a.bill_date||a.created_at||0); });
   renderBills(filtered);
 }
 
