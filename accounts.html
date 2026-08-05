@@ -411,9 +411,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <table class="tbl">
       <thead><tr>
-        <th>Item</th><th>Category</th><th>Recipient</th><th>Property</th><th style="text-align:right">Amount</th><th>Status</th><th></th>
+        <th>Item</th><th>Category</th><th>Property</th><th style="text-align:right">Amount</th><th>Status</th><th></th>
       </tr></thead>
-      <tbody id="ac-exp-tbody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+      <tbody id="ac-exp-tbody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
     </table>
   </div>
 </div><!-- /ac-pane-expenses -->
@@ -1020,9 +1020,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <input type="hidden" id="ac-exp-payout-type"/>
     </div>
 
-    <!-- Recipient dropdown — shown after a payout sub-type is picked -->
+    <!-- Recipient dropdown — shown after a payout sub-type is picked. Label/placeholder
+         switch to "Property" wording when Landlords is selected, since landlord "recipients"
+         are actually properties, not people. -->
     <div class="fg" id="ac-recipient-fg" style="display:none">
-      <label class="fl">Recipient <span class="req">*</span></label>
+      <label class="fl"><span id="ac-recipient-lbl-text">Recipient</span> <span class="req">*</span></label>
       <select class="fc" id="ac-exp-recipient" onchange="acOnRecipientChange()">
         <option value="">— select —</option>
       </select>
@@ -1417,10 +1419,9 @@ function acRenderExp() {
   d.sort(function(a,b){ return new Date(b.created_at||0) - new Date(a.created_at||0); });
   acRenderKPIs(d);
   const tb = document.getElementById('ac-exp-tbody');
-  if(!d.length){ tb.innerHTML='<tr><td colspan="7" class="empty">No expenses found.</td></tr>'; return; }
+  if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
     const dash = '<span style="color:var(--border)">—</span>';
-    const recipientLbl  = e.recipient   || dash;
     const propertyLbl   = e.property_name || dash;
     const eJson = JSON.stringify(e).replace(/'/g,"&#39;");
     const stInfo = acExpStatusInfo(e);
@@ -1428,7 +1429,6 @@ function acRenderExp() {
     <tr class="bill-row" onclick='acShowExpDetail(${eJson})' style="cursor:pointer">
       <td style="font-weight:500">${e.item||'—'}</td>
       <td style="font-size:12px;color:var(--muted)">${acExpCategoryLabel(e)}</td>
-      <td style="font-size:12px;color:var(--muted)">${recipientLbl}</td>
       <td style="font-size:12px;color:var(--muted)">${propertyLbl}</td>
       <td style="text-align:right;font-weight:500">${acFmt(e.amount)}</td>
       <td><span class="bdg ${stInfo.cls}" style="font-size:12px">${stInfo.label}</span></td>
@@ -1596,6 +1596,7 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-fileurl').value='';
   document.getElementById('ac-exp-payout-type').value='';
   document.getElementById('ac-exp-recipient').innerHTML='<option value="">— select —</option>';
+  document.getElementById('ac-recipient-lbl-text').textContent='Recipient';
   document.getElementById('ac-payout-fg').style.display='none';
   document.getElementById('ac-tds-fg').style.display='none';
   document.getElementById('ac-recipient-fg').style.display='none';
@@ -1807,6 +1808,8 @@ function acEditExp(e) {
     (async () => {
       try {
         let items = [];
+        const isLandlordEdit = e.payout_type === 'Landlords';
+        document.getElementById('ac-recipient-lbl-text').textContent = isLandlordEdit ? 'Property' : 'Recipient';
         if (e.payout_type === 'Talent') {
           const d = await acApi('/rest/v1/talents?select=id,name,pan&order=name');
           items = (d||[]).map(r=>({ label: r.name, pan: r.pan||'' }));
@@ -1818,7 +1821,7 @@ function acEditExp(e) {
           items = (d||[]).map(r=>({ label: r.property_name, pan: r.pan||'' }));
         }
         const sel = document.getElementById('ac-exp-recipient');
-        sel.innerHTML = '<option value="" data-pan="">— select —</option>' + items.map(n=>`<option value="${n.label}" data-pan="${n.pan||''}" data-assigned="${
+        sel.innerHTML = '<option value="" data-pan="">' + (isLandlordEdit ? '— select property —' : '— select —') + '</option>' + items.map(n=>`<option value="${n.label}" data-pan="${n.pan||''}" data-assigned="${
           n.assigned_properties ? (Array.isArray(n.assigned_properties) ? n.assigned_properties.join(', ') : String(n.assigned_properties)) : ''
         }"${n.label===e.recipient?' selected':''}>${n.label}</option>`).join('');
         document.getElementById('ac-recipient-fg').style.display = '';
@@ -1996,6 +1999,8 @@ async function acPickPayout(btn) {
   panBadge.textContent = '';
   // Fetch list from appropriate table
   const recipientSel = document.getElementById('ac-exp-recipient');
+  const isLandlord = type === 'Landlords';
+  document.getElementById('ac-recipient-lbl-text').textContent = isLandlord ? 'Property' : 'Recipient';
   recipientSel.innerHTML = '<option value="">Loading…</option>';
   document.getElementById('ac-recipient-fg').style.display = '';
   // Show/hide Talent property picker and Team properties
@@ -2027,7 +2032,7 @@ async function acPickPayout(btn) {
       const d = await acApi('/rest/v1/landlords?select=id,property_name,pan&order=property_name');
       items = (d||[]).map(r=>({ id: r.id, label: r.property_name, pan: r.pan||'' }));
     }
-    recipientSel.innerHTML = '<option value="" data-pan="">— select —</option>' +
+    recipientSel.innerHTML = '<option value="" data-pan="">' + (isLandlord ? '— select property —' : '— select —') + '</option>' +
       items.map(i=>`<option value="${i.label}" data-pan="${i.pan||''}" data-assigned="${
         i.assigned_properties ? (Array.isArray(i.assigned_properties) ? i.assigned_properties.join(', ') : String(i.assigned_properties)) : ''
       }">${i.label}</option>`).join('');
