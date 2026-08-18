@@ -693,11 +693,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt" data-val="pending" onclick="filterBillStatus(this)">Receivables</button>
       </div>
     </div>
-    <div class="fg-date fg" style="min-width:140px">
+    <div class="fg" style="flex:none;margin-bottom:0;min-width:130px">
       <label class="fl">From</label>
       <input class="fc" id="filter-from" type="date" onchange="onFilterFromChange();filterBills()"/>
     </div>
-    <div class="fg-date fg" style="min-width:140px">
+    <div class="fg" style="flex:none;margin-bottom:0;min-width:130px">
       <label class="fl">To</label>
       <input class="fc" id="filter-to" type="date" onchange="onFilterToChange();filterBills()"/>
     </div>
@@ -4004,7 +4004,6 @@ function downloadBillPdf(b) {
     '<tr class="total-row"><td colspan="5">Grand Total</td><td style="text-align:right">₹' + Number(b.amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + '</td></tr>' +
     '</tbody></table>' +
     '<hr/>' +
-    '<div style="font-size:11px;color:#888;margin-top:4px">GST No: <span style="color:#2C2C2A">ABSPW9671N1ZG</span></div>' +
     '<div style="font-size:11px;color:#888;margin-top:4px">A/c Name: Property by Heritance &nbsp;·&nbsp; A/c No: 924020042891641 &nbsp;·&nbsp; IFSC: UTIB0003212 &nbsp;·&nbsp; Axis Bank, Kalady</div>' +
     (showPaidPill ? '<div class="status-pill">Paid' + methodStr + '</div>' : '') +
     (showPartPill ? '<div class="status-pill">Partially Paid — ₹' + Number(b.paid_amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + ' received, ₹' + Number(b.pending_amount||0).toLocaleString('en-IN',{minimumFractionDigits:2}) + ' due</div>' : '') +
