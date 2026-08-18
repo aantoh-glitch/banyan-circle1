@@ -2175,6 +2175,7 @@ function acPickSt(btn) {
 
 // Build the running Payment History rows (as HTML) for a Part Payment parent expense.
 // Shared by the edit modal's history list and the read-only detail popup.
+// Each line shows what was actually paid on that date, not a cumulative running total.
 function acBuildPaymentHistoryHtml(parent) {
   var total = Number(parent.amount) || 0;
   var children = (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(parent.id); });
@@ -2183,13 +2184,11 @@ function acBuildPaymentHistoryHtml(parent) {
   var firstAmt = Math.max((Number(parent.paid_amount)||0) - childrenSum, 0);
   var entries = [{ date: parent.date, amount: firstAmt }];
   children.forEach(function(c){ entries.push({ date: c.date, amount: Number(c.paid_amount)||0 }); });
-  var running = 0;
   var rowsHtml = entries.map(function(en){
-    running += en.amount;
     var dt = en.date ? new Date(en.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
     return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
       + '<span style="color:var(--muted)">' + dt + '</span>'
-      + '<span style="font-weight:500">' + acFmt(running) + ' of ' + acFmt(total) + ' paid</span>'
+      + '<span style="font-weight:500">' + acFmt(en.amount) + ' of ' + acFmt(total) + ' paid</span>'
       + '</div>';
   }).join('');
   return rowsHtml || '<div class="empty" style="padding:8px 0">No payments logged yet.</div>';
