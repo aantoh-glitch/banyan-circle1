@@ -1428,7 +1428,17 @@ function acExpStatusInfo(e) {
   const statusLbl =
     e.status==='Paid'                   ? 'Paid' :
     e.status==='Pending'                ? 'Pending' :
-    e.status==='Part Payment'           ? 'Part paid (' + acFmt(e.paid_amount) + ' of ' + acFmt(e.amount) + ')' :
+    e.status==='Part Payment'           ? (function(){
+      // The original record's paid_amount is a running cumulative total once later
+      // installments are logged against it — show what was actually paid on this
+      // record's own date, not the cumulative total, matching the log-entry format.
+      const childrenSum = (_acExpenses||[]).filter(x => String(x.parent_expense_id) === String(e.id))
+        .reduce((s,c) => s + (Number(c.paid_amount)||0), 0);
+      const dayAmt = childrenSum > 0 ? Math.max((Number(e.paid_amount)||0) - childrenSum, 0) : (Number(e.paid_amount)||0);
+      return childrenSum > 0
+        ? 'Part Payment (' + acFmt(dayAmt) + ' · Pending ' + acFmt(e.pending_amount) + ' of ' + acFmt(e.amount) + ')'
+        : 'Part paid (' + acFmt(dayAmt) + ' of ' + acFmt(e.amount) + ')';
+    })() :
     e.status==='To be paid to landlord' ? 'To be paid to landlord' :
     e.status==='Paid to landlord'       ? 'Paid to landlord' :
     (e.status || dash);
