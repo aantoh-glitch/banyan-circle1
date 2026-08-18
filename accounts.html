@@ -290,6 +290,8 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   /* Log filters wrap */
   .log-filters { flex-direction: column; }
   .log-filters .fg, .log-filters .fg-date { min-width: 0 !important; width: 100%; }
+  .log-filters .date-range-group { width: 100%; }
+  .log-filters .date-range-group .fg { min-width: 0 !important; width: 50%; }
 
   /* Pill groups wrap */
   .pill-group { flex-wrap: wrap; }
@@ -693,13 +695,15 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt" data-val="pending" onclick="filterBillStatus(this)">Receivables</button>
       </div>
     </div>
-    <div class="fg" style="flex:none;margin-bottom:0;min-width:130px">
-      <label class="fl">From</label>
-      <input class="fc" id="filter-from" type="date" onchange="onFilterFromChange();filterBills()"/>
-    </div>
-    <div class="fg" style="flex:none;margin-bottom:0;min-width:130px">
-      <label class="fl">To</label>
-      <input class="fc" id="filter-to" type="date" onchange="onFilterToChange();filterBills()"/>
+    <div class="date-range-group" style="display:flex;gap:10px;flex:none;margin-bottom:0">
+      <div class="fg" style="flex:1;margin-bottom:0;min-width:130px">
+        <label class="fl">From</label>
+        <input class="fc" id="filter-from" type="date" onchange="onFilterFromChange();filterBills()"/>
+      </div>
+      <div class="fg" style="flex:1;margin-bottom:0;min-width:130px">
+        <label class="fl">To</label>
+        <input class="fc" id="filter-to" type="date" onchange="onFilterToChange();filterBills()"/>
+      </div>
     </div>
     <script>
     (function(){
