@@ -1502,6 +1502,10 @@ function acShowExpDetail(e) {
   const categoryCell = acExpCategoryLabel(e);
   const isChildPayment = !!e.parent_expense_id;
   const parentForDetail = isChildPayment ? (_acExpenses||[]).find(x => String(x.id) === String(e.parent_expense_id)) : null;
+  // Show the same running Payment History for either the original Part Payment expense
+  // or one of its logged installments — whichever the person opened.
+  const historyRoot = isChildPayment ? parentForDetail : (e.status === 'Part Payment' ? e : null);
+  const historyHtml = historyRoot ? acBuildPaymentHistoryHtml(historyRoot) : '';
 
   const rows = [
     ['Item', e.item || dash],
@@ -1521,6 +1525,13 @@ function acShowExpDetail(e) {
     rows.splice(1, 0, ['Payment For', parentForDetail ? (parentForDetail.item || 'Original expense') + ' (' + acFmt(parentForDetail.amount) + ' total)' : dash]);
   }
 
+  const historySection = historyHtml
+    ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Payment History</div>
+        ${historyHtml}
+      </div>`
+    : '';
+
   const html = rows.map(r => `
     <div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border)">
       <span style="font-size:12px;color:var(--muted)">${r[0]}</span>
@@ -1529,7 +1540,7 @@ function acShowExpDetail(e) {
     `<div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0">
       <span style="font-size:12px;color:var(--muted)">Status</span>
       <span class="bdg ${statusCls}">${statusLbl}</span>
-    </div>`;
+    </div>` + historySection;
 
   document.getElementById('bill-detail-ttl').textContent = 'Expense Details';
   document.getElementById('bill-detail-body').innerHTML = html;
@@ -2162,10 +2173,9 @@ function acPickSt(btn) {
   }
 }
 
-// Render the running Payment History list inside the edit modal for an existing Part Payment expense
-function acRenderPaymentHistory(parent) {
-  var listEl = document.getElementById('ac-pp-history-list');
-  if (!listEl) return;
+// Build the running Payment History rows (as HTML) for a Part Payment parent expense.
+// Shared by the edit modal's history list and the read-only detail popup.
+function acBuildPaymentHistoryHtml(parent) {
   var total = Number(parent.amount) || 0;
   var children = (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(parent.id); });
   children.sort(function(a,b){ return new Date(a.date||a.created_at||0) - new Date(b.date||b.created_at||0); });
@@ -2182,7 +2192,14 @@ function acRenderPaymentHistory(parent) {
       + '<span style="font-weight:500">' + acFmt(running) + ' of ' + acFmt(total) + ' paid</span>'
       + '</div>';
   }).join('');
-  listEl.innerHTML = rowsHtml || '<div class="empty" style="padding:8px 0">No payments logged yet.</div>';
+  return rowsHtml || '<div class="empty" style="padding:8px 0">No payments logged yet.</div>';
+}
+
+// Render the running Payment History list inside the edit modal for an existing Part Payment expense
+function acRenderPaymentHistory(parent) {
+  var listEl = document.getElementById('ac-pp-history-list');
+  if (!listEl) return;
+  listEl.innerHTML = acBuildPaymentHistoryHtml(parent);
 }
 
 // Save a new part-payment installment against an existing Part Payment expense.
