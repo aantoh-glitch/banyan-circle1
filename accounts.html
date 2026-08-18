@@ -1255,6 +1255,24 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
           </div>
         </div>
       </div>
+      <div class="fg" id="ac-part-payment-history" style="display:none;margin-top:10px;padding:12px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Payment History</div>
+        <div id="ac-pp-history-list"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">New Part Payment</div>
+          <div class="row-grid" style="gap:10px">
+            <div class="fg" style="margin-bottom:0">
+              <label class="fl">Date</label>
+              <input class="fc" id="ac-pp-new-date" type="date"/>
+            </div>
+            <div class="fg" style="margin-bottom:0">
+              <label class="fl">Amount</label>
+              <input class="fc" id="ac-pp-new-amount" type="number" min="0" placeholder="0"/>
+            </div>
+          </div>
+          <button type="button" class="btn-sec" style="margin-top:10px;width:100%" onclick="acAddPartPayment()" id="ac-pp-add-btn">+ Add Payment</button>
+        </div>
+      </div>
     </div>
 
     <div class="fg">
@@ -1374,13 +1392,17 @@ async function acLoadExp() {
 function acRenderKPIs(filtered) {
   // If filtered array passed, use it; else fall back to all
   var d = filtered || _acExpenses;
-  const tot  = d.reduce((s,e)=>s+Number(e.amount||0),0);
+  // Payment-log rows (parent_expense_id set) are excluded from totals — the parent row already
+  // carries the live cumulative paid/pending amount, so counting both would double-count.
+  const tot  = d.reduce((s,e)=>e.parent_expense_id ? s : s+Number(e.amount||0),0);
   const paid = d.reduce((s,e)=>{
+    if (e.parent_expense_id) return s;
     if (e.status==='Paid'||e.status==='Paid to landlord') return s+Number(e.amount||0);
     if (e.status==='Part Payment') return s+Number(e.paid_amount||0);
     return s;
   },0);
   const pend = d.reduce((s,e)=>{
+    if (e.parent_expense_id) return s;
     if (e.status==='Pending'||e.status==='To be paid to landlord') return s+Number(e.amount||0);
     if (e.status==='Part Payment') return s+Number(e.pending_amount||0);
     return s;
@@ -1396,6 +1418,13 @@ function acRenderKPIs(filtered) {
 // Shared status label + badge class for an expense record
 function acExpStatusInfo(e) {
   const dash = '—';
+  // Payment-log rows (installments logged against a Part Payment parent) get their own label
+  if (e.parent_expense_id) {
+    const parentRec = (_acExpenses||[]).find(x => String(x.id) === String(e.parent_expense_id));
+    const parentTotal = parentRec ? Number(parentRec.amount)||0 : 0;
+    const label = 'Part Payment (' + acFmt(e.paid_amount) + ' · Pending ' + acFmt(e.pending_amount) + ' of ' + acFmt(parentTotal) + ')';
+    return { label: label, cls: 'bdg-a' };
+  }
   const statusLbl =
     e.status==='Paid'                   ? 'Paid' :
     e.status==='Pending'                ? 'Pending' :
@@ -1440,12 +1469,15 @@ function acRenderExp() {
     const propertyLbl   = e.property_name || dash;
     const eJson = JSON.stringify(e).replace(/'/g,"&#39;");
     const stInfo = acExpStatusInfo(e);
+    const isChildPayment = !!e.parent_expense_id;
+    const itemLbl = isChildPayment ? ('↳ ' + (e.item || 'Payment')) : (e.item || '—');
+    const amtCell = isChildPayment ? '<span style="color:var(--muted)">N/A</span>' : acFmt(e.amount);
     return `
     <tr class="bill-row" onclick='acShowExpDetail(${eJson})' style="cursor:pointer">
-      <td style="font-weight:500">${e.item||'—'}</td>
+      <td style="font-weight:500">${itemLbl}</td>
       <td style="font-size:12px;color:var(--muted)">${acExpCategoryLabel(e)}</td>
       <td style="font-size:12px;color:var(--muted)">${propertyLbl}</td>
-      <td style="text-align:right;font-weight:500">${acFmt(e.amount)}</td>
+      <td style="text-align:right;font-weight:500">${amtCell}</td>
       <td><span class="bdg ${stInfo.cls}" style="font-size:12px">${stInfo.label}</span></td>
       <td style="white-space:nowrap" onclick="event.stopPropagation()">
         <button class="btn-edit" onclick='acEditExp(${eJson})'>Edit</button>
@@ -1468,6 +1500,8 @@ function acShowExpDetail(e) {
   const gstCell = e.gst_amount ? '+'+acFmt(e.gst_amount)+(e.gst_pct?' ('+e.gst_pct+'%)':'') : dash;
 
   const categoryCell = acExpCategoryLabel(e);
+  const isChildPayment = !!e.parent_expense_id;
+  const parentForDetail = isChildPayment ? (_acExpenses||[]).find(x => String(x.id) === String(e.parent_expense_id)) : null;
 
   const rows = [
     ['Item', e.item || dash],
@@ -1479,10 +1513,13 @@ function acShowExpDetail(e) {
     ['Pre-tax', e.pretax_amount ? acFmt(e.pretax_amount) : dash],
     ['TDS', tdsCell],
     ['GST Expensed', gstCell],
-    ['Amount', acFmt(e.amount)],
+    ['Amount', isChildPayment ? 'N/A' : acFmt(e.amount)],
     ['Date', (e.date||e.created_at||'').slice(0,10) || dash],
     ['Receipt', e.file_url ? `<a href="${e.file_url}" target="_blank" style="color:var(--br)">View ↗</a>` : dash],
   ];
+  if (isChildPayment) {
+    rows.splice(1, 0, ['Payment For', parentForDetail ? (parentForDetail.item || 'Original expense') + ' (' + acFmt(parentForDetail.amount) + ' total)' : dash]);
+  }
 
   const html = rows.map(r => `
     <div style="display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border)">
@@ -1671,6 +1708,8 @@ function acOpenExpModal() {
   document.getElementById('ac-st-paidlandlord').style.display = 'none';
   var _partOptsReset = document.getElementById('ac-part-payment-opts');
   if (_partOptsReset) _partOptsReset.style.display = 'none';
+  var _partHistoryReset = document.getElementById('ac-part-payment-history');
+  if (_partHistoryReset) _partHistoryReset.style.display = 'none';
   document.getElementById('ac-exp-paid-amount').value = '0';
   document.getElementById('ac-exp-pending-amount').value = '0';
   document.getElementById('ac-file-preview').style.display='none';
@@ -1737,15 +1776,25 @@ function acEditExp(e) {
   // Now highlight the matching pill
   document.querySelectorAll('#ac-st-pills .pill-opt').forEach(b=>b.classList.toggle('on', b.dataset.val===e.status));
 
-  // Restore Part Payment paid/pending fields
-  var partOptsEdit = document.getElementById('ac-part-payment-opts');
-  var isPartPayment = e.status === 'Part Payment';
-  if (partOptsEdit) {
-    partOptsEdit.style.display = isPartPayment ? 'block' : 'none';
-    if (isPartPayment) {
-      document.getElementById('ac-exp-paid-amount').value    = (e.paid_amount    != null ? Number(e.paid_amount)    : 0).toFixed(2);
-      document.getElementById('ac-exp-pending-amount').value = (e.pending_amount != null ? Number(e.pending_amount) : 0).toFixed(2);
-    }
+  // Restore Part Payment paid/pending fields (kept in sync even when hidden, so Save never clobbers totals)
+  var partOptsEdit    = document.getElementById('ac-part-payment-opts');
+  var partHistoryEdit = document.getElementById('ac-part-payment-history');
+  var isPartPayment    = e.status === 'Part Payment';
+  var isChildPayment   = !!e.parent_expense_id;
+  var isExistingParentPP = isPartPayment && !!e.id && !isChildPayment;
+  if (isPartPayment) {
+    document.getElementById('ac-exp-paid-amount').value    = (e.paid_amount    != null ? Number(e.paid_amount)    : 0).toFixed(2);
+    document.getElementById('ac-exp-pending-amount').value = (e.pending_amount != null ? Number(e.pending_amount) : 0).toFixed(2);
+  }
+  if (partOptsEdit)    partOptsEdit.style.display    = (isPartPayment && !isExistingParentPP) ? 'block' : 'none';
+  if (partHistoryEdit) partHistoryEdit.style.display = isExistingParentPP ? 'block' : 'none';
+  if (isExistingParentPP) {
+    acRenderPaymentHistory(e);
+    var _ppToday = new Date().toISOString().slice(0,10);
+    var ppDateEl = document.getElementById('ac-pp-new-date');
+    var ppAmtEl  = document.getElementById('ac-pp-new-amount');
+    if (ppDateEl) { ppDateEl.value = _ppToday; ppDateEl.max = _ppToday; }
+    if (ppAmtEl)  { ppAmtEl.value = ''; }
   }
 
   // Restore utility sub-section if applicable
@@ -2093,15 +2142,104 @@ function acPickSt(btn) {
   btn.classList.add('on');
   document.getElementById('ac-exp-status').value = btn.dataset.val;
 
-  var partOpts = document.getElementById('ac-part-payment-opts');
-  if (partOpts) {
-    var isPart = btn.dataset.val === 'Part Payment';
-    partOpts.style.display = isPart ? 'block' : 'none';
-    if (isPart) {
-      var total = acGetExpenseTotal();
-      document.getElementById('ac-exp-paid-amount').value = 0;
-      document.getElementById('ac-exp-pending-amount').value = total.toFixed(2);
+  var partOpts    = document.getElementById('ac-part-payment-opts');
+  var partHistory = document.getElementById('ac-part-payment-history');
+  var isPart = btn.dataset.val === 'Part Payment';
+  var existingId  = document.getElementById('ac-exp-id').value;
+  var existingRec = existingId ? (_acExpenses||[]).find(function(x){ return String(x.id)===String(existingId); }) : null;
+  var isExistingParentPP = isPart && !!existingRec && !existingRec.parent_expense_id;
+
+  if (partOpts)    partOpts.style.display    = (isPart && !isExistingParentPP) ? 'block' : 'none';
+  if (partHistory) partHistory.style.display = isExistingParentPP ? 'block' : 'none';
+
+  if (isPart && !isExistingParentPP) {
+    var total = acGetExpenseTotal();
+    document.getElementById('ac-exp-paid-amount').value = 0;
+    document.getElementById('ac-exp-pending-amount').value = total.toFixed(2);
+  }
+  if (isExistingParentPP) {
+    acRenderPaymentHistory(existingRec);
+  }
+}
+
+// Render the running Payment History list inside the edit modal for an existing Part Payment expense
+function acRenderPaymentHistory(parent) {
+  var listEl = document.getElementById('ac-pp-history-list');
+  if (!listEl) return;
+  var total = Number(parent.amount) || 0;
+  var children = (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(parent.id); });
+  children.sort(function(a,b){ return new Date(a.date||a.created_at||0) - new Date(b.date||b.created_at||0); });
+  var childrenSum = children.reduce(function(s,c){ return s + (Number(c.paid_amount)||0); }, 0);
+  var firstAmt = Math.max((Number(parent.paid_amount)||0) - childrenSum, 0);
+  var entries = [{ date: parent.date, amount: firstAmt }];
+  children.forEach(function(c){ entries.push({ date: c.date, amount: Number(c.paid_amount)||0 }); });
+  var running = 0;
+  var rowsHtml = entries.map(function(en){
+    running += en.amount;
+    var dt = en.date ? new Date(en.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
+      + '<span style="color:var(--muted)">' + dt + '</span>'
+      + '<span style="font-weight:500">' + acFmt(running) + ' of ' + acFmt(total) + ' paid</span>'
+      + '</div>';
+  }).join('');
+  listEl.innerHTML = rowsHtml || '<div class="empty" style="padding:8px 0">No payments logged yet.</div>';
+}
+
+// Save a new part-payment installment against an existing Part Payment expense.
+// Creates its own row in the Expense Log (amount = N/A) and rolls the parent's cumulative totals forward.
+async function acAddPartPayment() {
+  var parentId = document.getElementById('ac-exp-id').value;
+  var parent = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); });
+  if (!parent) { alert('Could not find the original expense.'); return; }
+
+  var dateVal = document.getElementById('ac-pp-new-date').value;
+  var amtVal  = parseFloat(document.getElementById('ac-pp-new-amount').value) || 0;
+  if (!dateVal) { alert('Date is required'); return; }
+  if (!amtVal || amtVal <= 0) { alert('Enter a payment amount'); return; }
+
+  var total      = Number(parent.amount) || 0;
+  var curPaid    = Number(parent.paid_amount) || 0;
+  var curPending = Math.max(total - curPaid, 0);
+  if (amtVal > curPending + 0.01) {
+    var proceed = confirm('This payment (' + acFmt(amtVal) + ') is more than the pending balance (' + acFmt(curPending) + '). Continue anyway?');
+    if (!proceed) return;
+  }
+  var newPaid    = curPaid + amtVal;
+  var newPending = Math.max(total - newPaid, 0);
+
+  var btn = document.getElementById('ac-pp-add-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+  try {
+    var childBody = {
+      parent_expense_id: parent.id,
+      item:          parent.item || null,
+      category:      parent.category || null,
+      property_name: parent.property_name || null,
+      payout_type:   parent.payout_type || null,
+      recipient:     parent.recipient || null,
+      status:        'Part Payment',
+      amount:        null,
+      date:          dateVal,
+      paid_amount:   amtVal,
+      pending_amount:newPending,
+      created_at:    new Date().toISOString()
+    };
+    await acApi('/rest/v1/expenses', 'POST', childBody);
+    await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { paid_amount: newPaid, pending_amount: newPending });
+
+    acToast('Payment added ✓');
+    await acLoadExp();
+
+    var refreshed = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parent.id); });
+    if (refreshed) {
+      document.getElementById('ac-pp-new-amount').value = '';
+      acRenderPaymentHistory(refreshed);
     }
+  } catch(err) {
+    alert('Could not save payment: ' + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '+ Add Payment'; }
   }
 }
 
@@ -2616,12 +2754,29 @@ async function syncTdsExpense(expBody) {
 }
 
 async function acDelExp(id) {
-  if(!confirm('Delete this expense?')) return;
+  // Look up the record first so we know if it's a Utility bill or a part-payment record we also need to clean up
+  const rec = (_acExpenses || []).find(e => String(e.id) === String(id));
+  const hasPaymentLogs = rec && !rec.parent_expense_id &&
+    (_acExpenses||[]).some(e => String(e.parent_expense_id) === String(id));
+  const confirmMsg = hasPaymentLogs
+    ? 'This expense has part-payment entries logged against it. Deleting it will also delete all of its payment log entries. Continue?'
+    : 'Delete this expense?';
+  if(!confirm(confirmMsg)) return;
   try {
-    // Look up the record first so we know if it's a Utility bill we also need to clean up
-    const rec = (_acExpenses || []).find(e => String(e.id) === String(id));
-
     await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE');
+
+    if (rec && rec.parent_expense_id) {
+      // Deleting a single payment-log entry — roll the parent's cumulative totals back
+      const parent = (_acExpenses||[]).find(e => String(e.id) === String(rec.parent_expense_id));
+      if (parent) {
+        const newPaid    = Math.max((Number(parent.paid_amount)||0) - (Number(rec.paid_amount)||0), 0);
+        const newPending = Math.max((Number(parent.amount)||0) - newPaid, 0);
+        try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { paid_amount: newPaid, pending_amount: newPending }); } catch(_) {}
+      }
+    } else if (hasPaymentLogs) {
+      // Deleting the original expense — cascade-delete its payment-log entries too
+      try { await acApi('/rest/v1/expenses?parent_expense_id=eq.'+id, 'DELETE'); } catch(_) {}
+    }
 
     if (rec && rec.category === 'Utility' && rec.property_name && rec.utility_type) {
       const syncMonth = (rec.bill_date || rec.date || rec.created_at || '').slice(0,7);
@@ -4076,8 +4231,9 @@ function downloadExpensesXlsx() {
   if (!data.length) { alert('No expenses to export.'); return; }
 
   // Summary sheet
-  var total  = data.reduce(function(s,e){ return s+(parseFloat(e.amount)||0); },0);
+  var total  = data.reduce(function(s,e){ return e.parent_expense_id ? s : s+(parseFloat(e.amount)||0); },0);
   var paid   = data.reduce(function(s,e){
+    if (e.parent_expense_id) return s;
     if (e.status==='Paid'||e.status==='Paid to landlord') return s+(parseFloat(e.amount)||0);
     if (e.status==='Part Payment') return s+(parseFloat(e.paid_amount)||0);
     return s;
@@ -4104,9 +4260,10 @@ function downloadExpensesXlsx() {
   var detailRows = [['Date','Item','Category','Payout To','Recipient','PAN','Pre-tax (₹)','TDS %','TDS Deducted (₹)','GST Expensed %','GST Expensed (₹)','Amount (₹)','Status','Paid (₹)','Pending (₹)','Property','Utility Type','Description','Receipt URL']];
   data.forEach(function(e){
     var isPart = e.status === 'Part Payment';
+    var isChildPayment = !!e.parent_expense_id;
     detailRows.push([
       (e.date||e.created_at||'').slice(0,10),
-      e.item||'',
+      (isChildPayment ? '↳ ' : '') + (e.item||''),
       (e.category||''),
       e.payout_type||'',
       e.recipient||'',
@@ -4116,8 +4273,8 @@ function downloadExpensesXlsx() {
       e.tds_amount!=null    ? parseFloat(e.tds_amount)||0     : '',
       e.gst_pct!=null       ? parseFloat(e.gst_pct)||0       : '',
       e.gst_amount!=null    ? parseFloat(e.gst_amount)||0     : '',
-      parseFloat(e.amount)||0,
-      e.status||'',
+      isChildPayment ? 'N/A' : (parseFloat(e.amount)||0),
+      isChildPayment ? 'Part Payment (log)' : (e.status||''),
       isPart ? (parseFloat(e.paid_amount)||0) : '',
       isPart ? (parseFloat(e.pending_amount)||0) : '',
       e.property_name||'',
@@ -4318,6 +4475,7 @@ function smRender() {
   // ── Expenses ──
   var expenses = _acExpenses || [];
   var filteredExp = expenses.filter(function(e) {
+    if (e.parent_expense_id) return false; // payment-log rows: parent already carries live totals
     var dt = (e.date || e.created_at || '').slice(0,10);
     if (fromV && dt < fromV) return false;
     if (toV   && dt > toV)   return false;
@@ -4543,6 +4701,7 @@ function bcPaneRender() {
   // Outgoing = talent payouts + Banyan Circle category expenses, filtered by date + property
   var expenses = _acExpenses || [];
   var filteredExp = expenses.filter(function(e) {
+    if (e.parent_expense_id) return false; // payment-log rows: parent already carries live totals
     var isTalentPayout = e.payout_type === 'Talent';
     var isBcCatExp = e.category === 'Banyan Circle';
     if (!isTalentPayout && !isBcCatExp) return false;
