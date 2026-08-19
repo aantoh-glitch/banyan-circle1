@@ -413,7 +413,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     </div>
     <table class="tbl">
       <thead><tr>
-        <th>Item</th><th>Category</th><th>Property</th><th style="text-align:right">Amount</th><th>Status</th><th></th>
+        <th>Item</th><th id="ac-exp-col2-th">Category</th><th>Property</th><th style="text-align:right">Amount</th><th>Status</th><th></th>
       </tr></thead>
       <tbody id="ac-exp-tbody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
     </table>
@@ -1483,6 +1483,9 @@ function acRenderExp() {
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   d.sort(function(a,b){ return new Date(b.date||b.created_at||0) - new Date(a.date||a.created_at||0); });
   acRenderKPIs(d);
+  const showPayoutTypeCol = _acCatF !== 'all';
+  const col2Th = document.getElementById('ac-exp-col2-th');
+  if (col2Th) col2Th.textContent = showPayoutTypeCol ? 'Payout Type' : 'Category';
   const tb = document.getElementById('ac-exp-tbody');
   if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
@@ -1493,10 +1496,12 @@ function acRenderExp() {
     const isChildPayment = !!e.parent_expense_id;
     const itemLbl = isChildPayment ? ('↳ ' + (e.item || 'Payment')) : (e.item || '—');
     const amtCell = isChildPayment ? '<span style="color:var(--muted)">N/A</span>' : acFmt(e.amount);
+    const payoutTypeLbl = (e.category==='Utility' && e.utility_type) ? e.utility_type : (e.payout_type || dash);
+    const col2Cell = showPayoutTypeCol ? payoutTypeLbl : acExpCategoryLabel(e);
     return `
     <tr class="bill-row" onclick='acShowExpDetail(${eJson})' style="cursor:pointer">
       <td style="font-weight:500">${itemLbl}</td>
-      <td style="font-size:12px;color:var(--muted)">${acExpCategoryLabel(e)}</td>
+      <td style="font-size:12px;color:var(--muted)">${col2Cell}</td>
       <td style="font-size:12px;color:var(--muted)">${propertyLbl}</td>
       <td style="text-align:right;font-weight:500">${amtCell}</td>
       <td><span class="bdg ${stInfo.cls}" style="font-size:12px">${stInfo.label}</span></td>
