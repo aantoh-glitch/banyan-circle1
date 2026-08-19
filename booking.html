@@ -681,23 +681,10 @@ function renderBookings() {
   const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
   const monthEnd = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(daysInMonth).padStart(2,'0');
 
-  const filtered = bookings.filter(b => {
-    if (activeProperty !== 'all' && b.property !== activeProperty) return false;
-    if (b.source === 'blocked') return false;
-    // Only bookings that overlap the month shown on the calendar
-    return b.start <= monthEnd && b.end >= monthStart;
-  }).sort((a,b) => a.start.localeCompare(b.start));
+  const notBlocked = b => b.source !== 'blocked' && (activeProperty === 'all' || b.property === activeProperty);
+  const overlapsMonth = b => b.start <= monthEnd && b.end >= monthStart;
 
-  const titleEl = document.getElementById('bookingsPanelTitle');
-  if (titleEl) titleEl.textContent = isPastMonth ? 'Past Bookings' : 'Upcoming Bookings';
-
-  document.getElementById('bookingCount').textContent = filtered.length + ' reservations';
-  if (!filtered.length) {
-    const msg = properties.length === 0 ? 'Add a property to get started' : (isPastMonth ? 'No past bookings' : 'No upcoming bookings');
-    document.getElementById('bookingsList').innerHTML = '<div class="empty-state">' + msg + '</div>';
-    return;
-  }
-  document.getElementById('bookingsList').innerHTML = filtered.map(b => {
+  const renderItem = b => {
     const prop = properties.find(p=>p.id===b.property);
     const srcLabel = b.source === 'airbnb' ? 'Airbnb' : b.source === 'booking' ? 'Booking' : 'Direct';
     return '<div class="booking-item" onclick="showBookingDetail(\'' + b.id + '\')">' +
@@ -706,7 +693,49 @@ function renderBookings() {
       '<div class="booking-dates">' + formatDate(b.start) + ' &rarr; ' + formatDate(b.end) + '</div></div>' +
       '<div class="booking-property" style="color:var(--text)">' + (prop?.name||'') + '</div>' +
       '</div>';
-  }).join('');
+  };
+  const sectionHeading = label => '<div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;padding:0 2px">' + label + '</div>';
+
+  const titleEl = document.getElementById('bookingsPanelTitle');
+
+  if (isPastMonth) {
+    // Past month selected → just that month's (already-ended) bookings, nothing else
+    const past = bookings.filter(b => notBlocked(b) && overlapsMonth(b) && b.end < today)
+      .sort((a,b) => b.start.localeCompare(a.start));
+
+    if (titleEl) titleEl.textContent = 'Past Bookings';
+    document.getElementById('bookingCount').textContent = past.length + ' reservations';
+    document.getElementById('bookingsList').innerHTML = past.length
+      ? past.map(renderItem).join('')
+      : '<div class="empty-state">No past bookings</div>';
+    return;
+  }
+
+  // Current or future month selected:
+  // 1) this month's upcoming bookings, 2) this month's past bookings, 3) upcoming bookings from later months
+  const thisUpcoming = bookings.filter(b => notBlocked(b) && overlapsMonth(b) && b.end >= today)
+    .sort((a,b) => a.start.localeCompare(b.start));
+  const thisPast = bookings.filter(b => notBlocked(b) && overlapsMonth(b) && b.end < today)
+    .sort((a,b) => b.start.localeCompare(a.start));
+  const laterUpcoming = bookings.filter(b => notBlocked(b) && b.start > monthEnd && b.end >= today)
+    .sort((a,b) => a.start.localeCompare(b.start));
+
+  if (titleEl) titleEl.textContent = 'Upcoming Bookings';
+  const totalCount = thisUpcoming.length + thisPast.length + laterUpcoming.length;
+  document.getElementById('bookingCount').textContent = totalCount + ' reservations';
+
+  if (!totalCount) {
+    const msg = properties.length === 0 ? 'Add a property to get started' : 'No upcoming bookings';
+    document.getElementById('bookingsList').innerHTML = '<div class="empty-state">' + msg + '</div>';
+    return;
+  }
+
+  const sectionCount = [thisUpcoming.length, thisPast.length, laterUpcoming.length].filter(n => n>0).length;
+  let html = '';
+  if (thisUpcoming.length) html += (sectionCount>1 ? sectionHeading('This Month') : '') + thisUpcoming.map(renderItem).join('');
+  if (thisPast.length)     html += sectionHeading('Past Bookings') + thisPast.map(renderItem).join('');
+  if (laterUpcoming.length) html += sectionHeading('Upcoming — Later Months') + laterUpcoming.map(renderItem).join('');
+  document.getElementById('bookingsList').innerHTML = html;
 }
 
 function renderStats() {
