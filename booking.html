@@ -230,7 +230,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
 
       <div class="bookings-list">
         <div class="panel-header">
-          <div class="panel-title">Upcoming Bookings</div>
+          <div class="panel-title" id="bookingsPanelTitle">Upcoming Bookings</div>
           <div style="font-size:12px;color:var(--muted)" id="bookingCount">0 reservations</div>
         </div>
         <div id="bookingsList"></div>
@@ -658,7 +658,7 @@ function changeMonth(dir) {
   currentMonth += dir;
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  renderCalendar(); renderStats();
+  renderCalendar(); renderStats(); renderBookings();
 }
 
 function handleDayClick(ds) {
@@ -672,13 +672,23 @@ function handleDayClick(ds) {
 
 function renderBookings() {
   const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const isPastMonth = (currentYear < now.getFullYear()) ||
+    (currentYear === now.getFullYear() && currentMonth < now.getMonth());
+
   const filtered = bookings.filter(b => {
     if (activeProperty !== 'all' && b.property !== activeProperty) return false;
-    return b.source !== 'blocked' && b.end >= today;
+    if (b.source === 'blocked') return false;
+    if (isPastMonth) return b.end < today;   // viewing a past month → past bookings only
+    return true;                              // current/future month → upcoming + past, same list either way
   }).sort((a,b) => a.start.localeCompare(b.start));
+
+  const titleEl = document.getElementById('bookingsPanelTitle');
+  if (titleEl) titleEl.textContent = isPastMonth ? 'Past Bookings' : 'Upcoming Bookings';
+
   document.getElementById('bookingCount').textContent = filtered.length + ' reservations';
   if (!filtered.length) {
-    const msg = properties.length === 0 ? 'Add a property to get started' : 'No upcoming bookings';
+    const msg = properties.length === 0 ? 'Add a property to get started' : (isPastMonth ? 'No past bookings' : 'No upcoming bookings');
     document.getElementById('bookingsList').innerHTML = '<div class="empty-state">' + msg + '</div>';
     return;
   }
