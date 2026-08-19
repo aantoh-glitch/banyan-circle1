@@ -1013,7 +1013,7 @@ function expenseToEarningsEntry(exp, expenseById) {
     _tdsAmount:     exp.tds_amount    || null,
     _tdsPct:        exp.tds_pct       || null,
     percentage:     null,
-    notes:          exp.item || null,
+    notes:          exp.description || exp.item || null,
     entity_type:    entityType,
     entity_name:    exp.recipient || exp.property_name || null,
     recorded_by:    null,
@@ -1204,17 +1204,6 @@ function renderLog() {
       e._expenseStatus === 'Part Payment'            ? 'Part Payment' :
       'Paid';
 
-    // Entity tag
-    let entityTag = '';
-    if (isUnassigned && isAdmin) {
-      entityTag = `<span class="entry-entity">Unassigned</span>`;
-    } else if (e.entity_name) {
-      const cls = e.entity_type === 'landlord' ? 'landlord-tag'
-                : e.entity_type === 'staff'    ? 'staff-tag'
-                : e.entity_type === 'talent'   ? 'talent-tag' : '';
-      entityTag = `<span class="entry-entity ${cls}">${esc(e.entity_name)}</span>`;
-    }
-
     const byTag = e.recorded_by
       ? `<span class="entry-by">by ${esc(e.recorded_by)}</span>` : '';
     const notesHtml = e.notes
@@ -1255,9 +1244,8 @@ function renderLog() {
         ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);background:var(--bg);padding:5px 10px;border-radius:6px">From Expenses · manage in Accounts</div>`
         : '';
 
-    // Collapsed sub-line: date + entity/unassigned, single line
-    const subEntity = isUnassigned ? 'Unassigned' : esc(e.entity_name || '—');
-    const entrySub = `<div class="entry-sub"><span>${fmtDate(e.entry_date)}</span><span class="dot">·</span><span>${subEntity}</span>${byTag ? `<span class="dot">·</span>${byTag}` : ''}</div>`;
+    // Collapsed sub-line: just date (+ recorded-by, if present)
+    const entrySub = `<div class="entry-sub"><span>${fmtDate(e.entry_date)}</span>${byTag ? `<span class="dot">·</span>${byTag}` : ''}</div>`;
 
     return `
       <div class="entry-card ${cardClass}" onclick="this.classList.toggle('open')">
@@ -1271,9 +1259,6 @@ function renderLog() {
         ${entrySub}
         <div class="entry-detail">
           ${pctNote}
-          <div class="entry-meta">
-            ${entityTag}
-          </div>
           ${notesHtml}
           ${tdsBreakdown}
           ${partBreakdown}
