@@ -676,11 +676,16 @@ function renderBookings() {
   const isPastMonth = (currentYear < now.getFullYear()) ||
     (currentYear === now.getFullYear() && currentMonth < now.getMonth());
 
+  // Bounds of the month currently shown on the calendar
+  const monthStart = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-01';
+  const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  const monthEnd = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(daysInMonth).padStart(2,'0');
+
   const filtered = bookings.filter(b => {
     if (activeProperty !== 'all' && b.property !== activeProperty) return false;
     if (b.source === 'blocked') return false;
-    if (isPastMonth) return b.end < today;   // viewing a past month → past bookings only
-    return true;                              // current/future month → upcoming + past, same list either way
+    // Only bookings that overlap the month shown on the calendar
+    return b.start <= monthEnd && b.end >= monthStart;
   }).sort((a,b) => a.start.localeCompare(b.start));
 
   const titleEl = document.getElementById('bookingsPanelTitle');
