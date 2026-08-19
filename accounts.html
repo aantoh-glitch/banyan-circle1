@@ -4277,6 +4277,9 @@ function downloadExpensesXlsx() {
     if (e.parent_expense_id) return s;
     if (e.status==='Paid'||e.status==='Paid to landlord') return s+(parseFloat(e.amount)||0);
     if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).paid;
+    return s;
+  },0);
+  var pend   = total - paid;
 
   var wb   = XLSX.utils.book_new();
 
@@ -4789,6 +4792,9 @@ function bcPaneRender() {
       var amt = parseFloat(e.pretax_amount)||parseFloat(e.amount)||0;
       if (e.status==='Paid'||e.status==='Paid to landlord') return s+amt;
       if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).paid;
+      return s;
+    }, 0);
+    var pendingOut = outgoing - paidOut;
     kpiOutSub.textContent = 'Paid: ' + fmt(paidOut) + '  ·  Pending: ' + fmt(pendingOut);
   }
 
