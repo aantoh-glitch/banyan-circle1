@@ -233,10 +233,10 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
       </div>
     </div>
 
-    <div class="fg"><label class="fl">Email ID<span>*</span></label><input class="fc" id="ci-email" type="email" placeholder="your@email.com"/></div>
+    <div class="fg"><label class="fl">Email ID</label><input class="fc" id="ci-email" type="email" placeholder="your@email.com"/></div>
     <div class="fg"><label class="fl">Mobile No<span>*</span></label><input class="fc" id="ci-mobile" type="tel" placeholder="+91 XXXXXXXXXX"/></div>
     <div class="fg">
-      <label class="fl">Date of Birth<span>*</span></label>
+      <label class="fl">Date of Birth</label>
       <input id="ci-dob" type="hidden"/>
       <div class="fc dob-display" id="dob-display" onclick="openDobPicker()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:rgba(0,0,0,.28)">
         <span id="dob-display-text">Select date of birth</span>
@@ -270,15 +270,15 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
         </div>
       </div>
     </div>
-    <div class="fg"><label class="fl">Arrived from<span>*</span></label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
-    <div class="fg"><label class="fl">Proceeding to<span>*</span></label><input class="fc" id="ci-to" type="text" placeholder="Next destination"/></div>
+    <div class="fg"><label class="fl">Arrived from</label><input class="fc" id="ci-from" type="text" placeholder="City or country"/></div>
+    <div class="fg"><label class="fl">Proceeding to</label><input class="fc" id="ci-to" type="text" placeholder="Next destination"/></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label class="fl">Arrival Date<span>*</span></label><input class="fc-btn" id="ci-arr-date" type="date" onclick="this.showPicker&&this.showPicker()"/></div>
-      <div class="fg"><label class="fl">Arrival Time<span>*</span></label><input class="fc-btn" id="ci-arr-time" type="time" onclick="this.showPicker&&this.showPicker()"/></div>
+      <div class="fg"><label class="fl">Arrival Time</label><input class="fc-btn" id="ci-arr-time" type="time" onclick="this.showPicker&&this.showPicker()"/></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="fg"><label class="fl">Departure Date<span>*</span></label><input class="fc-btn" id="ci-dep-date" type="date" onclick="this.showPicker&&this.showPicker()"/></div>
-      <div class="fg"><label class="fl">Departure Time<span>*</span></label><input class="fc-btn" id="ci-dep-time" type="time" oninput="checkLateCheckout()" onclick="this.showPicker&&this.showPicker()"/></div>
+      <div class="fg"><label class="fl">Departure Time</label><input class="fc-btn" id="ci-dep-time" type="time" oninput="checkLateCheckout()" onclick="this.showPicker&&this.showPicker()"/></div>
     </div>
     <div class="late-checkout-banner" id="late-checkout-banner">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -287,9 +287,9 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
         <p>Our standard checkout is 11:00 AM. Departures after this time need to be confirmed by the managing team and will be permitted only if the property is not booked for the following day. We'll get back to you to confirm.</p>
       </div>
     </div>
-    <div class="fg"><label class="fl">Size of your group<span>*</span></label><input class="fc" id="ci-guests" type="number" min="1" value="1"/></div>
+    <div class="fg"><label class="fl">Size of your group</label><input class="fc" id="ci-guests" type="number" min="1" value="1"/></div>
     <div class="fg">
-      <label class="fl">Mode of payment<span>*</span></label>
+      <label class="fl">Mode of payment</label>
       <div class="radio-group" id="ci-payment">
         <label class="radio-opt"><input type="radio" name="payment" value="Cash" onchange="onPaymentChange(this)"/> Cash</label>
         <label class="radio-opt"><input type="radio" name="payment" value="Cards" onchange="onPaymentChange(this)"/> Cards</label>
@@ -307,7 +307,7 @@ textarea.fc{resize:none;min-height:80px;line-height:1.6}
     <div class="fg"><label class="fl">Anything we can do to make your stay more comfortable?</label><textarea class="fc" id="ci-comfort" placeholder="Pillow preference, room temperature, etc."></textarea></div>
 
     <div class="fg">
-      <label class="fl">Nationality<span>*</span></label>
+      <label class="fl">Nationality</label>
       <div class="radio-group" id="ci-nationality-group">
         <label class="radio-opt"><input type="radio" name="nationality" value="Indian" onchange="onNationalityChange(this)" checked/> Indian</label>
         <label class="radio-opt"><input type="radio" name="nationality" value="Other" onchange="onNationalityChange(this)"/> Other Nationality</label>
@@ -1034,7 +1034,7 @@ async function submitCheckin(){
   if (billGst)      billingParts.push('GST: ' + billGst);
   var billing = billingParts.join('\n');
 
-  if(!name||!addr||!billing||!email||!mobile||!from||!to||!arrDate||!depDate){toast('Please fill all required fields');return;}
+  if(!name||!addr||!billing||!mobile||!arrDate||!depDate){toast('Please fill all required fields');return;}
   if(!billingIsSame && !billAddrRaw){toast('Please enter a billing address');return;}
   if(mobile.replace(/\D/g,'').length < 10){toast('Mobile number must be at least 10 digits');return;}
   if(depDate <= arrDate){toast('Departure date must be after arrival date');return;}
