@@ -203,6 +203,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
     <div class="stats-row">
       <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Booked Nights</div><div class="stat-value" id="statBooked">0</div></div>
       <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Available Nights</div><div class="stat-value" id="statAvailable">0</div></div>
+      <div class="stat-card"><div class="stat-dot" style="background:#2d9e6b"></div><div class="stat-label">Booked Amount</div><div class="stat-value" id="statAmount">₹0</div></div>
     </div>
 
     <div class="top-row">
@@ -353,7 +354,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
       <textarea class="form-input" id="manualRemarks" placeholder="Any notes about this booking…" rows="2" style="resize:vertical;"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('addBookingModal')">Cancel</button>
+      <button class="btn btn-ghost" onclick="cancelBookingForm()">Cancel</button>
       <button class="btn btn-primary" onclick="saveBooking()">Save Booking</button>
     </div>
   </div>
@@ -366,6 +367,7 @@ body.landlord-view .calendar-grid { padding: 12px 14px 16px; }
     <div id="detailBody"></div>
     <div class="modal-footer">
       <button class="btn btn-danger" id="removeBookingBtn" onclick="deleteCurrentBooking()">Remove</button>
+      <button class="btn btn-ghost" id="editBookingBtn" onclick="editCurrentBooking()">Edit</button>
       <button class="btn btn-ghost" onclick="closeModal('bookingDetailModal')">Close</button>
     </div>
   </div>
@@ -685,13 +687,13 @@ function renderBookings() {
   const overlapsMonth = b => b.start <= monthEnd && b.end >= monthStart;
 
   const renderItem = b => {
-    const prop = properties.find(p=>p.id===b.property);
     const srcLabel = b.source === 'airbnb' ? 'Airbnb' : b.source === 'booking' ? 'Booking' : 'Direct';
+    const amtLabel = b.disc_amount!=null ? '₹' + Number(b.disc_amount).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
     return '<div class="booking-item" onclick="showBookingDetail(\'' + b.id + '\')">' +
       '<div class="booking-source source-' + b.source + '">' + srcLabel + '</div>' +
       '<div class="booking-info"><div class="booking-guest">' + b.guest + '</div>' +
       '<div class="booking-dates">' + formatDate(b.start) + ' &rarr; ' + formatDate(b.end) + '</div></div>' +
-      '<div class="booking-property" style="color:var(--text)">' + (prop?.name||'') + '</div>' +
+      '<div class="booking-property" style="color:var(--text)">' + amtLabel + '</div>' +
       '</div>';
   };
   const sectionHeading = label => '<div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;padding:0 2px">' + label + '</div>';
@@ -743,7 +745,10 @@ function renderStats() {
   const todayS = now.toISOString().split('T')[0];
   const year = currentYear, month = currentMonth;
   const daysInMonth = new Date(year, month+1, 0).getDate();
+  const monthStartS = year + '-' + String(month+1).padStart(2,'0') + '-01';
+  const monthEndS = year + '-' + String(month+1).padStart(2,'0') + '-' + String(daysInMonth).padStart(2,'0');
   let bookedDays = new Set();
+  let monthAmount = 0;
   bookings.forEach(b => {
     if (activeProperty !== 'all' && b.property !== activeProperty) return;
     if (b.source === 'blocked') return;
@@ -753,8 +758,8 @@ function renderStats() {
       if (d.getMonth() === month && d.getFullYear() === year) bookedDays.add(d.getDate());
       d.setDate(d.getDate()+1);
     }
+    if (b.start <= monthEndS && b.end >= monthStartS && b.disc_amount != null) monthAmount += Number(b.disc_amount) || 0;
   });
-  const monthStartS = year + '-' + String(month+1).padStart(2,'0') + '-01';
   const remaining = Array.from({length:daysInMonth},(_,i)=>i+1).filter(d => {
     const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     const afterToday = monthStartS.slice(0,7) >= todayS.slice(0,7) ? ds >= todayS : true;
@@ -762,6 +767,8 @@ function renderStats() {
   }).length;
   document.getElementById('statBooked').textContent = bookedDays.size;
   document.getElementById('statAvailable').textContent = remaining;
+  const amtEl = document.getElementById('statAmount');
+  if (amtEl) amtEl.textContent = '₹' + monthAmount.toLocaleString('en', {maximumFractionDigits:0});
 }
 
 async function blockDates() {
@@ -843,10 +850,65 @@ async function saveEditProperty() {
   }
 }
 
+let editingBookingId = null;
+
 function openAddBooking() {
   populatePropertySelects();
   const today = new Date().toISOString().split('T')[0];
   resetDrp('manual');
+  editingBookingId = null;
+  document.querySelector('#addBookingModal .modal-title').textContent = 'Add Manual Booking';
+  const saveBtn = document.querySelector('#addBookingModal .btn-primary');
+  if (saveBtn) saveBtn.textContent = 'Save Booking';
+  document.getElementById('addBookingModal').classList.add('open');
+}
+
+function cancelBookingForm() {
+  editingBookingId = null;
+  document.querySelector('#addBookingModal .modal-title').textContent = 'Add Manual Booking';
+  const saveBtn = document.querySelector('#addBookingModal .btn-primary');
+  if (saveBtn) saveBtn.textContent = 'Save Booking';
+  closeModal('addBookingModal');
+}
+
+// Open the Add Booking form pre-filled with an existing booking's details, in edit mode
+function editCurrentBooking() {
+  const b = bookings.find(x => x.id === selectedBookingId);
+  if (!b || b.source === 'blocked') return;
+  editingBookingId = b.id;
+  closeModal('bookingDetailModal');
+
+  populatePropertySelects();
+  document.getElementById('manualGuest').value = b.guest || '';
+  document.getElementById('manualProperty').value = b.property || '';
+  document.getElementById('manualSource').value = (b.source === 'airbnb' || b.source === 'booking') ? b.source : 'manual';
+
+  document.getElementById('manualStart').value = b.start;
+  document.getElementById('manualEnd').value = b.end;
+  const ciText = document.getElementById('manualCheckinText');
+  const coText = document.getElementById('manualCheckoutText');
+  const ciDisp = document.getElementById('manualCheckinDisplay');
+  const coDisp = document.getElementById('manualCheckoutDisplay');
+  if (ciText) ciText.textContent = formatDate(b.start);
+  if (coText) coText.textContent = formatDate(b.end);
+  if (ciDisp) ciDisp.style.color = 'var(--text)';
+  if (coDisp) coDisp.style.color = 'var(--text)';
+
+  document.getElementById('manualNumGuests').value = b.num_guests != null ? b.num_guests : '';
+  document.getElementById('manualDiscAmount').value = b.disc_amount != null ? b.disc_amount : '';
+
+  const isPartial = !!b.partial_booking;
+  document.getElementById('togglePartial').setAttribute('aria-pressed', String(isPartial));
+  document.getElementById('numRoomsRow').style.display = isPartial ? 'block' : 'none';
+  document.getElementById('manualNumRooms').value = b.num_rooms != null ? b.num_rooms : '';
+
+  document.getElementById('toggleBanyan').setAttribute('aria-pressed', String(!!b.banyan_circle));
+  document.getElementById('manualRemarks').value = b.remarks || '';
+
+  document.querySelector('#addBookingModal .modal-title').textContent = 'Edit Booking';
+  const saveBtn = document.querySelector('#addBookingModal .btn-primary');
+  if (saveBtn) saveBtn.textContent = 'Save Changes';
+
   document.getElementById('addBookingModal').classList.add('open');
 }
 
@@ -898,39 +960,65 @@ async function saveBooking() {
   if (end < start) { showToast('End must be after start','error'); return; }
   const propObj = properties.find(p => p.id === prop);
   const propName = propObj?.name;
+  const isEdit = !!editingBookingId;
 
   // Disable button and set saving state
   _isSavingBooking = true;
   const saveBtn = document.querySelector('#addBookingModal .btn-primary');
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 
+  const bodyPayload = { property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks };
+
   try {
-    const res = await fetch(SB + '/rest/v1/bookings', {
-      method: 'POST',
-      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ property_id: propObj?.supabase_id || null, property_name: propName, guest_name: guest, source, check_in: start, check_out: end, num_guests: numGuests, 'disc-amount': discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks })
-    });
-    if (!res.ok) {
-      const errBody = await res.text();
-      console.error('Supabase error ' + res.status + ':', errBody);
-      throw new Error('Supabase responded with ' + res.status + ': ' + errBody);
+    if (isEdit) {
+      const isLocalId = String(editingBookingId).startsWith('b') && !isNaN(String(editingBookingId).slice(1));
+      if (!isLocalId) {
+        const res = await fetch(SB + '/rest/v1/bookings?id=eq.' + editingBookingId, {
+          method: 'PATCH',
+          headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          body: JSON.stringify(bodyPayload)
+        });
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error('Supabase error ' + res.status + ':', errBody);
+          throw new Error('Supabase responded with ' + res.status + ': ' + errBody);
+        }
+      }
+      const idx = bookings.findIndex(x => x.id === editingBookingId);
+      if (idx > -1) {
+        bookings[idx] = { ...bookings[idx], guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks };
+      }
+      showToast('Booking for ' + guest + ' updated');
+    } else {
+      const res = await fetch(SB + '/rest/v1/bookings', {
+        method: 'POST',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(bodyPayload)
+      });
+      if (!res.ok) {
+        const errBody = await res.text();
+        console.error('Supabase error ' + res.status + ':', errBody);
+        throw new Error('Supabase responded with ' + res.status + ': ' + errBody);
+      }
+      const saved = await res.json();
+      const sbId = Array.isArray(saved) ? saved[0]?.id : null;
+      bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks });
+      showToast('Booking for ' + guest + ' saved');
     }
-    const saved = await res.json();
-    const sbId = Array.isArray(saved) ? saved[0]?.id : null;
-    bookings.push({ id: sbId || 'b'+Date.now(), guest, property: prop, property_name: propName, source, start, end, num_guests: numGuests, disc_amount: discAmount, partial_booking: partialBooking || null, num_rooms: numRooms, banyan_circle: banyanCircle || null, remarks });
-    showToast('Booking for ' + guest + ' saved');
   } catch(e) {
     showToast('Could not save to Supabase: ' + e.message, 'error');
     console.error('saveBooking error:', e);
     // Re-enable button so user can retry
     _isSavingBooking = false;
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Booking'; }
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = isEdit ? 'Save Changes' : 'Save Booking'; }
     return; // Don't close modal — let user retry
   }
 
   // Reset saving state
   _isSavingBooking = false;
   if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Booking'; }
+  editingBookingId = null;
+  document.querySelector('#addBookingModal .modal-title').textContent = 'Add Manual Booking';
 
   closeModal('addBookingModal');
   document.getElementById('manualGuest').value = '';
@@ -962,6 +1050,8 @@ function showBookingDetail(id) {
   if (b.remarks) html += '<div class="modal-detail-row"><div class="modal-detail-label">Remarks</div><div class="modal-detail-value">' + b.remarks + '</div></div>';
   if (b.reason) html += '<div class="modal-detail-row"><div class="modal-detail-label">Note</div><div class="modal-detail-value">' + b.reason + '</div></div>';
   document.getElementById('detailBody').innerHTML = html;
+  const editBtn = document.getElementById('editBookingBtn');
+  if (editBtn) editBtn.style.display = b.source === 'blocked' ? 'none' : '';
   document.getElementById('bookingDetailModal').classList.add('open');
 }
 
