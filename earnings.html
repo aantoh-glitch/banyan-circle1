@@ -992,9 +992,14 @@ const PAYOUT_ENTITY_MAP = {
   'Talent':    'talent'
 };
 
-/* Convert a payout expense row into a synthetic earnings_log entry */
-function expenseToEarningsEntry(exp) {
+/* Convert a payout expense row into a synthetic earnings_log entry.
+   expenseById is a lookup of all fetched expense rows by id, used to resolve
+   the real total for part-payment installment rows (which are saved with amount=0
+   and only carry a parent_expense_id pointing back to the original expense). */
+function expenseToEarningsEntry(exp, expenseById) {
   const entityType = PAYOUT_ENTITY_MAP[exp.payout_type] || null;
+  const parent = exp.parent_expense_id && expenseById ? expenseById[exp.parent_expense_id] : null;
+  const totalAmount = parent ? parent.amount : exp.amount;
   return {
     id:             'exp_' + exp.id,
     _fromExpense:   true,
@@ -1003,7 +1008,7 @@ function expenseToEarningsEntry(exp) {
     _pendingAmount: exp.pending_amount || null,
     type:           'positive',
     head:           'Pay',
-    amount:         exp.amount,              // post-tax (full amount added for this payout)
+    amount:         totalAmount,             // post-tax (full amount for this payout, resolved via parent if this is an installment row)
     _pretaxAmount:  exp.pretax_amount || null,
     _tdsAmount:     exp.tds_amount    || null,
     _tdsPct:        exp.tds_pct       || null,
@@ -1071,6 +1076,11 @@ async function loadEntries() {
       ...(Array.isArray(rawPaidLandlord) ? rawPaidLandlord : [])
     ];
 
+    // Lookup of every fetched expense by id, so part-payment installment rows
+    // (which are saved with amount=0) can resolve their real total via parent_expense_id
+    const expenseById = {};
+    filtered.forEach(e => { expenseById[e.id] = e; });
+
     // For non-admin views, only include expenses matching this user's entity
     if (!isAdmin && viewName) {
       const rolePayoutType = viewRole === 'landlord' ? 'Landlords'
@@ -1082,7 +1092,7 @@ async function loadEntries() {
       );
     }
 
-    allEntries = filtered.map(expenseToEarningsEntry).sort((a, b) => {
+    allEntries = filtered.map(e => expenseToEarningsEntry(e, expenseById)).sort((a, b) => {
       const da = a.entry_date || '';
       const db = b.entry_date || '';
       return db.localeCompare(da);
