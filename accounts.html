@@ -1398,13 +1398,13 @@ function acRenderKPIs(filtered) {
   const paid = d.reduce((s,e)=>{
     if (e.parent_expense_id) return s;
     if (e.status==='Paid'||e.status==='Paid to landlord') return s+Number(e.amount||0);
-    if (e.status==='Part Payment') return s+Number(e.paid_amount||0);
+    if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).paid;
     return s;
   },0);
   const pend = d.reduce((s,e)=>{
     if (e.parent_expense_id) return s;
     if (e.status==='Pending'||e.status==='To be paid to landlord') return s+Number(e.amount||0);
-    if (e.status==='Part Payment') return s+Number(e.pending_amount||0);
+    if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).pending;
     return s;
   },0);
   const gst = d.reduce((s,e)=>s+Number(e.gst_amount||0),0);
@@ -1416,6 +1416,18 @@ function acRenderKPIs(filtered) {
 }
 
 // Shared status label + badge class for an expense record
+// True cumulative paid/pending for a Part Payment parent, derived directly from its
+// own original paid_amount plus the sum of all its logged installment (child) rows.
+// This is self-healing even if a prior PATCH to the parent's running total didn't persist.
+function acPartPaymentCumulative(e) {
+  const total = Number(e.amount) || 0;
+  const childrenSum = (_acExpenses||[]).filter(x => String(x.parent_expense_id) === String(e.id))
+    .reduce((s,c) => s + (Number(c.paid_amount)||0), 0);
+  const paid = (Number(e.paid_amount)||0) + childrenSum;
+  const pending = Math.max(total - paid, 0);
+  return { paid: paid, pending: pending, childrenSum: childrenSum };
+}
+
 function acExpStatusInfo(e) {
   const dash = '—';
   // Payment-log rows (installments logged against a Part Payment parent) get their own label
@@ -1429,14 +1441,13 @@ function acExpStatusInfo(e) {
     e.status==='Paid'                   ? 'Paid' :
     e.status==='Pending'                ? 'Pending' :
     e.status==='Part Payment'           ? (function(){
-      // The original record's paid_amount is a running cumulative total once later
-      // installments are logged against it — show what was actually paid on this
-      // record's own date, not the cumulative total, matching the log-entry format.
-      const childrenSum = (_acExpenses||[]).filter(x => String(x.parent_expense_id) === String(e.id))
-        .reduce((s,c) => s + (Number(c.paid_amount)||0), 0);
-      const dayAmt = childrenSum > 0 ? Math.max((Number(e.paid_amount)||0) - childrenSum, 0) : (Number(e.paid_amount)||0);
-      return childrenSum > 0
-        ? 'Part Payment (' + acFmt(dayAmt) + ' · Pending ' + acFmt(e.pending_amount) + ' of ' + acFmt(e.amount) + ')'
+      // The parent's own paid_amount always represents just its own original installment —
+      // cumulative paid/pending is derived fresh from all logged children, so this stays
+      // correct even if a prior "roll cumulative forward" write to the parent didn't persist.
+      const cum = acPartPaymentCumulative(e);
+      const dayAmt = Number(e.paid_amount) || 0;
+      return cum.childrenSum > 0
+        ? 'Part Payment (' + acFmt(dayAmt) + ' · Pending ' + acFmt(cum.pending) + ' of ' + acFmt(e.amount) + ')'
         : 'Part paid (' + acFmt(dayAmt) + ' of ' + acFmt(e.amount) + ')';
     })() :
     e.status==='To be paid to landlord' ? 'To be paid to landlord' :
@@ -2223,9 +2234,10 @@ async function acAddPartPayment() {
   if (!dateVal) { alert('Date is required'); return; }
   if (!amtVal || amtVal <= 0) { alert('Enter a payment amount'); return; }
 
-  var total      = Number(parent.amount) || 0;
-  var curPaid    = Number(parent.paid_amount) || 0;
-  var curPending = Math.max(total - curPaid, 0);
+  var total   = Number(parent.amount) || 0;
+  var cum     = acPartPaymentCumulative(parent);
+  var curPaid = cum.paid;
+  var curPending = cum.pending;
   if (amtVal > curPending + 0.01) {
     var proceed = confirm('This payment (' + acFmt(amtVal) + ') is more than the pending balance (' + acFmt(curPending) + '). Continue anyway?');
     if (!proceed) return;
@@ -2789,6 +2801,12 @@ async function acDelExp(id) {
     : 'Delete this expense?';
   if(!confirm(confirmMsg)) return;
   try {
+    if (hasPaymentLogs) {
+      // Deleting the original expense — cascade-delete its payment-log entries FIRST,
+      // otherwise the FK constraint on parent_expense_id blocks deleting the parent.
+      await acApi('/rest/v1/expenses?parent_expense_id=eq.'+id, 'DELETE');
+    }
+
     await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE');
 
     if (rec && rec.parent_expense_id) {
@@ -2799,9 +2817,6 @@ async function acDelExp(id) {
         const newPending = Math.max((Number(parent.amount)||0) - newPaid, 0);
         try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { paid_amount: newPaid, pending_amount: newPending }); } catch(_) {}
       }
-    } else if (hasPaymentLogs) {
-      // Deleting the original expense — cascade-delete its payment-log entries too
-      try { await acApi('/rest/v1/expenses?parent_expense_id=eq.'+id, 'DELETE'); } catch(_) {}
     }
 
     if (rec && rec.category === 'Utility' && rec.property_name && rec.utility_type) {
@@ -4261,10 +4276,7 @@ function downloadExpensesXlsx() {
   var paid   = data.reduce(function(s,e){
     if (e.parent_expense_id) return s;
     if (e.status==='Paid'||e.status==='Paid to landlord') return s+(parseFloat(e.amount)||0);
-    if (e.status==='Part Payment') return s+(parseFloat(e.paid_amount)||0);
-    return s;
-  },0);
-  var pend   = total - paid;
+    if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).paid;
 
   var wb   = XLSX.utils.book_new();
 
@@ -4302,7 +4314,7 @@ function downloadExpensesXlsx() {
       isChildPayment ? 'N/A' : (parseFloat(e.amount)||0),
       isChildPayment ? 'Part Payment (log)' : (e.status||''),
       isPart ? (parseFloat(e.paid_amount)||0) : '',
-      isPart ? (parseFloat(e.pending_amount)||0) : '',
+      isPart ? (isChildPayment ? (parseFloat(e.pending_amount)||0) : acPartPaymentCumulative(e).pending) : '',
       e.property_name||'',
       e.utility_type||'',
       e.description||'',
@@ -4509,12 +4521,12 @@ function smRender() {
   });
   var totalPayable = filteredExp.reduce(function(s,e){
     if (e.status==='Pending' || e.status==='To be paid to landlord') return s + (parseFloat(e.amount)||0);
-    if (e.status==='Part Payment') return s + (parseFloat(e.pending_amount)||0);
+    if (e.status==='Part Payment') return s + acPartPaymentCumulative(e).pending;
     return s;
   }, 0);
   var totalPaid = filteredExp.reduce(function(s,e){
     if (e.status==='Paid' || e.status==='Paid to landlord') return s + (parseFloat(e.amount)||0);
-    if (e.status==='Part Payment') return s + (parseFloat(e.paid_amount)||0);
+    if (e.status==='Part Payment') return s + acPartPaymentCumulative(e).paid;
     return s;
   }, 0);
   var totalExpenses = totalPayable + totalPaid;
@@ -4776,10 +4788,7 @@ function bcPaneRender() {
     var paidOut = filteredExp.reduce(function(s,e){
       var amt = parseFloat(e.pretax_amount)||parseFloat(e.amount)||0;
       if (e.status==='Paid'||e.status==='Paid to landlord') return s+amt;
-      if (e.status==='Part Payment') return s+(parseFloat(e.paid_amount)||0);
-      return s;
-    }, 0);
-    var pendingOut = outgoing - paidOut;
+      if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).paid;
     kpiOutSub.textContent = 'Paid: ' + fmt(paidOut) + '  ·  Pending: ' + fmt(pendingOut);
   }
 
