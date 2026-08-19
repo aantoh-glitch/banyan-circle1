@@ -2197,29 +2197,94 @@ function acPickSt(btn) {
 // Build the running Payment History rows (as HTML) for a Part Payment parent expense.
 // Shared by the edit modal's history list and the read-only detail popup.
 // Each line shows what was actually paid on that date, not a cumulative running total.
-function acBuildPaymentHistoryHtml(parent) {
+// When editable is true (edit modal only), each row gets Edit/Delete controls.
+function acBuildPaymentHistoryHtml(parent, editable) {
   var total = Number(parent.amount) || 0;
   var children = (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(parent.id); });
   children.sort(function(a,b){ return new Date(a.date||a.created_at||0) - new Date(b.date||b.created_at||0); });
-  var childrenSum = children.reduce(function(s,c){ return s + (Number(c.paid_amount)||0); }, 0);
-  var firstAmt = Math.max((Number(parent.paid_amount)||0) - childrenSum, 0);
-  var entries = [{ date: parent.date, amount: firstAmt }];
-  children.forEach(function(c){ entries.push({ date: c.date, amount: Number(c.paid_amount)||0 }); });
+  // parent.paid_amount always represents just the parent's own original installment amount
+  var firstAmt = Number(parent.paid_amount) || 0;
+  var entries = [{ date: parent.date, amount: firstAmt, id: parent.id, isParent: true }];
+  children.forEach(function(c){ entries.push({ date: c.date, amount: Number(c.paid_amount)||0, id: c.id, isParent: false }); });
   var rowsHtml = entries.map(function(en){
     var dt = en.date ? new Date(en.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
+    var rowId = 'pp-row-' + en.id;
+    var controls = editable
+      ? '<span style="display:inline-flex;gap:10px;margin-left:10px">'
+        + '<button type="button" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0" onclick="acEditPaymentHistoryRow(\'' + en.id + '\',' + en.isParent + ',\'' + parent.id + '\')">Edit</button>'
+        + '</span>'
+      : '';
+    return '<div id="' + rowId + '" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
       + '<span style="color:var(--muted)">' + dt + '</span>'
-      + '<span style="font-weight:500">' + acFmt(en.amount) + ' of ' + acFmt(total) + ' paid</span>'
+      + '<span style="display:flex;align-items:center">'
+        + '<span style="font-weight:500">' + acFmt(en.amount) + ' of ' + acFmt(total) + ' paid</span>'
+        + controls
+      + '</span>'
       + '</div>';
   }).join('');
   return rowsHtml || '<div class="empty" style="padding:8px 0">No payments logged yet.</div>';
+}
+
+// Swap a Payment History row into an inline date/amount edit form
+function acEditPaymentHistoryRow(id, isParent, parentId) {
+  var rec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(id); });
+  var rowEl = document.getElementById('pp-row-' + id);
+  if (!rec || !rowEl) return;
+  var dateVal = (rec.date || rec.created_at || '').slice(0,10);
+  var amtVal  = Number(rec.paid_amount) || 0;
+  rowEl.innerHTML =
+    '<div style="display:flex;gap:8px;align-items:center;width:100%">'
+    + '<input type="date" id="pp-edit-date-' + id + '" class="fc" style="flex:1.2" value="' + dateVal + '"/>'
+    + '<input type="number" id="pp-edit-amt-' + id + '" class="fc" style="flex:1" min="0" value="' + amtVal + '"/>'
+    + '<button type="button" class="btn-sec" style="padding:6px 10px;font-size:12px;white-space:nowrap" onclick="acSavePaymentHistoryEdit(\'' + id + '\',' + isParent + ',\'' + parentId + '\')">Save</button>'
+    + '<button type="button" class="btn-sec" style="padding:6px 10px;font-size:12px;white-space:nowrap" onclick="acCancelPaymentHistoryEdit(\'' + parentId + '\')">Cancel</button>'
+    + '</div>';
+}
+
+function acCancelPaymentHistoryEdit(parentId) {
+  var parent = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); });
+  if (parent) acRenderPaymentHistory(parent);
+}
+
+// Save an inline edit to a single payment-history row's date/amount (parent's own
+// installment or one of its logged children), then refresh dependent totals.
+async function acSavePaymentHistoryEdit(id, isParent, parentId) {
+  var dateEl = document.getElementById('pp-edit-date-' + id);
+  var amtEl  = document.getElementById('pp-edit-amt-' + id);
+  if (!dateEl || !amtEl) return;
+  var newDate = dateEl.value;
+  var newAmt  = parseFloat(amtEl.value) || 0;
+  if (!newDate) { alert('Date is required'); return; }
+  if (!newAmt || newAmt <= 0) { alert('Enter a payment amount'); return; }
+
+  try {
+    await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', { date: newDate, paid_amount: newAmt });
+    await acLoadExp();
+
+    var parent = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); });
+    if (parent) {
+      var cum = acPartPaymentCumulative(parent);
+      // Best-effort keep the parent's own pending snapshot roughly in sync (display no longer depends on it)
+      try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { pending_amount: cum.pending }); } catch(_) {}
+      var refreshedParent = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); }) || parent;
+      acRenderPaymentHistory(refreshedParent);
+      var paidField = document.getElementById('ac-exp-paid-amount');
+      var pendField = document.getElementById('ac-exp-pending-amount');
+      if (paidField) paidField.value = cum.paid;
+      if (pendField) pendField.value = cum.pending;
+    }
+    acToast('Payment updated ✓');
+    acRenderExp();
+  } catch(err) {
+    alert('Could not update payment: ' + err.message);
+  }
 }
 
 // Render the running Payment History list inside the edit modal for an existing Part Payment expense
 function acRenderPaymentHistory(parent) {
   var listEl = document.getElementById('ac-pp-history-list');
   if (!listEl) return;
-  listEl.innerHTML = acBuildPaymentHistoryHtml(parent);
+  listEl.innerHTML = acBuildPaymentHistoryHtml(parent, true);
 }
 
 // Save a new part-payment installment against an existing Part Payment expense.
