@@ -275,6 +275,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;
 }
 .entry-status-chip.paid-landlord{background:#F0E8FF;color:#5B21B6}
+.entry-status-chip.pending{background:#FFF3E0;color:#B85C00}
+.entry-status-chip.part-payment{background:#FFF8E1;color:#8A6D00}
 .entry-notes{
   font-size:12px;color:var(--muted);
   margin-top:6px;line-height:1.4;
@@ -988,16 +990,18 @@ const PAYOUT_ENTITY_MAP = {
   'Talent':    'talent'
 };
 
-/* Convert a paid-payout expense row into a synthetic earnings_log entry */
+/* Convert a payout expense row into a synthetic earnings_log entry */
 function expenseToEarningsEntry(exp) {
   const entityType = PAYOUT_ENTITY_MAP[exp.payout_type] || null;
   return {
     id:             'exp_' + exp.id,
     _fromExpense:   true,
     _expenseStatus: exp.status || null,
+    _paidAmount:    exp.paid_amount    || null,
+    _pendingAmount: exp.pending_amount || null,
     type:           'positive',
     head:           'Pay',
-    amount:         exp.amount,              // post-tax (what was actually paid)
+    amount:         exp.amount,              // post-tax (full amount added for this payout)
     _pretaxAmount:  exp.pretax_amount || null,
     _tdsAmount:     exp.tds_amount    || null,
     _tdsPct:        exp.tds_pct       || null,
@@ -1008,6 +1012,15 @@ function expenseToEarningsEntry(exp) {
     recorded_by:    null,
     entry_date:     (exp.expense_date || exp.created_at || '').slice(0, 10) || null
   };
+}
+
+/* How much of an entry's amount has actually been paid out (for KPI/report totals) */
+function paidPortionOf(e) {
+  if (!e._fromExpense) return parseFloat(e.amount) || 0;
+  const st = e._expenseStatus;
+  if (st === 'Paid' || st === 'Paid to landlord') return parseFloat(e.amount) || 0;
+  if (st === 'Part Payment') return parseFloat(e._paidAmount) || 0;
+  return 0; // Pending / To be paid to landlord — nothing disbursed yet
 }
 
 async function loadEntries() {
@@ -1044,12 +1057,12 @@ async function loadEntries() {
   }
 
   try {
-    // Load paid payout expenses from expenses table only
-    // - status=Paid with a payout_type (Landlords/Team/Talent)
-    // - OR status='Paid to landlord' where payout_type may be null
+    // Load payout expenses from expenses table only
+    // - status in (Paid, Pending, Part Payment) with a payout_type (Landlords/Team/Talent)
+    // - OR status in (Paid to landlord, To be paid to landlord) where payout_type may be null
     const [rawPayout, rawPaidLandlord] = await Promise.all([
-      api('/rest/v1/expenses?status=eq.Paid&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*'),
-      api('/rest/v1/expenses?status=eq.Paid%20to%20landlord&order=created_at.desc&select=*')
+      api('/rest/v1/expenses?status=in.(Paid,Pending,Part%20Payment)&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*'),
+      api('/rest/v1/expenses?status=in.(Paid%20to%20landlord,To%20be%20paid%20to%20landlord)&order=created_at.desc&select=*')
     ]);
     let filtered = [
       ...(Array.isArray(rawPayout) ? rawPayout : []),
@@ -1062,7 +1075,7 @@ async function loadEntries() {
                            : viewRole === 'staff'    ? 'Team'
                            : 'Talent';
       filtered = filtered.filter(e =>
-        (e.payout_type === rolePayoutType || e.status === 'Paid to landlord') &&
+        (e.payout_type === rolePayoutType || e.status === 'Paid to landlord' || e.status === 'To be paid to landlord') &&
         (e.recipient === viewName || e.property_name === viewName)
       );
     }
@@ -1117,7 +1130,7 @@ function renderKPIs() {
   const entries = allEntries.filter(e => inPeriod(e.entry_date));
   let pos = 0, neg = 0;
   entries.forEach(e => {
-    const amt = parseFloat(e.amount) || 0;
+    const amt = paidPortionOf(e);
     if (e.type === 'positive') pos += amt;
     else neg += amt;
   });
@@ -1184,9 +1197,19 @@ function renderLog() {
     const notesHtml = e.notes
       ? `<div class="entry-notes">${esc(e.notes)}</div>` : '';
 
-    // Status chip — only shown for expense-sourced entries with special statuses
-    const statusChip = (e._fromExpense && e._expenseStatus === 'Paid to landlord')
-      ? `<span class="entry-status-chip paid-landlord">Paid to landlord</span>` : '';
+    // Status chip — shown for expense-sourced entries that aren't a plain "Paid"
+    const statusChip = !e._fromExpense ? '' :
+      e._expenseStatus === 'Paid to landlord'      ? `<span class="entry-status-chip paid-landlord">Paid to landlord</span>` :
+      e._expenseStatus === 'To be paid to landlord' ? `<span class="entry-status-chip pending">To be paid to landlord</span>` :
+      e._expenseStatus === 'Pending'                ? `<span class="entry-status-chip pending">Pending</span>` :
+      e._expenseStatus === 'Part Payment'            ? `<span class="entry-status-chip part-payment">Part Payment</span>` : '';
+
+    // Paid/pending breakdown — shown for Part Payment entries
+    const partBreakdown = (e._fromExpense && e._expenseStatus === 'Part Payment')
+      ? `<div class="tds-breakdown">
+          <span class="tds-chip posttax">Paid ${fmtFull(e._paidAmount)}</span>
+          <span class="tds-chip tds-deduct">Pending ${fmtFull(e._pendingAmount)}</span>
+        </div>` : '';
 
     // TDS breakdown — shown when payout has TDS data
     let tdsBreakdown = '';
@@ -1238,6 +1261,7 @@ function renderLog() {
           </div>
           ${notesHtml}
           ${tdsBreakdown}
+          ${partBreakdown}
           ${assignHtml}
           ${actionsHtml}
         </div>
@@ -1543,7 +1567,7 @@ function downloadPDF() {
 
   let pos = 0, neg = 0;
   entries.forEach(e => {
-    const amt = parseFloat(e.amount) || 0;
+    const amt = paidPortionOf(e);
     if (e.type === 'positive') pos += amt; else neg += amt;
   });
   const net = pos - neg;
