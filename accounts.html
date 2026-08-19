@@ -1483,7 +1483,7 @@ function acRenderExp() {
   if(toV)   d = d.filter(e=>{ const dt=(e.date||e.created_at||'').slice(0,10); return dt<=toV; });
   d.sort(function(a,b){ return new Date(b.date||b.created_at||0) - new Date(a.date||a.created_at||0); });
   acRenderKPIs(d);
-  const showPayoutTypeCol = _acCatF !== 'all';
+  const showPayoutTypeCol = _acCatF === 'Payout' || _acCatF === 'Utility';
   const col2Th = document.getElementById('ac-exp-col2-th');
   if (col2Th) col2Th.textContent = showPayoutTypeCol ? 'Payout Type' : 'Category';
   const tb = document.getElementById('ac-exp-tbody');
