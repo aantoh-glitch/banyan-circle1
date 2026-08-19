@@ -1331,7 +1331,7 @@ function renderCheckinPicker() {
   for (let d = 1; d <= daysInMonth; d++) {
     const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
     let cls = 'drp-day';
-    if (ds < today) cls += ' drp-day-past';
+    if (ds < today && ctx !== 'manual') cls += ' drp-day-past';
     else if (ds === selected) cls += ' drp-day-start drp-day-end';
     else if (isCheckinUnavailable(ds, ctx)) cls += ' drp-day-blocked';
     cells += '<div class="' + cls + '" data-ds="' + ds + '">' + d + '</div>';
@@ -1366,7 +1366,8 @@ function selectCheckin(ds) {
 function renderCheckoutPicker() {
   if (!activePicker) return;
   const { ctx, month, year } = activePicker;
-  const minDate = document.getElementById(ctx + 'Start').value || todayStr();
+  const startVal = document.getElementById(ctx + 'Start').value;
+  const minDate = startVal || (ctx === 'manual' ? '0000-01-01' : todayStr());
   const selected = document.getElementById(ctx + 'End').value;
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
