@@ -248,9 +248,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   font-size:11px;font-weight:500;letter-spacing:.3px;
   padding:3px 9px;border-radius:999px;
 }
-.positive .entry-head-chip{background:var(--green-l);color:var(--green)}
-.negative .entry-head-chip{background:var(--red-l);color:var(--red)}
-.unassigned .entry-head-chip{background:#FFF8E1;color:#795548}
+.positive .entry-head-chip{background:var(--bg);color:var(--muted)}
+.negative .entry-head-chip{background:var(--bg);color:var(--muted)}
+.unassigned .entry-head-chip{background:var(--bg);color:var(--muted)}
 .entry-amount{
   
   font-size:14px;font-weight:400;line-height:1;
@@ -264,19 +264,21 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .entry-date{font-size:11px;color:var(--muted)}
 .entry-by{font-size:11px;color:var(--muted)}
 .entry-entity{
-  font-size:11px;color:var(--br);
-  background:var(--br-l);padding:2px 7px;border-radius:999px;
+  font-size:11px;color:var(--muted);
+  background:var(--bg);padding:2px 7px;border-radius:999px;
+  border:1px solid var(--border);
 }
-.entry-entity.landlord-tag{color:#0D47A1;background:#E3F2FD}
-.entry-entity.staff-tag{color:#1B5E20;background:#EAF3DE}
-.entry-entity.talent-tag{color:#E65100;background:#FFF3E0}
+.entry-entity.landlord-tag{color:var(--muted);background:var(--bg)}
+.entry-entity.staff-tag{color:var(--muted);background:var(--bg)}
+.entry-entity.talent-tag{color:var(--muted);background:var(--bg)}
 .entry-status-chip{
   font-size:10px;font-weight:500;letter-spacing:.3px;
   padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;
+  background:var(--bg);color:var(--muted);border:1px solid var(--border);
 }
-.entry-status-chip.paid-landlord{background:#F0E8FF;color:#5B21B6}
-.entry-status-chip.pending{background:#FFF3E0;color:#B85C00}
-.entry-status-chip.part-payment{background:#FFF8E1;color:#8A6D00}
+.entry-status-chip.paid-landlord{background:var(--bg);color:var(--muted)}
+.entry-status-chip.pending{background:var(--bg);color:var(--muted)}
+.entry-status-chip.part-payment{background:var(--bg);color:var(--muted)}
 .entry-notes{
   font-size:12px;color:var(--muted);
   margin-top:6px;line-height:1.4;
@@ -293,9 +295,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
   display:inline-flex;align-items:center;gap:4px;
   font-weight:400;
 }
-.tds-chip.pretax{background:#F9F8F6;color:#5F5E5A;border:1px solid rgba(0,0,0,.08)}
-.tds-chip.tds-deduct{background:#FCEBEB;color:#A32D2D}
-.tds-chip.posttax{background:#EAF3DE;color:#3B6D11}
+.tds-chip.pretax{background:var(--bg);color:var(--muted);border:1px solid rgba(0,0,0,.08)}
+.tds-chip.tds-deduct{background:var(--bg);color:var(--muted);border:1px solid rgba(0,0,0,.08)}
+.tds-chip.posttax{background:var(--bg);color:var(--muted);border:1px solid rgba(0,0,0,.08)}
 
 .assign-btn{
   font-size:11px;color:var(--br);
@@ -1175,16 +1177,27 @@ function renderLog() {
     const cardClass = isUnassigned ? 'unassigned' : (isPos ? 'positive' : 'negative');
 
     const isPct = e.head === 'Percentage of Revenue';
+    const isPartPayment = e._fromExpense && e._expenseStatus === 'Part Payment';
     const amtDisplay = isPct && e.percentage
       ? `<span class="entry-amount">${parseFloat(e.percentage).toFixed(2)}%</span>`
-      : `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${fmtFull(e.amount)}</span>`;
+      : isPartPayment
+        ? `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${fmtFull(e._paidAmount)} / ${fmtFull(e.amount)}</span>`
+        : `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${fmtFull(e.amount)}</span>`;
     const pctNote = isPct && e.percentage && e.amount
       ? `<div class="entry-pct">= ${fmtFull(e.amount)} (calculated)</div>` : '';
+
+    // Top-left label — status for expense-sourced payouts, head for manual entries
+    const topLabel = !e._fromExpense ? esc(e.head) :
+      e._expenseStatus === 'Paid to landlord'      ? 'Paid' :
+      e._expenseStatus === 'To be paid to landlord' ? 'Pending' :
+      e._expenseStatus === 'Pending'                ? 'Pending' :
+      e._expenseStatus === 'Part Payment'            ? 'Part Payment' :
+      'Paid';
 
     // Entity tag
     let entityTag = '';
     if (isUnassigned && isAdmin) {
-      entityTag = `<span style="font-size:11px;color:#9E8A4F;background:#FFF8E1;padding:2px 7px;border-radius:999px">Unassigned</span>`;
+      entityTag = `<span class="entry-entity">Unassigned</span>`;
     } else if (e.entity_name) {
       const cls = e.entity_type === 'landlord' ? 'landlord-tag'
                 : e.entity_type === 'staff'    ? 'staff-tag'
@@ -1197,15 +1210,8 @@ function renderLog() {
     const notesHtml = e.notes
       ? `<div class="entry-notes">${esc(e.notes)}</div>` : '';
 
-    // Status chip — shown for expense-sourced entries that aren't a plain "Paid"
-    const statusChip = !e._fromExpense ? '' :
-      e._expenseStatus === 'Paid to landlord'      ? `<span class="entry-status-chip paid-landlord">Paid to landlord</span>` :
-      e._expenseStatus === 'To be paid to landlord' ? `<span class="entry-status-chip pending">To be paid to landlord</span>` :
-      e._expenseStatus === 'Pending'                ? `<span class="entry-status-chip pending">Pending</span>` :
-      e._expenseStatus === 'Part Payment'            ? `<span class="entry-status-chip part-payment">Part Payment</span>` : '';
-
     // Paid/pending breakdown — shown for Part Payment entries
-    const partBreakdown = (e._fromExpense && e._expenseStatus === 'Part Payment')
+    const partBreakdown = isPartPayment
       ? `<div class="tds-breakdown">
           <span class="tds-chip posttax">Paid ${fmtFull(e._paidAmount)}</span>
           <span class="tds-chip tds-deduct">Pending ${fmtFull(e._pendingAmount)}</span>
@@ -1246,7 +1252,7 @@ function renderLog() {
     return `
       <div class="entry-card ${cardClass}" onclick="this.classList.toggle('open')">
         <div class="entry-top">
-          <span class="entry-head-chip">${esc(e.head)}</span>
+          <span class="entry-head-chip">${topLabel}</span>
           <div class="entry-top-right">
             ${amtDisplay}
             <span class="entry-chev">▾</span>
@@ -1257,7 +1263,6 @@ function renderLog() {
           ${pctNote}
           <div class="entry-meta">
             ${entityTag}
-            ${statusChip}
           </div>
           ${notesHtml}
           ${tdsBreakdown}
