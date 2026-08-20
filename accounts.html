@@ -1865,7 +1865,8 @@ function acEditExp(e) {
   var partHistoryEdit = document.getElementById('ac-part-payment-history');
   var isPartPayment    = e.status === 'Part Payment';
   var isChildPayment   = !!e.parent_expense_id;
-  var isExistingParentPP = isPartPayment && !!e.id && !isChildPayment;
+  var childrenCountEdit = e.id ? (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(e.id); }).length : 0;
+  var isExistingParentPP = isPartPayment && !!e.id && !isChildPayment && childrenCountEdit > 0;
   var paidAmtInput = document.getElementById('ac-exp-paid-amount');
   var pendAmtInput = document.getElementById('ac-exp-pending-amount');
   if (isPartPayment) {
@@ -2262,7 +2263,8 @@ function acPickSt(btn) {
   var isPart = btn.dataset.val === 'Part Payment';
   var existingId  = document.getElementById('ac-exp-id').value;
   var existingRec = existingId ? (_acExpenses||[]).find(function(x){ return String(x.id)===String(existingId); }) : null;
-  var isExistingParentPP = isPart && !!existingRec && !existingRec.parent_expense_id;
+  var childrenCountSt = existingRec ? (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(existingRec.id); }).length : 0;
+  var isExistingParentPP = isPart && !!existingRec && !existingRec.parent_expense_id && childrenCountSt > 0;
 
   if (partOpts)    partOpts.style.display    = (isPart && !isExistingParentPP) ? 'block' : 'none';
   if (partHistory) partHistory.style.display = isExistingParentPP ? 'block' : 'none';
