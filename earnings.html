@@ -1054,7 +1054,9 @@ const BILL_STATUS_MAP = { paid: 'Paid', pending: 'Pending', part_payment: 'Part 
 /* Convert a Landlord/Team/Talent bill into a synthetic earnings_log entry.
    A bill to one of these three isn't a business expense — it's billing on the admin
    side and a payout from the recipient's side — so it's read directly from `bills`
-   rather than being duplicated into the expenses table. */
+   rather than being duplicated into the expenses table. From the recipient's own
+   earnings perspective this is money they owe, not money paid to them, so it's
+   recorded as a negative entry that reduces their net total. */
 function billToEarningsEntry(b) {
   const payoutType = BILL_SOURCE_PAYOUT_MAP[b.bill_source] || null;
   const entityType = PAYOUT_ENTITY_MAP[payoutType] || null;
@@ -1065,8 +1067,8 @@ function billToEarningsEntry(b) {
     _expenseStatus: status,
     _paidAmount:    b.paid_amount    || null,
     _pendingAmount: b.pending_amount || null,
-    type:           'positive',
-    head:           'Pay',
+    type:           'negative',
+    head:           'Deduction',
     amount:         b.amount,
     _pretaxAmount:  null,
     _tdsAmount:     null,
