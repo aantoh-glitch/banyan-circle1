@@ -1046,6 +1046,40 @@ function paidPortionOf(e) {
   return 0; // Pending / To be paid to landlord — nothing disbursed yet
 }
 
+// Map a billing "bill_source" (Landlord/Team/Talent) to the payout_type vocabulary used elsewhere
+const BILL_SOURCE_PAYOUT_MAP = { Landlord: 'Landlords', Team: 'Team', Talent: 'Talent' };
+// Bills store payment_status in lowercase; normalize to the same labels expenses use
+const BILL_STATUS_MAP = { paid: 'Paid', pending: 'Pending', part_payment: 'Part Payment' };
+
+/* Convert a Landlord/Team/Talent bill into a synthetic earnings_log entry.
+   A bill to one of these three isn't a business expense — it's billing on the admin
+   side and a payout from the recipient's side — so it's read directly from `bills`
+   rather than being duplicated into the expenses table. */
+function billToEarningsEntry(b) {
+  const payoutType = BILL_SOURCE_PAYOUT_MAP[b.bill_source] || null;
+  const entityType = PAYOUT_ENTITY_MAP[payoutType] || null;
+  const status = BILL_STATUS_MAP[b.payment_status] || 'Pending';
+  return {
+    id:             'bill_' + b.id,
+    _fromExpense:   true,
+    _expenseStatus: status,
+    _paidAmount:    b.paid_amount    || null,
+    _pendingAmount: b.pending_amount || null,
+    type:           'positive',
+    head:           'Pay',
+    amount:         b.amount,
+    _pretaxAmount:  null,
+    _tdsAmount:     null,
+    _tdsPct:        null,
+    percentage:     null,
+    notes:          b.remarks || b.sub_item || null,
+    entity_type:    entityType,
+    entity_name:    b.guest_name || b.property_name || null,
+    recorded_by:    null,
+    entry_date:     (b.bill_date || b.created_at || '').slice(0, 10) || null
+  };
+}
+
 async function loadEntries() {
   if (!isAdmin) {
     // Resolve name from viewProp if viewName is empty
@@ -1083,21 +1117,23 @@ async function loadEntries() {
     // Load payout expenses from expenses table only
     // - status in (Paid, Pending, Part Payment) with a payout_type (Landlords/Team/Talent)
     // - OR status in (Paid to landlord, To be paid to landlord) where payout_type may be null
-    const [rawPayout, rawPaidLandlord] = await Promise.all([
+    const [rawPayout, rawPaidLandlord, rawBills] = await Promise.all([
       api('/rest/v1/expenses?status=in.(Paid,Pending,Part%20Payment)&payout_type=in.(Landlords,Team,Talent)&order=created_at.desc&select=*'),
-      api('/rest/v1/expenses?status=in.(Paid%20to%20landlord,To%20be%20paid%20to%20landlord)&order=created_at.desc&select=*')
+      api('/rest/v1/expenses?status=in.(Paid%20to%20landlord,To%20be%20paid%20to%20landlord)&order=created_at.desc&select=*'),
+      api('/rest/v1/bills?bill_source=in.(Landlord,Team,Talent)&order=bill_date.desc&select=*').catch(() => [])
     ]);
     let filtered = [
       ...(Array.isArray(rawPayout) ? rawPayout : []),
       ...(Array.isArray(rawPaidLandlord) ? rawPaidLandlord : [])
     ];
+    let filteredBills = Array.isArray(rawBills) ? rawBills : [];
 
     // Lookup of every fetched expense by id, so part-payment installment rows
     // (which are saved with amount=0) can resolve their real total via parent_expense_id
     const expenseById = {};
     filtered.forEach(e => { expenseById[e.id] = e; });
 
-    // For non-admin views, only include expenses matching this user's entity
+    // For non-admin views, only include expenses/bills matching this user's entity
     if (!isAdmin && viewName) {
       const rolePayoutType = viewRole === 'landlord' ? 'Landlords'
                            : viewRole === 'staff'    ? 'Team'
@@ -1106,9 +1142,19 @@ async function loadEntries() {
         (e.payout_type === rolePayoutType || e.status === 'Paid to landlord' || e.status === 'To be paid to landlord') &&
         (e.recipient === viewName || e.property_name === viewName)
       );
+      const rolePayoutSource = viewRole === 'landlord' ? 'Landlord'
+                             : viewRole === 'staff'    ? 'Team'
+                             : 'Talent';
+      filteredBills = filteredBills.filter(b =>
+        b.bill_source === rolePayoutSource &&
+        (b.guest_name === viewName || b.property_name === viewName)
+      );
     }
 
-    allEntries = filtered.map(e => expenseToEarningsEntry(e, expenseById)).sort((a, b) => {
+    allEntries = [
+      ...filtered.map(e => expenseToEarningsEntry(e, expenseById)),
+      ...filteredBills.map(billToEarningsEntry)
+    ].sort((a, b) => {
       const da = a.entry_date || '';
       const db = b.entry_date || '';
       return db.localeCompare(da);
