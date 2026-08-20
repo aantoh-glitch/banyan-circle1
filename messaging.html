@@ -65,6 +65,16 @@ body.embedded .sheet-x-btn{display:flex}
 .unread-dot.read{background:transparent}
 .msg-body{flex:1;min-width:0}
 .msg-meta{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.msg-row{position:relative}
+.msg-kebab{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:none;background:transparent;color:var(--faint);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;align-self:flex-start}
+.msg-kebab:hover{background:var(--bg2,rgba(0,0,0,.06))}
+.msg-row-menu{position:absolute;top:38px;right:12px;background:#fff;border:1px solid var(--border,rgba(0,0,0,.1));border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:50;min-width:150px;overflow:hidden;display:none}
+.msg-row-menu.on{display:block}
+.msg-row-menu button{display:block;width:100%;text-align:left;padding:10px 14px;font-size:13px;border:none;background:none;cursor:pointer;color:var(--text,#222)}
+.msg-row-menu button:hover{background:var(--bg)}
+.msg-row-menu button.danger{color:#A32D2D}
+.bubble-del{opacity:0;transition:opacity .12s;border:none;background:none;cursor:pointer;color:var(--faint);font-size:12px;padding:2px 4px;margin-left:6px}
+.bubble-wrap:hover .bubble-del{opacity:1}
 .msg-topic{font-size:14px;font-weight:500;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .msg-topic.bold{font-weight:700}
 .msg-date{font-size:11px;color:var(--faint);flex-shrink:0;white-space:nowrap}
@@ -633,6 +643,69 @@ function setFilter(f, btn){
   btn.classList.add('on');
   renderInbox();
 }
+/* ── Row menu (Mark unread / Delete) ── */
+function toggleRowMenu(event, key){
+  var menu = document.getElementById('row-menu-'+key);
+  var wasOpen = menu.classList.contains('on');
+  document.querySelectorAll('.msg-row-menu.on').forEach(function(m){ m.classList.remove('on'); });
+  if(!wasOpen) menu.classList.add('on');
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.msg-kebab') && !e.target.closest('.msg-row-menu')){
+    document.querySelectorAll('.msg-row-menu.on').forEach(function(m){ m.classList.remove('on'); });
+  }
+});
+
+async function markThreadUnread(key){
+  document.querySelectorAll('.msg-row-menu.on').forEach(function(m){ m.classList.remove('on'); });
+  var toMark = allMessages.filter(function(m){ return (m.thread_id===key||m.id===key) && amIRecipient(m) && m.read_by_recipient; });
+  if(!toMark.length) return;
+  toMark.forEach(function(m){ m.read_by_recipient = false; });
+  renderInbox();
+  try{
+    await Promise.all(toMark.map(function(m){ return api('PATCH','messages?id=eq.'+m.id,{read_by_recipient:false}); }));
+  } catch(e){
+    showToast('Could not mark as unread: '+e.message);
+  }
+}
+
+async function deleteThread(key){
+  document.querySelectorAll('.msg-row-menu.on').forEach(function(m){ m.classList.remove('on'); });
+  var threadMsgs = allMessages.filter(function(m){ return m.thread_id===key||m.id===key; });
+  if(!threadMsgs.length) return;
+  if(!confirm(threadMsgs.length>1 ? 'Delete this whole conversation ('+threadMsgs.length+' messages)? This cannot be undone.' : 'Delete this message? This cannot be undone.')) return;
+  try{
+    await Promise.all(threadMsgs.map(function(m){ return api('DELETE','messages?id=eq.'+m.id); }));
+    var ids = threadMsgs.map(function(m){ return m.id; });
+    allMessages = allMessages.filter(function(m){ return ids.indexOf(m.id)===-1; });
+    renderInbox();
+    showToast('Deleted');
+  } catch(e){
+    showToast('Could not delete: '+e.message);
+  }
+}
+
+/* ── Delete a single message from within an open thread ── */
+async function deleteMessage(id){
+  if(!confirm('Delete this message? This cannot be undone.')) return;
+  try{
+    await api('DELETE','messages?id=eq.'+id);
+    allMessages = allMessages.filter(function(m){ return m.id!==id; });
+    if(currentThread){
+      currentThread.msgs = currentThread.msgs.filter(function(m){ return m.id!==id; });
+      if(!currentThread.msgs.length){
+        closeThread();
+      } else {
+        renderThread(currentThread.msgs);
+      }
+    }
+    renderInbox();
+    showToast('Message deleted');
+  } catch(e){
+    showToast('Could not delete: '+e.message);
+  }
+}
+
 function getThreads(msgs){
   var map = {};
   msgs.forEach(m=>{
@@ -700,7 +773,13 @@ function renderInbox(){
           bkPill+
         '</div>'+
         '<div class="msg-preview">'+esc(preview.substring(0,80))+'</div>'+
-      '</div></div>';
+      '</div>'+
+      '<button class="msg-kebab" onclick="event.stopPropagation();toggleRowMenu(event,\''+t.key+'\')">⋮</button>'+
+      '<div class="msg-row-menu" id="row-menu-'+esc(t.key)+'">'+
+        '<button onclick="event.stopPropagation();markThreadUnread(\''+t.key+'\')">Mark as unread</button>'+
+        '<button class="danger" onclick="event.stopPropagation();deleteThread(\''+t.key+'\')">Delete</button>'+
+      '</div>'+
+      '</div>';
   });
   el.innerHTML = html;
 
@@ -768,7 +847,9 @@ function renderThread(msgs){
         '</div>';
     }
     return '<div class="bubble-wrap'+(mine?' mine':'')+'">'+
-      '<div class="bubble-label">'+senderLabel+' · '+fmtDate(m.created_at)+'</div>'+
+      '<div class="bubble-label">'+senderLabel+' · '+fmtDate(m.created_at)+
+        '<button class="bubble-del" title="Delete message" onclick="event.stopPropagation();deleteMessage(\''+m.id+'\')">🗑</button>'+
+      '</div>'+
       '<div class="bubble">'+esc(m.body).replace(/\n/g,'<br>')+
         (m.booking_datetime?'<div class="bubble-booking">📅 '+esc(m.booking_datetime)+(m.booking_venue?' · 📍 '+esc(m.booking_venue):'')+' </div>':'')+
       '</div>'+billCard+'</div>';
