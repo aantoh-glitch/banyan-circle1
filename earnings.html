@@ -1041,7 +1041,7 @@ function expenseToEarningsEntry(exp, expenseById) {
 function paidPortionOf(e) {
   if (!e._fromExpense) return parseFloat(e.amount) || 0;
   const st = e._expenseStatus;
-  if (st === 'Paid' || st === 'Paid to landlord') return parseFloat(e.amount) || 0;
+  if (st === 'Paid' || st === 'Paid to landlord' || st === 'Set Off') return parseFloat(e.amount) || 0;
   if (st === 'Part Payment') return parseFloat(e._paidAmount) || 0;
   return 0; // Pending / To be paid to landlord — nothing disbursed yet
 }
@@ -1060,7 +1060,8 @@ const BILL_STATUS_MAP = { paid: 'Paid', pending: 'Pending', part_payment: 'Part 
 function billToEarningsEntry(b) {
   const payoutType = BILL_SOURCE_PAYOUT_MAP[b.bill_source] || null;
   const entityType = PAYOUT_ENTITY_MAP[payoutType] || null;
-  const status = BILL_STATUS_MAP[b.payment_status] || 'Pending';
+  let status = BILL_STATUS_MAP[b.payment_status] || 'Pending';
+  if (status === 'Paid' && b.payment_method === 'set_off') status = 'Set Off';
   return {
     id:             'bill_' + b.id,
     _fromExpense:   true,
@@ -1255,8 +1256,8 @@ function renderLog() {
     const amtDisplay = isPct && e.percentage
       ? `<span class="entry-amount">${parseFloat(e.percentage).toFixed(2)}%</span>`
       : isPartPayment
-        ? `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${fmtFull(e._paidAmount)} / ${fmtFull(e.amount)}</span>`
-        : `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${fmtFull(e.amount)}</span>`;
+        ? `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${isPos?'':'−'}${fmtFull(e._paidAmount)} / ${fmtFull(e.amount)}</span>`
+        : `<span class="entry-amount ${isPos ? '' : 'entry-amount-neg'}">${isPos?'':'−'}${fmtFull(e.amount)}</span>`;
     const pctNote = isPct && e.percentage && e.amount
       ? `<div class="entry-pct">= ${fmtFull(e.amount)} (calculated)</div>` : '';
 
@@ -1266,6 +1267,7 @@ function renderLog() {
       e._expenseStatus === 'To be paid to landlord' ? 'Pending' :
       e._expenseStatus === 'Pending'                ? 'Pending' :
       e._expenseStatus === 'Part Payment'            ? 'Part Payment' :
+      e._expenseStatus === 'Set Off'                 ? 'Set Off' :
       'Paid';
 
     const byTag = e.recorded_by
