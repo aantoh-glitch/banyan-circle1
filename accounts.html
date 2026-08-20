@@ -655,6 +655,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <button class="method-btn" id="m-aggregator" onclick="setPayMethod('aggregator')">Aggregator</button>
       <button class="method-btn" id="m-pending" onclick="setPayMethod('pending')">Receivable</button>
       <button class="method-btn" id="m-part_payment" onclick="setPayMethod('part_payment')">Part Payment</button>
+      <button class="method-btn" id="m-set_off" onclick="setPayMethod('set_off')">Set Off</button>
     </div>
     <div id="hide-guest-opts" style="margin-top:10px;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
@@ -3151,6 +3152,13 @@ async function api(path, method, body) {
   return json;
 }
 
+function billMethodLabel(m) {
+  if (!m) return '';
+  if (m === 'set_off') return 'Set Off';
+  if (m === 'upi') return 'UPI';
+  return m.charAt(0).toUpperCase() + m.slice(1);
+}
+
 function toast(msg) {
   var t = document.getElementById('bl-toast');
   t.textContent = msg;
@@ -4239,7 +4247,7 @@ function renderBills(data) {
     '</tr></thead><tbody>' +
     data.map(function(b){
         var statusCls = b.payment_status==='paid' ? 'bdg-g' : (b.payment_status==='part_payment' ? 'bdg-a' : 'bdg-a');
-        var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+        var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + billMethodLabel(b.payment_method) : '';
         var hiddenTag = b.hide_from_guest ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:12px;vertical-align:middle">Hidden from guest</span>' : '';
         var statusLbl = (b.payment_status==='paid'
           ? 'Received' + methodStr
@@ -4277,7 +4285,7 @@ function showBillDetail(b) {
   var cgstStr = tax.cgst > 0 ? fmtF(tax.cgst) : '—';
   var sgstStr = tax.sgst > 0 ? fmtF(tax.sgst) : '—';
   var statusCls = b.payment_status==='paid' ? 'bdg-g' : 'bdg-a';
-  var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+  var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + billMethodLabel(b.payment_method) : '';
   var hiddenTag = b.hide_from_guest ? ' <span class="bdg" style="background:var(--muted);color:#f3eee8;font-size:9px;vertical-align:middle">Hidden from guest</span>' : '';
   var statusLbl = (b.payment_status==='paid'
     ? 'Received' + methodStr
@@ -4376,7 +4384,7 @@ function downloadBillPdf(b) {
     });
   });
 
-  var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + b.payment_method.charAt(0).toUpperCase()+b.payment_method.slice(1) : '';
+  var methodStr = b.payment_method && b.payment_method !== 'part_payment' ? ' · ' + billMethodLabel(b.payment_method) : '';
   // Only show status pill when paid (or partially paid)
   var showPaidPill = b.payment_status === 'paid';
   var showPartPill = b.payment_status === 'part_payment';
