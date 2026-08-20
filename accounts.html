@@ -451,6 +451,9 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <option value="">— select —</option>
       <option value="__guests__">Guests</option>
       <option value="__other__">Others</option>
+      <option value="__landlord__">Landlord</option>
+      <option value="__team__">Team</option>
+      <option value="__talent__">Talent</option>
     </select>
   </div>
 
@@ -473,6 +476,30 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <label class="fl">Property</label>
     <select class="fc" id="other-bill-property" onchange="onOtherPropertyChange()">
       <option value="">— select property (optional) —</option>
+    </select>
+  </div>
+
+  <!-- Landlord: property picker -->
+  <div class="fg" id="landlord-picker-fg" style="display:none">
+    <label class="fl">Property <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="landlord-property-select">
+      <option value="">— select property —</option>
+    </select>
+  </div>
+
+  <!-- Team: staff picker -->
+  <div class="fg" id="team-picker-fg" style="display:none">
+    <label class="fl">Team Member <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="team-member-select">
+      <option value="">— select team member —</option>
+    </select>
+  </div>
+
+  <!-- Talent: talent picker -->
+  <div class="fg" id="talent-picker-fg" style="display:none">
+    <label class="fl">Talent <span style="color:var(--r)">*</span></label>
+    <select class="fc" id="talent-member-select">
+      <option value="">— select talent —</option>
     </select>
   </div>
 
@@ -3138,6 +3165,9 @@ async function onGuestSelect() {
   document.getElementById('guest-info').style.display = 'none';
   document.getElementById('other-name-fg').style.display = 'none';
   document.getElementById('other-property-fg').style.display = 'none';
+  document.getElementById('landlord-picker-fg').style.display = 'none';
+  document.getElementById('team-picker-fg').style.display = 'none';
+  document.getElementById('talent-picker-fg').style.display = 'none';
   document.getElementById('guest-info').setAttribute('data-addr', '');
   document.getElementById('guest-info').setAttribute('data-mobile', '');
   document.getElementById('guest-info').setAttribute('data-email', '');
@@ -3151,7 +3181,48 @@ async function onGuestSelect() {
     populatePropertyPicker('other-bill-property', []);
     document.getElementById('other-guest-name').value = '';
     document.getElementById('other-guest-name').focus();
+  } else if (val === '__landlord__') {
+    document.getElementById('landlord-picker-fg').style.display = '';
+    populateLandlordPicker();
+  } else if (val === '__team__') {
+    document.getElementById('team-picker-fg').style.display = '';
+    populateTeamPicker();
+  } else if (val === '__talent__') {
+    document.getElementById('talent-picker-fg').style.display = '';
+    populateTalentPicker();
   }
+}
+
+async function populateLandlordPicker() {
+  var sel = document.getElementById('landlord-property-select');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    var d = await api('/rest/v1/landlords?select=property_name&order=property_name') || [];
+    var EXCLUDE = ['Banyan Circle', 'Properties By Heritance'];
+    var opts = d.map(function(r){ return r.property_name; }).filter(function(n){ return !EXCLUDE.includes(n); });
+    sel.innerHTML = '<option value="">— select property —</option>' +
+      opts.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+  } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
+}
+
+async function populateTeamPicker() {
+  var sel = document.getElementById('team-member-select');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    var d = await api('/rest/v1/staff?select=name&order=name') || [];
+    sel.innerHTML = '<option value="">— select team member —</option>' +
+      d.map(function(r){ return '<option value="' + esc(r.name) + '">' + esc(r.name) + '</option>'; }).join('');
+  } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
+}
+
+async function populateTalentPicker() {
+  var sel = document.getElementById('talent-member-select');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    var d = await api('/rest/v1/talents?select=name&order=name') || [];
+    sel.innerHTML = '<option value="">— select talent —</option>' +
+      d.map(function(r){ return '<option value="' + esc(r.name) + '">' + esc(r.name) + '</option>'; }).join('');
+  } catch(_) { sel.innerHTML = '<option value="">Could not load</option>'; }
 }
 
 async function onGuestNameSelect() {
@@ -3654,12 +3725,26 @@ async function saveBill() {
   if (_billSaving) return; // guard against double-click / double-submit
   var topSel = document.getElementById('bill-guest-select').value;
   if (!topSel) { toast('Please select Guests or Others'); return; }
-  var IS_NAMED = (topSel === '__other__');
-  var gid = IS_NAMED ? null : document.getElementById('guest-name-select').value;
+  var IS_NAMED    = (topSel === '__other__');
+  var IS_LANDLORD = (topSel === '__landlord__');
+  var IS_TEAM     = (topSel === '__team__');
+  var IS_TALENT   = (topSel === '__talent__');
+  var IS_PAYOUT   = IS_LANDLORD || IS_TEAM || IS_TALENT;
+  var gid = (!IS_NAMED && !IS_PAYOUT) ? document.getElementById('guest-name-select').value : null;
   var otherName = '';
+  var payoutRecipient = '';
   if (IS_NAMED) {
     otherName = document.getElementById('other-guest-name').value.trim();
     if (!otherName) { toast('Please enter a name to bill to'); document.getElementById('other-guest-name').focus(); return; }
+  } else if (IS_LANDLORD) {
+    payoutRecipient = document.getElementById('landlord-property-select').value;
+    if (!payoutRecipient) { toast('Please select a property'); return; }
+  } else if (IS_TEAM) {
+    payoutRecipient = document.getElementById('team-member-select').value;
+    if (!payoutRecipient) { toast('Please select a team member'); return; }
+  } else if (IS_TALENT) {
+    payoutRecipient = document.getElementById('talent-member-select').value;
+    if (!payoutRecipient) { toast('Please select talent'); return; }
   } else {
     if (!gid) { toast('Please select a guest'); document.getElementById('guest-name-select').focus(); return; }
   }
@@ -3677,7 +3762,7 @@ async function saveBill() {
   var otherPropertyVal = otherPropertySel ? otherPropertySel.value : '';
 
   var payStatus = payMethod === 'pending' ? 'pending' : (payMethod === 'part_payment' ? 'part_payment' : 'paid');
-  var billSource = IS_NAMED ? 'Others' : null;
+  var billSource = IS_NAMED ? 'Others' : IS_LANDLORD ? 'Landlord' : IS_TEAM ? 'Team' : IS_TALENT ? 'Talent' : null;
   // Collect sub_item: sub-item names from ALL rows (BC, accommodation, add-on, free-type), comma-separated if multiple
   var allSubItems = items.map(function(i){ return i.sub_item; }).filter(Boolean);
   var subItemVal = allSubItems.length ? allSubItems.join(', ') : null;
@@ -3700,11 +3785,11 @@ async function saveBill() {
   });
 
   var body = {
-    guest_profile_id : !IS_NAMED ? gid : null,
-    guest_name       : IS_NAMED ? otherName : (g ? g.name : ''),
+    guest_profile_id : !IS_NAMED && !IS_PAYOUT ? gid : null,
+    guest_name       : IS_NAMED ? otherName : IS_PAYOUT ? payoutRecipient : (g ? g.name : ''),
     bill_source      : billSource,
     sub_item         : subItemVal,
-    property_name    : IS_NAMED ? (otherPropertyVal||null) : (g ? (g.property_name||'') : ''),
+    property_name    : IS_NAMED ? (otherPropertyVal||null) : IS_LANDLORD ? payoutRecipient : (IS_TEAM || IS_TALENT) ? null : (g ? (g.property_name||'') : ''),
     guest_address    : infoBox.getAttribute('data-addr')||'',
     guest_mobile     : infoBox.getAttribute('data-mobile')||'',
     guest_email      : infoBox.getAttribute('data-email')||'',
@@ -3729,10 +3814,13 @@ async function saveBill() {
   _billSaving = true;
   btn.disabled = true;
   btn.textContent = 'Saving…';
+  var payoutHeadType = IS_LANDLORD ? 'landlord' : IS_TEAM ? 'team' : IS_TALENT ? 'talent' : null;
+
   try {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
       await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
+      await syncToExpense(body, EDIT_BILL.bill_ref || body.bill_ref, payoutHeadType);
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
@@ -3740,6 +3828,7 @@ async function saveBill() {
       body.bill_ref = await generateBillRef();
       var created = await api('/rest/v1/bills', 'POST', body);
       await syncToRevenue(body, newBillId);
+      await syncToExpense(body, body.bill_ref, payoutHeadType);
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -3767,6 +3856,15 @@ function cancelEdit() {
   document.getElementById('other-property-fg').style.display = 'none';
   var otherPS = document.getElementById('other-bill-property');
   if (otherPS) otherPS.value = '';
+  document.getElementById('landlord-picker-fg').style.display = 'none';
+  var landlordSel = document.getElementById('landlord-property-select');
+  if (landlordSel) landlordSel.value = '';
+  document.getElementById('team-picker-fg').style.display = 'none';
+  var teamSel = document.getElementById('team-member-select');
+  if (teamSel) teamSel.value = '';
+  document.getElementById('talent-picker-fg').style.display = 'none';
+  var talentSel = document.getElementById('talent-member-select');
+  if (talentSel) talentSel.value = '';
   document.getElementById('items-body').innerHTML = '';
   rowCount = 0;
   resetToggles();
@@ -3804,6 +3902,42 @@ async function syncToRevenue(billBody, billId) {
   }
 }
 
+// Landlord/Team/Talent bills are also recorded as a Payout expense so they flow
+// into the expenses log and earnings.html for that recipient. The linked expense
+// is found/updated on later edits via its item text (which embeds the bill_ref),
+// since the expenses table has no direct bill_id column to join on.
+async function syncToExpense(billBody, billRef, headType) {
+  if (!billRef || !headType) return;
+  var payoutType = headType === 'landlord' ? 'Landlords' : headType === 'team' ? 'Team' : 'Talent';
+  var statusMap = { pending: 'Pending', paid: 'Paid', part_payment: 'Part Payment' };
+  var status = statusMap[billBody.payment_status] || 'Pending';
+  var itemLabel = 'Bill ' + billRef;
+  var expBody = {
+    item:           itemLabel,
+    amount:         billBody.amount,
+    category:       'Payout',
+    status:         status,
+    date:           billBody.bill_date,
+    description:    'Auto-synced from billing — ' + (billBody.guest_name || ''),
+    payout_type:    payoutType,
+    recipient:      billBody.guest_name || null,
+    property_name:  billBody.property_name || null,
+    pretax_amount:  billBody.amount,
+    paid_amount:    status === 'Part Payment' ? (billBody.paid_amount || 0) : null,
+    pending_amount: status === 'Part Payment' ? (billBody.pending_amount || 0) : null
+  };
+  try {
+    var existing = await api('/rest/v1/expenses?item=eq.' + encodeURIComponent(itemLabel) + '&payout_type=eq.' + payoutType + '&select=id').catch(function(){ return []; });
+    if (existing && existing.length) {
+      await api('/rest/v1/expenses?id=eq.' + existing[0].id, 'PATCH', expBody);
+    } else {
+      await api('/rest/v1/expenses', 'POST', expBody);
+    }
+  } catch(e) {
+    console.warn('Expense sync failed:', e.message);
+  }
+}
+
 function editBill(bill) {
   requirePin('PIN required to edit bill', function() {
     EDIT_BILL = bill;
@@ -3817,7 +3951,28 @@ function editBill(bill) {
       : (bill.created_at ? bill.created_at.slice(0,10) : new Date().toISOString().slice(0,10));
 
     // Set guest
-    if (!bill.guest_profile_id) {
+    if (bill.bill_source === 'Landlord') {
+      document.getElementById('bill-guest-select').value = '__landlord__';
+      document.getElementById('landlord-picker-fg').style.display = '';
+      populateLandlordPicker().then(function(){
+        var sel = document.getElementById('landlord-property-select');
+        if (sel) sel.value = bill.guest_name || '';
+      });
+    } else if (bill.bill_source === 'Team') {
+      document.getElementById('bill-guest-select').value = '__team__';
+      document.getElementById('team-picker-fg').style.display = '';
+      populateTeamPicker().then(function(){
+        var sel = document.getElementById('team-member-select');
+        if (sel) sel.value = bill.guest_name || '';
+      });
+    } else if (bill.bill_source === 'Talent') {
+      document.getElementById('bill-guest-select').value = '__talent__';
+      document.getElementById('talent-picker-fg').style.display = '';
+      populateTalentPicker().then(function(){
+        var sel = document.getElementById('talent-member-select');
+        if (sel) sel.value = bill.guest_name || '';
+      });
+    } else if (!bill.guest_profile_id) {
       // Others bill
       document.getElementById('bill-guest-select').value = '__other__';
       document.getElementById('other-name-fg').style.display = '';
@@ -4162,7 +4317,12 @@ async function deleteBill(id, name, billId) {
   requirePin('PIN required to remove bill', async function() {
     if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
     try {
+      var billRec = ALL_BILLS.find(function(b){ return String(b.id) === String(id); });
       await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
+      if (billRec && billRec.bill_source && ['Landlord','Team','Talent'].indexOf(billRec.bill_source) !== -1 && billRec.bill_ref) {
+        var payoutType = billRec.bill_source === 'Landlord' ? 'Landlords' : billRec.bill_source;
+        api('/rest/v1/expenses?item=eq.' + encodeURIComponent('Bill ' + billRec.bill_ref) + '&payout_type=eq.' + payoutType, 'DELETE').catch(function(){});
+      }
       toast(name + ' bill removed');
       loadBills();
     } catch(e) { toast('Error: ' + e.message); }
