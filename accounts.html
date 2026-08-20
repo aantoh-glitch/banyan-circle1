@@ -1790,6 +1790,12 @@ function acOpenExpModal() {
   document.getElementById('ac-exp-pending-amount').readOnly = false;
   document.getElementById('ac-exp-paid-amount').style.opacity = '';
   document.getElementById('ac-exp-pending-amount').style.opacity = '';
+  document.getElementById('ac-exp-item').readOnly = false;
+  document.getElementById('ac-exp-pretax').readOnly = false;
+  document.getElementById('ac-exp-item').style.opacity = '';
+  document.getElementById('ac-exp-pretax').style.opacity = '';
+  document.getElementById('ac-exp-item').style.cursor = '';
+  document.getElementById('ac-exp-pretax').style.cursor = '';
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
   document.getElementById('ac-file-input').value='';
@@ -1882,6 +1888,17 @@ function acEditExp(e) {
   pendAmtInput.style.opacity = isExistingParentPP ? '0.55' : '';
   paidAmtInput.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
   pendAmtInput.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
+  // The Item name and the group's total Amount are also locked once part payments
+  // exist against it — changing the total after installments have been logged
+  // against it would desync the whole running paid/pending picture.
+  var itemInput   = document.getElementById('ac-exp-item');
+  var pretaxInput = document.getElementById('ac-exp-pretax');
+  itemInput.readOnly   = isExistingParentPP;
+  pretaxInput.readOnly = isExistingParentPP;
+  itemInput.style.opacity   = isExistingParentPP ? '0.55' : '';
+  pretaxInput.style.opacity = isExistingParentPP ? '0.55' : '';
+  itemInput.style.cursor    = isExistingParentPP ? 'not-allowed' : '';
+  pretaxInput.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
   if (partOptsEdit)    partOptsEdit.style.display    = (isPartPayment && !isExistingParentPP) ? 'block' : 'none';
   if (partHistoryEdit) partHistoryEdit.style.display = isExistingParentPP ? 'block' : 'none';
   if (isExistingParentPP) {
@@ -2258,6 +2275,14 @@ function acPickSt(btn) {
   pendAmtInputSt.style.opacity = isExistingParentPP ? '0.55' : '';
   paidAmtInputSt.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
   pendAmtInputSt.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
+  var itemInputSt   = document.getElementById('ac-exp-item');
+  var pretaxInputSt = document.getElementById('ac-exp-pretax');
+  itemInputSt.readOnly   = isExistingParentPP;
+  pretaxInputSt.readOnly = isExistingParentPP;
+  itemInputSt.style.opacity   = isExistingParentPP ? '0.55' : '';
+  pretaxInputSt.style.opacity = isExistingParentPP ? '0.55' : '';
+  itemInputSt.style.cursor    = isExistingParentPP ? 'not-allowed' : '';
+  pretaxInputSt.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
 
   if (isPart && !isExistingParentPP) {
     var total = acGetExpenseTotal();
