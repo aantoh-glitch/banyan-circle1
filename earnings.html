@@ -993,17 +993,35 @@ const PAYOUT_ENTITY_MAP = {
 /* Convert a payout expense row into a synthetic earnings_log entry.
    expenseById is a lookup of all fetched expense rows by id, used to resolve
    the real total for part-payment installment rows (which are saved with amount=0
-   and only carry a parent_expense_id pointing back to the original expense). */
+   and only carry a parent_expense_id pointing back to the original expense), and to
+   derive the true cumulative pending balance across all logged installments so far. */
 function expenseToEarningsEntry(exp, expenseById) {
   const entityType = PAYOUT_ENTITY_MAP[exp.payout_type] || null;
   const parent = exp.parent_expense_id && expenseById ? expenseById[exp.parent_expense_id] : null;
   const totalAmount = parent ? parent.amount : exp.amount;
+
+  // Cumulative pending: total minus every installment logged against this group
+  // (the parent's own original paid_amount, plus every child row's paid_amount).
+  let cumulativePending = null;
+  if (exp.status === 'Part Payment' && expenseById) {
+    const groupParentId = exp.parent_expense_id || exp.id;
+    const groupParentRow = parent || exp;
+    let cumPaid = parseFloat(groupParentRow.paid_amount) || 0;
+    Object.keys(expenseById).forEach(function(k){
+      const row = expenseById[k];
+      if (row.parent_expense_id != null && String(row.parent_expense_id) === String(groupParentId)) {
+        cumPaid += parseFloat(row.paid_amount) || 0;
+      }
+    });
+    cumulativePending = Math.max((parseFloat(totalAmount) || 0) - cumPaid, 0);
+  }
+
   return {
     id:             'exp_' + exp.id,
     _fromExpense:   true,
     _expenseStatus: exp.status || null,
-    _paidAmount:    exp.paid_amount    || null,
-    _pendingAmount: exp.pending_amount || null,
+    _paidAmount:    exp.paid_amount || null,
+    _pendingAmount: cumulativePending != null ? cumulativePending : (exp.pending_amount || null),
     type:           'positive',
     head:           'Pay',
     amount:         totalAmount,             // post-tax (full amount for this payout, resolved via parent if this is an installment row)
@@ -1223,7 +1241,7 @@ function renderLog() {
       tdsBreakdown = `<div class="tds-breakdown">
         <span class="tds-chip pretax">Pre-tax ${fmtFull(e._pretaxAmount)}</span>
         ${hasTds ? `<span class="tds-chip tds-deduct">TDS ${e._tdsPct ? e._tdsPct+'% ' : ''}−${fmtFull(e._tdsAmount)}</span>` : ''}
-        <span class="tds-chip posttax">Paid ${fmtFull(e.amount)}</span>
+        ${isPartPayment ? '' : `<span class="tds-chip posttax">Paid ${fmtFull(e.amount)}</span>`}
         ${hasTds ? panTag : ''}
       </div>`;
     }
