@@ -2346,7 +2346,7 @@ async function acSavePaymentHistoryEdit(id, isParent, parentId) {
   var newAmt  = parseFloat(amtEl.value) || 0;
   var newDesc = descEl ? (descEl.value.trim() || null) : undefined;
   if (!newDate) { alert('Date is required'); return; }
-  if (!newAmt || newAmt <= 0) { alert('Enter a payment amount'); return; }
+  if (amtEl.value === '' || newAmt < 0) { alert('Enter a valid payment amount'); return; }
 
   try {
     var patchBody = { date: newDate, paid_amount: newAmt };
@@ -2392,7 +2392,8 @@ async function acAddPartPayment() {
   var descEl  = document.getElementById('ac-pp-new-desc');
   var descVal = descEl ? (descEl.value.trim() || null) : null;
   if (!dateVal) { alert('Date is required'); return; }
-  if (!amtVal || amtVal <= 0) { alert('Enter a payment amount'); return; }
+  var newAmountEl = document.getElementById('ac-pp-new-amount');
+  if (newAmountEl.value === '' || amtVal < 0) { alert('Enter a valid payment amount'); return; }
 
   var total   = Number(parent.amount) || 0;
   var cum     = acPartPaymentCumulative(parent);
