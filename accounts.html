@@ -1283,6 +1283,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </div>
       </div>
       <div class="fg" id="ac-part-payment-history" style="display:none;margin-top:10px;padding:12px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+          <label class="fl">Description <span style="font-weight:400;color:var(--muted)">(applies to all payments in this group)</span></label>
+          <textarea class="fc" id="ac-pp-shared-desc" rows="2" style="resize:vertical"></textarea>
+          <button type="button" class="btn-sec" style="margin-top:8px" onclick="acSaveSharedDescription()" id="ac-pp-desc-save-btn">Save description</button>
+        </div>
         <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Payment History</div>
         <div id="ac-pp-history-list"></div>
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
@@ -2322,6 +2327,43 @@ function acRenderPaymentHistory(parent) {
   var listEl = document.getElementById('ac-pp-history-list');
   if (!listEl) return;
   listEl.innerHTML = acBuildPaymentHistoryHtml(parent, true);
+  var descEl = document.getElementById('ac-pp-shared-desc');
+  if (descEl) {
+    descEl.value = parent.description || '';
+    descEl.dataset.parentId = parent.id;
+  }
+}
+
+// Save the shared description to the parent expense AND every logged installment
+// (child row) in its part-payment group, so the description stays in sync across
+// the whole branch rather than living on just one record.
+async function acSaveSharedDescription() {
+  var descEl = document.getElementById('ac-pp-shared-desc');
+  if (!descEl) return;
+  var parentId = descEl.dataset.parentId;
+  if (!parentId) return;
+  var newDesc = descEl.value.trim() || null;
+
+  var btn = document.getElementById('ac-pp-desc-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+  try {
+    var childIds = (_acExpenses||[])
+      .filter(function(x){ return String(x.parent_expense_id) === String(parentId); })
+      .map(function(x){ return x.id; });
+    var allIds = [parentId].concat(childIds);
+    await Promise.all(allIds.map(function(id){
+      return acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', { description: newDesc });
+    }));
+    await acLoadExp();
+    var refreshed = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); });
+    if (refreshed) acRenderPaymentHistory(refreshed);
+    acToast('Description updated for all payments ✓');
+    acRenderExp();
+  } catch(err) {
+    alert('Could not update description: ' + err.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Save description'; }
 }
 
 // Save a new part-payment installment against an existing Part Payment expense.
@@ -2358,6 +2400,7 @@ async function acAddPartPayment() {
       property_name: parent.property_name || null,
       payout_type:   parent.payout_type || null,
       recipient:     parent.recipient || null,
+      description:   parent.description || null,
       status:        'Part Payment',
       amount:        0,
       date:          dateVal,
