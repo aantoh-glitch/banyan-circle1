@@ -3500,7 +3500,7 @@ function addAddonRow(name, qty, rate, gstPct) {
 }
 function calcAddonRowTotal(input, src) {
   var tr = input.closest('tr');
-  applyRowCalc(tr, tr.querySelectorAll('input'), 1, 2, 3, 4, src, false);
+  applyRowCalc(tr, tr.querySelectorAll('input'), 1, 2, 3, 4, src, true);
 }
 function removeAddonRow(rid) { var tr=document.getElementById(rid); if(tr)tr.remove(); calcTotal(); }
 function accToggle() {
@@ -3543,7 +3543,7 @@ function addAccRow(name, qty, rate, gstPct) {
 
 function calcAccRowTotal(input, src) {
   var tr = input.closest('tr');
-  applyRowCalc(tr, tr.querySelectorAll('input'), 1, 2, 3, 4, src, false);
+  applyRowCalc(tr, tr.querySelectorAll('input'), 1, 2, 3, 4, src, true);
 }
 
 
@@ -3577,7 +3577,7 @@ function resetToggles() {
 function calcRowTotal(input, src) {
   var tr = input.closest('tr');
   // 0=name, 1=sub-item, 2=qty, 3=rate, 4=gst%, 5=total
-  applyRowCalc(tr, tr.querySelectorAll('input'), 2, 3, 4, 5, src, false);
+  applyRowCalc(tr, tr.querySelectorAll('input'), 2, 3, 4, 5, src, true);
 }
 
 // ── Shared two-way Rate <-> Total calculator, driven by GST% ──
@@ -3659,7 +3659,7 @@ function getItems() {
   document.querySelectorAll('#acc-items-body tr').forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
     var name    = inputs[0] ? inputs[0].value.trim() : '';
-    var qty     = parseFloat(inputs[1] ? inputs[1].value : 0) || 0;
+    var qty     = inputs[1] && inputs[1].value !== '' ? (parseFloat(inputs[1].value) || 1) : 1;
     var rate    = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
     var gst_pct = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
     var cgst_pct = gst_pct / 2, sgst_pct = gst_pct / 2;
@@ -3671,7 +3671,7 @@ function getItems() {
   document.querySelectorAll('#addon-items-body tr').forEach(function(tr){
     var inputs = tr.querySelectorAll('input');
     var name    = inputs[0] ? inputs[0].value.trim() : '';
-    var qty     = parseFloat(inputs[1]?inputs[1].value:0)||0;
+    var qty     = inputs[1] && inputs[1].value !== '' ? (parseFloat(inputs[1].value) || 1) : 1;
     var rate    = parseFloat(inputs[2]?inputs[2].value:0)||0;
     var gst_pct = parseFloat(inputs[3]?inputs[3].value:0)||0;
     var cgst_pct = gst_pct / 2, sgst_pct = gst_pct / 2;
@@ -3684,7 +3684,7 @@ function getItems() {
     var inputs = tr.querySelectorAll('input');
     var name     = inputs[0] ? inputs[0].value.trim() : '';
     var sub_item = inputs[1] ? inputs[1].value.trim() : '';
-    var qty      = parseFloat(inputs[2] ? inputs[2].value : 0) || 0;
+    var qty      = inputs[2] && inputs[2].value !== '' ? (parseFloat(inputs[2].value) || 1) : 1;
     var rate     = parseFloat(inputs[3] ? inputs[3].value : 0) || 0;
     var gst_pct  = parseFloat(inputs[4] ? inputs[4].value : 0) || 0;
     var cgst_pct = gst_pct / 2, sgst_pct = gst_pct / 2;
