@@ -1232,17 +1232,17 @@ function renderLog() {
           <span class="tds-chip tds-deduct">Pending ${fmtFull(e._pendingAmount)}</span>
         </div>` : '';
 
-    // TDS breakdown — shown when payout has TDS data
+    // TDS breakdown — shown only when tax was actually deducted from this payout
     let tdsBreakdown = '';
-    if (e._fromExpense && e._pretaxAmount) {
-      const hasTds = e._tdsAmount && e._tdsAmount > 0;
+    const hasTds = e._fromExpense && e._tdsAmount && e._tdsAmount > 0;
+    if (hasTds) {
       const pan    = e.entity_name ? (panMap[e.entity_name] || null) : null;
       const panTag = pan ? `<span class="tds-chip pretax" style="font-family:monospace;letter-spacing:.5px">PAN: ${esc(pan)}</span>` : '';
       tdsBreakdown = `<div class="tds-breakdown">
         <span class="tds-chip pretax">Pre-tax ${fmtFull(e._pretaxAmount)}</span>
-        ${hasTds ? `<span class="tds-chip tds-deduct">TDS ${e._tdsPct ? e._tdsPct+'% ' : ''}−${fmtFull(e._tdsAmount)}</span>` : ''}
+        <span class="tds-chip tds-deduct">TDS ${e._tdsPct ? e._tdsPct+'% ' : ''}−${fmtFull(e._tdsAmount)}</span>
         ${isPartPayment ? '' : `<span class="tds-chip posttax">Paid ${fmtFull(e.amount)}</span>`}
-        ${hasTds ? panTag : ''}
+        ${panTag}
       </div>`;
     }
 
