@@ -1446,6 +1446,24 @@ function acToast(msg) {
 function acFmt(n) { return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
 
 let _acExpenses=[], _acCatF='all', _acStF='all';
+// property_name -> landlord's actual name, for Landlords payouts (recipient/property_name
+// there always store the property, never the landlord's own name)
+let _acLandlordNameByProperty = {};
+async function acLoadLandlordNames() {
+  try {
+    const d = await acApi('/rest/v1/landlords?select=property_name,name');
+    _acLandlordNameByProperty = {};
+    (d||[]).forEach(function(r){ if (r.property_name && r.name) _acLandlordNameByProperty[r.property_name] = r.name; });
+  } catch(_) {}
+}
+// For a Landlords payout, the landlord's actual name (falls back to the stored
+// recipient/property value if no landlord name is on file for that property).
+function acLandlordDisplayName(e) {
+  if (e && e.payout_type === 'Landlords' && e.property_name && _acLandlordNameByProperty[e.property_name]) {
+    return _acLandlordNameByProperty[e.property_name];
+  }
+  return (e && e.recipient) || null;
+}
 // When set, only this one child payment-log entry is editable in the currently-open modal
 // (opened by clicking Edit on a child row directly) — the top area and every other log row
 // stay locked/view-only.
@@ -1456,7 +1474,13 @@ function acTab(id, btn) {
   document.querySelectorAll('.ac-pane').forEach(p=>p.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('ac-pane-'+id).classList.add('on');
-  if(id==='expenses') { acLoadExp(); }
+  if(id==='expenses') {
+    acLoadExp();
+    if (!window._acLandlordNamesLoaded) {
+      window._acLandlordNamesLoaded = true;
+      acLoadLandlordNames().then(function(){ acRenderExp(); });
+    }
+  }
   if(id==='bills') { if(!window._blReady){ window._blReady=true; init(); } }
   if(id==='summary') { smInit(); }
   if(id==='bc') { bcPaneInit(); }
@@ -1581,7 +1605,12 @@ function acRenderExp() {
   if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="empty">No expenses found.</td></tr>'; return; }
   tb.innerHTML = d.map(e=>{
     const dash = '<span style="color:var(--border)">—</span>';
-    const propertyLbl   = e.property_name || dash;
+    const landlordName = e.payout_type === 'Landlords' ? acLandlordDisplayName(e) : null;
+    const propertyLbl = e.property_name
+      ? (landlordName && landlordName !== e.property_name
+          ? esc(e.property_name) + ' <span style="color:var(--muted)">— ' + esc(landlordName) + '</span>'
+          : esc(e.property_name))
+      : dash;
     const eJson = JSON.stringify(e).replace(/'/g,"&#39;");
     const stInfo = acExpStatusInfo(e);
     const isChildPayment = !!e.parent_expense_id;
@@ -1634,7 +1663,7 @@ function acShowExpDetail(e) {
     ['Item', e.item || dash],
     ['Category', categoryCell],
     ['Payout Type', payoutTypeCell],
-    ['Recipient', e.recipient || dash],
+    ['Recipient', (e.payout_type === 'Landlords' ? acLandlordDisplayName(e) : e.recipient) || dash],
     ['Property', e.property_name || dash],
     ['Description', e.description || dash],
     ['Pre-tax', e.pretax_amount ? acFmt(e.pretax_amount) : dash],
@@ -1975,7 +2004,7 @@ function acEditExp(e) {
     var subLabel = e.payout_type || acExpCategoryLabel(e);
     summaryBody.innerHTML =
       '<div><strong>' + esc(e.item||'—') + '</strong></div>' +
-      '<div style="color:var(--muted)">' + esc(e.category||'') + (subLabel ? ' · ' + esc(subLabel) : '') + (e.property_name ? ' · ' + esc(e.property_name) : '') + '</div>' +
+      '<div style="color:var(--muted)">' + esc(e.category||'') + (subLabel ? ' · ' + esc(subLabel) : '') + (e.property_name ? ' · ' + esc(e.property_name) + (e.payout_type==='Landlords' && acLandlordDisplayName(e) && acLandlordDisplayName(e)!==e.property_name ? ' (' + esc(acLandlordDisplayName(e)) + ')' : '') : '') + '</div>' +
       '<div style="color:var(--muted)">Date: ' + dt + '</div>' +
       '<div style="margin-top:6px">Total: <strong>' + acFmt(e.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(cumEdit.paid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(cumEdit.pending) + '</strong></div>';
   }
@@ -2381,7 +2410,7 @@ function acPickSt(btn) {
       var subLabelSt = existingRec.payout_type || acExpCategoryLabel(existingRec);
       summaryBodySt.innerHTML =
         '<div><strong>' + esc(existingRec.item||'—') + '</strong></div>' +
-        '<div style="color:var(--muted)">' + esc(existingRec.category||'') + (subLabelSt ? ' · ' + esc(subLabelSt) : '') + (existingRec.property_name ? ' · ' + esc(existingRec.property_name) : '') + '</div>' +
+        '<div style="color:var(--muted)">' + esc(existingRec.category||'') + (subLabelSt ? ' · ' + esc(subLabelSt) : '') + (existingRec.property_name ? ' · ' + esc(existingRec.property_name) + (existingRec.payout_type==='Landlords' && acLandlordDisplayName(existingRec) && acLandlordDisplayName(existingRec)!==existingRec.property_name ? ' (' + esc(acLandlordDisplayName(existingRec)) + ')' : '') : '') + '</div>' +
         '<div style="color:var(--muted)">Date: ' + dtSt + '</div>' +
         '<div style="margin-top:6px">Total: <strong>' + acFmt(existingRec.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(cumSt.paid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(cumSt.pending) + '</strong></div>';
     }
@@ -2498,7 +2527,7 @@ async function acSavePaymentHistoryEdit(id, isParent, parentId) {
         var subLabelEdit = parent.payout_type || acExpCategoryLabel(parent);
         summaryBodyEdit.innerHTML =
           '<div><strong>' + esc(parent.item||'—') + '</strong></div>' +
-          '<div style="color:var(--muted)">' + esc(parent.category||'') + (subLabelEdit ? ' · ' + esc(subLabelEdit) : '') + (parent.property_name ? ' · ' + esc(parent.property_name) : '') + '</div>' +
+          '<div style="color:var(--muted)">' + esc(parent.category||'') + (subLabelEdit ? ' · ' + esc(subLabelEdit) : '') + (parent.property_name ? ' · ' + esc(parent.property_name) + (parent.payout_type==='Landlords' && acLandlordDisplayName(parent) && acLandlordDisplayName(parent)!==parent.property_name ? ' (' + esc(acLandlordDisplayName(parent)) + ')' : '') : '') + '</div>' +
           '<div style="color:var(--muted)">Date: ' + dtEdit + '</div>' +
           '<div style="margin-top:6px">Total: <strong>' + acFmt(parent.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(cum.paid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(cum.pending) + '</strong></div>';
       }
@@ -2608,7 +2637,7 @@ async function acAddPartPayment() {
       var subLabelAdd = parent.payout_type || acExpCategoryLabel(parent);
       summaryBodyAdd.innerHTML =
         '<div><strong>' + esc(parent.item||'—') + '</strong></div>' +
-        '<div style="color:var(--muted)">' + esc(parent.category||'') + (subLabelAdd ? ' · ' + esc(subLabelAdd) : '') + (parent.property_name ? ' · ' + esc(parent.property_name) : '') + '</div>' +
+        '<div style="color:var(--muted)">' + esc(parent.category||'') + (subLabelAdd ? ' · ' + esc(subLabelAdd) : '') + (parent.property_name ? ' · ' + esc(parent.property_name) + (parent.payout_type==='Landlords' && acLandlordDisplayName(parent) && acLandlordDisplayName(parent)!==parent.property_name ? ' (' + esc(acLandlordDisplayName(parent)) + ')' : '') : '') + '</div>' +
         '<div style="color:var(--muted)">Date: ' + dtAdd + '</div>' +
         '<div style="margin-top:6px">Total: <strong>' + acFmt(parent.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(newPaid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(newPending) + '</strong></div>';
     }
