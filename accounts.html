@@ -328,6 +328,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   .dash-grid-3 { grid-template-columns: 1fr !important; }
   .modal-card { max-height: 96vh; }
 }
+.btn-sec.btn-due{background:#A32D2D !important;color:#fff !important}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -347,6 +348,12 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
 <!-- ── EXPENSES PANE ── -->
 <div class="ac-pane" id="ac-pane-expenses">
 
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn-sec" id="ac-master-chart-btn" onclick="acOpenMasterChartModal()" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Master Chart
+    </button>
+  </div>
   <div class="kpi-row" style="margin-bottom:20px;grid-template-columns:repeat(4,1fr)">
     <div class="kpi"><div class="kpi-label">Total</div><div class="kpi-value" id="ac-kpi-total">₹ —</div></div>
     <div class="kpi"><div class="kpi-label">Paid</div><div class="kpi-value" style="color:#27500A" id="ac-kpi-paid">₹ —</div></div>
@@ -1037,6 +1044,30 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
   </div>
 </div>
 
+<!-- ── MASTER CHART DOWNLOAD MODAL ── -->
+<div class="modal" id="ac-master-chart-modal" onclick="if(event.target===this) acCloseMasterChartModal()">
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-ttl">Download Master Chart</div>
+    <button class="btn-p" style="width:100%;margin-bottom:16px" onclick="acDownloadMasterChart('prev-month')">Download chart of previous month</button>
+    <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;border-top:1px solid var(--border);padding-top:16px">Or choose a custom range</div>
+    <div class="row-grid" style="gap:10px">
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">From</label>
+        <input class="fc" id="ac-mc-from" type="date" onchange="acOnMcFromChange()"/>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl">To</label>
+        <input class="fc" id="ac-mc-to" type="date" onchange="acOnMcToChange()"/>
+      </div>
+    </div>
+    <div id="ac-mc-range-err" style="display:none;color:#A32D2D;font-size:12px;margin-top:6px">"To" date cannot be before "From" date.</div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-sec" onclick="acCloseMasterChartModal()">Cancel</button>
+      <button class="btn-p" onclick="acDownloadMasterChart('range')">Download</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── BILL PDF PREVIEW MODAL ── -->
 <div class="modal" id="pdf-preview-modal" onclick="if(event.target===this) closePdfPreview()">
   <div class="modal-card" style="max-width:900px;width:94vw;height:92vh;display:flex;flex-direction:column;padding:16px">
@@ -1432,6 +1463,7 @@ async function acLoadExp() {
     _acExpenses = Array.isArray(d)?d:[];
     acRenderExp();
     acPopulateExpPropertyFilter();
+    acUpdateMasterChartBtnColor();
   } catch(e) {
     document.getElementById('ac-exp-tbody').innerHTML='<tr><td colspan="10" class="empty">'+e.message+'</td></tr>';
   }
@@ -2939,6 +2971,12 @@ async function acSaveExp() {
     if(id) {
       await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', body);
 
+      // Update the local copy immediately — don't rely solely on the follow-up
+      // reload landing before the table re-renders, otherwise a slow/failed
+      // reload leaves the table showing the pre-edit values.
+      var editedExpRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(id); });
+      if (editedExpRec) Object.assign(editedExpRec, body);
+
       // Sync utility_payments when editing a Utility expense
       if (category === 'Utility') {
         // Derive the month string (YYYY-MM) from billDate or today
@@ -2980,7 +3018,9 @@ async function acSaveExp() {
         }
       }
     } else {
-      await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
+      var createdExpRows = await acApi('/rest/v1/expenses', 'POST', {...body, created_at: new Date().toISOString()});
+      var createdExpRec = (Array.isArray(createdExpRows) && createdExpRows[0]) ? createdExpRows[0] : Object.assign({ id: 'temp_'+Date.now(), created_at: new Date().toISOString() }, body);
+      _acExpenses.push(createdExpRec);
       // Auto-create TDS expense when a new Payout with tds_amount is saved
       if (category === 'Payout' && body.tds_amount && body.tds_amount > 0) {
         await syncTdsExpense(body);
@@ -3016,7 +3056,11 @@ async function acSaveExp() {
       }
     }
 
-    acCloseExpModal(); acToast('Saved ✓'); await acLoadExp();
+    acRenderExp();
+    acPopulateExpPropertyFilter();
+    acUpdateMasterChartBtnColor();
+    acCloseExpModal(); acToast('Saved ✓');
+    acLoadExp().catch(function(){}); // background reconcile — doesn't override what's already shown
   } catch(e) { alert('Error: '+e.message); }
   finally {
     _acExpSaving = false;
@@ -4622,6 +4666,148 @@ function esc(s) {
 }
 
 // ── Excel export helpers ──
+
+/* ── Master Chart download (combined income + expense + GST for a period) ── */
+function acMasterChartLastMonthKey() {
+  var now = new Date();
+  var prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  return prev.getFullYear() + '-' + String(prev.getMonth()+1).padStart(2,'0');
+}
+function acMasterChartNeedsDownload() {
+  var lastDownloaded = localStorage.getItem('ac_master_chart_last_month') || '';
+  return lastDownloaded < acMasterChartLastMonthKey();
+}
+function acUpdateMasterChartBtnColor() {
+  var btn = document.getElementById('ac-master-chart-btn');
+  if (!btn) return;
+  btn.classList.toggle('btn-due', acMasterChartNeedsDownload());
+}
+function acOpenMasterChartModal() {
+  var prev = new Date(new Date().getFullYear(), new Date().getMonth()-1, 1);
+  var prevEnd = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
+  document.getElementById('ac-mc-from').value = prev.toISOString().slice(0,10);
+  document.getElementById('ac-mc-to').value   = prevEnd.toISOString().slice(0,10);
+  document.getElementById('ac-mc-range-err').style.display = 'none';
+  document.getElementById('ac-master-chart-modal').style.display = 'flex';
+}
+function acCloseMasterChartModal() {
+  document.getElementById('ac-master-chart-modal').style.display = 'none';
+}
+function acValidateMcRange() {
+  var from = document.getElementById('ac-mc-from').value;
+  var to   = document.getElementById('ac-mc-to').value;
+  var bad  = from && to && to < from;
+  document.getElementById('ac-mc-range-err').style.display = bad ? 'block' : 'none';
+  return !bad;
+}
+function acOnMcFromChange() {
+  var from = document.getElementById('ac-mc-from').value;
+  var toEl = document.getElementById('ac-mc-to');
+  if (from) toEl.min = from;
+  acValidateMcRange();
+}
+function acOnMcToChange() {
+  acValidateMcRange();
+}
+function acDownloadMasterChart(mode) {
+  var fromV, toV, monthKeyDownloaded = null;
+  if (mode === 'prev-month') {
+    var prev = new Date(new Date().getFullYear(), new Date().getMonth()-1, 1);
+    var prevEnd = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
+    fromV = prev.toISOString().slice(0,10);
+    toV   = prevEnd.toISOString().slice(0,10);
+    monthKeyDownloaded = acMasterChartLastMonthKey();
+  } else {
+    if (!acValidateMcRange()) return;
+    fromV = document.getElementById('ac-mc-from').value;
+    toV   = document.getElementById('ac-mc-to').value;
+    if (!fromV || !toV) { alert('Please choose both a From and To date.'); return; }
+  }
+
+  var exp = (_acExpenses||[]).filter(function(e){
+    if (e.parent_expense_id) return false; // installments carried in the parent's cumulative total
+    var d = (e.date||e.created_at||'').slice(0,10);
+    return d >= fromV && d <= toV;
+  });
+  var bills = (ALL_BILLS||[]).filter(function(b){
+    var d = (b.bill_date||b.created_at||'').slice(0,10);
+    return d >= fromV && d <= toV;
+  });
+
+  var expTotal = exp.reduce(function(s,e){ return s+(parseFloat(e.amount)||0); },0);
+  var expPaid  = exp.reduce(function(s,e){
+    if (e.status==='Paid'||e.status==='Paid to landlord') return s+(parseFloat(e.amount)||0);
+    if (e.status==='Part Payment') return s+acPartPaymentCumulative(e).paid;
+    return s;
+  },0);
+  var incTotal = bills.reduce(function(s,b){ return s+(parseFloat(b.amount)||0); },0);
+  var incReceived = bills.reduce(function(s,b){
+    if (b.payment_status==='paid') return s+(parseFloat(b.amount)||0);
+    if (b.payment_status==='part_payment') return s+(parseFloat(b.paid_amount)||0);
+    return s;
+  },0);
+  var gstPayable = bills.reduce(function(s,b){ var t = calcBillTax(b.items||[]); return s+t.cgst+t.sgst; },0);
+  var gstExpensed = exp.reduce(function(s,e){ return s+(parseFloat(e.gst_amount)||0); },0);
+
+  var wb = XLSX.utils.book_new();
+
+  var sumRows = [
+    ['Master Chart — Banyan Circle'],
+    ['Period', fromV + '  to  ' + toV],
+    ['Generated', new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})],
+    [],
+    ['Metric','Amount (₹)'],
+    ['Income Billed', incTotal],
+    ['Income Received', incReceived],
+    ['Income Receivable', incTotal-incReceived],
+    ['Expenses Total', expTotal],
+    ['Expenses Paid', expPaid],
+    ['Expenses Pending', expTotal-expPaid],
+    ['Net (Income − Expenses)', incTotal-expTotal],
+    ['GST Payable', gstPayable],
+    ['GST Expensed', gstExpensed],
+    ['Net GST', gstPayable-gstExpensed]
+  ];
+  var wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
+  applyColWidths(wsSummary, [28,18]);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  var expRows = [['Date','Item','Category','Payout Type','Property','Amount (₹)','Status']];
+  exp.forEach(function(e){
+    expRows.push([(e.date||'').slice(0,10), e.item||'', e.category||'', e.payout_type||'', e.property_name||'', parseFloat(e.amount)||0, e.status||'']);
+  });
+  var wsExp = XLSX.utils.aoa_to_sheet(expRows);
+  applyColWidths(wsExp, [14,26,14,14,20,14,16]);
+  XLSX.utils.book_append_sheet(wb, wsExp, 'Expenses');
+
+  var billRows = [['Date','Billed To','Property','Amount (₹)','Status']];
+  bills.forEach(function(b){
+    billRows.push([(b.bill_date||'').slice(0,10), b.guest_name||'', b.property_name||'', parseFloat(b.amount)||0, b.payment_status||'']);
+  });
+  var wsBills = XLSX.utils.aoa_to_sheet(billRows);
+  applyColWidths(wsBills, [14,24,20,14,16]);
+  XLSX.utils.book_append_sheet(wb, wsBills, 'Income');
+
+  xlsxDownload(wb, 'Master_Chart_' + fromV + '_to_' + toV + '.xlsx');
+
+  if (monthKeyDownloaded) {
+    localStorage.setItem('ac_master_chart_last_month', monthKeyDownloaded);
+  } else {
+    // Custom range covering a full completed month also counts as that month's download
+    var f = new Date(fromV), t = new Date(toV);
+    if (f.getDate()===1) {
+      var expectedEnd = new Date(f.getFullYear(), f.getMonth()+1, 0);
+      if (t.toISOString().slice(0,10) === expectedEnd.toISOString().slice(0,10)) {
+        var key = f.getFullYear() + '-' + String(f.getMonth()+1).padStart(2,'0');
+        var stored = localStorage.getItem('ac_master_chart_last_month') || '';
+        if (key > stored) localStorage.setItem('ac_master_chart_last_month', key);
+      }
+    }
+  }
+  acUpdateMasterChartBtnColor();
+  acCloseMasterChartModal();
+  toast('Master chart downloaded ✓');
+}
 
 function xlsxDownload(wb, filename) {
   var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
