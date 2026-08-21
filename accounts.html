@@ -1372,7 +1372,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
       <input type="hidden" id="ac-exp-fileurl"/>
     </div>
 
-    <div class="fg">
+    <div class="fg" id="ac-exp-desc-fg">
       <label class="fl">Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
       <textarea class="fc" id="ac-exp-desc" placeholder="Any additional notes…"></textarea>
     </div>
@@ -1981,6 +1981,8 @@ function acEditExp(e) {
   }
   if (partOptsEdit)    partOptsEdit.style.display    = (isPartPayment && !isExistingParentPP) ? 'block' : 'none';
   if (partHistoryEdit) partHistoryEdit.style.display = isExistingParentPP ? 'block' : 'none';
+  var descFgEdit = document.getElementById('ac-exp-desc-fg');
+  if (descFgEdit) descFgEdit.style.display = _acChildEditOnlyId ? 'none' : '';
   if (isExistingParentPP) {
     acRenderPaymentHistory(e);
     var addSectionEdit = document.getElementById('ac-pp-add-section');
@@ -2142,8 +2144,8 @@ function acEditExp(e) {
     document.getElementById('ac-upload-area').style.display='';
   }
   document.getElementById('ac-exp-fields').style.display = '';
-  document.getElementById('ac-exp-modal-actions').style.display = '';
-  document.getElementById('ac-exp-cancel-only').style.display = 'none';
+  document.getElementById('ac-exp-modal-actions').style.display = _acChildEditOnlyId ? 'none' : '';
+  document.getElementById('ac-exp-cancel-only').style.display = _acChildEditOnlyId ? 'flex' : 'none';
   document.getElementById('ac-modal-exp').classList.add('on');
 }
 
@@ -2945,8 +2947,38 @@ function acAddBcCustomItem() {
 }
 
 let _acExpSaving = false;
+// The Payment History section has its own "Save" buttons (Add Part Payment, and each
+// inline log-row edit) that are easy to forget to click before hitting the bottom
+// master Save. This flushes any pending, unsaved work in that section first, so the
+// bottom Save always behaves as "save everything" rather than silently dropping it.
+async function acFlushPendingPaymentHistoryEdits() {
+  // An open inline log-row edit (pp-edit-amt-<id> exists while that row is mid-edit)
+  var openEditAmt = document.querySelector('[id^="pp-edit-amt-"]');
+  if (openEditAmt) {
+    var entryId = openEditAmt.id.replace('pp-edit-amt-', '');
+    var parentId = document.getElementById('ac-exp-id').value;
+    var isParentRow = String(entryId) === String(parentId);
+    await acSavePaymentHistoryEdit(entryId, isParentRow, parentId);
+  }
+
+  // An unfinished "Add Part Payment" entry — only treat as intentional if the user
+  // actually put something in it (a non-zero amount or a description), so simply
+  // glancing at the form with its default 0 doesn't create a stray payment.
+  var addSection = document.getElementById('ac-pp-add-section');
+  if (addSection && addSection.style.display !== 'none') {
+    var amtEl  = document.getElementById('ac-pp-new-amount');
+    var descEl = document.getElementById('ac-pp-new-desc');
+    var hasAmount = amtEl && amtEl.value !== '' && parseFloat(amtEl.value) !== 0;
+    var hasDesc   = descEl && descEl.value.trim() !== '';
+    if (hasAmount || hasDesc) {
+      await acAddPartPayment();
+    }
+  }
+}
+
 async function acSaveExp() {
   if (_acExpSaving) return; // guard against double-click / double-submit
+  await acFlushPendingPaymentHistoryEdits();
   const id          = document.getElementById('ac-exp-id').value;
   const item        = document.getElementById('ac-exp-item').value.trim();
   const category    = document.getElementById('ac-exp-cat').value;
