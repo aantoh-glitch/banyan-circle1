@@ -1071,9 +1071,13 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <!-- Fields revealed after category selection -->
     <div id="ac-exp-fields" style="display:none">
 
-    <!-- Collapsed summary — shown instead of the core fields once a Part Payment record has been saved -->
-    <div class="fg" id="ac-pp-collapsed-summary" style="display:none;padding:12px 14px;background:var(--bg);border-radius:8px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Locked — use Payment History below to log or edit payments</div>
+    <!-- Collapsed summary — shown instead of the core fields once a Part Payment record has been saved.
+         Not locked: clicking it expands the full form, e.g. if the total amount itself needs correcting/splitting. -->
+    <div class="fg" id="ac-pp-collapsed-summary" style="display:none;padding:12px 14px;background:var(--bg);border-radius:8px;cursor:pointer" onclick="acTogglePPExpand()">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:5px">
+        <span id="ac-pp-expand-chevron" style="display:inline-block;transition:transform .15s">▸</span>
+        Collapsed — click to expand and edit full details (category, property, total amount, etc.)
+      </div>
       <div id="ac-pp-collapsed-summary-body" style="font-size:13px;line-height:1.9"></div>
     </div>
 
@@ -1304,7 +1308,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
           </div>
           <div class="fg" style="margin-bottom:0">
             <label class="fl">Amount</label>
-            <input class="fc" id="ac-pp-new-amount" type="number" min="0" placeholder="0"/>
+            <input class="fc" id="ac-pp-new-amount" type="number" min="0" value="0"/>
           </div>
         </div>
         <div class="fg" style="margin-bottom:0;margin-top:10px">
@@ -1892,6 +1896,8 @@ function acEditExp(e) {
   // read-only summary card — the only way to add or edit money against it from here
   // on is through the Payment History section (Add Part Payment + per-entry edit).
   if (coreFieldsEdit) coreFieldsEdit.style.display = isExistingParentPP ? 'none' : '';
+  var chevronEdit = document.getElementById('ac-pp-expand-chevron');
+  if (chevronEdit) chevronEdit.style.transform = '';
   if (collapsedEdit)  collapsedEdit.style.display  = isExistingParentPP ? '' : 'none';
   if (isExistingParentPP && collapsedEdit) {
     var summaryBody = document.getElementById('ac-pp-collapsed-summary-body');
@@ -1912,7 +1918,7 @@ function acEditExp(e) {
     var ppAmtEl  = document.getElementById('ac-pp-new-amount');
     var ppDescEl = document.getElementById('ac-pp-new-desc');
     if (ppDateEl) { ppDateEl.value = _ppToday; ppDateEl.max = _ppToday; }
-    if (ppAmtEl)  { ppAmtEl.value = ''; }
+    if (ppAmtEl)  { ppAmtEl.value = '0'; }
     if (ppDescEl) { ppDescEl.value = ''; }
   }
 
@@ -2276,6 +2282,8 @@ function acPickSt(btn) {
   if (partOpts)    partOpts.style.display    = (isPart && !isExistingParentPP) ? 'block' : 'none';
   if (partHistory) partHistory.style.display = isExistingParentPP ? 'block' : 'none';
   if (coreFieldsSt) coreFieldsSt.style.display = isExistingParentPP ? 'none' : '';
+  var chevronSt = document.getElementById('ac-pp-expand-chevron');
+  if (chevronSt) chevronSt.style.transform = '';
   if (collapsedSt)  collapsedSt.style.display  = isExistingParentPP ? '' : 'none';
 
   if (isPart && !isExistingParentPP) {
@@ -2379,28 +2387,61 @@ async function acSavePaymentHistoryEdit(id, isParent, parentId) {
     var patchBody = { date: newDate, paid_amount: newAmt };
     if (newDesc !== undefined) patchBody.description = newDesc;
     await acApi('/rest/v1/expenses?id=eq.'+id, 'PATCH', patchBody);
-    await acLoadExp();
+
+    // Update the local copy immediately — don't rely solely on a fresh reload
+    // succeeding/landing before we read the value back, or a slow/failed reload
+    // would leave the UI showing the pre-edit amount instead of what was just saved.
+    var editedRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(id); });
+    if (editedRec) {
+      editedRec.date = newDate;
+      editedRec.paid_amount = newAmt;
+      if (newDesc !== undefined) editedRec.description = newDesc;
+    }
 
     var parent = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); });
     if (parent) {
       var cum = acPartPaymentCumulative(parent);
       // Best-effort keep the parent's own pending snapshot roughly in sync (display no longer depends on it)
       try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { pending_amount: cum.pending }); } catch(_) {}
-      var refreshedParent = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parentId); }) || parent;
-      acRenderPaymentHistory(refreshedParent);
+      parent.pending_amount = cum.pending;
+      acRenderPaymentHistory(parent);
       var paidField = document.getElementById('ac-exp-paid-amount');
       var pendField = document.getElementById('ac-exp-pending-amount');
-      if (paidField) paidField.value = cum.paid;
-      if (pendField) pendField.value = cum.pending;
+      if (paidField) paidField.value = cum.paid.toFixed(2);
+      if (pendField) pendField.value = cum.pending.toFixed(2);
+      var summaryBodyEdit = document.getElementById('ac-pp-collapsed-summary-body');
+      if (summaryBodyEdit) {
+        var dtEdit = parent.date ? new Date(parent.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        var subLabelEdit = parent.payout_type || acExpCategoryLabel(parent);
+        summaryBodyEdit.innerHTML =
+          '<div><strong>' + esc(parent.item||'—') + '</strong></div>' +
+          '<div style="color:var(--muted)">' + esc(parent.category||'') + (subLabelEdit ? ' · ' + esc(subLabelEdit) : '') + (parent.property_name ? ' · ' + esc(parent.property_name) : '') + '</div>' +
+          '<div style="color:var(--muted)">Date: ' + dtEdit + '</div>' +
+          '<div style="margin-top:6px">Total: <strong>' + acFmt(parent.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(cum.paid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(cum.pending) + '</strong></div>';
+      }
     }
     acToast('Payment updated ✓');
     acRenderExp();
+    // Reconcile with the server in the background — doesn't block or override what's already shown
+    acLoadExp().catch(function(){});
   } catch(err) {
     alert('Could not update payment: ' + err.message);
   }
 }
 
 // Render the running Payment History list inside the edit modal for an existing Part Payment expense
+// Toggle the collapsed Part Payment summary open to reveal the full editable form
+// underneath it (category, property, item, total amount, etc.) — not permanently
+// locked, just collapsed by default since most edits only need Payment History.
+function acTogglePPExpand() {
+  var core = document.getElementById('ac-exp-core-fields');
+  var chevron = document.getElementById('ac-pp-expand-chevron');
+  if (!core) return;
+  var isOpen = core.style.display !== 'none';
+  core.style.display = isOpen ? 'none' : '';
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+}
+
 function acRenderPaymentHistory(parent) {
   var listEl = document.getElementById('ac-pp-history-list');
   if (!listEl) return;
@@ -2452,23 +2493,44 @@ async function acAddPartPayment() {
       pending_amount:newPending,
       created_at:    new Date().toISOString()
     };
-    await acApi('/rest/v1/expenses', 'POST', childBody);
+    var createdRows = await acApi('/rest/v1/expenses', 'POST', childBody);
     await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { paid_amount: newPaid, pending_amount: newPending });
 
-    acToast('Payment added ✓');
-    await acLoadExp();
+    // Update local state immediately — don't depend on a reload landing before we
+    // read values back, otherwise a slow/failed reload leaves the UI showing stale
+    // pre-payment totals even though the payment was actually saved.
+    var createdChild = (Array.isArray(createdRows) && createdRows[0]) ? createdRows[0] : Object.assign({ id: 'temp_'+Date.now() }, childBody);
+    _acExpenses.push(createdChild);
+    parent.paid_amount = newPaid;
+    parent.pending_amount = newPending;
 
-    var refreshed = (_acExpenses||[]).find(function(x){ return String(x.id) === String(parent.id); });
-    if (refreshed) {
-      document.getElementById('ac-pp-new-amount').value = '';
-      var descElReset = document.getElementById('ac-pp-new-desc');
-      if (descElReset) descElReset.value = '';
-      acRenderPaymentHistory(refreshed);
+    acToast('Payment added ✓');
+
+    document.getElementById('ac-pp-new-amount').value = '0';
+    var descElReset = document.getElementById('ac-pp-new-desc');
+    if (descElReset) descElReset.value = '';
+    acRenderPaymentHistory(parent);
+    var paidFieldAdd = document.getElementById('ac-exp-paid-amount');
+    var pendFieldAdd = document.getElementById('ac-exp-pending-amount');
+    if (paidFieldAdd) paidFieldAdd.value = newPaid.toFixed(2);
+    if (pendFieldAdd) pendFieldAdd.value = newPending.toFixed(2);
+    var summaryBodyAdd = document.getElementById('ac-pp-collapsed-summary-body');
+    if (summaryBodyAdd) {
+      var dtAdd = parent.date ? new Date(parent.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      var subLabelAdd = parent.payout_type || acExpCategoryLabel(parent);
+      summaryBodyAdd.innerHTML =
+        '<div><strong>' + esc(parent.item||'—') + '</strong></div>' +
+        '<div style="color:var(--muted)">' + esc(parent.category||'') + (subLabelAdd ? ' · ' + esc(subLabelAdd) : '') + (parent.property_name ? ' · ' + esc(parent.property_name) : '') + '</div>' +
+        '<div style="color:var(--muted)">Date: ' + dtAdd + '</div>' +
+        '<div style="margin-top:6px">Total: <strong>' + acFmt(parent.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(newPaid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(newPending) + '</strong></div>';
     }
+    acRenderExp();
+    // Reconcile with the server in the background — doesn't block or override what's already shown
+    acLoadExp().catch(function(){});
   } catch(err) {
     alert('Could not save payment: ' + err.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '+ Add Payment'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
   }
 }
 
