@@ -4796,6 +4796,67 @@ function acDownloadMasterChart(mode) {
   applyColWidths(wsBills, [14,24,20,14,16]);
   XLSX.utils.book_append_sheet(wb, wsBills, 'Income');
 
+  // — Banyan Circle sheet — income (bills with a banyan item) + outgoing (talent payouts / BC-category expenses)
+  var bcBills = bills.filter(function(b){ return (b.items||[]).some(function(i){ return i.type==='banyan'; }); });
+  var bcExp   = exp.filter(function(e){ return e.payout_type==='Talent' || e.category==='Banyan Circle'; });
+  var bcIncomeTotal = bcBills.reduce(function(s,b){ return s+(parseFloat(b.bc_amount)||0); },0);
+  var bcOutgoingTotal = bcExp.reduce(function(s,e){ return s+(parseFloat(e.pretax_amount)||parseFloat(e.amount)||0); },0);
+  var bcRows = [
+    ['Banyan Circle'],
+    ['Period', fromV + '  to  ' + toV],
+    [],
+    ['Income Total (₹)', bcIncomeTotal],
+    ['Outgoing Total (₹)', bcOutgoingTotal],
+    ['Profit (₹)', bcIncomeTotal-bcOutgoingTotal],
+    [],
+    ['INCOME'],
+    ['Date','Guest','Property','Talent(s)','BC Amount (₹)','Status']
+  ];
+  bcBills.forEach(function(b){
+    var talents = (b.items||[]).filter(function(i){ return i.type==='banyan'; }).map(function(i){ return i.sub_item; }).filter(Boolean).join(', ');
+    bcRows.push([(b.bill_date||'').slice(0,10), b.guest_name||'', b.property_name||'', talents, parseFloat(b.bc_amount)||0, b.payment_status||'']);
+  });
+  bcRows.push([]);
+  bcRows.push(['OUTGOING']);
+  bcRows.push(['Date','Item','Recipient','Property','Amount (₹)','Status']);
+  bcExp.forEach(function(e){
+    bcRows.push([(e.date||'').slice(0,10), e.item||'', e.recipient||'', e.property_name||'', parseFloat(e.pretax_amount)||parseFloat(e.amount)||0, e.status||'']);
+  });
+  var wsBc = XLSX.utils.aoa_to_sheet(bcRows);
+  applyColWidths(wsBc, [14,22,18,18,16,16]);
+  XLSX.utils.book_append_sheet(wb, wsBc, 'Banyan Circle');
+
+  // — GST sheet — payable (from bills' CGST+SGST) + expensed (from GST-applicable expenses)
+  var gstPayableRows = bills.map(function(b){
+    var t = calcBillTax(b.items||[]);
+    var amt = Math.round(((t.cgst||0)+(t.sgst||0))*100)/100;
+    return { b: b, amt: amt };
+  }).filter(function(r){ return r.amt > 0; });
+  var gstExpensedRows = exp.filter(function(e){ return e.gst_applicable && parseFloat(e.gst_amount) > 0; });
+  var gstRowsOut = [
+    ['GST'],
+    ['Period', fromV + '  to  ' + toV],
+    [],
+    ['GST Payable (₹)', gstPayable],
+    ['GST Expensed (₹)', gstExpensed],
+    ['Net GST (₹)', gstPayable-gstExpensed],
+    [],
+    ['GST PAYABLE'],
+    ['Date','Guest','Property','Bill Ref','GST Amount (₹)']
+  ];
+  gstPayableRows.forEach(function(r){
+    gstRowsOut.push([(r.b.bill_date||'').slice(0,10), r.b.guest_name||'', r.b.property_name||'', r.b.bill_ref||'', r.amt]);
+  });
+  gstRowsOut.push([]);
+  gstRowsOut.push(['GST EXPENSED']);
+  gstRowsOut.push(['Date','Item','Category','Property','GST %','GST Amount (₹)']);
+  gstExpensedRows.forEach(function(e){
+    gstRowsOut.push([(e.date||'').slice(0,10), e.item||'', e.category||'', e.property_name||'', e.gst_pct!=null ? e.gst_pct : '', parseFloat(e.gst_amount)||0]);
+  });
+  var wsGst = XLSX.utils.aoa_to_sheet(gstRowsOut);
+  applyColWidths(wsGst, [14,22,18,16,12,16]);
+  XLSX.utils.book_append_sheet(wb, wsGst, 'GST');
+
   xlsxDownload(wb, 'Master_Chart_' + fromV + '_to_' + toV + '.xlsx');
 
   if (monthKeyDownloaded) {
