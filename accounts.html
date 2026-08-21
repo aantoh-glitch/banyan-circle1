@@ -1600,6 +1600,12 @@ function acRenderExp() {
 
 // ── Expenses row → detail popup ──
 function acShowExpDetail(e) {
+  // Same staleness guard as acEditExp — the row's onclick embeds a JSON snapshot from
+  // the last table render, so re-resolve against live data before computing totals.
+  if (e && e.id) {
+    var liveDetailRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(e.id); });
+    if (liveDetailRec) e = liveDetailRec;
+  }
   const dash = '—';
   const payoutTypeCell = e.category==='Utility' && e.utility_type
     ? e.utility_type
@@ -1848,6 +1854,13 @@ function acOpenExpModal() {
 }
 
 function acEditExp(e) {
+  // The row's onclick embeds a JSON snapshot taken at the last table render — always
+  // re-resolve against the live in-memory record so a stale snapshot (e.g. from before
+  // a payment was just added/edited) can't show outdated paid/pending amounts.
+  if (e && e.id) {
+    var liveRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(e.id); });
+    if (liveRec) e = liveRec;
+  }
   document.getElementById('ac-exp-id').value = e.id || '';
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
