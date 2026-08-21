@@ -2526,14 +2526,18 @@ async function acAddPartPayment() {
       created_at:    new Date().toISOString()
     };
     var createdRows = await acApi('/rest/v1/expenses', 'POST', childBody);
-    await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { paid_amount: newPaid, pending_amount: newPending });
+    // IMPORTANT: never write paid_amount back onto the parent here. The parent's own
+    // paid_amount must always represent only its own original installment — the true
+    // cumulative total is always derived fresh (parent's own amount + sum of all child
+    // rows) via acPartPaymentCumulative. Writing a cumulative number into this field
+    // previously caused it to compound and inflate with every additional payment.
+    try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { pending_amount: newPending }); } catch(_) {}
 
     // Update local state immediately — don't depend on a reload landing before we
     // read values back, otherwise a slow/failed reload leaves the UI showing stale
     // pre-payment totals even though the payment was actually saved.
     var createdChild = (Array.isArray(createdRows) && createdRows[0]) ? createdRows[0] : Object.assign({ id: 'temp_'+Date.now() }, childBody);
     _acExpenses.push(createdChild);
-    parent.paid_amount = newPaid;
     parent.pending_amount = newPending;
 
     acToast('Payment added ✓');
@@ -3107,12 +3111,16 @@ async function acDelExp(id) {
     await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE');
 
     if (rec && rec.parent_expense_id) {
-      // Deleting a single payment-log entry — roll the parent's cumulative totals back
+      // Deleting a single payment-log entry — refresh the parent's pending snapshot.
+      // The parent's own paid_amount must NEVER be touched here — it always represents
+      // only its own original installment; true cumulative is derived fresh elsewhere
+      // from parent.paid_amount + sum of remaining children.
       const parent = (_acExpenses||[]).find(e => String(e.id) === String(rec.parent_expense_id));
       if (parent) {
-        const newPaid    = Math.max((Number(parent.paid_amount)||0) - (Number(rec.paid_amount)||0), 0);
-        const newPending = Math.max((Number(parent.amount)||0) - newPaid, 0);
-        try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { paid_amount: newPaid, pending_amount: newPending }); } catch(_) {}
+        _acExpenses = _acExpenses.filter(e => String(e.id) !== String(id)); // drop the deleted child locally first
+        const cum = acPartPaymentCumulative(parent);
+        try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { pending_amount: cum.pending }); } catch(_) {}
+        parent.pending_amount = cum.pending;
       }
     }
 
