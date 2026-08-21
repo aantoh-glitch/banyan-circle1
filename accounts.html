@@ -2436,12 +2436,17 @@ function acBuildPaymentHistoryHtml(parent, editable, lockExceptId) {
   children.forEach(function(c){ entries.push({ date: c.date, amount: Number(c.paid_amount)||0, id: c.id, isParent: false, description: c.description || '' }); });
   var rowsHtml = entries.map(function(en){
     var dt = en.date ? new Date(en.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    var rowId = 'pp-row-' + en.id;
     var rowEditable = editable && (!lockExceptId || String(lockExceptId) === String(en.id));
+    // Only the editable (modal) rendering needs a DOM id — acEditPaymentHistoryRow targets
+    // it by id. The read-only detail popup must NOT reuse this id: if that popup was opened
+    // once, its rows stay in the DOM (just hidden), and a duplicate id would make
+    // getElementById find the hidden read-only copy instead of the modal's live one,
+    // silently breaking editing.
+    var idAttr = editable ? ' id="pp-row-' + en.id + '"' : '';
     var clickAttr = rowEditable ? ' onclick="acEditPaymentHistoryRow(\'' + en.id + '\',' + en.isParent + ',\'' + parent.id + '\')" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer"' : ' style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"';
     var descHtml = en.description
       ? '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + esc(en.description) + '</div>' : '';
-    return '<div id="' + rowId + '"' + clickAttr + '>'
+    return '<div' + idAttr + clickAttr + '>'
       + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
         + '<span style="color:var(--muted)">' + dt + '</span>'
         + '<span style="font-weight:500">' + acFmt(en.amount) + ' of ' + acFmt(total) + ' paid</span>'
@@ -3233,19 +3238,27 @@ async function acDelExp(id) {
 
     await acApi('/rest/v1/expenses?id=eq.'+id,'DELETE');
 
-    if (rec && rec.parent_expense_id) {
+    if (hasPaymentLogs) {
+      // Deleted the original expense and cascaded its children — drop all of them locally too
+      _acExpenses = _acExpenses.filter(e => String(e.id) !== String(id) && String(e.parent_expense_id) !== String(id));
+    } else if (rec && rec.parent_expense_id) {
       // Deleting a single payment-log entry — refresh the parent's pending snapshot.
       // The parent's own paid_amount must NEVER be touched here — it always represents
       // only its own original installment; true cumulative is derived fresh elsewhere
       // from parent.paid_amount + sum of remaining children.
+      _acExpenses = _acExpenses.filter(e => String(e.id) !== String(id)); // drop the deleted child locally first
       const parent = (_acExpenses||[]).find(e => String(e.id) === String(rec.parent_expense_id));
       if (parent) {
-        _acExpenses = _acExpenses.filter(e => String(e.id) !== String(id)); // drop the deleted child locally first
         const cum = acPartPaymentCumulative(parent);
         try { await acApi('/rest/v1/expenses?id=eq.'+parent.id, 'PATCH', { pending_amount: cum.pending }); } catch(_) {}
         parent.pending_amount = cum.pending;
       }
+    } else {
+      _acExpenses = _acExpenses.filter(e => String(e.id) !== String(id));
     }
+    // Reflect the deletion (and any recalculated parent total) immediately — don't
+    // wait on the background reload below, which could race or fail silently.
+    acRenderExp();
 
     if (rec && rec.category === 'Utility' && rec.property_name && rec.utility_type) {
       const syncMonth = (rec.bill_date || rec.date || rec.created_at || '').slice(0,7);
@@ -3259,7 +3272,8 @@ async function acDelExp(id) {
       } catch(_) {}
     }
 
-    acToast('Deleted'); await acLoadExp();
+    acToast('Deleted');
+    acLoadExp().catch(function(){});
   }
   catch(e){ alert('Error: '+e.message); }
 }
