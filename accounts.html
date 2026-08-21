@@ -3306,6 +3306,25 @@ function acClearUpload() {
 <script>
 /* Billing module */
 var blInitDone=false;
+// property_name -> landlord's actual name, for bills billed to a Landlord (guest_name
+// there stores the property, never the landlord's own name). Own lookup since this
+// script block doesn't share scope with the Expenses tab's version of this.
+var _blLandlordNameByProperty = {};
+async function blLoadLandlordNames() {
+  try {
+    var d = await api('/rest/v1/landlords?select=property_name,name');
+    _blLandlordNameByProperty = {};
+    (d||[]).forEach(function(r){ if (r.property_name && r.name) _blLandlordNameByProperty[r.property_name] = r.name; });
+  } catch(_) {}
+}
+// Display name for a bill's "Billed To" — landlord's actual name when billed to a
+// Landlord, otherwise falls back to whatever is already stored in guest_name.
+function blBilledToDisplay(b) {
+  if (b && b.bill_source === 'Landlord' && b.guest_name && _blLandlordNameByProperty[b.guest_name]) {
+    return _blLandlordNameByProperty[b.guest_name];
+  }
+  return (b && b.guest_name) || '—';
+}
 var SB  = 'https://wwdnuajhqfajvsexszpy.supabase.co';
 var KEY = 'sb_publishable_77W-BdOfG8ozuXxXjCgmSg_mCzstMBX';
 
@@ -3468,6 +3487,7 @@ async function init() {
   if (ftEl) { ftEl.value = today; ftEl.max = today; }
   setPayMethod('pending');
   await loadGuests();
+  blLoadLandlordNames().then(function(){ if (typeof filterBills === 'function') filterBills(); }).catch(function(){});
   await loadBills();
 }
 
@@ -4158,6 +4178,14 @@ async function saveBill() {
     if (EDIT_BILL) {
       await api('/rest/v1/bills?id=eq.' + EDIT_BILL.id, 'PATCH', body);
       await syncToRevenue(body, EDIT_BILL.bill_id || EDIT_BILL.id);
+      if (IS_PAYOUT) {
+        var billRefEdit = EDIT_BILL.bill_ref || body.bill_ref;
+        if (payMethod === 'set_off') {
+          await syncSetOffExpense(body, billRefEdit, billSource);
+        } else if (EDIT_BILL.payment_method === 'set_off') {
+          await removeSetOffExpense(billRefEdit, billSource);
+        }
+      }
       toast('Bill updated ✓');
     } else {
       var newBillId = generateBillId();
@@ -4165,6 +4193,9 @@ async function saveBill() {
       body.bill_ref = await generateBillRef();
       var created = await api('/rest/v1/bills', 'POST', body);
       await syncToRevenue(body, newBillId);
+      if (IS_PAYOUT && payMethod === 'set_off') {
+        await syncSetOffExpense(body, body.bill_ref, billSource);
+      }
       toast('Bill created ✓');
     }
     cancelEdit();
@@ -4238,11 +4269,53 @@ async function syncToRevenue(billBody, billId) {
   }
 }
 
-// NOTE: Landlord/Team/Talent bills used to also be synced into the expenses table
-// (syncToExpense) so they'd show up in earnings.html. That's been removed — a bill
-// to a landlord/team member/talent isn't a business expense, it's billing on the
-// admin side and a payout from their perspective. earnings.html now reads these
-// bills directly from the `bills` table instead.
+// A "Set Off" bill to a Landlord/Team/Talent is different from ordinary billing: the
+// company isn't receiving cash, it's treating money it already spent on that entity's
+// behalf as settling this bill. From that entity's side, that's genuinely a payout, so
+// (unlike other Landlord/Team/Talent bills) a Set Off bill also gets mirrored into the
+// expenses table as a Paid Payout, so it shows up correctly in their earnings/expense
+// history. Linked via an item text embedding the bill_ref, since expenses has no
+// direct bill_id column to join on.
+async function syncSetOffExpense(billBody, billRef, headType) {
+  if (!billRef || !headType) return;
+  var payoutType = headType === 'Landlord' ? 'Landlords' : headType; // Team/Talent already match
+  var itemLabel = 'Set Off — Bill ' + billRef;
+  var expBody = {
+    item:           itemLabel,
+    amount:         billBody.amount,
+    category:       'Payout',
+    status:         'Paid',
+    date:           billBody.bill_date,
+    description:    'This is a set off against money spent by the company for ' + headType + ' - bill no ' + billRef,
+    payout_type:    payoutType,
+    recipient:      billBody.guest_name || null,
+    property_name:  billBody.property_name || null,
+    pretax_amount:  billBody.amount,
+    paid_amount:    null,
+    pending_amount: null
+  };
+  try {
+    var existing = await api('/rest/v1/expenses?item=eq.' + encodeURIComponent(itemLabel) + '&payout_type=eq.' + payoutType + '&select=id').catch(function(){ return []; });
+    if (existing && existing.length) {
+      await api('/rest/v1/expenses?id=eq.' + existing[0].id, 'PATCH', expBody);
+    } else {
+      await api('/rest/v1/expenses', 'POST', expBody);
+    }
+  } catch(e) {
+    console.warn('Set off expense sync failed:', e.message);
+  }
+}
+
+// If a bill that WAS set-off is edited to a different payment method, remove the
+// linked expense so a stale payout record doesn't stay behind.
+async function removeSetOffExpense(billRef, headType) {
+  if (!billRef || !headType) return;
+  var payoutType = headType === 'Landlord' ? 'Landlords' : headType;
+  var itemLabel = 'Set Off — Bill ' + billRef;
+  try {
+    await api('/rest/v1/expenses?item=eq.' + encodeURIComponent(itemLabel) + '&payout_type=eq.' + payoutType, 'DELETE');
+  } catch(_) {}
+}
 
 function editBill(bill) {
   requirePin('PIN required to edit bill', function() {
@@ -4551,7 +4624,7 @@ function renderBills(data) {
           : b.payment_status==='part_payment'
             ? 'Part paid (' + fmtF(b.paid_amount) + ' of ' + fmtF(b.amount) + ')'
             : 'Receivable') + hiddenTag;
-        var billedTo = b.guest_name || '—';
+        var billedTo = blBilledToDisplay(b);
         // Item = first distinct item name across all rows
         var itemNames = [...new Set((b.items||[]).map(function(i){ return i.name||''; }).filter(Boolean))];
         var itemCol = itemNames.length ? itemNames.join(', ') : '—';
@@ -4596,7 +4669,7 @@ function showBillDetail(b) {
 
   var rows = [
     ['Ref', esc(b.bill_ref || '—')],
-    ['Billed To', esc(b.guest_name || '—')],
+    ['Billed To', esc(blBilledToDisplay(b))],
     ['Item', itemCol ? esc(itemCol) : '—'],
     ['Sub Item', b.sub_item ? esc(b.sub_item) : '—'],
     ['Property', b.property_name ? esc(b.property_name) : '—'],
@@ -4634,7 +4707,11 @@ async function deleteBill(id, name, billId) {
   requirePin('PIN required to remove bill', async function() {
     if (!confirm('Remove bill for ' + name + '? This cannot be undone.')) return;
     try {
+      var billRec = ALL_BILLS.find(function(b){ return String(b.id) === String(id); });
       await api('/rest/v1/bills?id=eq.' + id, 'DELETE');
+      if (billRec && billRec.payment_method === 'set_off' && billRec.bill_source && billRec.bill_ref) {
+        await removeSetOffExpense(billRec.bill_ref, billRec.bill_source);
+      }
       toast(name + ' bill removed');
       loadBills();
     } catch(e) { toast('Error: ' + e.message); }
@@ -4648,7 +4725,8 @@ function downloadBillPdf(b) {
   var items = b.items;
   if (typeof items === 'string') { try { items = JSON.parse(items); } catch(_) { items = []; } }
   if (!Array.isArray(items)) items = [];
-  var name  = b.guest_name || 'Guest';
+  var name  = blBilledToDisplay(b);
+  if (name === '—') name = 'Guest';
   var dt    = new Date(b.bill_date || b.created_at || Date.now());
   var ref   = b.bill_ref || (name.substring(0,4).toUpperCase() + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'2-digit'}).replace(/\//g,''));
 
