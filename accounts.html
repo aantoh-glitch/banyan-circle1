@@ -1861,6 +1861,14 @@ function acEditExp(e) {
     var liveRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(e.id); });
     if (liveRec) e = liveRec;
   }
+  // A payment-history child row isn't independently editable via the main form — it has
+  // no item/category/amount of its own worth showing (amount is always 0 by design; the
+  // real total lives on the parent). Editing one always redirects to the parent's collapsed
+  // view + Payment History, where that specific entry can be edited inline instead.
+  if (e && e.parent_expense_id) {
+    var parentRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(e.parent_expense_id); });
+    if (parentRec) e = parentRec;
+  }
   document.getElementById('ac-exp-id').value = e.id || '';
   document.getElementById('ac-exp-ttl').textContent='Edit Expense';
   const _todayE = new Date().toISOString().slice(0,10);
