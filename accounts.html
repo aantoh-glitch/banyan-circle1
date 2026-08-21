@@ -1107,7 +1107,7 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <div class="fg" id="ac-pp-collapsed-summary" style="display:none;padding:12px 14px;background:var(--bg);border-radius:8px;cursor:pointer" onclick="acTogglePPExpand()">
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:5px">
         <span id="ac-pp-expand-chevron" style="display:inline-block;transition:transform .15s">▸</span>
-        Collapsed — click to expand and edit full details (category, property, total amount, etc.)
+        <span id="ac-pp-expand-hint-text">Collapsed — click to expand and edit full details (category, property, total amount, etc.)</span>
       </div>
       <div id="ac-pp-collapsed-summary-body" style="font-size:13px;line-height:1.9"></div>
     </div>
@@ -1331,22 +1331,24 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </div>
       </div>
       <div class="fg" id="ac-part-payment-history" style="display:none;margin-top:10px;padding:12px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Add Part Payment</div>
-        <div class="row-grid" style="gap:10px">
-          <div class="fg" style="margin-bottom:0">
-            <label class="fl">Date</label>
-            <input class="fc" id="ac-pp-new-date" type="date"/>
+        <div id="ac-pp-add-section">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Add Part Payment</div>
+          <div class="row-grid" style="gap:10px">
+            <div class="fg" style="margin-bottom:0">
+              <label class="fl">Date</label>
+              <input class="fc" id="ac-pp-new-date" type="date"/>
+            </div>
+            <div class="fg" style="margin-bottom:0">
+              <label class="fl">Amount</label>
+              <input class="fc" id="ac-pp-new-amount" type="number" min="0" value="0"/>
+            </div>
           </div>
-          <div class="fg" style="margin-bottom:0">
-            <label class="fl">Amount</label>
-            <input class="fc" id="ac-pp-new-amount" type="number" min="0" value="0"/>
+          <div class="fg" style="margin-bottom:0;margin-top:10px">
+            <label class="fl">Description</label>
+            <textarea class="fc" id="ac-pp-new-desc" rows="2" style="resize:vertical"></textarea>
           </div>
+          <button type="button" class="btn-sec" style="margin-top:10px;width:100%" onclick="acAddPartPayment()" id="ac-pp-add-btn">Save</button>
         </div>
-        <div class="fg" style="margin-bottom:0;margin-top:10px">
-          <label class="fl">Description</label>
-          <textarea class="fc" id="ac-pp-new-desc" rows="2" style="resize:vertical"></textarea>
-        </div>
-        <button type="button" class="btn-sec" style="margin-top:10px;width:100%" onclick="acAddPartPayment()" id="ac-pp-add-btn">Save</button>
 
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
           <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Log</div>
@@ -1444,6 +1446,10 @@ function acToast(msg) {
 function acFmt(n) { return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2}); }
 
 let _acExpenses=[], _acCatF='all', _acStF='all';
+// When set, only this one child payment-log entry is editable in the currently-open modal
+// (opened by clicking Edit on a child row directly) — the top area and every other log row
+// stay locked/view-only.
+let _acChildEditOnlyId = null;
 
 function acTab(id, btn) {
   document.querySelectorAll('.ac-tab').forEach(b=>b.classList.remove('on'));
@@ -1842,6 +1848,7 @@ function acOpenExpModal() {
   if (_coreFieldsReset) _coreFieldsReset.style.display = '';
   var _collapsedReset = document.getElementById('ac-pp-collapsed-summary');
   if (_collapsedReset) _collapsedReset.style.display = 'none';
+  _acChildEditOnlyId = null;
   document.getElementById('ac-exp-paid-amount').value = '0';
   document.getElementById('ac-exp-pending-amount').value = '0';
   document.getElementById('ac-file-preview').style.display='none';
@@ -1861,11 +1868,13 @@ function acEditExp(e) {
     var liveRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(e.id); });
     if (liveRec) e = liveRec;
   }
-  // A payment-history child row isn't independently editable via the main form — it has
-  // no item/category/amount of its own worth showing (amount is always 0 by design; the
-  // real total lives on the parent). Editing one always redirects to the parent's collapsed
-  // view + Payment History, where that specific entry can be edited inline instead.
+  // A payment-history child row has no item/category/amount of its own worth showing or
+  // editing (amount is always 0 by design; the real total lives on the parent). Editing one
+  // opens the parent's Payment History view with that specific entry pre-opened for inline
+  // edit — the top area stays fully locked, and every other log row is view-only.
+  _acChildEditOnlyId = null;
   if (e && e.parent_expense_id) {
+    _acChildEditOnlyId = e.id;
     var parentRec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(e.parent_expense_id); });
     if (parentRec) e = parentRec;
   }
@@ -1952,6 +1961,14 @@ function acEditExp(e) {
   var chevronEdit = document.getElementById('ac-pp-expand-chevron');
   if (chevronEdit) chevronEdit.style.transform = '';
   if (collapsedEdit)  collapsedEdit.style.display  = isExistingParentPP ? '' : 'none';
+  if (collapsedEdit) {
+    collapsedEdit.style.cursor = _acChildEditOnlyId ? 'default' : 'pointer';
+    var hintEl = document.getElementById('ac-pp-expand-hint-text');
+    if (hintEl) hintEl.textContent = _acChildEditOnlyId
+      ? 'Locked'
+      : 'Collapsed — click to expand and edit full details (category, property, total amount, etc.)';
+    if (chevronEdit) chevronEdit.style.display = _acChildEditOnlyId ? 'none' : '';
+  }
   if (isExistingParentPP && collapsedEdit) {
     var summaryBody = document.getElementById('ac-pp-collapsed-summary-body');
     var dt = e.date ? new Date(e.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
@@ -1966,13 +1983,21 @@ function acEditExp(e) {
   if (partHistoryEdit) partHistoryEdit.style.display = isExistingParentPP ? 'block' : 'none';
   if (isExistingParentPP) {
     acRenderPaymentHistory(e);
-    var _ppToday = new Date().toISOString().slice(0,10);
-    var ppDateEl = document.getElementById('ac-pp-new-date');
-    var ppAmtEl  = document.getElementById('ac-pp-new-amount');
-    var ppDescEl = document.getElementById('ac-pp-new-desc');
-    if (ppDateEl) { ppDateEl.value = _ppToday; ppDateEl.max = _ppToday; }
-    if (ppAmtEl)  { ppAmtEl.value = '0'; }
-    if (ppDescEl) { ppDescEl.value = ''; }
+    var addSectionEdit = document.getElementById('ac-pp-add-section');
+    if (addSectionEdit) addSectionEdit.style.display = _acChildEditOnlyId ? 'none' : '';
+    if (_acChildEditOnlyId) {
+      // Jump straight into editing the specific entry that was clicked — that's the
+      // whole reason this modal was opened, no need to make them click it again.
+      acEditPaymentHistoryRow(_acChildEditOnlyId, String(_acChildEditOnlyId) === String(e.id), e.id);
+    } else {
+      var _ppToday = new Date().toISOString().slice(0,10);
+      var ppDateEl = document.getElementById('ac-pp-new-date');
+      var ppAmtEl  = document.getElementById('ac-pp-new-amount');
+      var ppDescEl = document.getElementById('ac-pp-new-desc');
+      if (ppDateEl) { ppDateEl.value = _ppToday; ppDateEl.max = _ppToday; }
+      if (ppAmtEl)  { ppAmtEl.value = '0'; }
+      if (ppDescEl) { ppDescEl.value = ''; }
+    }
   }
 
   // Restore utility sub-section if applicable
@@ -2367,8 +2392,10 @@ function acPickSt(btn) {
 // Each line shows what was actually paid on that date, plus its own description —
 // every installment (parent's own original payment, and each logged child payment)
 // keeps its own independent description rather than sharing one across the group.
-// When editable is true (edit modal only), each row gets an Edit control.
-function acBuildPaymentHistoryHtml(parent, editable) {
+// When editable is true (edit modal only), each row gets an Edit control — unless
+// lockExceptId is set, in which case only that one row is interactive/editable and
+// every other row is plain, view-only text (used when opened via a specific child entry).
+function acBuildPaymentHistoryHtml(parent, editable, lockExceptId) {
   var total = Number(parent.amount) || 0;
   var children = (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(parent.id); });
   children.sort(function(a,b){ return new Date(a.date||a.created_at||0) - new Date(b.date||b.created_at||0); });
@@ -2379,7 +2406,8 @@ function acBuildPaymentHistoryHtml(parent, editable) {
   var rowsHtml = entries.map(function(en){
     var dt = en.date ? new Date(en.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
     var rowId = 'pp-row-' + en.id;
-    var clickAttr = editable ? ' onclick="acEditPaymentHistoryRow(\'' + en.id + '\',' + en.isParent + ',\'' + parent.id + '\')" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer"' : ' style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"';
+    var rowEditable = editable && (!lockExceptId || String(lockExceptId) === String(en.id));
+    var clickAttr = rowEditable ? ' onclick="acEditPaymentHistoryRow(\'' + en.id + '\',' + en.isParent + ',\'' + parent.id + '\')" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer"' : ' style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"';
     var descHtml = en.description
       ? '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + esc(en.description) + '</div>' : '';
     return '<div id="' + rowId + '"' + clickAttr + '>'
@@ -2487,6 +2515,7 @@ async function acSavePaymentHistoryEdit(id, isParent, parentId) {
 // underneath it (category, property, item, total amount, etc.) — not permanently
 // locked, just collapsed by default since most edits only need Payment History.
 function acTogglePPExpand() {
+  if (_acChildEditOnlyId) return; // top area is fully locked when editing one specific child entry
   var core = document.getElementById('ac-exp-core-fields');
   var chevron = document.getElementById('ac-pp-expand-chevron');
   if (!core) return;
@@ -2498,7 +2527,7 @@ function acTogglePPExpand() {
 function acRenderPaymentHistory(parent) {
   var listEl = document.getElementById('ac-pp-history-list');
   if (!listEl) return;
-  listEl.innerHTML = acBuildPaymentHistoryHtml(parent, true);
+  listEl.innerHTML = acBuildPaymentHistoryHtml(parent, true, _acChildEditOnlyId);
 }
 
 // Save a new part-payment installment against an existing Part Payment expense.
@@ -3176,6 +3205,7 @@ async function acDelExp(id) {
 
 function acCloseExpModal() {
   document.getElementById('ac-modal-exp').classList.remove('on');
+  _acChildEditOnlyId = null;
   const op = document.getElementById('ac-exp-others-property');
   if (op) { op.innerHTML = '<option value="">— select property —</option>'; }
   document.getElementById('ac-others-property-fg').style.display = 'none';
