@@ -1071,6 +1071,14 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
     <!-- Fields revealed after category selection -->
     <div id="ac-exp-fields" style="display:none">
 
+    <!-- Collapsed summary — shown instead of the core fields once a Part Payment record has been saved -->
+    <div class="fg" id="ac-pp-collapsed-summary" style="display:none;padding:12px 14px;background:var(--bg);border-radius:8px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Locked — use Payment History below to log or edit payments</div>
+      <div id="ac-pp-collapsed-summary-body" style="font-size:13px;line-height:1.9"></div>
+    </div>
+
+    <div id="ac-exp-core-fields">
+
     <!-- Payout sub-category — shown only when Payout is selected -->
     <div class="fg" id="ac-payout-fg" style="display:none">
       <span class="fl">Payout To <span class="req">*</span></span>
@@ -1271,7 +1279,11 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         <button class="pill-opt status-paidlandlord" data-val="Paid to landlord" id="ac-st-paidlandlord" onclick="acPickSt(this)" style="display:none">Paid to landlord</button>
       </div>
       <input type="hidden" id="ac-exp-status"/>
-      <div class="fg" id="ac-part-payment-opts" style="display:none;margin-top:10px;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
+    </div>
+
+    </div><!-- /ac-exp-core-fields -->
+
+    <div class="fg" id="ac-part-payment-opts" style="display:none;margin-top:10px;padding:10px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
         <div class="row-grid" style="gap:10px">
           <div class="fg" style="margin-bottom:0">
             <label class="fl">Paid</label>
@@ -1284,28 +1296,28 @@ textarea.fc{resize:vertical;min-height:84px;line-height:1.6}
         </div>
       </div>
       <div class="fg" id="ac-part-payment-history" style="display:none;margin-top:10px;padding:12px 14px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.07);border-radius:8px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Payment History</div>
-        <div id="ac-pp-history-list"></div>
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">New Part Payment</div>
-          <div class="row-grid" style="gap:10px">
-            <div class="fg" style="margin-bottom:0">
-              <label class="fl">Date</label>
-              <input class="fc" id="ac-pp-new-date" type="date"/>
-            </div>
-            <div class="fg" style="margin-bottom:0">
-              <label class="fl">Amount</label>
-              <input class="fc" id="ac-pp-new-amount" type="number" min="0" placeholder="0"/>
-            </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Add Part Payment</div>
+        <div class="row-grid" style="gap:10px">
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">Date</label>
+            <input class="fc" id="ac-pp-new-date" type="date"/>
           </div>
-          <div class="fg" style="margin-bottom:0;margin-top:10px">
-            <label class="fl">Description</label>
-            <textarea class="fc" id="ac-pp-new-desc" rows="2" style="resize:vertical"></textarea>
+          <div class="fg" style="margin-bottom:0">
+            <label class="fl">Amount</label>
+            <input class="fc" id="ac-pp-new-amount" type="number" min="0" placeholder="0"/>
           </div>
-          <button type="button" class="btn-sec" style="margin-top:10px;width:100%" onclick="acAddPartPayment()" id="ac-pp-add-btn">+ Add Payment</button>
+        </div>
+        <div class="fg" style="margin-bottom:0;margin-top:10px">
+          <label class="fl">Description</label>
+          <textarea class="fc" id="ac-pp-new-desc" rows="2" style="resize:vertical"></textarea>
+        </div>
+        <button type="button" class="btn-sec" style="margin-top:10px;width:100%" onclick="acAddPartPayment()" id="ac-pp-add-btn">Save</button>
+
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Log</div>
+          <div id="ac-pp-history-list"></div>
         </div>
       </div>
-    </div>
 
     <div class="fg">
       <span class="fl">Receipt / Attachment</span>
@@ -1784,18 +1796,12 @@ function acOpenExpModal() {
   if (_partOptsReset) _partOptsReset.style.display = 'none';
   var _partHistoryReset = document.getElementById('ac-part-payment-history');
   if (_partHistoryReset) _partHistoryReset.style.display = 'none';
+  var _coreFieldsReset = document.getElementById('ac-exp-core-fields');
+  if (_coreFieldsReset) _coreFieldsReset.style.display = '';
+  var _collapsedReset = document.getElementById('ac-pp-collapsed-summary');
+  if (_collapsedReset) _collapsedReset.style.display = 'none';
   document.getElementById('ac-exp-paid-amount').value = '0';
   document.getElementById('ac-exp-pending-amount').value = '0';
-  document.getElementById('ac-exp-paid-amount').readOnly = false;
-  document.getElementById('ac-exp-pending-amount').readOnly = false;
-  document.getElementById('ac-exp-paid-amount').style.opacity = '';
-  document.getElementById('ac-exp-pending-amount').style.opacity = '';
-  document.getElementById('ac-exp-item').readOnly = false;
-  document.getElementById('ac-exp-pretax').readOnly = false;
-  document.getElementById('ac-exp-item').style.opacity = '';
-  document.getElementById('ac-exp-pretax').style.opacity = '';
-  document.getElementById('ac-exp-item').style.cursor = '';
-  document.getElementById('ac-exp-pretax').style.cursor = '';
   document.getElementById('ac-file-preview').style.display='none';
   document.getElementById('ac-upload-area').style.display='';
   document.getElementById('ac-file-input').value='';
@@ -1863,16 +1869,18 @@ function acEditExp(e) {
   // Restore Part Payment paid/pending fields (kept in sync even when hidden, so Save never clobbers totals)
   var partOptsEdit    = document.getElementById('ac-part-payment-opts');
   var partHistoryEdit = document.getElementById('ac-part-payment-history');
+  var coreFieldsEdit  = document.getElementById('ac-exp-core-fields');
+  var collapsedEdit   = document.getElementById('ac-pp-collapsed-summary');
   var isPartPayment    = e.status === 'Part Payment';
   var isChildPayment   = !!e.parent_expense_id;
-  var childrenCountEdit = e.id ? (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(e.id); }).length : 0;
-  var isExistingParentPP = isPartPayment && !!e.id && !isChildPayment && childrenCountEdit > 0;
+  var isExistingParentPP = isPartPayment && !!e.id && !isChildPayment;
   var paidAmtInput = document.getElementById('ac-exp-paid-amount');
   var pendAmtInput = document.getElementById('ac-exp-pending-amount');
+  var cumEdit = null;
   if (isPartPayment) {
     if (isExistingParentPP) {
       // Show the true cumulative across all logged installments, not just this record's own field
-      var cumEdit = acPartPaymentCumulative(e);
+      cumEdit = acPartPaymentCumulative(e);
       paidAmtInput.value = cumEdit.paid.toFixed(2);
       pendAmtInput.value = cumEdit.pending.toFixed(2);
     } else {
@@ -1880,26 +1888,21 @@ function acEditExp(e) {
       pendAmtInput.value    = (e.pending_amount != null ? Number(e.pending_amount) : 0).toFixed(2);
     }
   }
-  // Amounts for an existing Part Payment group can only change via the New Part
-  // Payment form or by editing an individual payment-history row — lock these
-  // top-level fields so they can't be edited directly out of sync.
-  paidAmtInput.readOnly = isExistingParentPP;
-  pendAmtInput.readOnly = isExistingParentPP;
-  paidAmtInput.style.opacity = isExistingParentPP ? '0.55' : '';
-  pendAmtInput.style.opacity = isExistingParentPP ? '0.55' : '';
-  paidAmtInput.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
-  pendAmtInput.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
-  // The Item name and the group's total Amount are also locked once part payments
-  // exist against it — changing the total after installments have been logged
-  // against it would desync the whole running paid/pending picture.
-  var itemInput   = document.getElementById('ac-exp-item');
-  var pretaxInput = document.getElementById('ac-exp-pretax');
-  itemInput.readOnly   = isExistingParentPP;
-  pretaxInput.readOnly = isExistingParentPP;
-  itemInput.style.opacity   = isExistingParentPP ? '0.55' : '';
-  pretaxInput.style.opacity = isExistingParentPP ? '0.55' : '';
-  itemInput.style.cursor    = isExistingParentPP ? 'not-allowed' : '';
-  pretaxInput.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
+  // Once a Part Payment expense has been saved, the whole top form collapses into a
+  // read-only summary card — the only way to add or edit money against it from here
+  // on is through the Payment History section (Add Part Payment + per-entry edit).
+  if (coreFieldsEdit) coreFieldsEdit.style.display = isExistingParentPP ? 'none' : '';
+  if (collapsedEdit)  collapsedEdit.style.display  = isExistingParentPP ? '' : 'none';
+  if (isExistingParentPP && collapsedEdit) {
+    var summaryBody = document.getElementById('ac-pp-collapsed-summary-body');
+    var dt = e.date ? new Date(e.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    var subLabel = e.payout_type || acExpCategoryLabel(e);
+    summaryBody.innerHTML =
+      '<div><strong>' + esc(e.item||'—') + '</strong></div>' +
+      '<div style="color:var(--muted)">' + esc(e.category||'') + (subLabel ? ' · ' + esc(subLabel) : '') + (e.property_name ? ' · ' + esc(e.property_name) : '') + '</div>' +
+      '<div style="color:var(--muted)">Date: ' + dt + '</div>' +
+      '<div style="margin-top:6px">Total: <strong>' + acFmt(e.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(cumEdit.paid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(cumEdit.pending) + '</strong></div>';
+  }
   if (partOptsEdit)    partOptsEdit.style.display    = (isPartPayment && !isExistingParentPP) ? 'block' : 'none';
   if (partHistoryEdit) partHistoryEdit.style.display = isExistingParentPP ? 'block' : 'none';
   if (isExistingParentPP) {
@@ -2258,33 +2261,22 @@ function acPickSt(btn) {
   btn.classList.add('on');
   document.getElementById('ac-exp-status').value = btn.dataset.val;
 
-  var partOpts    = document.getElementById('ac-part-payment-opts');
-  var partHistory = document.getElementById('ac-part-payment-history');
+  var partOpts      = document.getElementById('ac-part-payment-opts');
+  var partHistory    = document.getElementById('ac-part-payment-history');
+  var coreFieldsSt    = document.getElementById('ac-exp-core-fields');
+  var collapsedSt      = document.getElementById('ac-pp-collapsed-summary');
   var isPart = btn.dataset.val === 'Part Payment';
   var existingId  = document.getElementById('ac-exp-id').value;
   var existingRec = existingId ? (_acExpenses||[]).find(function(x){ return String(x.id)===String(existingId); }) : null;
-  var childrenCountSt = existingRec ? (_acExpenses||[]).filter(function(x){ return String(x.parent_expense_id) === String(existingRec.id); }).length : 0;
-  var isExistingParentPP = isPart && !!existingRec && !existingRec.parent_expense_id && childrenCountSt > 0;
+  // Only collapse if this record was ALREADY saved as Part Payment — converting a
+  // previously Paid/Pending record to Part Payment for the first time should still
+  // show the normal editable Paid/Pending fields, not jump straight to History.
+  var isExistingParentPP = isPart && !!existingRec && !existingRec.parent_expense_id && existingRec.status === 'Part Payment';
 
   if (partOpts)    partOpts.style.display    = (isPart && !isExistingParentPP) ? 'block' : 'none';
   if (partHistory) partHistory.style.display = isExistingParentPP ? 'block' : 'none';
-
-  var paidAmtInputSt = document.getElementById('ac-exp-paid-amount');
-  var pendAmtInputSt = document.getElementById('ac-exp-pending-amount');
-  paidAmtInputSt.readOnly = isExistingParentPP;
-  pendAmtInputSt.readOnly = isExistingParentPP;
-  paidAmtInputSt.style.opacity = isExistingParentPP ? '0.55' : '';
-  pendAmtInputSt.style.opacity = isExistingParentPP ? '0.55' : '';
-  paidAmtInputSt.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
-  pendAmtInputSt.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
-  var itemInputSt   = document.getElementById('ac-exp-item');
-  var pretaxInputSt = document.getElementById('ac-exp-pretax');
-  itemInputSt.readOnly   = isExistingParentPP;
-  pretaxInputSt.readOnly = isExistingParentPP;
-  itemInputSt.style.opacity   = isExistingParentPP ? '0.55' : '';
-  pretaxInputSt.style.opacity = isExistingParentPP ? '0.55' : '';
-  itemInputSt.style.cursor    = isExistingParentPP ? 'not-allowed' : '';
-  pretaxInputSt.style.cursor  = isExistingParentPP ? 'not-allowed' : '';
+  if (coreFieldsSt) coreFieldsSt.style.display = isExistingParentPP ? 'none' : '';
+  if (collapsedSt)  collapsedSt.style.display  = isExistingParentPP ? '' : 'none';
 
   if (isPart && !isExistingParentPP) {
     var total = acGetExpenseTotal();
@@ -2292,6 +2284,19 @@ function acPickSt(btn) {
     document.getElementById('ac-exp-pending-amount').value = total.toFixed(2);
   }
   if (isExistingParentPP) {
+    var cumSt = acPartPaymentCumulative(existingRec);
+    document.getElementById('ac-exp-paid-amount').value = cumSt.paid.toFixed(2);
+    document.getElementById('ac-exp-pending-amount').value = cumSt.pending.toFixed(2);
+    var summaryBodySt = document.getElementById('ac-pp-collapsed-summary-body');
+    if (summaryBodySt) {
+      var dtSt = existingRec.date ? new Date(existingRec.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      var subLabelSt = existingRec.payout_type || acExpCategoryLabel(existingRec);
+      summaryBodySt.innerHTML =
+        '<div><strong>' + esc(existingRec.item||'—') + '</strong></div>' +
+        '<div style="color:var(--muted)">' + esc(existingRec.category||'') + (subLabelSt ? ' · ' + esc(subLabelSt) : '') + (existingRec.property_name ? ' · ' + esc(existingRec.property_name) : '') + '</div>' +
+        '<div style="color:var(--muted)">Date: ' + dtSt + '</div>' +
+        '<div style="margin-top:6px">Total: <strong>' + acFmt(existingRec.amount) + '</strong> &nbsp;·&nbsp; Paid: <strong>' + acFmt(cumSt.paid) + '</strong> &nbsp;·&nbsp; Pending: <strong>' + acFmt(cumSt.pending) + '</strong></div>';
+    }
     acRenderPaymentHistory(existingRec);
   }
 }
@@ -2313,20 +2318,13 @@ function acBuildPaymentHistoryHtml(parent, editable) {
   var rowsHtml = entries.map(function(en){
     var dt = en.date ? new Date(en.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
     var rowId = 'pp-row-' + en.id;
-    var controls = editable
-      ? '<span style="display:inline-flex;gap:10px;margin-left:10px;flex-shrink:0">'
-        + '<button type="button" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0" onclick="acEditPaymentHistoryRow(\'' + en.id + '\',' + en.isParent + ',\'' + parent.id + '\')">Edit</button>'
-        + '</span>'
-      : '';
+    var clickAttr = editable ? ' onclick="acEditPaymentHistoryRow(\'' + en.id + '\',' + en.isParent + ',\'' + parent.id + '\')" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer"' : ' style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"';
     var descHtml = en.description
       ? '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + esc(en.description) + '</div>' : '';
-    return '<div id="' + rowId + '" style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
+    return '<div id="' + rowId + '"' + clickAttr + '>'
       + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
         + '<span style="color:var(--muted)">' + dt + '</span>'
-        + '<span style="display:flex;align-items:center">'
-          + '<span style="font-weight:500">' + acFmt(en.amount) + ' of ' + acFmt(total) + ' paid</span>'
-          + controls
-        + '</span>'
+        + '<span style="font-weight:500">' + acFmt(en.amount) + ' of ' + acFmt(total) + ' paid</span>'
       + '</div>'
       + descHtml
       + '</div>';
@@ -2339,11 +2337,13 @@ function acEditPaymentHistoryRow(id, isParent, parentId) {
   var rec = (_acExpenses||[]).find(function(x){ return String(x.id) === String(id); });
   var rowEl = document.getElementById('pp-row-' + id);
   if (!rec || !rowEl) return;
+  rowEl.onclick = null;
+  rowEl.style.cursor = '';
   var dateVal = (rec.date || rec.created_at || '').slice(0,10);
   var amtVal  = Number(rec.paid_amount) || 0;
   var descVal = rec.description || '';
   rowEl.innerHTML =
-    '<div style="display:flex;flex-direction:column;gap:8px;width:100%">'
+    '<div style="display:flex;flex-direction:column;gap:8px;width:100%" onclick="event.stopPropagation()">'
     + '<div style="display:flex;gap:8px;align-items:center">'
       + '<input type="date" id="pp-edit-date-' + id + '" class="fc" style="flex:1.2" value="' + dateVal + '"/>'
       + '<input type="number" id="pp-edit-amt-' + id + '" class="fc" style="flex:1" min="0" value="' + amtVal + '"/>'
