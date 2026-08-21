@@ -2960,6 +2960,16 @@ async function acSaveExp() {
   else if (category === 'Payout' && payoutType === 'Team') propertyToSave = teamAssigned || null;
   else if (category === 'Payout' && payoutType === 'Landlords') propertyToSave = recipient || null;
 
+  // paid_amount/pending_amount for an EXISTING Part Payment record must NEVER be written
+  // by this general save path. Once payment-history entries exist, the hidden paid/pending
+  // fields get repurposed to display the running cumulative total (for the collapsed summary
+  // and re-expanded view) — that is a DISPLAY value, not something that should ever be written
+  // back as this record's own paid_amount. Only acAddPartPayment/acSavePaymentHistoryEdit are
+  // allowed to touch these two fields. Writing the cumulative figure here was the actual root
+  // cause of the amount repeatedly getting corrupted back to a wrong total.
+  const existingRecForSave = id ? (_acExpenses||[]).find(x => String(x.id) === String(id)) : null;
+  const isExistingPPForSave = status === 'Part Payment' && !!existingRecForSave && !existingRecForSave.parent_expense_id;
+
   const body = {
     item, amount: Number(amount), category, status,
     date:          expDate      || null,
@@ -2973,12 +2983,14 @@ async function acSaveExp() {
     pretax_amount: category === 'Payout' && pretax ? pretax : null,
     tds_pct:       category === 'Payout' && tdsOn ? tdsPct : null,
     tds_amount:    category === 'Payout' && tdsOn ? tdsAmt : null,
-    paid_amount:    status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-paid-amount').value) || 0) : null,
-    pending_amount: status === 'Part Payment' ? (parseFloat(document.getElementById('ac-exp-pending-amount').value) || 0) : null,
     gst_applicable: !!(document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked),
     gst_pct:        (document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked) ? (parseFloat(document.getElementById('ac-gst-pct').value) || 0) : null,
     gst_amount:     (document.getElementById('ac-gst-toggle') && document.getElementById('ac-gst-toggle').checked) ? (parseFloat(document.getElementById('ac-exp-gst-amt').value) || 0) : null
   };
+  if (status === 'Part Payment' && !isExistingPPForSave) {
+    body.paid_amount    = parseFloat(document.getElementById('ac-exp-paid-amount').value) || 0;
+    body.pending_amount = parseFloat(document.getElementById('ac-exp-pending-amount').value) || 0;
+  }
 
   _acExpSaving = true;
   const saveBtn = document.getElementById('ac-exp-save-btn');
