@@ -120,7 +120,6 @@ html,body{min-height:100%;font-family:'Helvetica Neue',Helvetica,Arial,sans-seri
 .entry-card.open .entry-detail{display:block}
 .entry-card.open .entry-preview{display:none}
 .entry-card .entry-content{white-space:pre-wrap}
-.entry-card.single-line{cursor:default}
 .entry-card.single-line .entry-chev{display:none}
 
 /* ── CONFIRM DIALOG ── */
@@ -350,7 +349,7 @@ async function loadSection(section) {
     return;
   }
   el.innerHTML = data.map(e => `
-    <div class="entry-card" onclick="if(!this.classList.contains('single-line'))this.classList.toggle('open')">
+    <div class="entry-card" onclick="this.classList.toggle('open')">
       <div class="entry-top">
         <div class="entry-preview">${esc(e.content || '')}</div>
         <span class="entry-chev">▾</span>
@@ -405,10 +404,15 @@ function closeConfirm() {
 }
 async function doDelete() {
   if (!_pendingDeleteId) return;
-  await api('/rest/v1/experiences?id=eq.' + _pendingDeleteId, 'DELETE');
+  const id = _pendingDeleteId, section = _pendingDeleteSection;
+  const res = await api('/rest/v1/experiences?id=eq.' + encodeURIComponent(id), 'DELETE');
   closeConfirm();
-  toast('Deleted.');
-  loadSection(_pendingDeleteSection);
+  if (Array.isArray(res) && res.length) {
+    toast('Deleted.');
+  } else {
+    toast('Delete failed (check Supabase delete policy).', true);
+  }
+  loadSection(section);
 }
 
 // ── HIDE HEADER WHEN EMBEDDED IN IFRAME ──
